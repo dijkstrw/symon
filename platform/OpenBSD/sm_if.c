@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.4 2002/08/09 08:21:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -101,7 +101,11 @@ get_if(char *mon_buf, int maxlen, char *interface)
 	fatal("%s:%d: ifnet = symbol not defined", __FILE__, __LINE__);
 
     /* obtain first ifnet structure in kernel memory */
-    kread(ifnetptr, (char *) &if_ifhead, if_size_ifhead);
+    if (kread(ifnetptr, (char *) &if_ifhead, if_size_ifhead)) {
+	warning("if(%s) failed", interface);
+	return 0;
+    }
+
     ifnetptr = (u_long) if_ifhead.tqh_first;
   
     while (ifnetptr) {

@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.17 2002/07/25 09:51:43 dijkstra Exp $ */
+/* $Id: symon.c,v 1.18 2002/08/09 08:21:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -64,12 +64,14 @@ struct nlist mon_nl[] = {
     {"_disklist"},   /* MON_DL    = 1  (mon.h)*/
     {""},
 };
-
+/* Read kernel memory */
 int 
 kread(u_long addr, char *buf, int size)
 {
-    if (kvm_read(kvmd, addr, buf, size) != size)
-	fatal("kvm_read:%s", kvm_geterr(kvmd));
+    if (kvm_read(kvmd, addr, buf, size) != size) {
+	warning("kvm_read:%s", kvm_geterr(kvmd));
+	return 1;
+    }
 
     return (0);
 }

@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.4 2002/08/09 08:21:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -78,7 +78,11 @@ get_io(char *mon_buf, int maxlen, char *disk)
 	fatal("%s:%d: dl = symbol not defined", __FILE__, __LINE__);
 
     /* obtain first disk structure in kernel memory */
-    kread(mon_nl[MON_DL].n_value, (char *) &io_dihead, io_size_dihead);
+    if (kread(mon_nl[MON_DL].n_value, (char *) &io_dihead, io_size_dihead)) {
+	warning("io(%s) failed", disk);
+	return 0;
+    }
+
     diskptr = (u_long) io_dihead.tqh_first;
 
     while (diskptr) {
