@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.9 2002/09/14 15:58:45 dijkstra Exp $
+# $Id: Makefile,v 1.10 2002/11/08 15:40:11 dijkstra Exp $
 
-SUBDIR=	lib symon symux symon2web
+SUBDIR=	lib symon symux symon2web client
 
 .if make(clean)
 SUBDIR+= ports/symon
@@ -20,7 +20,7 @@ dist: clean
 	${MAKE} clean; \
 	cd ../../..; \
 	echo Exporting symon-${V}.tar.gz; \
-	find $${workdir} -type f -print | egrep -v 'CVS|doc|clients|README|regress|#'| \
+	find $${workdir} -type f -print | egrep -v 'CVS|doc|README|regress|#'| \
 		tar -czvf /tmp/symon-${V}.tar.gz -I -; \
 	cp /tmp/symon-${V}.tar.gz /usr/ports/distfiles/; \
 	cd $${workdir}/ports/symon; \
