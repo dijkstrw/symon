@@ -1,13 +1,13 @@
-# $Id: Makefile.inc,v 1.9 2002/09/16 06:26:24 dijkstra Exp $
+# $Id: Makefile.inc,v 1.10 2002/10/18 12:29:09 dijkstra Exp $
 
-V=2.51
+V=2.52
 
 AR=	ar
 CC=	cc
 .ifdef DEBUG
-CFLAGS= -g -Wall
+CFLAGS+= -g -Wall
 .else
-CFLAGS= -O2 -Wall
+CFLAGS+= -O2 -Wall
 .endif
 INSTALL=install
 LORDER=	lorder
@@ -22,6 +22,10 @@ WEBDIR= ${SHRDIR}/web
 
 .ifndef PREFIX
 PREFIX=/usr/local
+.endif
+
+.ifndef SYSCONDIR
+SYSCONFDIR=/etc
 .endif
 
 .SUFFIXES: .c .o .8 .cat8

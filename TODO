@@ -1,6 +1,8 @@
 TODO:
 
 == current problems / short term
+- rewrite symon2web to allow use on internet websites
+- allow editing of graphing parameters in symon2web
 - add symon2web manual page / readme, explain weird format
 - remove mon packet limit
 
@@ -9,4 +11,4 @@ TODO:
 - write a muxer that supports unix pipes
 - write a client that drives a crystal fontz lcd
 
-$Id: TODO,v 1.19 2002/09/14 15:58:45 dijkstra Exp $
+$Id: TODO,v 1.20 2002/10/18 12:29:09 dijkstra Exp $

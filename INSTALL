@@ -74,7 +74,20 @@ Less quick, but more verbose
 
 - Only if you need the webinterface: symon2web is installed in
   $PREFIX/$SHRDIR/. Copy the files to a convenient apache directory and modify
-  the symon2web/datasources.inc to reflect your filelocations.
+  the symon2web/datasources.inc to reflect your filelocations. datasources.inc
+  also contains some settings on how the data is displayed.
+
+     + $symon2web["view"] = show all graphs for all machines ('all') or show
+       only graphs for a single selected machine ('one').
+
+     + $symon2web["magnify"] = to which format should the graph be magnified if
+       clicked on. Values are:
+          '' for no magnification, 
+          'tiny'   =  100 x  75, 
+          'small'  =  200 x 125,
+          'normal' =  300 x 225, 
+          'big'    =  600 x 450, 
+          'huge'   = 1024 x 640.
 
 Portability
 ===========
@@ -85,5 +98,5 @@ symon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.6 2002/09/14 15:58:45 dijkstra Exp $
+$Id: INSTALL,v 1.7 2002/10/18 12:29:09 dijkstra Exp $
 
