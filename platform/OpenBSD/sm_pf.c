@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.5 2003/01/26 20:41:00 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.6 2003/10/14 20:09:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -64,7 +64,7 @@ void
 init_pf(char *s)
 {
     if (pf_dev == -1)
-	if ((pf_dev = open("/dev/pf", O_RDWR)) == -1)
+	if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1)
 	    fatal("%s:%d: open(\"/dev/pf\") failed, %.200s",
 		  __FILE__, __LINE__, strerror(errno));
 
