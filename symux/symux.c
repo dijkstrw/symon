@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.16 2002/07/25 09:51:44 dijkstra Exp $ */
+/* $Id: symux.c,v 1.17 2002/07/25 14:23:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -192,81 +192,85 @@ main(int argc, char *argv[])
 		sol = newsol;
 		info("read configuration file succesfully");
 	    }
-	}
+	} else {
 
-	/* Put information from packet into stringbuf (shared region). Note
-	 * that the stringbuf is used twice: 1) to update the rrdfile and 2) to
-	 * collect all the data from a single packet that needs to shared to
-	 * the clients. This is the reason for the hasseling with stringptr.
-	 */
-
-	offset = 0;
-	maxstringlen = shared_getmaxlen();
-	/* put time:ip: into shared region */
-	master_forbidread();
-	timestamp = (time_t) packet.header.timestamp;
-	stringbuf = (char *)shared_getmem();
-	snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u;",
-		IPAS4BYTES(source->ip));
-	
-	/* hide this string region from rrd update */
-	maxstringlen -= strlen(stringbuf);
-	stringptr = stringbuf + strlen(stringbuf);
-
-	while (offset < packet.header.length) {
-	    offset += sunpack(packet.data + offset, &ps);
-
-	    /* find stream in source */
-	    stream = find_source_stream(source, ps.type, ps.args);
-
-	    if (stream != NULL) {
-		/* put type in and hide from rrd */
-		snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		/* put arguments in and hide from rrd */
-		snprintf(stringptr, maxstringlen, "%s:", ((ps.args == NULL) ? "0" : ps.args));
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		/* put timestamp in and show to rrd */
-		snprintf(stringptr, maxstringlen, "%u", timestamp);
-		arg_ra[3] = stringptr;
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-
-		/* put measurements in */
-		ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
-
-		if (stream->file != NULL) {
-		    /* save if file specified */
-		    arg_ra[0] = "rrdupdate";
-		    arg_ra[1] = "--";
-		    arg_ra[2] = stream->file;
+	    /* Put information from packet into stringbuf (shared region). Note
+	     * that the stringbuf is used twice: 1) to update the rrdfile and 2) to
+	     * collect all the data from a single packet that needs to shared to
+	     * the clients. This is the reason for the hasseling with stringptr.
+	     */
+	    
+	    offset = 0;
+	    maxstringlen = shared_getmaxlen();
+	    /* put time:ip: into shared region */
+	    master_forbidread();
+	    timestamp = (time_t) packet.header.timestamp;
+	    stringbuf = (char *)shared_getmem();
+	    snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u;",
+		     IPAS4BYTES(source->ip));
+	    
+	    /* hide this string region from rrd update */
+	    maxstringlen -= strlen(stringbuf);
+	    stringptr = stringbuf + strlen(stringbuf);
+	    
+	    while (offset < packet.header.length) {
+		offset += sunpack(packet.data + offset, &ps);
+		
+		/* find stream in source */
+		stream = find_source_stream(source, ps.type, ps.args);
+		
+		if (stream != NULL) {
+		    /* put type in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    /* put arguments in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:", 
+			     ((ps.args == NULL) ? "0" : ps.args));
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    /* put timestamp in and show to rrd */
+		    snprintf(stringptr, maxstringlen, "%u", timestamp);
+		    arg_ra[3] = stringptr;
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
 		    
-		    rrd_update(4, arg_ra);
-
-		    if (rrd_test_error()) {
-			warning("rrd_update:%s", rrd_get_error());
-			warning("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
-			rrd_clear_error();                                                            
-		    } else {
-			if (flag_debug == 1) 
-			    debug("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
+		    /* put measurements in */
+		    ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
+		    
+		    if (stream->file != NULL) {
+			/* save if file specified */
+			arg_ra[0] = "rrdupdate";
+			arg_ra[1] = "--";
+			arg_ra[2] = stream->file;
+			
+			rrd_update(4, arg_ra);
+			
+			if (rrd_test_error()) {
+			    warning("rrd_update:%s", rrd_get_error());
+			    warning("%s %s %s %s", arg_ra[0], arg_ra[1], 
+				    arg_ra[2], arg_ra[3]);
+			    rrd_clear_error();                                                            
+			} else {
+			    if (flag_debug == 1) 
+				debug("%s %s %s %s", arg_ra[0], arg_ra[1], 
+				      arg_ra[2], arg_ra[3]);
+			}
 		    }
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    snprintf(stringptr, maxstringlen, ";");
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
 		}
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		snprintf(stringptr, maxstringlen, ";");
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
 	    }
+	    /* packet = parsed and in ascii in shared region -> copy to clients */
+	    snprintf(stringptr, maxstringlen, "\n");
+	    stringptr += strlen(stringptr);
+	    shared_setlen((stringptr - stringbuf));
+	    debug("Churnbuffer used: %d", (stringptr - stringbuf));
+	    master_permitread();
 	}
-	/* packet = parsed and in ascii in shared region -> copy to clients */
-	snprintf(stringptr, maxstringlen, "\n");
-	stringptr += strlen(stringptr);
-	shared_setlen((stringptr - stringbuf));
-	debug("Churnbuffer used: %d", (stringptr - stringbuf));
-	master_permitread();
     }
     /* NOT REACHED */
 }

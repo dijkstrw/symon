@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.8 2002/06/21 12:24:21 dijkstra Exp $ */
+/* $Id: symux.h,v 1.9 2002/07/25 14:23:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,7 +34,7 @@
 #define _MONMUX_MONMUX_H
 
 #define MONMUX_CONFIG_FILE "/etc/monmux.conf"
-#define MONMUX_PID_FILE "/var/run/monmux.conf"
+#define MONMUX_PID_FILE "/var/run/monmux.pid"
 #define MONMUX_VERSION "1.0"
 
 /* Amount of connections allowed in listen backlog 
