@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.14 2002/10/18 12:30:48 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.15 2002/10/25 15:25:07 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,6 +31,8 @@
  */
 
 #include <sys/queue.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -49,8 +51,49 @@
 __BEGIN_DECLS
 int read_mux(struct muxlist *mul, struct lex *);
 int read_source(struct sourcelist *sol, struct lex *);
+int insert_filename(char *, int, int, char *);
 __END_DECLS
 
+int 
+insert_filename(char *path, int maxlen, int type, char *args) 
+{
+    char *ts;
+    char *ta;
+
+    ts = ta = NULL;
+
+    switch(type) {
+    case MT_CPU:
+	ts = "cpu";
+	ta = args;
+	break;
+    case MT_IF:
+	ts = "if_";
+	ta = args;
+	break;
+    case MT_IO:
+	ts = "io_";
+	ta = args;
+	break;
+    case MT_MEM:
+	ts = "mem";
+	ta = "";
+	break;
+    case MT_PF:
+	ts = "pf";
+	ta = "";
+	break;
+    default:
+	warning("%s:%d: internal error: type (%d) unknown",
+		__FILE__, __LINE__, type);
+	return 0;
+    }
+    
+    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen) 
+	return 0;
+    else
+	return 1;
+}
 /* mux <host> (port|:|,| ) <number> */
 int 
 read_mux(struct muxlist *mul, struct lex *l)
@@ -94,15 +137,19 @@ read_mux(struct muxlist *mul, struct lex *l)
 
     return 1;
 }
-/* source <host> { accept ... | write ... } */
+/* source <host> { accept ... | write ... | datadir ... } */
 int 
 read_source(struct sourcelist *sol, struct lex *l)
 {
     struct source *source;
     struct stream *stream;
+    struct stat sb;
+    char path[_POSIX2_LINE_MAX];
     char sn[_POSIX2_LINE_MAX];
     char sa[_POSIX2_LINE_MAX];
-    int  st;
+    int st;
+    int pc;
+    int fd;
 
     /* get hostname */
     lex_nexttoken(l);
@@ -169,6 +216,76 @@ read_source(struct sourcelist *sol, struct lex *l)
 		}
 	    }
 	    break; /* LXT_ACCEPT */
+	    /* datadir "path" */
+	case LXT_DATADIR:
+	    lex_nexttoken(l);
+	    /* is path absolute */
+	    if (l->token && l->token[0] != '/') {
+		warning("%s:%d: datadir path '%s' is not absolute",
+			l->filename, l->cline, l->token);
+		return 0;
+	    }
+
+	    /* make sure that directory exists */
+	    bzero(&sb, sizeof(struct stat));
+
+	    if (stat(l->token, &sb) == 0) {
+		if (! (sb.st_mode & S_IFDIR)) {
+		    warning("%s:%d: datadir path '%s' is not a directory",
+			    l->filename, l->cline, l->token);
+		    return 0;
+		}
+	    } else {
+		warning("%s:%d: could not stat datadir path '%s'",
+			l->filename, l->cline, l->token);
+		return 0;
+	    }
+
+	    strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
+	    path[_POSIX2_LINE_MAX-1] = '\0';
+	    
+	    pc = strlen(path);
+	    
+	    if (path[pc-1] == '/') {
+		path[pc-1] = '\0';
+		pc--;
+	    }
+	    
+	    /* add path to empty streams */
+	    SLIST_FOREACH(stream, &source->sl, streams) {
+		if (stream->file == NULL) {
+		    if (!(insert_filename(&path[pc], 
+					  _POSIX2_LINE_MAX - pc, 
+					  stream->type, 
+					  stream->args))) {
+			if (stream->args && strlen(stream->args)) {
+			    warning("%s:%d: failed to construct stream "
+				    "%s(%s) filename using datadir '%s'",
+				    l->filename, l->cline, 
+				    type2str(stream->type), 
+				    stream->args, l->token);
+			} else {
+			    warning("%s:%d: failed to construct stream "
+				    "%s) filename using datadir '%s'",
+				    l->filename, l->cline, 
+				    type2str(stream->type), 
+				    l->token);
+			}
+			return 0;
+		    }
+		    
+		    /* try filename */
+		    if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
+			warning("%s:%d: file '%s', guessed by datadir,  cannot be opened", 
+				l->filename, l->cline, path);
+			return 0;
+		    } else {
+			close(fd);
+			stream->file = xstrdup(path);
+		    }
+		}
+	    }
+	    break; /* LXT_DATADIR */
 	    /* write cpu(0) in "filename" */
 	case LXT_WRITE:
 	    lex_nexttoken(l);
@@ -216,7 +333,6 @@ read_source(struct sourcelist *sol, struct lex *l)
 			return 0;
 		    }
 		} else {
-		    int fd;
 		    /* try filename */
 		    if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
 			warning("%s:%d: file '%s' cannot be opened", 
@@ -224,6 +340,13 @@ read_source(struct sourcelist *sol, struct lex *l)
 			return 0;
 		    } else {
 			close(fd);
+
+			if (stream->file != NULL) {
+			    warning("%s:%d: file '%s' overwrites previous definition '%s'",
+				    l->filename, l->cline, l->token, stream->file);
+			    xfree(stream->file);
+			}
+
 			stream->file = xstrdup(l->token);
 		    }
 		}

@@ -88,31 +88,40 @@ The configuration file contains one mux stanza that defines on what interface an
 .Nm 
 should listen to for incoming monitored data. There is a source section for
 every host that is to be monitored. The source section defines what data to
-accept and where to write that data to. Whitespace, newlines and text behind '#' are ignored. The format in BNF:
+accept and where to write that data to. Whitespace, newlines and text behind
+'#' are ignored. The format in BNF:
 .Pp
 .nf
 stmt         = mux-stmt | source-stmt
 mux-stmt     = "mux" host [ port ]
 host         = ip4addr | hostname
 port         = [ "port" | ":" | "," ] portnumber
-source-stmt  = "source" host "{" accept-stmts write-stmts "}"
+source-stmt  = "source" host "{" accept-stmts write-stmts [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
 resource     = "cpu" | "mem" | "if" | "io" | "pf"
 argument     = number | interfacename | diskname
+datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
 write-stmt   = "write" resource "in" filename
 .fi
 .Pp
 Note that 
-.Va port 
+.Bl -tag -width Ds
+.It Va port
 in the 
 .Va mux-stmt
 specifies the port-number for both the udp port (incoming 
 .Xr symon 8
 traffic) and the tcp port for incoming listeners.
-
+.It Va datadir
+will guess filenames for all 
+accepted streams. 
+.Va write
+statements always take precendence over a
+.Va datadir
+statement. 
 .Sh EXAMPLE
 Here is an example 
 .Ar symux.conf
@@ -132,22 +141,7 @@ source 127.0.0.1 {
              io(wd0), io(wd1), io(wd2), 
              io(wd3), io(cd0), io(cd1) }
 
-    write cpu(0)   in "/export/symon/localhost/cpu0.rrd"
-    write mem      in "/export/symon/localhost/mem.rrd"
-    write pf       in "/export/symon/localhost/pf.rrd"
-
-    write if(xl0)  in "/export/symon/localhost/if_xl0.rrd"
-    write if(de0)  in "/export/symon/localhost/if_de0.rrd"
-    write if(lo0)  in "/export/symon/localhost/if_lo0.rrd"
-    write if(wi0)  in "/export/symon/localhost/if_wi0.rrd"
-
-    write io(wd0)  in "/export/symon/localhost/io_wd0.rrd"
-    write io(wd1)  in "/export/symon/localhost/io_wd1.rrd"
-    write io(wd2)  in "/export/symon/localhost/io_wd2.rrd"
-    write io(wd3)  in "/export/symon/localhost/io_wd3.rrd"
-
-    write io(cd0)  in "/export/symon/localhost/io_cd0.rrd"
-    write io(cd1)  in "/export/symon/localhost/io_cd1.rrd"
+    datadir "/export/symon/localhost"
 }
 .fi
 .Sh LISTENERS
