@@ -7,18 +7,11 @@ Project Overview:
 - build a website
 - write a paper for daemonnews
 
-- add a fast crc algorithm in netmon and netmux
-- allow other programs to connect to monmux for stream updates
-  > add new rules to the language (filter {sources:types})
-  > listen to a tcp socket for incoming clients
-  > use SYSVSHM to communicate between master and client handlers
 - change rrd to accommodate batch updates
 - mon2web should have graph objects/modules
   (ask a module what graphing options it supports and show these,
    the same module should also draw the picture, maybe php oo?)
 - weird: rrd_update fails for monmux when not in daemon mode?
-- look at lib/net.c/lookup, give joe credits for his work.
-
 
 == longer term
 - write a muxer that supports unix pipes
@@ -29,6 +22,9 @@ Project Overview:
 == log 
 25/07/2002 - rewrite stringptr functions in monmux to snprintf ones
            - package it for openbsd
+           - added a crc32 algorithm in netmon and netmux
+           - added DEBUG handling in Makefiles
+           - removed a bug in monmux that made it reprocess already processed data.
 
 22/06/2002 - added shared code, upgraded networking code
 
