@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.18 2002/07/25 19:10:03 dijkstra Exp $ */
+/* $Id: symux.c,v 1.19 2002/08/11 19:55:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -95,6 +95,8 @@ main(int argc, char *argv[])
 {
     struct monpacket packet;
     struct packedstream ps;
+    char *cfgfile;
+    char *cfgpath;
     char *stringbuf;
     char *stringptr;
     int maxstringlen;
@@ -116,23 +118,40 @@ main(int argc, char *argv[])
     /* reset flags */
     flag_debug = 0;
     flag_daemon = 0;
-
-    while ((ch = getopt(argc, argv, "dv")) != -1) {
+    
+    cfgfile = MONMUX_CONFIG_FILE;
+    while ((ch = getopt(argc, argv, "dvf:")) != -1) {
 	switch (ch) {
 	case 'd':
 	    flag_debug = 1;
 	    break;
+	case 'f':
+	    if (optarg && optarg[1] != '/') {
+		/* cfg path needs to be absolute, we will be a daemon soon */
+		if ((cfgpath = getwd(NULL)) == NULL)
+		    fatal("could not get working directory");
+		
+		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
+		cfgfile = xmalloc(maxstringlen);
+		strncpy(cfgfile, cfgpath, maxstringlen);
+		stringptr = cfgfile + strlen(cfgpath);
+		stringptr[0] = '/';
+		stringptr++;
+		strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
+		cfgfile[maxstringlen] = '\0';
+
+		free(cfgpath);
+	    } else 
+		cfgfile = xstrdup(optarg);
+
+	    break;
 	case 'v':
 	    info("monmux version %s", MONMUX_VERSION);
 	default:
-	    info("usage: %s [-d] [-v]", __progname);
+	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
 	    exit(EX_USAGE);
 	}
     }
-
-    /* parse configuration file */
-    if (!read_config_file(&mul, &sol, MONMUX_CONFIG_FILE))
-	fatal("configuration contained errors; quitting");
 
     if (flag_debug != 1) {
 	if (daemon(0,0) != 0)
@@ -149,6 +168,11 @@ main(int argc, char *argv[])
     } 
     
     info("monmux version %s", MONMUX_VERSION);
+
+    /* parse configuration file */
+    if (!read_config_file(&mul, &sol, cfgfile))
+	fatal("configuration contained errors; quitting");
+
 
     if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
@@ -181,16 +205,19 @@ main(int argc, char *argv[])
 	    SLIST_INIT(&newmul);
 	    SLIST_INIT(&newsol);
 
-	    if (!read_config_file(&newmul, &newsol, MONMUX_CONFIG_FILE)) {
+	    if (!read_config_file(&newmul, &newsol, cfgfile)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
 		free_sourcelist(&newsol);
 	    } else {
+		info("read configuration file succesfully");
 		free_muxlist(&mul);
 		free_sourcelist(&sol);
 		mul = newmul;
 		sol = newsol;
-		info("read configuration file succesfully");
+		mux = SLIST_FIRST(&mul);
+		getmonsocket(mux);
+		getclientsocket(mux);
 	    }
 	} else {
 
