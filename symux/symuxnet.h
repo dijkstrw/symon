@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.7 2002/11/08 15:37:24 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.8 2002/11/29 10:45:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -37,14 +37,10 @@
 
 /* prototypes */
 __BEGIN_DECLS
-int  acceptconnection(int, char*, int);
-int  getsymonsocket(struct mux *);
-int  getclientsocket(struct mux *);
-void waitfortraffic(struct mux *, struct sourcelist *, 
-		    struct source **, struct symonpacket *);
-int  recvsymonpacket(struct mux *, struct sourcelist *, 
-		   struct source **, struct symonpacket *);
-int  check_crc_packet(struct symonpacket *);
+int get_client_socket(struct mux *);
+int get_symon_sockets(struct mux *);
+int accept_connection(int, char *, int);
+int recv_symon_packet(struct mux *, int, struct source **, struct symonpacket *);
+void wait_for_traffic(struct mux *, struct source **, struct symonpacket *);
 __END_DECLS
-#endif /*_SYMUX_SYMUXNET_H*/
-
+#endif				/* _SYMUX_SYMUXNET_H */

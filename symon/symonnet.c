@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.10 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.11 2002/11/29 10:45:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,7 +33,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include <netinet/in.h>
+#include <netdb.h>
 
 #include <string.h>
 #include <errno.h>
@@ -46,49 +46,46 @@
 
 /* Fill a mux structure with inet details */
 void 
-connect2mux(struct mux *mux)
+connect2mux(struct mux * mux)
 {
-    struct sockaddr_in sockaddr;
+    struct sockaddr_storage sockaddr;
+    int family;
 
-    if ((mux->symonsocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    bzero((void *) &sockaddr, sizeof(sockaddr));
+
+    get_mux_sockaddr(mux, SOCK_DGRAM);
+    family = mux->sockaddr.ss_family;
+
+    get_inaddrany_sockaddr(&sockaddr, family, SOCK_DGRAM, "0");
+
+    if ((mux->symuxsocket = socket(family, SOCK_DGRAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = 0;
-    sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    bzero(&sockaddr.sin_zero, 8);
-
-    if (bind(mux->symonsocket, (struct sockaddr *) &sockaddr, 
-	     sizeof(struct sockaddr)) == -1)
+    if (bind(mux->symuxsocket, (struct sockaddr *) & sockaddr, sockaddr.ss_len) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
-    mux->sockaddr.sin_family = AF_INET;
-    mux->sockaddr.sin_port = htons(mux->port);
-    mux->sockaddr.sin_addr.s_addr = htonl(mux->ip);
-    bzero(&mux->sockaddr.sin_zero, 8);
-
-    info("sending packets to udp:%s:%d", 
-	 mux->name, mux->port);
+    info("sending packets to udp %s", mux->name);
 }
 /* Send data stored in the mux structure to a mux */
 void 
-send_packet(struct mux *mux)
-{   
-    if (sendto(mux->symonsocket, (void *)&mux->packet.data, 
-	       mux->offset, 0, (struct sockaddr *)&mux->sockaddr, 
-	       sizeof(mux->sockaddr))
+send_packet(struct mux * mux)
+{
+    if (sendto(mux->symuxsocket, (void *) &mux->packet.data,
+	       mux->offset, 0, (struct sockaddr *) & mux->sockaddr,
+	       mux->sockaddr.ss_len)
 	!= mux->offset) {
 	mux->senderr++;
     }
 
-    if (mux->senderr >= SYMON_WARN_SENDERR)
-	warning("%d updates to mux(%u.%u.%u.%u) lost due to send errors",
-		mux->senderr, 
-		IPAS4BYTES(mux->ip)), mux->senderr = 0;
+    if (mux->senderr >= SYMON_WARN_SENDERR) {
+	warning("%d updates to mux(%s) lost due to send errors",
+		mux->senderr, mux->name);
+	mux->senderr = 0;
+    }
 }
 /* Prepare a packet for data */
 void 
-prepare_packet(struct mux *mux) 
+prepare_packet(struct mux * mux)
 {
     time_t t = time(NULL);
 
@@ -97,31 +94,31 @@ prepare_packet(struct mux *mux)
     mux->packet.header.timestamp = t;
 
     /* symonpacketheader is always first stream */
-    mux->offset = 
-	setheader((char *)&mux->packet.data, 
+    mux->offset =
+	setheader((char *) &mux->packet.data,
 		  &mux->packet.header);
 }
 /* Put a stream into the packet for a mux */
 void 
-stream_in_packet(struct stream *stream, struct mux *mux) 
+stream_in_packet(struct stream * stream, struct mux * mux)
 {
-    mux->offset += 
-	(streamfunc[stream->type].get)      /* call getter of stream */
-	(&mux->packet.data[mux->offset],    /* packet buffer */
-	 sizeof(mux->packet.data) - mux->offset,    /* maxlen */
-	 stream->args);
+    mux->offset +=
+    (streamfunc[stream->type].get)	/* call getter of stream */
+    (&mux->packet.data[mux->offset],	/* packet buffer */
+     sizeof(mux->packet.data) - mux->offset,	/* maxlen */
+     stream->args);
 }
 /* Ready a packet for transmission, set length and crc */
-void finish_packet(struct mux *mux) 
+void 
+finish_packet(struct mux * mux)
 {
     mux->packet.header.length = mux->offset;
     mux->packet.header.crc = 0;
 
     /* fill in correct header with crc = 0 */
-    setheader((char *)&mux->packet.data, &mux->packet.header);
+    setheader((char *) &mux->packet.data, &mux->packet.header);
 
     /* fill in correct header with crc */
     mux->packet.header.crc = crc32(&mux->packet.data, mux->offset);
-    setheader((char *)&mux->packet.data, &mux->packet.header);
+    setheader((char *) &mux->packet.data, &mux->packet.header);
 }
-

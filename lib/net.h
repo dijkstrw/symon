@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.8 2002/11/08 15:37:54 dijkstra Exp $ */
+/* $Id: net.h,v 1.9 2002/11/29 10:45:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,22 +33,28 @@
 #ifndef _SYMON_LIB_NET_H
 #define _SYMON_LIB_NET_H
 
+#include <sys/queue.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 
-#define SYMUX_PORT  2100                     /* default symux port */
-#define SYMUX_MAXIPNAMESIZE   17             /* maximum size of ascii 
-						rep of a dotted quad */
-
-/* Rewrite an ipadress uint32_t as 4 comma seperated bytes */
-#define IPAS4BYTES(x) \
-        ((x) >> 24), ((x) >> 16) & 0xff, ((x) >> 8) & 0xff, (x) & 0xff
+#define SYMUX_PORT  "2100"	/* default symux port */
 
 extern char lookup_hostname[];
 extern char lookup_address[];
 extern u_int32_t lookup_ip;
+extern char res_host[];
+extern struct sockaddr_storage res_addr;
 
 __BEGIN_DECLS
+int cmpsock_addr(struct sockaddr *, struct sockaddr *);
+int getaddr(char *, char *, int, int);
+int getip(char *);
 int lookup(char *);
+void cpysock(struct sockaddr *, struct sockaddr_storage *);
+void get_inaddrany_sockaddr(struct sockaddr_storage *, int, int, char *);
+void get_mux_sockaddr(struct mux *, int);
+void get_source_sockaddr(struct source *);
 __END_DECLS
 
-#endif /* _SYMON_LIB_NET_H */
+#endif				/* _SYMON_LIB_NET_H */
+

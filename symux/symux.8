@@ -84,23 +84,26 @@ instead of
 .Nm
 obtains configuration data from 
 .Pa /etc/symux.conf .
-The configuration file contains one mux stanza that defines on what interface and port
+The configuration file contains one mux stanza that defines on what host address and port
 .Nm 
 should listen to for incoming monitored data. There is a source section for
 every host that is to be monitored. The source section defines what data to
-accept and where to write that data to. Whitespace, newlines and text behind
-'#' are ignored. The format in BNF:
+accept and where to write that data to. In the case that a source is of another
+address family than the mux stanza, i.e. source = ipv6 with mux = ipv4, a
+listen port of the sources' family is opened using the unspecified
+address. Whitespace, newlines and text behind '#' are ignored. The format in
+BNF:
 .Pp
 .nf
 stmt         = mux-stmt | source-stmt
 mux-stmt     = "mux" host [ port ]
-host         = ip4addr | hostname
-port         = [ "port" | ":" | "," ] portnumber
+host         = ip4addr | ip6addr | hostname
+port         = [ "port" | "," ] portnumber
 source-stmt  = "source" host "{" accept-stmts write-stmts [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug"
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
@@ -133,7 +136,7 @@ on localhost.
 will also listen on tcp port 2100 for incoming listeners.
 .Pp
 .nf
-mux 127.0.0.1:2100
+mux 127.0.0.1 2100
 source 127.0.0.1 {
     accept { cpu(0), mem, pf,
              if(xl0), if(de0),
@@ -209,6 +212,8 @@ packets_v6_out_pass : packets_v6_out_drop : states_entries : states_searches :
 states_inserts : states_removals : counters_match : counters_badoffset :
 counters_fragment : counters_short : counters_normalize : counters_memory
 ). Values are 64 bit unsigned integers internally.
+.It debug
+Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32 bit unsigned integers. 
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds

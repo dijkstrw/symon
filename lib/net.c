@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.6 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: net.c,v 1.7 2002/11/29 10:45:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,81 +30,189 @@
  *
  */
 
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
-#include <limits.h>
-#include <stdio.h>
+#include <netdb.h>
 #include <string.h>
 
+#include "data.h"
+#include "error.h"
+#include "net.h"
+
 /*
- * lookup( hostname ) - hostname resolver
+ * getip( address | fqdn ) - get ip address
  *
- * Lookup returns 1 if hostname could be resolved. Resolved data is
- * stored in the globals lookup_hostname, lookup_address and lookup_ip below.  
+ * getip returns 1 if address could be reworked into an ip address. Resolved
+ * data is stored in the globals res_host. The address structure res_addr is
+ * aslo filled with sockaddr information that was obtained.
  */
-char lookup_hostname[_POSIX2_LINE_MAX];
-char lookup_address[_POSIX2_LINE_MAX];
-u_int32_t lookup_ip;
-
+char res_host[NI_MAXHOST];
+struct sockaddr_storage res_addr;
 int 
-lookup(char *name)
+getip(char *name)
 {
-    struct in_addr addr;
-    struct hostent *host;
-    extern int h_errno;
-    char *chostname, *sptr;
-    int i, bestl, newl;
-	
-    strcpy(lookup_hostname, "unresolved.");
-    strcpy(lookup_address, "unresolved.");
-    strncat(lookup_hostname, name, (_POSIX2_LINE_MAX - 1 - sizeof("unresolved")));
-    strncat(lookup_address, name, (_POSIX2_LINE_MAX - 1 - sizeof("unresolved")));
+    struct addrinfo hints, *res;
+    int error;
 
-    if (4 == sscanf(name, "%4d.%4d.%4d.%4d", &i, &i, &i, &i)) {
-	addr.s_addr = inet_addr(name);
-	if (addr.s_addr == 0xffffffff) 
+    res = NULL;
+    bzero((void *) &hints, sizeof(struct addrinfo));
+
+    /* don't lookup if we have a numeric address already */
+    hints.ai_flags = AI_NUMERICHOST;
+    if (getaddrinfo(name, NULL, &hints, &res) != 0) {
+	hints.ai_flags = 0;
+	if ((error = getaddrinfo(name, NULL, &hints, &res)) < 0) {
+	    warning("getaddrinfo(%.200s): %.200s", name, gai_strerror(error));
 	    return 0;
-	    
-	host = gethostbyaddr((char *)&addr.s_addr, 4, AF_INET);
-    } else {
-	host = gethostbyname(name);
+	}
     }
-    
-    if (host == NULL) {
-	return 0;
-    } else {
-	i = 0;
-	newl = 0;
-	bestl = 0;
-	sptr = (char *)(host->h_name ? host->h_name : host->h_aliases[0]);
-	chostname = NULL;
 
-	while (sptr) {
-	    newl = strlen(sptr);
-	    if (newl > bestl) {
-		bestl = newl;
-		chostname = sptr;
+    if (res && hints.ai_flags & AI_NUMERICHOST) {
+	strncpy(res_host, name, NI_MAXHOST);
+	res_host[NI_MAXHOST - 1] = 0;
+
+	cpysock(res->ai_addr, &res_addr);
+
+	freeaddrinfo(res);
+	return 1;
+    }
+    else {
+	if (res->ai_addr) {
+	    if ((error = getnameinfo(res->ai_addr, res->ai_addrlen,
+				     res_host, NI_MAXHOST,
+				     NULL, 0, NI_NUMERICHOST)) == 0) {
+		res_host[NI_MAXHOST - 1] = 0;
+
+		cpysock(res->ai_addr, &res_addr);
+
+		freeaddrinfo(res);
+		return 1;
 	    }
-
-	    sptr = host->h_aliases[i++];
+	    else
+		warning("getnameinfo(%.200s): %.200s", name, gai_strerror(error));
 	}
-	
-	if (chostname)
-	    snprintf(lookup_hostname, (_POSIX2_LINE_MAX - 1), "%s", chostname);
-	
-	if (*host->h_addr_list) {
-	    lookup_ip = ntohl(*(u_int32_t *) *(char **) host->h_addr_list);
+	else
+	    warning("getip(%s): could not get numeric host via getaddrinfo nor getnameinfo", name);
+    }
 
-	    snprintf(lookup_address, (_POSIX2_LINE_MAX - 1),"%u.%u.%u.%u", 
-		    (lookup_ip >> 24), (lookup_ip >> 16) & 0xff,
-		    (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
+    return 0;
+}
+/*
+ * getaddr( address | fqdn, service ) - get the addrinfo structure
+ *
+ * getaddr returns a sockaddr structure in res_addr. it will only resolve
+ * the address if that is necessary.
+ */
+int 
+getaddr(char *name, char *service, int socktype, int flags)
+{
+    struct addrinfo hints, *res;
+    int error;
+
+    res = NULL;
+    bzero((void *) &hints, sizeof(hints));
+
+    hints.ai_flags = flags;
+    hints.ai_socktype = socktype;
+
+    /* don't lookup if not necessary */
+    hints.ai_flags |= AI_NUMERICHOST;
+    if (getaddrinfo(name, service, &hints, &res) != 0) {
+	hints.ai_flags = flags;
+	if ((error = getaddrinfo(name, service, &hints, &res)) < 0) {
+	    warning("getaddrinfo(%.200s): %.200s", name, gai_strerror(error));
+	    return 0;
 	}
     }
+
+    if (res->ai_addrlen > sizeof(res_addr))
+	fatal("%s:%d: internal error: getaddr returned bigger sockaddr than expected (%d>%d)",
+	      __FILE__, __LINE__, res->ai_addrlen, sizeof(res_addr));
+
+    cpysock(res->ai_addr, &res_addr);
 
     return 1;
+}
+void 
+cpysock(struct sockaddr * source, struct sockaddr_storage * dest)
+{
+    bzero(dest, sizeof(struct sockaddr_storage));
+    bcopy(source, dest, source->sa_len);
+}
+/*
+ * cmpsock_addr(sockaddr, sockaddr)
+ *
+ * compare if two sockaddr are talking about the same host
+ */
+int 
+cmpsock_addr(struct sockaddr * first, struct sockaddr * second)
+{
+
+    if (first == NULL || second == NULL)
+	return 0;
+
+    if ((first->sa_len != second->sa_len) ||
+	(first->sa_family != second->sa_family))
+	return 0;
+
+    if (first->sa_family == PF_INET) {
+	if (bcmp((void *) &((struct sockaddr_in *) first)->sin_addr,
+		 (void *) &((struct sockaddr_in *) second)->sin_addr,
+		 sizeof(struct in_addr)) == 0)
+	    return 1;
+
+	else
+	    return 0;
+    }
+
+    if (first->sa_family == PF_INET6) {
+	if (bcmp((void *) &((struct sockaddr_in6 *) first)->sin6_addr,
+		 (void *) &((struct sockaddr_in6 *) second)->sin6_addr,
+		 sizeof(struct in6_addr)) == 0)
+	    return 1;
+	else
+	    return 0;
+    }
+
+    /* don't know what to compare for this family */
+    return 0;
+}
+/* generate INADDR_ANY info */
+void 
+get_inaddrany_sockaddr(struct sockaddr_storage * sockaddr, int family, int socktype, char *port)
+{
+    struct addrinfo hints, *res;
+
+    bzero((void *) &hints, sizeof(struct addrinfo));
+    hints.ai_family = family;
+    hints.ai_socktype = socktype;
+    hints.ai_flags = AI_PASSIVE;
+    if (getaddrinfo(NULL, port, &hints, &res) != 0)
+	fatal("could not get inaddr address");
+    else {
+	cpysock((struct sockaddr *) res->ai_addr, sockaddr);
+	freeaddrinfo(res);
+    }
+}
+/* fill a source->sockaddr with a sockaddr for use in address compares */
+void 
+get_source_sockaddr(struct source * source)
+{
+    if (!getip(source->addr))
+	fatal("could not get address information for %s",
+	      source->addr);
+
+    cpysock((struct sockaddr *) & res_addr, &source->sockaddr);
+}
+/* fill mux->sockaddr with a udp listen sockaddr */
+void 
+get_mux_sockaddr(struct mux * mux, int socktype)
+{
+    if (getaddr(mux->addr, mux->port, socktype, AI_PASSIVE) == 0)
+	fatal("could not get address information for %s %s",
+	      mux->addr, mux->port);
+
+    cpysock((struct sockaddr *) & res_addr, &mux->sockaddr);
 }

@@ -1,4 +1,4 @@
-/* $Id: symonnet.h,v 1.4 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: symonnet.h,v 1.5 2002/11/29 10:45:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -43,4 +43,4 @@ void prepare_packet(struct mux *);
 void stream_in_packet(struct stream *, struct mux *);
 void finish_packet(struct mux *);
 __END_DECLS
-#endif /* _SYMON_SYMONNET_H */
+#endif				/* _SYMON_SYMONNET_H */

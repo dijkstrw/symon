@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.15 2002/10/18 12:30:48 dijkstra Exp $ */
+/* $Id: symux.h,v 1.16 2002/11/29 10:45:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -37,7 +37,7 @@
 
 #define SYMUX_PID_FILE "/var/run/symux.pid"
 
-/* Amount of connections allowed in listen backlog 
+/* Amount of connections allowed in listen backlog
  * - note that more than 128 makes no sense in OpenBSD
  */
 #define SYMUX_TCPBACKLOG 5
@@ -45,4 +45,4 @@
 /* Number of retries allowed in recvfrom */
 #define SYMUX_MAXREADTRIES 5
 
-#endif /*_SYMUX_SYMUX_H*/
+#endif				/* _SYMUX_SYMUX_H */

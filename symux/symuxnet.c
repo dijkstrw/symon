@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.11 2002/11/08 15:37:24 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.12 2002/11/29 10:45:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -32,10 +32,10 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -47,59 +47,95 @@
 #include "xmalloc.h"
 #include "share.h"
 
-/* Obtain a udp socket for incoming symon traffic */
+__BEGIN_DECLS
+int check_crc_packet(struct symonpacket *);
+__END_DECLS
+
+/* Obtain sockets for incoming symon traffic */
 int 
-getsymonsocket(struct mux *mux) 
+get_symon_sockets(struct mux * mux)
 {
-    struct sockaddr_in sockaddr;
-    int sock;
-    
-    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
-	fatal("could not obtain socket: %.200s", strerror(errno));
+    struct source *source;
+    struct sockaddr_storage sockaddr;
+    int family, nsocks;
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+    nsocks = 0;
 
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(mux->port);
-    sockaddr.sin_addr.s_addr = htonl(mux->ip);
-    bzero(&sockaddr.sin_zero, sizeof(sockaddr.sin_zero));
+    /* generate the udp listen socket specified in the mux statement */
+    get_mux_sockaddr(mux, SOCK_DGRAM);
 
-    if (bind(sock, (struct sockaddr *) &sockaddr, 
-	     sizeof(struct sockaddr)) == -1)
-	fatal("could not bind socket: %.200s", strerror(errno));
+    /* iterate over our sources to determine what types of sockets we need */
+    SLIST_FOREACH(source, &mux->sol, sources) {
+	get_source_sockaddr(source);
 
-    mux->symonsocket = sock;
+	family = source->sockaddr.ss_family;
+	/* do we have a socket for this type of family */
+	if (mux->symonsocket[family] <= 0) {
+	    if ((mux->symonsocket[family] = socket(family, SOCK_DGRAM, 0)) != -1) {
+		/*
+		 * does the mux statement specify a specific destination
+		 * address
+		 */
+		if (mux->sockaddr.ss_family == family) {
+		    cpysock((struct sockaddr *) & mux->sockaddr, &sockaddr);
+		}
+		else {
+		    get_inaddrany_sockaddr(&sockaddr, family, SOCK_DGRAM, mux->port);
+		}
 
-    info("listening for incoming symon traffic on udp:%s:%d", 
-	 mux->name, mux->port);
+		if (bind(mux->symonsocket[family], (struct sockaddr *) & sockaddr,
+			 sockaddr.ss_len) == -1)
+		    close(mux->symonsocket[family]);
+		else {
+		    if (getnameinfo((struct sockaddr *) & sockaddr, sockaddr.ss_len,
+				    hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
+				    NI_NUMERICHOST | NI_NUMERICSERV)) {
+			info("getnameinfo error - cannot determine numeric hostname and service");
+			info("listening for incoming symon traffic for family %d", family);
+		    }
+		    else
+			info("listening for incoming symon traffic on udp %s %s", hbuf, sbuf);
 
-    return sock;
+		    nsocks++;
+		}
+	    }
+	}
+    }
+    return nsocks;
 }
 /* Obtain a listen socket for new clients */
-int
-getclientsocket(struct mux *mux)
+int 
+get_client_socket(struct mux * mux)
 {
-  struct sockaddr_in sockaddr;
-  int sock;
-  
-  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    struct addrinfo hints, *res;
+    int error, sock;
+
+    if ((sock = socket(mux->sockaddr.ss_family, SOCK_STREAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
-    sockaddr.sin_family = AF_INET;
-    sockaddr.sin_port = htons(mux->port);
-    sockaddr.sin_addr.s_addr = htonl(mux->ip);
-    bzero(&sockaddr.sin_zero, sizeof(sockaddr.sin_zero));
+    bzero((void *) &hints, sizeof(struct addrinfo));
 
-    if (bind(sock, (struct sockaddr *) &sockaddr, 
-	     sizeof(struct sockaddr)) == -1)
+    hints.ai_family = mux->sockaddr.ss_family;
+    hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if ((error = getaddrinfo(mux->addr, mux->port, &hints, &res)) != 0)
+	fatal("could not get address information for %s:%s - %s",
+	      mux->addr, mux->port, gai_strerror(error));
+
+    if (bind(sock, (struct sockaddr *) res->ai_addr, res->ai_addrlen) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
+    freeaddrinfo(res);
+
     if (listen(sock, SYMUX_TCPBACKLOG) == -1)
-      fatal("could not listen to socket: %.200s", strerror(errno));
+	fatal("could not listen to socket: %.200s", strerror(errno));
 
     fcntl(sock, O_NONBLOCK);
     mux->clientsocket = sock;
 
-    info("listening for incoming connections on tcp:%s:%d", 
-	 mux->name, mux->port);
+    info("listening for incoming connections on tcp %s %s",
+	 mux->addr, mux->port);
 
     return sock;
 }
@@ -108,86 +144,97 @@ getclientsocket(struct mux *mux)
  * Returns the <source> and <packet>
  * Silently forks off clienthandlers
  */
-void
-waitfortraffic(struct mux *mux, struct sourcelist *sourcelist, 
-	       struct source **source, struct symonpacket *packet) 
+void 
+wait_for_traffic(struct mux * mux, struct source ** source,
+		 struct symonpacket * packet)
 {
     fd_set readset;
+    int i;
     int socksactive;
     int maxsock;
 
-    maxsock = ((mux->clientsocket > mux->symonsocket) ?
-	       mux->clientsocket :
-	       mux->symonsocket);
-    maxsock++;
-
-    for (;;) { /* FOREVER - until a valid symon packet is received */
+    for (;;) {			/* FOREVER - until a valid symon packet is
+				 * received */
 	FD_ZERO(&readset);
 	FD_SET(mux->clientsocket, &readset);
-	FD_SET(mux->symonsocket, &readset);
-	
+
+	maxsock = mux->clientsocket;
+
+	for (i = 0; i < AF_MAX; i++) {
+	    if (mux->symonsocket[i] > 0) {
+		FD_SET(mux->symonsocket[i], &readset);
+		maxsock = ((maxsock < mux->symonsocket[i]) ? mux->symonsocket[i] :
+			   maxsock);
+	    }
+	}
+
+	maxsock++;
 	socksactive = select(maxsock, &readset, NULL, NULL, NULL);
-	
+
 	if (socksactive != -1) {
 	    if (FD_ISSET(mux->clientsocket, &readset)) {
 		spawn_client(mux->clientsocket);
 	    }
 
-	    if (FD_ISSET(mux->symonsocket, &readset)) {
-		if (recvsymonpacket(mux, sourcelist, source, packet))
-		    return;
-	    }
-	} else {
+	    for (i = 0; i < AF_MAX; i++)
+		if (FD_ISSET(mux->symonsocket[i], &readset)) {
+		    if (recv_symon_packet(mux, i, source, packet))
+			return;
+		}
+	}
+	else {
 	    if (errno == EINTR)
-		return;  /* signal received while waiting, bail out */
+		return;		/* signal received while waiting, bail out */
 	}
     }
 }
 /* Receive a symon packet for mux. Checks if the source is allowed and returns the source found.
- * return 0 if no valid packet found 
+ * return 0 if no valid packet found
  */
-int
-recvsymonpacket(struct mux *mux, struct sourcelist *sourcelist, 
-	      struct source **source, struct symonpacket *packet) 
-
+int 
+recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
+		  struct symonpacket * packet)
 {
-    struct sockaddr_in sind;
-    u_int32_t sourceaddr;
-    int size;
-    unsigned int received;
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+    struct sockaddr_storage sind;
     socklen_t sl;
-    int tries;
+    int size, tries;
+    unsigned int received;
     u_int32_t crc;
 
     received = 0;
     tries = 0;
+    bzero((void *) hbuf, sizeof(hbuf));
+    bzero((void *) sbuf, sizeof(sbuf));
+
     do {
 	sl = sizeof(sind);
 
-	size = recvfrom(mux->symonsocket, (void *)packet->data + received, 
-			sizeof(struct symonpacket) - received, 
-			0, (struct sockaddr *)&sind, &sl);
+	size = recvfrom(mux->symonsocket[socknr], (void *) packet->data + received,
+			sizeof(struct symonpacket) - received,
+			0, (struct sockaddr *) & sind, &sl);
 	if (size > 0)
-	  received += size;
+	    received += size;
 
 	tries++;
-    } while ((size == -1) && 
-	     (errno == EAGAIN || errno == EINTR) && 
+    } while ((size == -1) &&
+	     (errno == EAGAIN || errno == EINTR) &&
 	     (tries < SYMUX_MAXREADTRIES) &&
 	     (received < sizeof(packet->data)));
 
-    if ((size == -1) && 
-	errno) 
-      warning("recvfrom failed: %.200s", strerror(errno));
+    if ((size == -1) &&
+	errno)
+	warning("recvfrom failed: %.200s", strerror(errno));
 
-    sourceaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
-    *source = find_source_ip(sourcelist, sourceaddr);
-	    
+    *source = find_source_sockaddr(&mux->sol, (struct sockaddr *) & sind);
+
     if (*source == NULL) {
-	debug("ignored data from %u.%u.%u.%u",
-	      IPAS4BYTES(sourceaddr));
+	getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
+		    sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+	debug("ignored data from %s:%s", hbuf, sbuf);
 	return 0;
-    } else {
+    }
+    else {
 	/* get header stream */
 	mux->offset = getheader(packet->data, &packet->header);
 	/* check crc */
@@ -195,39 +242,52 @@ recvsymonpacket(struct mux *mux, struct sourcelist *sourcelist,
 	packet->header.crc = 0;
 	setheader(packet->data, &packet->header);
 	crc ^= crc32(packet->data, received);
-	if ( crc != 0 ) {
-	    warning("ignored packet with bad crc from %u.%u.%u.%u",
-		    IPAS4BYTES(sourceaddr));
+	if (crc != 0) {
+	    getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
+			sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+	    warning("ignored packet with bad crc from %s:%s",
+		    hbuf, sbuf);
 	    return 0;
 	}
 	/* check packet version */
 	if (packet->header.symon_version != SYMON_PACKET_VER) {
-	    warning("ignored packet with wrong version %d", 
-		    packet->header.symon_version);
+	    getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
+			sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+	    warning("ignored packet with wrong version %d from %s:%s",
+		    packet->header.symon_version, hbuf, sbuf);
 	    return 0;
-	} else {
-	    if (flag_debug) 
-		debug("good data received from %u.%u.%u.%u",
-		      IPAS4BYTES(sourceaddr));
-	    return 1;  /* good packet received */
-	} 
+	}
+	else {
+	    if (flag_debug) {
+		getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
+		       sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
+		debug("good data received from %s:%s", hbuf, sbuf);
+	    }
+	    return 1;		/* good packet received */
+	}
     }
 }
 int 
-acceptconnection(int sock, char *peername, int peernamesize)
+accept_connection(int sock, char *peername, int peernamesize)
 {
-    struct sockaddr_in sind;
+    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+    struct sockaddr_storage sind;
     socklen_t len;
-    u_int32_t clientaddr;
     int clientsock;
 
-    if ((clientsock = accept(sock, (struct sockaddr *)&sind, &len)) < 0)
+    bzero((void *) hbuf, sizeof(hbuf));
+    bzero((void *) sbuf, sizeof(sbuf));
+
+    if ((clientsock = accept(sock, (struct sockaddr *) & sind, &len)) < 0)
 	fatal("failed to accept an incoming connection. (.200%s)",
 	      strerror(errno));
 
-    clientaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
-    snprintf(peername, peernamesize, "%u.%u.%u.%u",
-	     IPAS4BYTES(clientaddr));
+
+    if (getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
+		    sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV))
+	snprintf(peername, peernamesize, "<unknown>");
+    else
+	snprintf(peername, peernamesize, "%s:%s", hbuf, sbuf);
 
     return clientsock;
-}   
+}

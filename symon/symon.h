@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.21 2002/10/18 12:29:48 dijkstra Exp $ */
+/* $Id: symon.h,v 1.22 2002/11/29 10:45:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,17 +40,16 @@
 #include "conf.h"
 
 #define SYMON_PID_FILE    "/var/run/symon.pid"
-#define SYMON_INTERVAL 5                           /* measurement interval */
-#define SYMON_WARN_SENDERR 50                      /* warn every x errors */
-#define SYMON_MAX_DOBJECTS  100                    /* max dynamic alloction
-                                                     = 100 objects */
-#define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)      /* max allocation unit 
-						     = _POSIX2_LINE_MAX */
+#define SYMON_INTERVAL 5	/* measurement interval */
+#define SYMON_WARN_SENDERR 50	/* warn every x errors */
+#define SYMON_MAX_DOBJECTS  100	/* max dynamic alloction = 100 objects */
+#define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)	/* max allocation unit =
+						 * _POSIX2_LINE_MAX */
 struct funcmap {
     int type;
-    void (*init)(char *);
-    void (*gets)();
-    int (*get)(char*, int, char *);
+    void (*init) (char *);
+    void (*gets) ();
+    int (*get) (char *, int, char *);
 };
 extern struct funcmap streamfunc[];
 
@@ -58,24 +57,28 @@ extern struct funcmap streamfunc[];
 __BEGIN_DECLS
 /* cpu.c */
 extern void init_cpu(char *);
-extern int  get_cpu(char *, int, char *);
+extern int get_cpu(char *, int, char *);
 
 /* mem.c */
 extern void init_mem(char *);
-extern int  get_mem(char *, int, char *);
+extern int get_mem(char *, int, char *);
 
 /* if.c */
 extern void init_if(char *);
-extern int  get_if(char *, int, char *);
+extern int get_if(char *, int, char *);
 
 /* io.c */
 extern void init_io(char *);
 extern void gets_io();
-extern int  get_io(char *, int, char *);
+extern int get_io(char *, int, char *);
 
 /* pf.c */
 extern void init_pf(char *);
-extern int  get_pf(char *, int, char *);
+extern int get_pf(char *, int, char *);
+
+/* debug.c */
+extern void init_debug(char *);
+extern int get_debug(char *, int, char *);
 __END_DECLS
 
-#endif /*_SYMON_SYMON_H*/
+#endif				/* _SYMON_SYMON_H */

@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.26 2002/10/18 12:29:48 dijkstra Exp $ */
+/* $Id: symon.c,v 1.27 2002/11/29 10:45:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -60,42 +60,47 @@ int flag_hup = 0;
 
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
-    {MT_IO,  init_io,  gets_io, get_io},  /* gets_io obtains entire io state, get_io = just a copy */
-    {MT_CPU, init_cpu, NULL,    get_cpu},
-    {MT_MEM, init_mem, NULL,    get_mem},
-    {MT_IF,  init_if,  NULL,    get_if},
-    {MT_PF,  init_pf,  NULL,    get_pf},
+    {MT_IO, init_io, gets_io, get_io},	/* gets_io obtains entire io state,
+					 * get_io = just a copy */
+    {MT_CPU, init_cpu, NULL, get_cpu},
+    {MT_MEM, init_mem, NULL, get_mem},
+    {MT_IF, init_if, NULL, get_if},
+    {MT_PF, init_pf, NULL, get_pf},
+    {MT_DEBUG, init_debug, NULL, get_debug},
     {MT_EOT, NULL, NULL}
 };
 
 /* alarmhandler that gets called every SYMON_INTERVAL */
 void 
-alarmhandler(int s) {
+alarmhandler(int s)
+{
     /* EMPTY */
 }
-void
-exithandler(int s) {
+void 
+exithandler(int s)
+{
     info("received signal %d - quitting", s);
     exit(1);
 }
-void
-huphandler(int s) {
+void 
+huphandler(int s)
+{
     info("hup received");
     flag_hup = 1;
 }
-/* 
- * Symon is a system measurement utility. 
+/*
+ * Symon is a system measurement utility.
  *
  * The main goals symon hopes to accomplish is:
- * - to take fine grained measurements of system parameters 
- * - with minimal performance impact 
+ * - to take fine grained measurements of system parameters
+ * - with minimal performance impact
  * - in a secure way.
- * 
+ *
  * Measuring system parameters (e.g. interfaces) sometimes means traversing
  * lists in kernel memory. Because of this the measurement of data has been
  * decoupled from the processing and storage of data. Storing the measured
  * information that symon provides is done by a second program, called symux.
- * 
+ *
  * Symon can keep track of cpu, memory, disk and network interface
  * interactions. Symon was built specifically for OpenBSD.
  */
@@ -131,7 +136,7 @@ main(int argc, char *argv[])
 		/* cfg path needs to be absolute, we will be a daemon soon */
 		if ((cfgpath = getwd(NULL)) == NULL)
 		    fatal("could not get working directory");
-		
+
 		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
 		cfgfile = xmalloc(maxstringlen);
 		strncpy(cfgfile, cfgpath, maxstringlen);
@@ -142,7 +147,8 @@ main(int argc, char *argv[])
 		cfgfile[maxstringlen] = '\0';
 
 		free(cfgpath);
-	    } else 
+	    }
+	    else
 		cfgfile = xstrdup(optarg);
 
 	    break;
@@ -162,9 +168,9 @@ main(int argc, char *argv[])
     setgid(getgid());
 
     if (flag_debug != 1) {
-	if (daemon(0,0) != 0)
+	if (daemon(0, 0) != 0)
 	    fatal("daemonize failed");
-	
+
 	flag_daemon = 1;
 
 	/* record pid */
@@ -173,7 +179,7 @@ main(int argc, char *argv[])
 	    fprintf(f, "%u\n", (u_int) getpid());
 	    fclose(f);
 	}
-    } 
+    }
 
     info("symon version %s", SYMON_VERSION);
 
@@ -183,9 +189,9 @@ main(int argc, char *argv[])
     /* setup signal handlers */
     signal(SIGALRM, alarmhandler);
     signal(SIGHUP, huphandler);
-    signal(SIGINT, exithandler); 
-    signal(SIGQUIT, exithandler); 
-    signal(SIGTERM, exithandler); 
+    signal(SIGINT, exithandler);
+    signal(SIGQUIT, exithandler);
+    signal(SIGTERM, exithandler);
 
     /* prepare crc32 */
     init_crc32();
@@ -194,22 +200,22 @@ main(int argc, char *argv[])
     SLIST_FOREACH(mux, &mul, muxes) {
 	connect2mux(mux);
 	SLIST_FOREACH(stream, &mux->sl, streams) {
-	    (streamfunc[stream->type].init)(stream->args);
+	    (streamfunc[stream->type].init) (stream->args);
 	}
     }
 
     /* setup alarm */
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
-    alarminterval.it_interval.tv_sec=
-	alarminterval.it_value.tv_sec=SYMON_INTERVAL;
+    alarminterval.it_interval.tv_sec =
+	alarminterval.it_value.tv_sec = SYMON_INTERVAL;
 
     if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
 	fatal("alarm setup failed -- %s", strerror(errno));
     }
 
-    for (;;) {  /* FOREVER */
-	sleep(SYMON_INTERVAL*2);    /* alarm will always interrupt sleep */
+    for (;;) {			/* FOREVER */
+	sleep(SYMON_INTERVAL * 2);	/* alarm will always interrupt sleep */
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
@@ -219,7 +225,8 @@ main(int argc, char *argv[])
 	    if (!read_config_file(&newmul, cfgfile)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
-	    } else {
+	    }
+	    else {
 		free_muxlist(&mul);
 		mul = newmul;
 		info("read configuration file '%.100s' succesfully", cfgfile);
@@ -228,25 +235,26 @@ main(int argc, char *argv[])
 		SLIST_FOREACH(mux, &mul, muxes) {
 		    connect2mux(mux);
 		    SLIST_FOREACH(stream, &mux->sl, streams) {
-			(streamfunc[stream->type].init)(stream->args);
+			(streamfunc[stream->type].init) (stream->args);
 		    }
 		}
 	    }
-	} else {
-	    
+	}
+	else {
+
 	    /* populate for modules that get all their measurements in one go */
-	    for (i=0; i<MT_EOT; i++)
+	    for (i = 0; i < MT_EOT; i++)
 		if (streamfunc[i].gets != NULL)
-		    (streamfunc[i].gets)();
-	    
+		    (streamfunc[i].gets) ();
+
 	    SLIST_FOREACH(mux, &mul, muxes) {
 		prepare_packet(mux);
-		
+
 		SLIST_FOREACH(stream, &mux->sl, streams)
 		    stream_in_packet(stream, mux);
-		
+
 		finish_packet(mux);
-		
+
 		send_packet(mux);
 	    }
 	}

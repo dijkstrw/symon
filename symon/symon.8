@@ -55,7 +55,7 @@ should live on a different system and collect data from several
 instances in a LAN. 
 .Lp
 .Nm
-priviledge needs depend on the probes used. The cpu, mem, disk and interface probes will work even when symon runs as 
+priviledge needs depend on the probes used. The cpu, mem, disk, debug and interface probes will work even when symon runs as 
 .Ar "nobody" . 
 For pf, read and write access to 
 .Pa /dev/pf
@@ -91,22 +91,23 @@ Multiple monitor statements to different muxes are allowed. Whitespace, newlines
 .nf
 monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf"
-host         = ip4addr | hostname
-port         = [ "port" | ":" | "," ] portnumber
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug"
+host         = ip4addr | ip6addr | hostname
+port         = [ "port" | "," ] portnumber
 argument     = number | interfacename | diskname
 .fi
 .Sh EXAMPLE
 Here is an example 
 .Ar symon.conf
-that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1]
-and streams that information to localhost on port 2100.
+that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks
+wd[0-3]/cd[0-1], debug variables debug0 to debug19 and streams that information
+to localhost on port 2100.
 .Pp
 .nf
 monitor { cpu(0),  mem, pf, if(xl0), if(de0),
           if(lo0), if(wi0), io(wd0), io(wd1), 
           io(wd2), io(wd3), io(cd0), io(cd1), 
-          io(ccd0)} stream to 127.0.0.1 2100
+          io(ccd0), debug } stream to 127.0.0.1 2100
 .fi
 .Sh SIGNALS
 .Bl -tag -width Ds
