@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.10 2002/09/14 15:54:56 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.11 2002/11/08 15:37:24 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -214,7 +214,7 @@ recvsymonpacket(struct mux *mux, struct sourcelist *sourcelist,
     }
 }
 int 
-acceptconnection(int sock)
+acceptconnection(int sock, char *peername, int peernamesize)
 {
     struct sockaddr_in sind;
     socklen_t len;
@@ -222,12 +222,12 @@ acceptconnection(int sock)
     int clientsock;
 
     if ((clientsock = accept(sock, (struct sockaddr *)&sind, &len)) < 0)
-	fatal("Failed to accept an incoming connection. (.200%s)",
+	fatal("failed to accept an incoming connection. (.200%s)",
 	      strerror(errno));
 
     clientaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
-    info("Accepted incoming client connection from %u.%u.%u.%u",
-	 IPAS4BYTES(clientaddr));
+    snprintf(peername, peernamesize, "%u.%u.%u.%u",
+	     IPAS4BYTES(clientaddr));
 
     return clientsock;
 }   

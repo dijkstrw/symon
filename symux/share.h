@@ -1,4 +1,4 @@
-/* $Id: share.h,v 1.4 2002/09/14 15:54:55 dijkstra Exp $ */
+/* $Id: share.h,v 1.5 2002/11/08 15:37:24 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -61,7 +61,7 @@ long  shared_getmaxlen();
 long *shared_getmem();
 void  initshare();
 void  shared_setlen(long);
-void  spawn_client(int);
+pid_t spawn_client(int);
 __END_DECLS
 
 #endif /*_SYMUX_SHARE_H*/

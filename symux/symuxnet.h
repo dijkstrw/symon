@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.6 2002/09/14 15:54:56 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.7 2002/11/08 15:37:24 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -37,7 +37,7 @@
 
 /* prototypes */
 __BEGIN_DECLS
-int  acceptconnection(int);
+int  acceptconnection(int, char*, int);
 int  getsymonsocket(struct mux *);
 int  getclientsocket(struct mux *);
 void waitfortraffic(struct mux *, struct sourcelist *, 

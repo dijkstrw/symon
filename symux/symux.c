@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.24 2002/10/18 12:30:48 dijkstra Exp $ */
+/* $Id: symux.c,v 1.25 2002/11/08 15:37:24 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -7,7 +7,7 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- 
+ *
  *    - Redistributions of source code must retain the above copyright
  *      notice, this list of conditions and the following disclaimer.
  *    - Redistributions in binary form must reproduce the above
@@ -306,7 +306,7 @@ main(int argc, char *argv[])
 	    snprintf(stringptr, maxstringlen, "\n");
 	    stringptr += strlen(stringptr);
 	    shared_setlen((stringptr - stringbuf));
-	    debug("Churnbuffer used: %d", (stringptr - stringbuf));
+	    debug("churnbuffer used: %d", (stringptr - stringbuf));
 	    master_permitread();
 	} /* flag_hup == 0 */
     } /* forever */
