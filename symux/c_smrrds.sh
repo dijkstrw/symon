@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.17 2002/12/29 16:20:31 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.18 2003/01/17 16:21:35 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -38,7 +38,35 @@
 # --- user configuration starts here
 INTERVAL=`grep SYMON_INTERVAL ../symon/symon.h 2>/dev/null | cut -f3 -d\ `
 INTERVAL=${INTERVAL:-5}
-# RRA setup:
+RRD_ARGS="--step=$INTERVAL --start=0"
+# --- user configuration ends here
+
+# get arguments
+for i
+do
+case $i in
+child)
+    child=1
+    ;;
+oneday)	
+    config=$i
+# today only RRA setup:
+# - 1   day  of  5 second  samples = 17280 x 5 second samples
+    RRA_SETUP=" RRA:AVERAGE:0.5:1:17280 
+	    RRA:MAX:0.5:1:17280 
+	    RRA:MIN:0.5:1:17280"
+    if [ X"$child" == "X" ]; then 
+	echo "RRDs will only contain a single day of data"
+    fi
+    ;;
+*)
+    args="$args $i"
+    ;;
+esac
+done
+
+if [ X"$RRA_SETUP" == "X" ]; then
+# default RRA setup:
 # - 2   days of  5 second  samples = 34560 x 5 second samples
 # - 14  days of 30 minutes samples = 672 x 360 x 5 second samples 
 # - 50  days of  2 hour    samples = 600 x 1440 x 5 second samples
@@ -55,8 +83,7 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 	    RRA:MIN:0.5:360:672 
 	    RRA:MIN:0.5:1440:600 
 	    RRA:MIN:0.5:17280:600"
-RRD_ARGS="--step=$INTERVAL --start=0"
-# --- user configuration ends here
+fi
 
 # All interfaces and disks
 INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|qe|qec|sf|sis|sk|skc|sl|sm|siop|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
@@ -84,7 +111,7 @@ DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
 VIRTUALINTERFACES=`addsuffix $VIRTUALINTERFACES \\.\\*`
 
-for i
+for i in $args
 do
 # add if_*.rrd if it is an interface
 if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
@@ -103,20 +130,20 @@ case $i in
 
 all)
     echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf}"
-    sh $this cpu0 mem
-    sh $this interfaces
-    sh $this disks
-    sh $this pf
+    sh $this child $config cpu0 mem
+    sh $this child $config interfaces
+    sh $this child $config disks
+    sh $this child $config pf
     ;;
 
 if|interfaces)
     # obtain all network cards
-    sh $this `ifconfig -a| egrep -e "^($INTERFACES):" | cut -f1 -d\:  | sort -u`
+    sh $this child $config `ifconfig -a| egrep -e "^($INTERFACES):" | cut -f1 -d\:  | sort -u`
     ;;
 
 io|disks)
     # obtain all disks
-    sh $this `df | grep dev | sed 's/^\/dev\/\(.*\)[a-z] .*$/\1/' | sort -u`
+    sh $this child $config `df | grep dev | sed 's/^\/dev\/\(.*\)[a-z] .*$/\1/' | sort -u`
     ;;
 
 cpu[0-9].rrd)
@@ -221,8 +248,8 @@ io_*.rrd)
 *)
     # Default match
     cat <<EOF
-Usage: $0 all
-       $0 cpu0|mem|pf|debug|<if>|<io>
+Usage: $0 [oneday] all
+       $0 [oneday] cpu0|mem|pf|debug|proc|<if>|<io>
 
 Where:
 if=	`echo $INTERFACES|
