@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.2 2002/03/31 14:27:48 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.3 2002/04/01 14:44:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -64,12 +64,12 @@ read_hub(struct lex *l)
     struct mux *m;
 
     if (! SLIST_EMPTY(&muxlist))
-	fatal("%s:%d: Only one hub statement allowed.\n", 
+	fatal("%s:%d: only one hub statement allowed", 
 	      l->filename, l->cline);
     
     lex_nexttoken(l);
     if (!lookup(l->token)) 
-	fatal("%s:%d: Could not resolve '%s'.\n",
+	fatal("%s:%d: could not resolve '%s'",
 	      l->filename, l->cline, l->token );
 
     m = add_mux(&muxlist, lookup_address);
@@ -96,7 +96,7 @@ void read_stream(struct lex *l)
 
     /* Need a hub statement before we can add streams */
     if (SLIST_EMPTY(&muxlist))
-	fatal("%s:%d: Stream seen before hub was specified.\n",
+	fatal("%s:%d: stream seen before hub was specified",
 	      l->filename, l->cline);
     mux = SLIST_FIRST(&muxlist);
 
@@ -124,7 +124,7 @@ void read_stream(struct lex *l)
 	    }
 
 	    if ((stream = add_mux_stream(mux, st, sa)) == NULL) 
-		fatal("%s:%d: stream %s(%s) redefined.\n",
+		fatal("%s:%d: stream %s(%s) redefined",
 		      l->filename, l->cline, sn, sa);
 	    
 	    break; /* LXT_CPU/IF/IO/MEM */
@@ -163,11 +163,11 @@ read_config_file(const char *filename)
 
     /* sanity checks */
     if (SLIST_EMPTY(&muxlist))
-	fatal("%s: No hub section seen\n",
+	fatal("%s: no hub section seen",
 	      l->filename);
     else
 	if (SLIST_EMPTY(&(SLIST_FIRST(&muxlist))->sl))
-	    fatal("%s: No stream section seen\n",
+	    fatal("%s: no stream section seen",
 		  l->filename);
 
     close_lex(l);
