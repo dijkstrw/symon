@@ -1,4 +1,6 @@
-# $Id: Makefile.inc,v 1.4 2002/09/09 22:00:26 dijkstra Exp $
+# $Id: Makefile.inc,v 1.5 2002/09/10 18:32:44 dijkstra Exp $
+
+V=2.4
 
 AR=	ar
 CC=	cc
