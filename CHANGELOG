@@ -1,3 +1,9 @@
+24/01/2002 - 2.58
+
+   Gustavo Chamone helped find a rare bug in symon/sm_io.c. strsep() would
+   clobber stream information and make this first stream in the configuration file
+   disappear.
+
 10/01/2002 - 2.57
 
    Christian Weisgerber reported that netinet/ip_ipsp.h already defines htonq - fixed.
@@ -241,4 +247,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.15 2003/01/18 09:55:31 dijkstra Exp $
+$Id: CHANGELOG,v 1.16 2003/01/24 13:33:49 dijkstra Exp $

@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.10 2002/12/15 14:22:36 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.11 2003/01/24 13:33:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -122,8 +122,17 @@ gets_io()
 
     p = io_dkstr;
     io_dks = 0;
-    while ((io_dknames[io_dks] = strsep(&p, ",")) != NULL)
-	io_dks++;
+    
+    io_dknames[io_dks] = p;
+
+    while ((*p != '\0') && ((p - io_dkstr) < io_maxstr)) {
+	if ((*p == ',') && (*p+1 != '\0')) {
+	    *p = '\0';
+	    io_dks++; p++;
+	    io_dknames[io_dks] = p;
+	}
+	p++;
+    }
 }
 /* Prepare io module for first use */
 void 
@@ -138,7 +147,7 @@ get_io(char *symon_buf, int maxlen, char *disk)
     int i;
 
     /* look for disk */
-    for (i = 0; i < io_dks; i++) {
+    for (i = 0; i <= io_dks; i++) {
 	if (strncmp(io_dknames[i], disk,
 		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
 	    return snpack(symon_buf, maxlen, disk, MT_IO,
