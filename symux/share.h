@@ -1,4 +1,4 @@
-/* $Id: share.h,v 1.5 2002/11/08 15:37:24 dijkstra Exp $ */
+/* $Id: share.h,v 1.6 2002/11/29 10:49:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,7 +31,7 @@
  */
 
 /* TODO:
- * Dynamically allocate buffer size 
+ * Dynamically allocate buffer size
  * Check wether one buffer suffices, do some performance tests
  */
 
@@ -41,27 +41,28 @@
 #include "data.h"
 
 /* Share contains all routines needed for the ipc between symuxes */
-#define SEM_WAIT     0              /* wait semaphore */
-#define SEM_READ     1              /* have read semaphore */
+#define SEM_WAIT     0		/* wait semaphore */
+#define SEM_READ     1		/* have read semaphore */
 #define SEM_TOTAL    2
 
 struct sharedregion {
     long seqnr;
-    long reglen;                   /* size of buffer */
-    long ctlen;                    /* amount of content in buffer, assert(< size) */
+    long reglen;		/* size of buffer */
+    long ctlen;			/* amount of content in buffer, assert(<
+				 * size) */
     long data;
 };
 
 /* prototypes */
 __BEGIN_DECLS
-void  master_forbidread();
-void  master_permitread();
-long  shared_getlen();
-long  shared_getmaxlen();
+void master_forbidread();
+void master_permitread();
+long shared_getlen();
+long shared_getmaxlen();
 long *shared_getmem();
-void  initshare();
-void  shared_setlen(long);
+void initshare();
+void shared_setlen(long);
 pid_t spawn_client(int);
 __END_DECLS
 
-#endif /*_SYMUX_SHARE_H*/
+#endif				/* _SYMUX_SHARE_H */

@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.10 2002/11/08 15:36:51 dijkstra Exp $ */
+/* $Id: share.c,v 1.11 2002/11/29 10:49:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,7 +31,7 @@
  */
 
 /* TODO:
- * Dynamically allocate buffer size 
+ * Dynamically allocate buffer size
  * Check wether one buffer suffices, do some performance tests
  */
 
@@ -43,6 +43,7 @@
 #include <sys/wait.h>
 
 #include <errno.h>
+#include <netdb.h>
 #include <signal.h>
 #include <string.h>
 #include <stdlib.h>
@@ -55,7 +56,7 @@
 #include "share.h"
 #include "net.h"
 
-/* Shared operation: 
+/* Shared operation:
  *
  * The moment the master symux receives a new packet:
  *
@@ -84,8 +85,8 @@
  */
 
 __BEGIN_DECLS
-int  recvfd(int);
-int  sendfd(int, int);
+int recvfd(int);
+int sendfd(int, int);
 void check_master();
 void check_sem();
 void client_doneread();
@@ -97,23 +98,25 @@ void master_resetsem();
 void reap_clients();
 __END_DECLS
 
-#define SEM_WAIT     0              /* wait semaphore */
-#define SEM_READ     1              /* have read semaphore */
+#define SEM_WAIT     0		/* wait semaphore */
+#define SEM_READ     1		/* have read semaphore */
 #define SEM_TOTAL    2
 
-int   realclients;               /* number of clients active */
-int   newclients;
-int   master;                    /* is current process master or child */
-int   clientsock;                /* connected client */
+int realclients;		/* number of clients active */
+int newclients;
+int master;			/* is current process master or child */
+int clientsock;			/* connected client */
 pid_t clientpid;
 
-enum  ipcstat { SIPC_FREE, SIPC_KEYED, SIPC_ATTACHED };
+enum ipcstat {
+    SIPC_FREE, SIPC_KEYED, SIPC_ATTACHED
+};
 key_t shmid;
 struct sharedregion *shm;
 enum ipcstat shmstat;
 key_t semid;
 enum ipcstat semstat;
-int   seqnr;
+int seqnr;
 /* Get start of data in shared region */
 long *
 shared_getmem()
@@ -121,16 +124,16 @@ shared_getmem()
     return &shm->data;
 }
 /* Get max length of data stored in shared region */
-long
+long 
 shared_getmaxlen()
 {
     return shm->reglen - sizeof(struct sharedregion);
 }
 /* Set length of data stored in shared region */
-void
+void 
 shared_setlen(long length)
 {
-    if (length > (shm->reglen - (long)sizeof(struct sharedregion)))
+    if (length > (shm->reglen - (long) sizeof(struct sharedregion)))
 	fatal("%s:%d: internal error:"
 	      "set_length of shared region called with value larger than actual size",
 	      __FILE__, __LINE__);
@@ -138,13 +141,13 @@ shared_setlen(long length)
     shm->ctlen = length;
 }
 /* Get length of data stored in shared region */
-long
+long 
 shared_getlen()
 {
     return shm->ctlen;
 }
 /* Check whether semaphore is available */
-void
+void 
 check_sem()
 {
     if (semstat != SIPC_KEYED)
@@ -153,7 +156,7 @@ check_sem()
 }
 
 /* Check whether process is the master process */
-void
+void 
 check_master()
 {
     if (master == 0)
@@ -178,7 +181,7 @@ master_resetsem()
 	      __FILE__, __LINE__);
 }
 /* Prepare for writing to shm */
-void
+void 
 master_forbidread()
 {
     int clientsread;
@@ -186,7 +189,7 @@ master_forbidread()
 
     check_sem();
     check_master();
-    
+
     /* prepare for a new read */
     semarg.val = 0;
     if ((clientsread = semctl(semid, SEM_READ, GETVAL, semarg)) < 0)
@@ -197,14 +200,14 @@ master_forbidread()
 	reap_clients();
 	debug("realclients = %d; clientsread = %d", realclients, clientsread);
     }
-    
+
     /* add new clients */
     realclients += newclients;
-    newclients = 0;    
+    newclients = 0;
     master_resetsem();
 }
 /* Signal 'permit read' to all clients */
-void
+void 
 master_permitread()
 {
     union semun semarg;
@@ -217,9 +220,8 @@ master_permitread()
 	fatal("%s:%d: internal error: cannot reset semaphores",
 	      __FILE__, __LINE__);
 }
-
 /* Make clients wait until master signals */
-void
+void 
 client_waitread()
 {
     struct sembuf sops;
@@ -227,18 +229,17 @@ client_waitread()
     check_sem();
 
     sops.sem_num = SEM_WAIT;
-    sops.sem_op  = -1;
+    sops.sem_op = -1;
     sops.sem_flg = 0;
 
-    if (semop(semid, &sops, 1) != 0 )
+    if (semop(semid, &sops, 1) != 0)
 	fatal("%s:%d: internal error: client(%d): cannot obtain semaphore (%.200s)",
 	      __FILE__, __LINE__, clientpid, strerror(errno));
 
     seqnr = shm->seqnr;
 }
-
 /* Client signal 'done reading' to master */
-void
+void 
 client_doneread()
 {
     struct sembuf sops;
@@ -252,10 +253,10 @@ client_doneread()
     }
 
     sops.sem_num = SEM_READ;
-    sops.sem_op  = 1;
+    sops.sem_op = 1;
     sops.sem_flg = IPC_NOWAIT;
 
-    if (semop(semid, &sops, 1) != 0 )
+    if (semop(semid, &sops, 1) != 0)
 	fatal("%s:%d: internal error: cannot release semaphore (%.200s)",
 	      __FILE__, __LINE__, strerror(errno));
 
@@ -263,12 +264,12 @@ client_doneread()
     sleep(1);
 }
 /* Client signal handler => always exit */
-void
-client_signalhandler(int s) {
+void 
+client_signalhandler(int s)
+{
     debug("client(%d) received signal %d - quitting", clientpid, s);
     exit(EX_TEMPFAIL);
 }
-
 /* Prepare sharing structures for use */
 void 
 initshare(int bufsize)
@@ -276,7 +277,7 @@ initshare(int bufsize)
     newclients = 0;
     realclients = 0;
     master = 1;
-    
+
     /* need some extra space for housekeeping */
     bufsize += sizeof(struct sharedregion);
 
@@ -287,42 +288,42 @@ initshare(int bufsize)
 
     if ((shmid = shmget(IPC_PRIVATE, bufsize, SHM_R | SHM_W)) < 0)
 	fatal("could not get a shared memory identifier");
-    
+
     shmstat = SIPC_KEYED;
 
-    if ((shm = (struct sharedregion *)shmat(shmid, 0, 0)) == (void *)(-1))
+    if ((shm = (struct sharedregion *) shmat(shmid, 0, 0)) == (void *) (-1))
 	fatal("could not attach shared memory");
 
     shmstat = SIPC_ATTACHED;
     bzero(shm, bufsize);
     shm->reglen = bufsize;
-    
+
     /* allocate semaphores */
     if ((semid = semget(IPC_PRIVATE, SEM_TOTAL, SEM_A | SEM_R)) < 0)
 	fatal("could not get a semaphore");
-    
+
     semstat = SIPC_KEYED;
 
     master_resetsem();
 }
-
 /* Spawn off a new client */
 pid_t
-spawn_client(int sock) 
+spawn_client(int sock)
 {
     pid_t pid;
-    char  peername[SYMUX_MAXIPNAMESIZE];
+    char peername[NI_MAXHOST];
 
     check_master();
 
     bzero(peername, sizeof(peername));
-    clientsock = acceptconnection(sock, (char *)&peername, sizeof(peername));
-    
+    clientsock = accept_connection(sock, (char *) &peername, sizeof(peername));
+
     if ((pid = fork())) {
 	/* server */
 	if (pid == -1) {
 	    info("could not fork client process");
-	} else {
+	}
+	else {
 	    newclients++;
 	    info("forked client(%d) for incoming connection from %.17s",
 		 pid, peername);
@@ -331,17 +332,18 @@ spawn_client(int sock)
 	close(clientsock);
 
 	return pid;
-    } else {
+    }
+    else {
 	/* client */
 	master = 0;
 
 	/* catch signals */
 	signal(SIGHUP, client_signalhandler);
-	signal(SIGINT, client_signalhandler); 
-	signal(SIGQUIT, client_signalhandler); 
+	signal(SIGINT, client_signalhandler);
+	signal(SIGQUIT, client_signalhandler);
 	signal(SIGTERM, client_signalhandler);
-	signal(SIGTERM, client_signalhandler); 
-	signal(SIGPIPE, client_signalhandler); 
+	signal(SIGTERM, client_signalhandler);
+	signal(SIGPIPE, client_signalhandler);
 
 	clientpid = getpid();
 	client_loop();
@@ -350,21 +352,22 @@ spawn_client(int sock)
 	return 0;
     }
 }
-
 /* Reap exit/stopped clients */
-void
+void 
 reap_clients()
 {
     pid_t pid;
-    int   status;
-    
+    int status;
+
     status = 0;
 
     /* Reap all children that died */
-    while (((int)(pid = wait4(-1, &status, WNOHANG, NULL)) > 0) && realclients >= 0) {
+    while (((int) (pid = wait4(-1, &status, WNOHANG, NULL)) > 0) && realclients >= 0) {
 
-      /* wait4 is supposed to return 0 if there is no status to report, but
-	 it also reports -1 on OpenBSD 2.9 */
+	/*
+	 * wait4 is supposed to return 0 if there is no status to report, but
+	 * it also reports -1 on OpenBSD 2.9
+	 */
 
 	if (WIFEXITED(status))
 	    info("client process %d exited", pid, status);
@@ -376,16 +379,15 @@ reap_clients()
 	realclients--;
     }
 }
-
 /* Remove shared memory and semaphores at exit */
 void 
-exitmaster() 
+exitmaster()
 {
     union semun semarg;
 
     if (master == 0)
 	return;
-	
+
     switch (shmstat) {
     case SIPC_ATTACHED:
 	if (shmdt(shm))
@@ -409,7 +411,7 @@ exitmaster()
     switch (semstat) {
     case SIPC_KEYED:
 	semarg.val = 0;
-	if (semctl(semid, 0, IPC_RMID, semarg) != 0) 
+	if (semctl(semid, 0, IPC_RMID, semarg) != 0)
 	    warning("%s:%d: internal error: could not remove semaphore %d",
 		    __FILE__, __LINE__, semid);
 	/* no break */
@@ -428,25 +430,25 @@ client_loop()
     int sent;
     int written;
 
-    for (;;) { /* FOREVER */
-	
+    for (;;) {			/* FOREVER */
+
 	client_waitread();
-	
+
 	total = shared_getlen();
 	sent = 0;
 
 	while (sent < total) {
-	  
-	  if ((written = write(clientsock, (char *)(shared_getmem() + sent), total - sent)) == -1) {
-	    info("client(%d): write error. Client will quit.", clientpid);
-	    exit(1);
-	  }
-	  
-	  sent += written;
-	  
-	  debug("client(%d): written %d bytes of %d total", clientpid, sent, total);
+
+	    if ((written = write(clientsock, (char *) (shared_getmem() + sent), total - sent)) == -1) {
+		info("client(%d): write error. Client will quit.", clientpid);
+		exit(1);
+	    }
+
+	    sent += written;
+
+	    debug("client(%d): written %d bytes of %d total", clientpid, sent, total);
 	}
-	
+
 	client_doneread();
     }
 }
