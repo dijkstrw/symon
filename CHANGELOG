@@ -1,3 +1,12 @@
+22/02/2005 - 2.70
+
+   - Linux/Makefile.inc broken (Marc L. de Bruin)
+
+
+16/02/2005 - 2.69
+
+   - inet6 support works again (Eric from Catastrophe.net)
+
 14/01/2005 - 2.68
 
    - NetBSD/sm_debug.c now has proper sysctl mib values
@@ -376,4 +385,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.39 2005/02/04 09:49:26 dijkstra Exp $
+$Id: CHANGELOG,v 1.40 2005/02/25 12:31:58 dijkstra Exp $

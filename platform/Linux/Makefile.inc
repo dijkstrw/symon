@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.1 2004/09/25 10:21:56 dijkstra Exp $
+# $Id: Makefile.inc,v 1.2 2005/02/25 12:31:58 dijkstra Exp $
 
 LORDER=echo
-TSORT= echo
+TSORT= cat
