@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.8 2002/04/04 20:49:58 dijkstra Exp $ */
+/* $Id: data.c,v 1.9 2002/05/31 14:24:46 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -133,6 +133,18 @@ type2str(const int streamtype)
 
     /* NOT REACHED */
     return 0;
+}
+/* Return the maximum lenght of the ascii representation of type <type> */
+int 
+strlentype(int type) 
+{
+    int i = 0;
+    int sum = 0;
+
+    while (streamform[type].form[i])
+	sum += strlenvar(streamform[type].form[i++]);
+
+    return sum;
 }
 /* Return the maximum lenght of the ascii representation of streamvar <var> */
 int 

@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.7 2002/04/04 20:49:58 dijkstra Exp $ */
+/* $Id: data.h,v 1.8 2002/05/31 14:24:46 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -213,6 +213,7 @@ __BEGIN_DECLS
 int            ps2strn(struct packedstream *, char *, int, int);
 int            snpack(char *, int, char*, int, ...);
 int            sunpack(char *, struct packedstream *);
+int            strlentype(int);
 const int      token2type(const int);
 const char    *type2str(const int);
 struct mux    *add_mux(struct muxlist *, char *);
