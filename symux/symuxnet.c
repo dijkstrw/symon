@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.8 2002/08/11 20:00:41 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.9 2002/09/02 06:17:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -164,7 +164,7 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     do {
 	sl = sizeof(sind);
 
-	size = recvfrom(mux->monsocket, (void *)packet + received, 
+	size = recvfrom(mux->monsocket, (void *)packet->data + received, 
 			sizeof(struct monpacket) - received, 
 			0, (struct sockaddr *)&sind, &sl);
 	if (size > 0)
@@ -174,11 +174,11 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     } while ((size == -1) && 
 	     (errno == EAGAIN || errno == EINTR) && 
 	     (tries < MONMUX_MAXREADTRIES) &&
-	     (received < sizeof(struct monpacket)));
+	     (received < sizeof(packet->data)));
 
     if ((size == -1) && 
 	errno) 
-      warning("recvfrom failed: %s", strerror(errno));
+      warning("recvfrom failed: %.200s", strerror(errno));
 
     sourceaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
     *source = find_source_ip(sourcelist, sourceaddr);
@@ -188,10 +188,13 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
 	      IPAS4BYTES(sourceaddr));
 	return 0;
     } else {
+	/* get header stream */
+	mux->offset = getheader(packet->data, &packet->header);
 	/* check crc */
-	crc = ntohl(packet->header.crc);
+	crc = packet->header.crc;
 	packet->header.crc = 0;
-	crc ^= crc32(packet, received);
+	setheader(packet->data, &packet->header);
+	crc ^= crc32(packet->data, received);
 	if ( crc != 0 ) {
 	    warning("ignored packet with bad crc from %u.%u.%u.%u",
 		    IPAS4BYTES(sourceaddr));
@@ -199,15 +202,10 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
 	}
 	/* check packet version */
 	if (packet->header.mon_version != MON_PACKET_VER) {
-	    warning("ignored packet with illegal type %d", 
+	    warning("ignored packet with wrong version %d", 
 		    packet->header.mon_version);
 	    return 0;
 	} else {
-	    /* rewrite structs to host order */
-	    packet->header.length = ntohs(packet->header.length);
-	    packet->header.crc = ntohs(packet->header.crc);
-	    packet->header.timestamp = ntohq(packet->header.timestamp);
-		
 	    if (flag_debug) 
 		debug("good data received from %u.%u.%u.%u",
 		      IPAS4BYTES(sourceaddr));

@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.20 2002/08/26 14:53:01 dijkstra Exp $ */
+/* $Id: symux.c,v 1.21 2002/09/02 06:17:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -228,7 +228,7 @@ main(int argc, char *argv[])
 	 * the clients. This is the reason for the hasseling with stringptr.
 	 */
 	
-	offset = 0;
+	offset = mux->offset;
 	maxstringlen = shared_getmaxlen();
 	/* put time:ip: into shared region */
 	master_forbidread();
@@ -242,6 +242,7 @@ main(int argc, char *argv[])
 	stringptr = stringbuf + strlen(stringbuf);
 	
 	while (offset < packet.header.length) {
+	    bzero(&ps, sizeof(struct packedstream));
 	    offset += sunpack(packet.data + offset, &ps);
 	    
 	    /* find stream in source */
