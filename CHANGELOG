@@ -1,3 +1,8 @@
+14/09/2002 - 2.51 
+
+   Steve Shockley reported that the port Makefile did not install rrd
+   tool. (Which is required for compilation of symux)
+
 13/09/2002 - 2.5 - kvm gone, renamed mon to symon
 
    Rewrote io.c to obtain information via sysctl only. All kvm code is now
@@ -147,4 +152,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.6 2002/09/14 15:58:45 dijkstra Exp $
+$Id: CHANGELOG,v 1.7 2002/09/16 06:26:23 dijkstra Exp $
