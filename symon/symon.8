@@ -108,7 +108,8 @@ resources    = resource ["(" argument ")"] [ ","|" " resources ]
 argument     = number | interfacename | diskname
 resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
 	       "proc" | "mbuf" | "sensor"
-every        = "every" "second" | number "seconds"
+every        = "every" time
+time         = "second" | number "seconds"
 host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
 .fi

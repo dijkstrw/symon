@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.27 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: symux.c,v 1.28 2004/02/02 07:46:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -214,7 +214,7 @@ main(int argc, char *argv[])
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
 	    } else {
-		info("read configuration file '%.100s' succesfully", cfgfile);
+		info("read configuration file '%.100s' successfully", cfgfile);
 		free_muxlist(&mul);
 		mul = newmul;
 		mux = SLIST_FIRST(&mul);

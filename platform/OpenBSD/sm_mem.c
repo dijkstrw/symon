@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.14 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.15 2004/02/02 07:46:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -117,7 +117,7 @@ get_mem(char *symon_buf, int maxlen, char *s)
     }
 
     me_stats[3] = me_stats[4] = 0;
-    if (rnswap == me_nswap) {	/* Read swap succesfully */
+    if (rnswap == me_nswap) {	/* Read swap successfully */
 	/* Total things up */
 	for (i = 0; i < me_nswap; i++) {
 	    if (me_swdev[i].se_flags & SWF_ENABLE) {

@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.31 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: symon.c,v 1.32 2004/02/02 07:46:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -267,7 +267,7 @@ main(int argc, char *argv[])
 	    } else {
 		free_muxlist(&mul);
 		mul = newmul;
-		info("read configuration file '%.200s' succesfully", cfgpath);
+		info("read configuration file '%.200s' successfully", cfgpath);
 
 		/* init modules */
 		SLIST_FOREACH(mux, &mul, muxes) {
