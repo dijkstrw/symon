@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2002/07/25 14:23:05 dijkstra Exp $
+# $Id: Makefile,v 1.13 2002/07/25 14:25:31 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=	monmux.c readconf.c muxnet.c share.c
@@ -17,7 +17,7 @@ monmux: ${OBJS}
 clean:
 	rm -f monmux monmux.cat8 ${OBJS}
 
-install: monmux monmux.cat8 c_monrrds.sh ../examples/monmux.conf
+install: monmux monmux.cat8 c_monrrds.sh monmux.conf
 	${INSTALL} -c -m 555 -g bin   -o root monmux      ${PREFIX}/${BINDIR}
 	${INSTALL} -c -m 444 -g wheel -o root monmux.cat8 ${PREFIX}/${MANDIR}/cat8/monmux.0
 	${INSTALL} -d -m 555 -g bin   -o root ${PREFIX}/${SHRDIR}
