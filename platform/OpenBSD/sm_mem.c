@@ -1,8 +1,11 @@
 /*
- * $Id: sm_mem.c,v 1.2 2001/04/28 16:06:23 dijkstra Exp $
+ * $Id: sm_mem.c,v 1.3 2001/04/29 13:08:48 dijkstra Exp $
  *
- * Another quick try: get current memory load.
- * - MEM_SWAP : get swap statistics
+ * Get current memory statistics in kilobytes; reports them back in mon_buf as
+ *
+ * real active : real total : free : [swap used : swap total]
+ * 
+ * -DMEM_SWAP controls whether the swap statistics are generated.
  */
 
 #include <unistd.h>
@@ -33,7 +36,6 @@ static int me_pagesize;
 static int me_nswap;
 struct swapent *me_swdev = NULL;
 #endif
-static char me_buf[_POSIX2_LINE_MAX];
 
 void init_mem(s) 
      char *s;
@@ -96,13 +98,13 @@ char *get_mem(s)
 
 #ifndef MEM_SWAP
   /* real act/tot, free */
-  snprintf(&me_buf[0], _POSIX2_LINE_MAX, "%lu:%lu:%lu", 
+  snprintf(&mon_buf[0], _POSIX2_LINE_MAX, "%lu:%lu:%lu", 
 	   me_stats[0], me_stats[1], me_stats[2]);
 #else
   /* real active, real total, free, swap used, swap total */
-  snprintf(&me_buf[0], _POSIX2_LINE_MAX, "%lu:%lu:%lu:%lu:%lu", 
+  snprintf(&mon_buf[0], _POSIX2_LINE_MAX, "N:%lu:%lu:%lu:%lu:%lu", 
 	   me_stats[0], me_stats[1], me_stats[2], 
 	   me_stats[3], me_stats[4]);
 #endif
-  return &me_buf[0];
+  return &mon_buf[0];
 }

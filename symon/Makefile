@@ -1,15 +1,12 @@
 #	$OpenBSD: Makefile,v 1.9 2000/06/14 01:05:04 itojun Exp $
 
 PROG=	mon
-SRCS=	mon.c cpu.c mem.c
+SRCS=	mon.c cpu.c mem.c netstat.c
+NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
-LDADD= -lkvm
+LDADD= -lkvm -L/usr/local/lib -lrrd -g
 DPADD=	${LIBKVM}
-
-INET6?= yes
-.if (${INET6} != "no")
-CPPFLAGS+=      -DMEM_SWAP -DINET6 -Wall
-.endif
+CPPFLAGS+=-DMON_KVM -DMEM_SWAP -DNET_INET6 -Wall -I/usr/local/include -g
 
 .include <bsd.prog.mk>

@@ -1,7 +1,12 @@
 /*
- * $Id: sm_cpu.c,v 1.2 2001/04/28 16:06:23 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.3 2001/04/29 13:08:48 dijkstra Exp $
  *
- * Get current cpu load.
+ * Get current cpu statistics in percentages*10 (total of all counts = 1000)
+ * and returns them in mon_buf as
+ *
+ * user : nice : system : interrupt : idle
+ *
+ * This module uses the sysctl interface and can run as any user.
  */
 #include <sys/param.h>
 #include <sys/dkstat.h>
@@ -20,7 +25,6 @@ static long cp_time[CPUSTATES];
 static long cp_old[CPUSTATES];
 static long cp_diff[CPUSTATES];
 static int cp_states[CPUSTATES];
-static char cp_buf[_POSIX2_LINE_MAX];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -95,9 +99,9 @@ char *get_cpu(s)
   /* convert cp_time counts to percentages */
   total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
-  snprintf( &cp_buf[0], _POSIX2_LINE_MAX, 
-	    "%d:%d:%d:%d:%d", 
+  snprintf( &mon_buf[0], _POSIX2_LINE_MAX, 
+	    "N:%d:%d:%d:%d:%d", 
 	    cp_states[CP_USER], cp_states[CP_NICE], cp_states[CP_SYS], 
 	    cp_states[CP_INTR], cp_states[CP_IDLE]);
-  return &cp_buf[0];
+  return &mon_buf[0];
 }
