@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.28 2005/02/04 09:49:26 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.29 2005/02/25 15:10:10 dijkstra Exp $
 
 #
-# Copyright (c) 2001-2004 Willem Dijkstra
+# Copyright (c) 2001-2005 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 # --- user configuration starts here
 INTERVAL=${INTERVAL:-5}
 # --- user configuration ends here
-
+OS=`uname -s`
 # addsuffix adds a suffix to each entry of a list (item|item|...)
 addsuffix() {
     list=$1'|'
@@ -73,7 +73,7 @@ oneday)
     RRA_SETUP=" RRA:AVERAGE:0.5:1:17280
 	    RRA:MAX:0.5:1:17280
 	    RRA:MIN:0.5:1:17280"
-    if [ X"$child" == "X" ]; then
+    if [ X"$child" = "X" ]; then
 	echo "RRDs will only contain a single day of data"
     fi
     ;;
@@ -88,7 +88,7 @@ oneday)
 esac
 done
 
-if [ X"$RRA_SETUP" == "X" ]; then
+if [ X"$RRA_SETUP" = "X" ]; then
 # default RRA setup:
 # - 2   days of  5 second  samples = 34560 x 5 second samples
 # - 14  days of 30 minutes samples = 672 x 360 x 5 second samples
@@ -109,16 +109,42 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 fi
 
 # All interfaces and disks
-INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
-VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
-DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
-
+case ${OS} in
+FreeBSD)
+	DISKS="ad|acd|afd|ast|sa|da|ar|cd|ch|md"
+	INTERFACES="an|ar|ath|aue|awi|axe|bfe|bge|cm|cnw|cs|cue|dc|de|ed|el|em|ep|ex|fe|fwe|fxp|gem|gx|hme|ie|kue|lge|lnc|my|nge|pcn|ray|re|rl|rue|sf|sis|sk|sn|snc|ste|ti|tl|tx|txp|vge|vr|vx|wb|wi|xe|xl";
+	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sl|sppp|strip|tun|vlan";
+	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
+	interfacecmd="ifconfig -l | sed 's/lo0//'"
+	;;
+Linux)
+	DISKS="hda|hdb|hdc|hdd|sda|sdb|sdc|sdd"
+	INTERFACES="eth"
+	VIRTUALINTERFACES="sit"
+	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
+	interfacecmd="ifconfig -a| egrep -e \"^(\$INTERFACES) \" | cut -f1 -d\  | sort -u"
+	;;
+OpenBSD)
+	DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
+	INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
+	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
+	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
+	interfacecmd="ifconfig -a| egrep -e \"^(\$INTERFACES):\" | cut -f1 -d\:  | sort -u"
+	;;
+NetBSD)
+	DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
+	INTERFACES="ai|an|ate|ath|atw|awi|bce|bge|bicc|cnw|com|cs|depca|ec|ef|eg|el|elmc|en|ep|epic|esh|ex|fea|fmv|fpa|fxp|gsip|hme|ipw|iwi|ix|iy|lc|le|lmc|mbe|mhzc|mtd|ne|nele|ntwoc|pcn|ray|re|rtk|sf|sip|sk|skc|sm|ste|stge|ti|tl|tlp|tr|vge|vr|we|wi|wm|xi|xirc"
+	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|sl|strip|tun|vlan";
+	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
+	interfacecmd="ifconfig -l | sed 's/lo0//'"
+	;;
+esac
 DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
 VIRTUALINTERFACES=`addsuffix $VIRTUALINTERFACES \\.\\*`
 
 this=$0
-if [ X"$1$2$3$4$5$6$7$8$9" == "X" ]; then
+if [ X"$1$2$3$4$5$6$7$8$9" = "X" ]; then
     cat <<EOF
 Create rrd files for symux.
 
@@ -186,12 +212,12 @@ all)
 
 if|interfaces)
     # obtain all network cards
-    sh $this child $config `ifconfig -a| egrep -e "^($INTERFACES):" | cut -f1 -d\:  | sort -u`
+    sh $this child $config `eval $interfacecmd`
     ;;
 
 io|disks)
     # obtain all disks
-    sh $this child $config `df | grep dev | sed 's/^\/dev\/\(.*\)[a-z] .*$/\1/' | sort -u`
+    sh $this child $config `eval $diskcmd`
     ;;
 
 cpu[0-9].rrd)

@@ -1,7 +1,8 @@
-# $Id: Makefile,v 1.37 2004/08/07 14:49:00 dijkstra Exp $
+# $Id: Makefile,v 1.38 2005/02/25 15:10:10 dijkstra Exp $
 .include "../Makefile.inc"
+.include "../platform/${OS}/Makefile.inc"
 
-LIBS=	-L../lib -lsymon
+LIBS+=	-L../lib -lsymon
 MODS!=	( for g in ../platform/stub/sm_*.c; do \
 		f=../platform/${OS}/`basename $$g`; \
 		if [ -f $$f ]; then echo $$f; \

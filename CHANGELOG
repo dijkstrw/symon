@@ -1,7 +1,10 @@
 22/02/2005 - 2.70
 
-   - Linux/Makefile.inc broken (Marc L. de Bruin)
+   - Ulrich Spoerlein updated the FreeBSD proc and mem probes, found a bug in
+     the mem probe for OpenBSD and helped extend the shell config files for
+     FreeBSD.
 
+   - Linux/Makefile.inc TSORT should be cat not echo
 
 16/02/2005 - 2.69
 
@@ -385,4 +388,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.40 2005/02/25 12:31:58 dijkstra Exp $
+$Id: CHANGELOG,v 1.41 2005/02/25 15:10:09 dijkstra Exp $

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_config.sh,v 1.6 2004/02/26 22:48:08 dijkstra Exp $
+# $Id: c_config.sh,v 1.7 2005/02/25 15:10:10 dijkstra Exp $
 #
 # Create an example configuration file for symon on a host and print to stdout
 
@@ -7,15 +7,27 @@
 #
 set -e
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-
+OS=`uname -s`
 # verify proper execution
 #
 if [ $# -ge 3 ]; then
     echo "usage: $0 [host] [port]" >&2
     exit 1
 fi
-
-interfaces=`netstat -ni | sed '1,1d;s/^\([a-z]*[0-9]\).*$/\1/g' | uniq`
+case "${OS}" in
+OpenBSD)
+	interfaces=`netstat -ni | sed '1,1d;s/^\([a-z]*[0-9]\).*$/\1/g' | uniq`
+	io=`mount | sed -n '/^\/dev/ s@/dev/\([a-z]*[0-9]\).*@io(\1), @p' | sort -u | tr -d \\\n`
+	;;
+FreeBSD|NetBSD)
+	interfaces=`ifconfig -l`
+	io=`mount | sed -n '/^\/dev/ s@/dev/\([a-z]*[0-9]\).*@io(\1), @p' | sort -u | tr -d \\\n`
+	;;
+Linux)
+	interfaces=`ifconfig -a| sed -n '/^[a-z]/ s,\([a-z]*[0-9]\).*,\1,p' | sort -u`
+	io=`mount | sed -n '/^\/dev/ s@/dev/\([a-z]*[0-9]\).*@io(\1), @p' | sort -u | tr -d \\\n`
+	;;
+esac;
 for i in $interfaces; do
 case $i in
 bridge*|carp*|enc*|gif*|gre*|lo*|pflog*|pfsync*|ppp*|sl*|tun*|vlan*)
@@ -26,7 +38,6 @@ bridge*|carp*|enc*|gif*|gre*|lo*|pflog*|pfsync*|ppp*|sl*|tun*|vlan*)
 	;;
 esac
 done
-io=`mount | egrep -v ' type mfs | type nfs ' | sed '1,1d;s/^\/dev\/\([a-z]*[0-9]\).*$/io(\1), /g' | uniq | tr -d \\\n`
 host=${1:-127.0.0.1}
 port=${2:-2100}
 cat <<EOF

@@ -15,6 +15,7 @@ NetBSD:   - sysctl: cpu, debug, if, io, mbuf, proc
           - r on /dev/sysmon for sensor
 
 FreeBSD:  - sysctl: all
+          - non-chroot on FreeBSD 5.x for CPU ticks in proc
 
 Linux:    - r on /proc/net/dev: if
           - r on /proc/stat: cpu
@@ -102,5 +103,5 @@ rudimentary support for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.16 2005/01/14 16:15:21 dijkstra Exp $
+$Id: INSTALL,v 1.17 2005/02/25 15:10:09 dijkstra Exp $
 

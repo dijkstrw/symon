@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.16 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.17 2005/02/25 15:10:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -56,7 +56,7 @@
 
 /* Globals for this module all start with me_ */
 static int me_pageshift;
-static long me_stats[4];
+static long me_stats[5];
 static int me_vm_mib[] = {CTL_VM, VM_METER};
 static struct vmtotal me_vmtotal;
 static size_t me_vmsize;

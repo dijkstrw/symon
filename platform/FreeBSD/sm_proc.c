@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.2 2005/01/14 16:13:38 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.3 2005/02/25 15:10:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -39,9 +39,14 @@
  * Non re-entrant code: gets_proc messes with globals r/w without a semaphore.
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/user.h>
+#include <sys/proc.h>
+#include <fcntl.h>
+#include <kvm.h>
 
 #include <limits.h>
 #include <string.h>
@@ -60,6 +65,9 @@ static int proc_cur = 0;
 static int proc_stathz = 0;
 static int proc_pageshift;
 static int proc_pagesize;
+#ifdef HAS_KI_PADDR
+static kvm_t *proc_kd = NULL;
+#endif
 
 /* get scale factor cpu percentage counter */
 #define FIXED_PCTCPU FSCALE
@@ -120,6 +128,9 @@ init_proc(char *s)
     int mib[2] = {CTL_KERN, KERN_CLOCKRATE};
     struct clockinfo cinf;
     size_t size = sizeof(cinf);
+#ifdef HAS_KI_PADDR
+    char errbuf[_POSIX2_LINE_MAX];
+#endif
 
     /* get clockrate */
     if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
@@ -135,6 +146,12 @@ init_proc(char *s)
 	proc_pagesize >>= 1;
     }
 
+#ifdef HAS_KI_PADDR
+    proc_kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+    if (proc_kd == NULL)
+      warning("while opening kvm (chrooted?): %s", errbuf);
+#endif
+
     info("started module proc(%.200s)", s);
 }
 /* Get new io statistics */
@@ -143,6 +160,9 @@ get_proc(char *symon_buf, int maxlen, char *process)
 {
     int i;
     struct kinfo_proc *pp;
+#ifdef HAS_KI_PADDR
+    struct proc pproc;
+#endif
     u_quad_t  cpu_ticks = 0;
     u_quad_t  cpu_uticks = 0;
     u_quad_t  cpu_iticks = 0;
@@ -155,14 +175,19 @@ get_proc(char *symon_buf, int maxlen, char *process)
     int n = 0;
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
+#ifdef HAS_KI_PADDR
 	 if (strncmp(process, pp->ki_comm, strlen(process)) == 0) {
-	     /* cpu time - accumulated */
-#if 0
-/*XXX fill in ticks */
-	     cpu_uticks += pp->kp_proc.p_uticks;  /* user */
-	     cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
-	     cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
-#endif
+	      /* cpu time - accumulated */
+	      if (proc_kd) {
+		   if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
+				  sizeof(pproc)) == sizeof(pproc)) {
+			cpu_uticks += pproc.p_uticks;  /* user */
+			cpu_sticks += pproc.p_sticks;  /* sys  */
+			cpu_iticks += pproc.p_iticks;  /* int  */
+		   } else {
+			warning("while reading kvm: %s", kvm_geterr(proc_kd));
+		   }
+	      }
 	     /* cpu time - percentage since last measurement */
 	     cpu_pct = pctdouble(pp->ki_pctcpu) * 100.0;
 	     cpu_pcti += cpu_pct;
@@ -171,6 +196,22 @@ get_proc(char *symon_buf, int maxlen, char *process)
 				     pp->ki_dsize + /* data */
 				     pp->ki_ssize); /* stack */
 	     mem_rss += pagetob(pp->ki_rssize);     /* rss  */
+#else
+	 if (strncmp(process, pp->kp_proc.p_comm, strlen(process)) == 0) {
+	     /* cpu time - accumulated */
+	     cpu_uticks += pp->kp_proc.p_uticks;  /* user */
+	     cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
+	     cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
+
+	     /* cpu time - percentage since last measurement */
+	     cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
+	     cpu_pcti += cpu_pct;
+	     /* memory size - shared pages are counted multiple times */
+	     mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
+				     pp->kp_eproc.e_vm.vm_dsize + /* data */
+				     pp->kp_eproc.e_vm.vm_ssize); /* stack */
+	     mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+#endif
 	     n++;
 	 }
     }

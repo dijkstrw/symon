@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.21 2004/08/07 14:49:32 dijkstra Exp $
+# $Id: Makefile,v 1.22 2005/02/25 15:10:10 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
 OBJS+=	${SRCS:R:S/$/.o/g}
-LIBS=  -L../lib -L$(RRDDIR)/lib -lsymon -lrrd
+LIBS+=  -L../lib -L$(RRDDIR)/lib -lsymon -lrrd
 CFLAGS+=-I../lib -I$(RRDDIR)/include -I../platform/${OS} -I.
 
 all: symux symux.cat8

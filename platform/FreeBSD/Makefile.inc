@@ -1,1 +1,2 @@
-# $Id: Makefile.inc,v 1.1 2004/09/25 10:21:56 dijkstra Exp $
+# $Id: Makefile.inc,v 1.2 2005/02/25 15:10:09 dijkstra Exp $
+LIBS= -lkvm
