@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.3 2002/12/14 14:03:44 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.4 2002/12/29 16:21:31 dijkstra Exp $
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
 # All rights reserved.
@@ -56,7 +56,9 @@ my $streamitem =
 	       debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9, 
 	       debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
 	       debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,
-	       debug18 => 18, debug19 => 19}};
+	       debug18 => 18, debug19 => 19},
+     proc  => {number => 1, uticks => 2, sticks => 3, iticks => 4, cpusec => 5, 
+	       cpupct => 6, procsz => 7, rsssz => 8}};
 
 sub new {
     my ($class, %arg) = @_;
