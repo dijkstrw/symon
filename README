@@ -1,7 +1,6 @@
 Programming rules:
 
-- Cpu cost matters more than storage. Network traffic is more expensive than
-  cpu. 
+- Cpu cost matters more than storage. 
 
 - Structures are not overloaded in functionality even if that would be possible
   memberwise. Overloading = code can be understood in more than one way and
@@ -12,4 +11,6 @@ Programming rules:
 
 - Error messages carry __FILE__, __LINE__ if they are failed assertions and
   plain English if they can be attributed to the end-user.
+
+- Marshalling is hard. Alignment is carried out by bcopy.
 
