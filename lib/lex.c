@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.14 2002/11/29 10:44:21 dijkstra Exp $ */
+/* $Id: lex.c,v 1.15 2002/12/15 14:27:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -79,6 +79,7 @@ static struct {
     { "mux", LXT_MUX },
     { "pf", LXT_PF },
     { "port", LXT_PORT },
+    { "proc", LXT_PROC },
     { "source", LXT_SOURCE },
     { "stream", LXT_STREAM },
     { "to", LXT_TO },

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.12 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.13 2002/12/15 14:23:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -89,7 +89,7 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 
     return 1;
 }
-/* parse "<cpu(arg)|mem|if(arg)|io(arg)|debug|pf>", end condition == "}" */
+/* parse "<cpu(arg)|mem|if(arg)|io(arg)|debug|pf|proc(arg)>", end condition == "}" */
 int 
 read_symon_args(struct mux * mux, struct lex * l)
 {
@@ -106,6 +106,7 @@ read_symon_args(struct mux * mux, struct lex * l)
 	case LXT_MEM:
 	case LXT_PF:
 	case LXT_DEBUG:
+	case LXT_PROC:
 	    st = token2type(l->op);
 	    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -135,7 +136,7 @@ read_symon_args(struct mux * mux, struct lex * l)
 		return 0;
 	    }
 
-	    break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
+	    break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG/PROC */
 	case LXT_COMMA:
 	    break;
 	default:

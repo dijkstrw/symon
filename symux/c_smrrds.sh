@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.14 2002/11/29 10:49:20 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.15 2002/12/15 14:28:10 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -59,7 +59,7 @@ RRD_ARGS="--step=$INTERVAL --start=0"
 # --- user configuration ends here
 
 # All interfaces and disks
-INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|qe|qec|sf|sis|sk|skc|sl|sm|siop|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
+INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|qe|qec|sf|sis|sk|skc|sl|sm|siop|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
 VIRTUALINTERFACES="bridge|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
 
@@ -92,7 +92,7 @@ if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]|mem|pf|debug)$"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|debug$|proc_)"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -168,6 +168,16 @@ debug.rrd)
 	DS:debug14:COUNTER:5:U:U DS:debug15:COUNTER:5:U:U \
 	DS:debug16:COUNTER:5:U:U DS:debug17:COUNTER:5:U:U \
 	DS:debug18:COUNTER:5:U:U DS:debug19:COUNTER:5:U:U \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+proc_*.rrd)
+    # Build proc file
+    rrdtool create $i $RRD_ARGS \
+	DS:number:COUNTER:5:U:U DS:uticks:COUNTER:5:U:U \
+	DS:sticks:COUNTER:5:U:U DS:iticks:COUNTER:5:U:U \
+	DS:cpusec:COUNTER:5:U:U DS:procsz:COUNTER:5:U:U \
+	DS:rsssz:COUNTER:5:U:U \
 	$RRA_SETUP
     echo "$i created"
     ;;

@@ -40,8 +40,9 @@
 .Pp
 .Sh DESCRIPTION
 .Xr symon 8
-is a lightweight system monitor that measures cpu, memory, interface and disk
-statistics every 5 seconds. This information is then spooled to
+is a lightweight system monitor that measures cpu, memory, debug, process,
+interface and disk statistics every 5 seconds. This information is then spooled
+to
 .Nm
 for further processing. 
 .Pp
@@ -103,7 +104,7 @@ source-stmt  = "source" host "{" accept-stmts write-stmts [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | "proc"
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
@@ -213,7 +214,11 @@ states_inserts : states_removals : counters_match : counters_badoffset :
 counters_fragment : counters_short : counters_normalize : counters_memory
 ). Values are 64 bit unsigned integers internally.
 .It debug
-Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32 bit unsigned integers. 
+Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32
+bit unsigned integers.
+.It proc
+Process statistics ( number : uticks : sticks : iticks : cpusec : procsz :
+rsssz ).
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds

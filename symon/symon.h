@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.22 2002/11/29 10:45:21 dijkstra Exp $ */
+/* $Id: symon.h,v 1.23 2002/12/15 14:23:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -42,7 +42,8 @@
 #define SYMON_PID_FILE    "/var/run/symon.pid"
 #define SYMON_INTERVAL 5	/* measurement interval */
 #define SYMON_WARN_SENDERR 50	/* warn every x errors */
-#define SYMON_MAX_DOBJECTS  100	/* max dynamic alloction = 100 objects */
+#define SYMON_MAX_DOBJECTS  100	/* max dynamic allocation; local limit per
+				 * measurement module */
 #define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)	/* max allocation unit =
 						 * _POSIX2_LINE_MAX */
 struct funcmap {
@@ -55,30 +56,35 @@ extern struct funcmap streamfunc[];
 
 /* prototypes */
 __BEGIN_DECLS
-/* cpu.c */
+/* sm_cpu.c */
 extern void init_cpu(char *);
 extern int get_cpu(char *, int, char *);
 
-/* mem.c */
+/* sm_mem.c */
 extern void init_mem(char *);
 extern int get_mem(char *, int, char *);
 
-/* if.c */
+/* sm_if.c */
 extern void init_if(char *);
 extern int get_if(char *, int, char *);
 
-/* io.c */
+/* sm_io.c */
 extern void init_io(char *);
 extern void gets_io();
 extern int get_io(char *, int, char *);
 
-/* pf.c */
+/* sm_pf.c */
 extern void init_pf(char *);
 extern int get_pf(char *, int, char *);
 
-/* debug.c */
+/* sm_debug.c */
 extern void init_debug(char *);
 extern int get_debug(char *, int, char *);
+
+/* sm_proc.c */
+extern void init_proc(char *);
+extern void gets_proc();
+extern int get_proc(char *, int, char *);
 __END_DECLS
 
 #endif				/* _SYMON_SYMON_H */

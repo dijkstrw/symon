@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.17 2002/11/29 10:46:59 dijkstra Exp $ */
+/* $Id: data.h,v 1.18 2002/12/15 14:27:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -145,7 +145,8 @@ SLIST_HEAD(muxlist, mux);
 #define MT_IF     3
 #define MT_PF     4
 #define MT_DEBUG  5
-#define MT_EOT    6
+#define MT_PROC   6
+#define MT_EOT    7
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This

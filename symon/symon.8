@@ -40,8 +40,9 @@
 .Pp
 .Sh DESCRIPTION
 .Nm
-is a lightweight system monitor that measures cpu, memory, interface and disk
-statistics every 5 seconds. This information is then spooled to
+is a lightweight system monitor that measures cpu, memory, debug, process,
+interface and disk statistics every 5 seconds. This information is then spooled
+to
 .Xr symux 8
 for further processing. 
 .Pp
@@ -91,7 +92,7 @@ Multiple monitor statements to different muxes are allowed. Whitespace, newlines
 .nf
 monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | "proc"
 host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
 argument     = number | interfacename | diskname
@@ -107,7 +108,7 @@ to localhost on port 2100.
 monitor { cpu(0),  mem, pf, if(xl0), if(de0),
           if(lo0), if(wi0), io(wd0), io(wd1), 
           io(wd2), io(wd3), io(cd0), io(cd1), 
-          io(ccd0), debug } stream to 127.0.0.1 2100
+          io(ccd0), debug, proc(httpd) } stream to 127.0.0.1 2100
 .fi
 .Sh SIGNALS
 .Bl -tag -width Ds
@@ -129,9 +130,13 @@ daemon.
 system wide configuration file. 
 .El
 .Sh BUGS
-Every monitored resource mentioned 
+Every monitored resource mentioned
 .Pa /etc/symon.conf 
-gets queried. Mentioning, for example, cpu(0) twice for different muxes will result in two distinct cpu(0) measurement actions. 
+gets queried. Mentioning, for example, cpu(0) twice for different muxes will
+result in two distinct cpu(0) measurement actions.
+.Pp
+The proc module is too simple: memory shared between two instances of the same
+process is simply counted twice.
 .Pp
 .Nm 
 does not check whether resources mentioned in 

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.16 2002/11/29 10:49:35 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.17 2002/12/15 14:28:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -84,6 +84,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
     case MT_DEBUG:
 	ts = "debug";
 	ta = "";
+	break;
+    case MT_PROC:
+	ts = "proc_";
+	ta = args;
 	break;
     default:
 	warning("%s:%d: internal error: type (%d) unknown",
@@ -180,6 +184,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		case LXT_MEM:
 		case LXT_PF:
 		case LXT_DEBUG:
+		case LXT_PROC:
 		    st = token2type(l->op);
 		    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -211,7 +216,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			return 0;
 		    }
 
-		    break;	/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
+		    break;	/* LXT_CPU/IF/IO/MEM/PF/DEBUG/PROC */
 		case LXT_COMMA:
 		    break;
 		default:
@@ -305,6 +310,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    case LXT_MEM:
 	    case LXT_PF:
 	    case LXT_DEBUG:
+	    case LXT_PROC:
 		st = token2type(l->op);
 		strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -364,7 +370,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
+		break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG/PROC */
 	    default:
 		parse_error(l, "{cpu|mem|if|io|debug}");
 		return 0;
