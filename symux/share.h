@@ -1,7 +1,7 @@
-/* $Id: share.h,v 1.6 2002/11/29 10:49:41 dijkstra Exp $ */
+/* $Id: share.h,v 1.7 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

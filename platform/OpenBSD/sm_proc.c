@@ -1,7 +1,7 @@
-/* $Id: sm_proc.c,v 1.2 2002/12/15 15:00:01 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.3 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 /*
  * Get process statistics from kernel and return them in symon_buf as
  *
- * number of processes : ticks_user : ticks_system : ticks_interrupt : 
+ * number of processes : ticks_user : ticks_system : ticks_interrupt :
  * cpuseconds : procsizes : resident segment sizes
  *
  * Non re-entrant code: gets_proc messes with globals r/w without a semaphore.
@@ -65,31 +65,31 @@ static int proc_pagesize;
 typedef long pctcpu;
 #define pctdouble(p) ((double)(p) / FIXED_PCTCPU)
 
-void 
+void
 gets_proc()
 {
     int mib[3];
     int procs;
     size_t size;
-	
+
     /* how much memory is needed */
     mib[0] = CTL_KERN;
     mib[1] = KERN_NPROCS;
     size = sizeof(procs);
     if (sysctl(mib, 2, &procs, &size, NULL, 0) < 0) {
-        fatal("%s:%d: sysctl failed: can't get kern.nproc",
+	fatal("%s:%d: sysctl failed: can't get kern.nproc",
 	      __FILE__, __LINE__);
     }
 
     /* increase buffers if necessary */
     if (procs > proc_max) {
-        proc_max = (procs * 5) / 4;
+	proc_max = (procs * 5) / 4;
 
 	if (proc_max > SYMON_MAX_DOBJECTS) {
 	    fatal("%s:%d: dynamic object limit (%d) exceeded for kinfo_proc structures",
 		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
 	}
-	
+
 	proc_ps = xrealloc(proc_ps, proc_max * sizeof(struct kinfo_proc));
     }
 
@@ -105,15 +105,15 @@ gets_proc()
     }
 
     if (size % sizeof(struct kinfo_proc) != 0) {
-        warning("proc size mismatch: got %d bytes, not dividable by sizeof(kinfo_proc) %d",
+	warning("proc size mismatch: got %d bytes, not dividable by sizeof(kinfo_proc) %d",
 		size, sizeof(struct kinfo_proc));
 	proc_cur = 0;
     } else {
-        proc_cur = size / sizeof(struct kinfo_proc);
+	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
 /* Prepare io module for first use */
-void 
+void
 init_proc(char *s)
 {
     int mib[2] = {CTL_KERN, KERN_CLOCKRATE};
@@ -122,7 +122,7 @@ init_proc(char *s)
 
     /* get clockrate */
     if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
-        fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
+	fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
 
     proc_stathz = cinf.stathz;
 
@@ -134,10 +134,10 @@ init_proc(char *s)
 	proc_pagesize >>= 1;
     }
 
-    info("started module proc(%s)", s);
+    info("started module proc(%.200s)", s);
 }
 /* Get new io statistics */
-int 
+int
 get_proc(char *symon_buf, int maxlen, char *process)
 {
     int i;
@@ -170,13 +170,13 @@ get_proc(char *symon_buf, int maxlen, char *process)
 	     n++;
 	 }
     }
-    
-    /* calc total cpu_secs spent */ 
+
+    /* calc total cpu_secs spent */
     cpu_ticks = cpu_uticks + cpu_sticks + cpu_iticks;
-    cpu_secs = cpu_ticks / proc_stathz;  
+    cpu_secs = cpu_ticks / proc_stathz;
 
     return snpack(symon_buf, maxlen, process, MT_PROC,
-		  n, 
+		  n,
 		  cpu_uticks, cpu_sticks, cpu_iticks, cpu_secs, cpu_pcti,
 		  mem_procsize, mem_rss );
 }

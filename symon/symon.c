@@ -1,7 +1,7 @@
-/* $Id: symon.c,v 1.30 2003/10/10 15:20:01 dijkstra Exp $ */
+/* $Id: symon.c,v 1.31 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,30 +53,33 @@
 
 __BEGIN_DECLS
 void alarmhandler(int);
+void drop_priviledges();
 void exithandler(int);
 void huphandler(int);
 void set_stream_use(struct muxlist *);
 __END_DECLS
 
+int flag_unsecure = 0;
 int flag_hup = 0;
+int symon_interval = SYMON_DEFAULT_INTERVAL;
 
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
-    {MT_IO, 0, init_io, gets_io, get_io},	/* gets_io obtains entire io state,
-					         * get_io = just a copy */
-    {MT_CPU, 0, init_cpu, NULL, get_cpu},
-    {MT_MEM, 0, init_mem, NULL, get_mem},
-    {MT_IF, 0, init_if, NULL, get_if},
-    {MT_PF, 0, init_pf, NULL, get_pf},
-    {MT_DEBUG, 0, init_debug, NULL, get_debug},
-    {MT_PROC, 0, init_proc, gets_proc, get_proc},
-    {MT_MBUF, 0, init_mbuf, NULL, get_mbuf},
-    {MT_SENSOR, 0, init_sensor, NULL, get_sensor},
-    {MT_EOT, 0, NULL, NULL}
+    {MT_IO, 0, NULL, init_io, gets_io, get_io},
+    {MT_CPU, 0, NULL, init_cpu, NULL, get_cpu},
+    {MT_MEM, 0, NULL, init_mem, NULL, get_mem},
+    {MT_IF, 0, NULL, init_if, NULL, get_if},
+    {MT_PF, 0, privinit_pf, init_pf, NULL, get_pf},
+    {MT_DEBUG, 0, NULL, init_debug, NULL, get_debug},
+    {MT_PROC, 0, NULL, init_proc, gets_proc, get_proc},
+    {MT_MBUF, 0, NULL, init_mbuf, NULL, get_mbuf},
+    {MT_SENSOR, 0, NULL, init_sensor, NULL, get_sensor},
+    {MT_EOT, 0, NULL, NULL, NULL}
 };
 
 void
-set_stream_use(struct muxlist *mul) {
+set_stream_use(struct muxlist *mul)
+{
     struct mux *mux;
     struct stream *stream;
     int i;
@@ -89,20 +93,45 @@ set_stream_use(struct muxlist *mul) {
 	    streamfunc[stream->type].used = 1;
     }
 }
+void
+drop_priviledges(int unsecure)
+{
+    struct passwd *pw;
 
-/* alarmhandler that gets called every SYMON_INTERVAL */
-void 
+    if (unsecure) {
+	if (setegid(getgid()) || setgid(getgid()) ||
+	    seteuid(getuid()) || setuid(getuid()))
+	    fatal("can't drop priviledges: %.200s", strerror(errno));
+    } else {
+	if ((pw = getpwnam(SYMON_USER)) == NULL)
+	    fatal("could not get user information for user '%.200s': %.200s",
+		  SYMON_USER, strerror(errno));
+
+	if (chroot(pw->pw_dir) < 0)
+	    fatal("chroot failed: %.200s", strerror(errno));
+
+	if (chdir("/") < 0)
+	    fatal("chdir / failed: %.200s", strerror(errno));
+
+	if (setgroups(1, &pw->pw_gid) ||
+	    setegid(pw->pw_gid) || setgid(pw->pw_gid) ||
+	    seteuid(pw->pw_uid) || setuid(pw->pw_uid))
+	    fatal("can't drop privileges: %.200s", strerror(errno));
+    }
+}
+/* alarmhandler that gets called every symon_interval */
+void
 alarmhandler(int s)
 {
     /* EMPTY */
 }
-void 
+void
 exithandler(int s)
 {
     info("received signal %d - quitting", s);
     exit(1);
 }
-void 
+void
 huphandler(int s)
 {
     info("hup received");
@@ -119,18 +148,15 @@ huphandler(int s)
  * Measurements are processed by a second program called symux. symon and symux
  * communicate via udp.
  */
-int 
+int
 main(int argc, char *argv[])
 {
     struct muxlist mul, newmul;
     struct itimerval alarminterval;
     struct stream *stream;
     struct mux *mux;
-    FILE *f;
-    char *cfgfile;
+    FILE *pidfile;
     char *cfgpath;
-    char *stringptr;
-    int maxstringlen;
     int ch;
     int i;
 
@@ -139,60 +165,57 @@ main(int argc, char *argv[])
     /* reset flags */
     flag_debug = 0;
     flag_daemon = 0;
-    cfgfile = SYMON_CONFIG_FILE;
+    flag_unsecure = 0;
 
-    while ((ch = getopt(argc, argv, "dvf:")) != -1) {
+    cfgpath = SYMON_CONFIG_FILE;
+
+    while ((ch = getopt(argc, argv, "dvuf:")) != -1) {
 	switch (ch) {
 	case 'd':
 	    flag_debug = 1;
 	    break;
+
 	case 'f':
-	    if (optarg && optarg[0] != '/') {
-		/* cfg path needs to be absolute, we will be a daemon soon */
-		if ((cfgpath = getwd(NULL)) == NULL)
-		    fatal("could not get working directory");
-
-		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
-		cfgfile = xmalloc(maxstringlen);
-		strncpy(cfgfile, cfgpath, maxstringlen);
-		stringptr = cfgfile + strlen(cfgpath);
-		stringptr[0] = '/';
-		stringptr++;
-		strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
-		cfgfile[maxstringlen] = '\0';
-
-		free(cfgpath);
-	    }
-	    else
-		cfgfile = xstrdup(optarg);
-
+	    cfgpath = xstrdup(optarg);
 	    break;
+
+	case 'u':
+	    flag_unsecure = 1;
+	    break;
+
 	case 'v':
 	    info("symon version %s", SYMON_VERSION);
 	default:
-	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
+	    info("usage: %s [-d] [-u] [-v] [-f cfgfile]", __progname);
 	    exit(EX_USAGE);
 	}
     }
 
-    /* parse configuration file */
-    if (!read_config_file(&mul, cfgfile))
-	fatal("configuration contained errors; quitting");
+    if (!read_config_file(&mul, cfgpath))
+	fatal("configuration file contained errors - aborting");
 
-    setegid(getgid());
-    setgid(getgid());
+    set_stream_use(&mul);
+
+    /* open resources that might not be available after priviledge drop */
+    for (i = 0; i < MT_EOT; i++)
+	if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
+	    (streamfunc[i].privinit) ();
+
+    if ((pidfile = fopen(SYMON_PID_FILE, "w")) == NULL)
+	warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,
+		strerror(errno));
+
+    drop_priviledges(flag_unsecure);
 
     if (flag_debug != 1) {
 	if (daemon(0, 0) != 0)
-	    fatal("daemonize failed");
+	    fatal("daemonize failed: %.200s", strerror(errno));
 
 	flag_daemon = 1;
 
-	/* record pid */
-	f = fopen(SYMON_PID_FILE, "w");
-	if (f) {
-	    fprintf(f, "%u\n", (u_int) getpid());
-	    fclose(f);
+	if (pidfile) {
+	    fprintf(pidfile, "%u\n", (u_int) getpid());
+	    fclose(pidfile);
 	}
     }
 
@@ -219,33 +242,32 @@ main(int argc, char *argv[])
 	}
     }
     set_stream_use(&mul);
-    
+
     /* setup alarm */
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
     alarminterval.it_interval.tv_sec =
-	alarminterval.it_value.tv_sec = SYMON_INTERVAL;
+	alarminterval.it_value.tv_sec = symon_interval;
 
     if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
-	fatal("alarm setup failed -- %s", strerror(errno));
+	fatal("alarm setup failed: %.200s", strerror(errno));
     }
 
     for (;;) {			/* FOREVER */
-	sleep(SYMON_INTERVAL);	/* alarm will always interrupt sleep */
+	sleep(symon_interval);	/* alarm will interrupt sleep */
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
 
 	    SLIST_INIT(&newmul);
 
-	    if (!read_config_file(&newmul, cfgfile)) {
+	    if (!read_config_file(&newmul, cfgpath)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
-	    }
-	    else {
+	    } else {
 		free_muxlist(&mul);
 		mul = newmul;
-		info("read configuration file '%.100s' succesfully", cfgfile);
+		info("read configuration file '%.200s' succesfully", cfgpath);
 
 		/* init modules */
 		SLIST_FOREACH(mux, &mul, muxes) {
@@ -256,9 +278,7 @@ main(int argc, char *argv[])
 		}
 		set_stream_use(&mul);
 	    }
-	}
-	else {
-
+	} else {
 	    /* populate for modules that get all their measurements in one go */
 	    for (i = 0; i < MT_EOT; i++)
 		if (streamfunc[i].used && (streamfunc[i].gets != NULL))
@@ -276,6 +296,6 @@ main(int argc, char *argv[])
 	    }
 	}
     }
-    /* NOTREACHED */
-    return (EX_SOFTWARE);
+
+    return (EX_SOFTWARE);     /* NOTREACHED */
 }

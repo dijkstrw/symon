@@ -1,7 +1,7 @@
-/* $Id: data.c,v 1.21 2003/10/10 15:19:49 dijkstra Exp $ */
+/* $Id: data.c,v 1.22 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is from Rob Warnock <rpw3@sgi.com>, from the
@@ -128,7 +128,7 @@ u_int32_t
 crc32_table[256];
 
 /* Convert lexical entities to stream entities */
-const int 
+const int
 token2type(const int token)
 {
     int i;
@@ -160,7 +160,7 @@ type2str(const int streamtype)
     return 0;
 }
 /* Return the maximum lenght of the ascii representation of type <type> */
-int 
+int
 strlentype(int type)
 {
     int i = 0;
@@ -172,7 +172,7 @@ strlentype(int type)
     return sum;
 }
 /* Return the maximum lenght of the ascii representation of streamvar <var> */
-int 
+int
 strlenvar(char var)
 {
     int i;
@@ -188,7 +188,7 @@ strlenvar(char var)
     return 0;
 }
 /* Return the maximum lenght of the network representation of streamvar <var> */
-int 
+int
 bytelenvar(char var)
 {
     int i;
@@ -235,19 +235,18 @@ rrdstrvar(char var)
     return "";
 }
 /* Check whether <extra> more bytes fit in <maxlen> when we are already at <start> */
-int 
+int
 checklen(int maxlen, int current, int extra)
 {
     if ((current + extra) < maxlen) {
 	return 0;
-    }
-    else {
+    } else {
 	warning("buffer overflow: max=%d, current=%d, extra=%d",
 		maxlen, current, extra);
 	return 1;
     }
 }
-int 
+int
 setheader(char *buf, struct symonpacketheader *hph)
 {
     struct symonpacketheader nph;
@@ -271,7 +270,7 @@ setheader(char *buf, struct symonpacketheader *hph)
 
     return (p - buf);
 }
-int 
+int
 getheader(char *buf, struct symonpacketheader *hph)
 {
     char *p;
@@ -297,7 +296,7 @@ getheader(char *buf, struct symonpacketheader *hph)
  * Pack multiple arguments of a MT_TYPE into a network order bytestream.
  * snpack returns the number of bytes actually stored.
  */
-int 
+int
 snpack(char *buf, int maxlen, char *id, int type,...)
 {
     va_list ap;
@@ -318,16 +317,14 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 
     if (maxlen < 2) {
 	fatal("%s:%d: maxlen too small", __FILE__, __LINE__);
-    }
-    else {
+    } else {
 	buf[offset++] = type & 0xff;
     }
 
     if (id) {
 	if ((strlen(id) + 1) >= maxlen) {
 	    return 0;
-	}
-	else {
+	} else {
 	    strncpy(&buf[offset], id, maxlen - 1);
 	    offset += strlen(id);
 	}
@@ -380,7 +377,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	    bcopy(&q, buf + offset, sizeof(u_int64_t));
 	    offset += sizeof(u_int64_t);
 	    break;
-	    
+
 	case 'D':
 	    D = va_arg(ap, double);
 	    d = (int64_t) (D * 1000 * 1000);
@@ -388,9 +385,11 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	    bcopy(&d, buf + offset, sizeof(int64_t));
 	    offset += sizeof(int64_t);
 	    break;
-	    
+
 	default:
-	    warning("unknown stream format identifier");
+	    warning("unknown stream format identifier %c in type %d",
+		    streamform[type].form[i],
+		    type);
 	    return 0;
 	}
 	i++;
@@ -407,7 +406,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
  * description of the packedstream (streamform) to parse the actual bytes. This
  * description corresponds to the amount of bytes that will fit inside the
  * packedstream structure.  */
-int 
+int
 sunpack(char *buf, struct packedstream * ps)
 {
     char *in, *out;
@@ -434,8 +433,7 @@ sunpack(char *buf, struct packedstream * ps)
 	strncpy(ps->args, in, sizeof(ps->args));
 	ps->args[sizeof(ps->args) - 1] = '\0';
 	in += strlen(ps->args);
-    }
-    else {
+    } else {
 	ps->args[0] = '\0';
     }
 
@@ -492,7 +490,9 @@ sunpack(char *buf, struct packedstream * ps)
 	    break;
 
 	default:
-	    warning("unknown stream format identifier");
+	    warning("unknown stream format identifier %c in type %d",
+		    streamform[type].form[i],
+		    type);
 	    return 0;
 	}
 	i++;
@@ -500,7 +500,7 @@ sunpack(char *buf, struct packedstream * ps)
     return (in - buf);
 }
 /* Get the RRD or 'pretty' ascii representation of packedstream */
-int 
+int
 ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
 {
     u_int16_t b;
@@ -574,9 +574,9 @@ ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
 	    in += sizeof(int64_t);
 	    break;
 
-	    
+
 	default:
-	    warning("Unknown stream format identifier");
+	    warning("unknown stream format identifier %c", vartype);
 	    return 0;
 	}
 	out += strlen(out);
@@ -780,7 +780,7 @@ rename_mux(struct muxlist * mul, struct mux * mux, char *name)
 
     return mux;
 }
-void 
+void
 free_muxlist(struct muxlist * mul)
 {
     struct mux *p, *np;
@@ -814,7 +814,7 @@ free_muxlist(struct muxlist * mul)
 	p = np;
     }
 }
-void 
+void
 free_streamlist(struct streamlist * sl)
 {
     struct stream *p, *np;
@@ -836,7 +836,7 @@ free_streamlist(struct streamlist * sl)
 	p = np;
     }
 }
-void 
+void
 free_sourcelist(struct sourcelist * sol)
 {
     struct source *p, *np;
@@ -859,7 +859,7 @@ free_sourcelist(struct sourcelist * sol)
     }
 }
 /* Calculate maximum buffer space needed for a single symon hit */
-int 
+int
 calculate_churnbuffer(struct sourcelist * sol)
 {
     char buf[_POSIX2_LINE_MAX];
@@ -880,7 +880,7 @@ calculate_churnbuffer(struct sourcelist * sol)
 	SLIST_FOREACH(stream, &source->sl, streams) {
 	    len += strlen(type2str(stream->type)) + strlen(":");
 	    len += strlen(stream->args) + strlen(":");
-	    len += (sizeof(time_t) * 3) + strlen(":"); /* 3 =~ ln(255) / ln(10) */
+	    len += (sizeof(time_t) * 3) + strlen(":"); /* 3 > ln(255) / ln(10) */
 	    len += strlentype(stream->type);
 	    n++;
 	}
@@ -903,7 +903,7 @@ crc32(const void *buf, unsigned int len)
     return ~crc;
 }
 /* Init table for CRC32 */
-void 
+void
 init_crc32()
 {
     unsigned int i, j;

@@ -1,7 +1,7 @@
-/* $Id: symon.h,v 1.26 2003/10/12 17:26:09 dijkstra Exp $ */
+/* $Id: symon.h,v 1.27 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,23 +40,34 @@
 #include "lex.h"
 #include "data.h"
 
-#define SYMON_PID_FILE    "/var/run/symon.pid"
-#define SYMON_INTERVAL 5	        /* measurement interval */
+#define SYMON_PID_FILE "/var/run/symon.pid"
+#define SYMON_USER "_symon"
+#define SYMON_DEFAULT_INTERVAL 5	/* measurement interval */
 #define SYMON_WARN_SENDERR 50	        /* warn every x errors */
-#define SYMON_MAX_DOBJECTS  2000	/* max dynamic allocation; local limit per
-				         * measurement module */
-#define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)	/* max allocation unit =
-						 * _POSIX2_LINE_MAX */
-#define SYMON_SENSORMASK   0xFF         /* sensors 0-255 are allowed */
+#define SYMON_MAX_DOBJECTS 2000	        /* max dynamic allocation; local limit per
+					 * measurement module */
+#define SYMON_MAX_OBJSIZE (_POSIX2_LINE_MAX)
+#define SYMON_SENSORMASK 0xFF           /* sensors 0-255 are allowed */
 
+/* funcmap holds functions to be called for the individual monitors:
+ *
+ * - privinit = priviledged init, called before chroot
+ * - init     = called once, right after configuration
+ * - gets     = called every monitor interval, can be used by modules that get all
+ *              their measurements in one go.
+ * - get      = obtain measurement
+ */
 struct funcmap {
     int type;
     int used;
+    void (*privinit) ();
     void (*init) (char *);
     void (*gets) ();
     int (*get) (char *, int, char *);
 };
 extern struct funcmap streamfunc[];
+
+extern int symon_interval;
 
 /* prototypes */
 __BEGIN_DECLS
@@ -78,6 +89,7 @@ extern void gets_io();
 extern int get_io(char *, int, char *);
 
 /* sm_pf.c */
+extern void privinit_pf();
 extern void init_pf(char *);
 extern int get_pf(char *, int, char *);
 

@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.8 2002/12/15 14:22:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.9 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@
 /* Globals for this module start with if_ */
 static int if_s = -1;
 /* Prepare if module for first use */
-void 
+void
 init_if(char *s)
 {
     if (if_s == -1)
@@ -73,10 +73,10 @@ init_if(char *s)
 	    fatal("%s:%d: socket failed, %.200",
 		  __FILE__, __LINE__, strerror(errno));
 
-    info("started module if(%s)", s);
+    info("started module if(%.200s)", s);
 }
 /* Get interface statistics */
-int 
+int
 get_if(char *symon_buf, int maxlen, char *interface)
 {
     struct ifreq ifr;
@@ -87,7 +87,7 @@ get_if(char *symon_buf, int maxlen, char *interface)
     ifr.ifr_data = (caddr_t) & ifdata;
 
     if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
-	warning("if(%s) failed (ioctl error)", interface);
+	warning("if(%.200s) failed (ioctl error)", interface);
 	return 0;
     }
 

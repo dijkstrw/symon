@@ -1,19 +1,19 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2002 Willem Dijkstra
+.\" Copyright (c) 2001-2003 Willem Dijkstra
 .\" All rights reserved.
-.\" 
+.\"
 .\" Redistribution and use in source and binary forms, with or without
 .\" modification, are permitted provided that the following conditions
 .\" are met:
-.\" 
+.\"
 .\"    - Redistributions of source code must retain the above copyright
 .\"      notice, this list of conditions and the following disclaimer.
 .\"    - Redistributions in binary form must reproduce the above
 .\"      copyright notice, this list of conditions and the following
 .\"      disclaimer in the documentation and/or other materials provided
 .\"      with the distribution.
-.\" 
+.\"
 .\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 .\" "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 .\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -26,7 +26,7 @@
 .\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
-.\" 
+.\"
 .Dd April 5, 2002
 .Dt SYMUX 8
 .Os
@@ -34,7 +34,7 @@
 .Nm symux
 .Nd symon stream multiplexer
 .Sh SYNOPSIS
-.Nm 
+.Nm
 .Op Fl vd
 .Op Fl f Ar filename
 .Pp
@@ -44,7 +44,7 @@ is a lightweight system monitor that measures cpu, memory, mbuf, debug,
 process, interface and disk statistics every 5 seconds. This information
 is then spooled to
 .Nm
-for further processing. 
+for further processing.
 .Pp
 .Xr symon 8
 has been designed to inflict minimal performance and security impact on
@@ -52,15 +52,15 @@ the system it monitors.
 .Nm
 has performance impact proportional to the amount of streams it needs to
 manage. Ideally
-.Nm 
+.Nm
 should live on a different system and collect data from several
 .Xr symon 8
 instances in a LAN.
-.Nm 
+.Nm
 stores the incoming streams in .rrd files and distributes the
 information to connected listeners. Listeners can connect to
 .Nm
-on a tcp port and receive incoming 
+on a tcp port and receive incoming
 .Xr symon 8
 transmissions decoded into ascii.
 .Lp
@@ -74,21 +74,21 @@ The options:
 .It Fl v
 Show version information.
 .It Fl d
-Stop 
+Stop
 .Nm
 from becoming a daemon and show debug information on stdout.
 .It Fl f Ar filename
-Read configuration from 
+Read configuration from
 .Ar filename
-instead of 
+instead of
 .Pa /etc/symux.conf .
 .Sh CONFIGURATION
 .Nm
-obtains configuration data from 
+obtains configuration data from
 .Pa /etc/symux.conf .
 The configuration file contains one mux stanza that defines on what host
 address and port
-.Nm 
+.Nm
 should listen to for incoming monitored data. There is a source section
 for every host that is to be monitored. The source section defines what
 data to accept and where to write that data to. In the case that a
@@ -106,36 +106,36 @@ source-stmt  = "source" host "{" accept-stmts write-stmts [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | 
-               "proc" | "mbuf" | "sensor"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
+	       "proc" | "mbuf" | "sensor"
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
 write-stmt   = "write" resource "in" filename
 .fi
 .Pp
-Note that 
+Note that
 .Bl -tag -width Ds
 .It Va port
-in the 
+in the
 .Va mux-stmt
-specifies the port-number for both the udp port (incoming 
+specifies the port-number for both the udp port (incoming
 .Xr symon 8
 traffic) and the tcp port for incoming listeners.
 .It Va datadir
-will guess filenames for all 
-accepted streams. 
+will guess filenames for all
+accepted streams.
 .Va write
 statements always take precendence over a
 .Va datadir
-statement. 
+statement.
 .Sh EXAMPLE
-Here is an example 
+Here is an example
 .Ar symux.conf
 that listens to udp port 2100 on lo0, and accepts cpu, memory, pf,
 interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] streams from a
 .Xr symon 8
-on localhost. 
+on localhost.
 .Nm
 will also listen on tcp port 2100 for incoming listeners.
 .Pp
@@ -143,18 +143,18 @@ will also listen on tcp port 2100 for incoming listeners.
 mux 127.0.0.1 2100
 source 127.0.0.1 {
     accept { cpu(0), mem, pf,
-             if(xl0), if(de0),
-             if(lo0), if(wi0), 
-             io(wd0), io(wd1), io(wd2), 
-             io(wd3), io(cd0), io(cd1) }
+	     if(xl0), if(de0),
+	     if(lo0), if(wi0),
+	     io(wd0), io(wd1), io(wd2),
+	     io(wd3), io(cd0), io(cd1) }
 
     datadir "/export/symon/localhost"
 }
 .fi
 .Sh LISTENERS
 .Nm
-offers received 
-.Xr symon 8 
+offers received
+.Xr symon 8
 data to other programs via tcp. An example of a listener session:
 .Pp
 .nf
@@ -179,7 +179,7 @@ telnet> close
 Connection closed.
 .fi
 .Lp
-The format is 
+The format is
 .Va symon-version
 :
 .Va symon-host-ip
@@ -235,10 +235,10 @@ precision. Value depends on sensor type.
 .It SIGHUP
 Causes
 .Nm
-to read 
-.Pa /etc/symux.conf 
-or the file specified by the 
-.Fl f 
+to read
+.Pa /etc/symux.conf
+or the file specified by the
+.Fl f
 flag.
 .Nm
 will keep the old configuration if errors occured during parsing of the
@@ -252,19 +252,19 @@ Contains the program id of the
 daemon.
 .It Pa /etc/symux.conf
 .Nm
-system wide configuration file. 
+system wide configuration file.
 .El
 .Sh BUGS
-.Nm 
+.Nm
 writes incoming data to rrd files "in process". An rrdupdate on a somewhat
 stale rrdfile -- with the last data from quite some time in the past -- is a
 very expensive operation. This can cause
-.Nm 
+.Nm
 to lockup while rrdupdate is updating the rrd file.
 .Nm
-will be unresponsive during this process. 
+will be unresponsive during this process.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
 contributed the pf probe and helped to port to big-endian architectures.
 .Sh SEE ALSO
-.Xr symon 8 
+.Xr symon 8

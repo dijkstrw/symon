@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.6 2003/10/14 20:09:37 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.7 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -57,33 +57,37 @@
 #include "symon.h"
 
 /* Globals for this module start with pf_ */
-static int pf_dev = -1;
-
+int pf_dev = -1;
+/* Priviledged init, called before priviledges are dropped */
+void
+privinit_pf()
+{
+    if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1)
+	warning("could not open \"/dev/pf\", %.200s", strerror(errno));
+}
 /* Prepare if module for first use */
-void 
+void
 init_pf(char *s)
 {
     if (pf_dev == -1)
-	if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1)
-	    fatal("%s:%d: open(\"/dev/pf\") failed, %.200s",
-		  __FILE__, __LINE__, strerror(errno));
+	privinit_pf();
 
-    info("started module pf(%s)", s);
+    info("started module pf(%.200s)", s);
 }
 /* Get pf statistics */
-int 
+int
 get_pf(char *symon_buf, int maxlen, char *arg)
 {
     struct pf_status s;
     u_int64_t n;
 
     if (pf_dev == -1) {
-	warning("pf(%s) failed (dev == -1)", arg);
+	warning("pf(%.200s) failed (dev == -1)", arg);
 	return 0;
     }
 
     if (ioctl(pf_dev, DIOCGETSTATUS, &s)) {
-	warning("pf(%s) failed (ioctl error)", arg);
+	warning("pf(%.200s) failed (ioctl error)", arg);
 	return 0;
     }
 

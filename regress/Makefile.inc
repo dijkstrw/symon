@@ -1,11 +1,11 @@
-# $Id: Makefile.inc,v 1.1 2003/10/05 07:52:52 dijkstra Exp $
+# $Id: Makefile.inc,v 1.2 2003/12/20 16:30:44 dijkstra Exp $
 
 CC=	 cc
 CFLAGS+= -g -Wall
-OBJS+=   ${SRCS:R:S/$/.o/g} 
+OBJS+=   ${SRCS:R:S/$/.o/g}
 
 
-.SUFFIXES: .c .o 
+.SUFFIXES: .c .o
 
 .c.o:
 	${CC} ${CFLAGS} -c $<

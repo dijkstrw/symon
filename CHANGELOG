@@ -1,27 +1,29 @@
-14/10/2003 - 2.63
+20/10/2003 - 2.63
 
-   - pf probe needs read access to /dev/pf. symon does not need to be root
-     anymore.
+   - symon(8) now chroots and drop priviledges to user "_symon" (Henning
+     Brauer)
 
-   - HOMEPAGE in Makefile was off (Robert Winder)
+   - added support for adjusting symon(8) monitoring interval (Henning
+     Brauer)
 
-   - port: MESSAGEs were incorrect (Soeren Thing Andersen), PLIST incomplete
-     (Henning Brauer)
+   - removed typos and better starter configuration (Franciszek Holop)
 
-   - port PLIST
+   - port: MESSAGEs were incorrect (Soeren Thing Andersen), PLIST
+     incomplete (Henning Brauer), HOMEPAGE in Makefile was off (Robert
+     Winder)
 
 12/10/2003 - 2.62
 
    - removed errors in c_smrrds.sh (Henning Brauer)
-   
+
    - detecting sensor support was broken (Nick Forbes)
 
 03/10/2003 - 2.61
 
    - added sensor probe
 
-   - removed symon2web from base source package. symon2web (or the new syweb
-     package) can be downloaded from the main website. 
+   - removed symon2web from base source package. symon2web (or the new
+     syweb package) can be downloaded from the main website.
 
    - symux churnbuffer calculation now deals with ipv6 hostnames too
 
@@ -31,7 +33,7 @@
 
    - symon uses group probes only for configured streams
 
-   - c_config.sh was not included in the PLIST for the symon package 
+   - c_config.sh was not included in the PLIST for the symon package
      (Andrew Dalgleish)
 
 23/03/2003 - 2.60
@@ -39,7 +41,7 @@
    - sm_io was broken on sparc64
    - ntohq functions were not detected for big endian machines
    - c_config.sh broke on nfs mounts and pfsync
-   
+
    All: thanks to Henning Brauer
 
 26/02/2003 - 2.59
@@ -69,14 +71,14 @@
    Added proc and debug symon2web frontends. Debug has limited
    useability, you are better off defining one for yourself.
 
-14/12/2002 - 
+14/12/2002 -
 
    Added the proc module. This can be used to retrieve accumulated
    information about processes with the same name. A proc(httpd)
    statement in symon.conf, for instance, will result in the reporting
    of the number of processes called "httpd" and the amounts of cpu and
    memory that they take.
-  
+
    Added em device to c_smrrds.sh - thanks to Jung.  Fixed typo in
    SymuxClient.pm - thanks Tobias Gresch.  c_config.sh did not deal with
    type mfs devices - thanks Dom De Vitto.
@@ -100,7 +102,7 @@
    something with the measurements as they come in. (I plan to drive an
    LCD using this, but it could also be used to get, say, daily
    bandwidth usage)
- 
+
    Clients of symux would not sleep after they had read and relayed data
    symux gave to them. This could lead to one child eating up multiple
    'semaphore slots' and starvation in other clients - fixed.
@@ -141,7 +143,7 @@
 
    Installation of symon now also generates a default symon.conf file if
    the system does not already have one.
-   
+
    Someone at www.deadly.org pointed out that symon is no longer
    compatible with OpenBSD 3.0 - removed claim from the website.
 
@@ -151,7 +153,7 @@
 
    symux would bomb out after a hup - fixed.
 
-14/09/2002 - 2.51 
+14/09/2002 - 2.51
 
    Steve Shockley reported that the port Makefile did not install rrd
    tool. (Which is required for compilation of symux)
@@ -193,7 +195,7 @@
 
 01/09/2002 - Internal cosmetics - not released
 
-   mon/mon.c: 
+   mon/mon.c:
      - mon packetsize is still limited by size of struct monpacket in
        data.h:79. All other limits have been removed.
 
@@ -206,7 +208,7 @@
 
 31/08/2002 - 2.3
 
-    Makefiles, mon/mon.c: 
+    Makefiles, mon/mon.c:
      - Environment variable KVM will enable the building of a setgid
        kmem version of the monitor. If this environment variable is not
        present, a non priviledged monitor will be built. (Note that all
@@ -217,7 +219,7 @@
     mon/if.c:
      - obtain ifdata as per h1kari's suggestion.
 
-    mon/pf.c: 
+    mon/pf.c:
      - global naming in sync with other probes
      - repeated initialisation would eat up fds
 
@@ -234,7 +236,7 @@
     Merged contributions by Daniel Hartmeier:
      - cpu probe had a nasty va_arg bug that only showed up on
        big-endian machines.
-    
+
 29/08/2002 - 2.1
 
     Merged contributions by Daniel Hartmeier:
@@ -265,12 +267,12 @@
 
 01/04/2002 - changed all memsets into bzero
              all output messages have the same format now
-             write pids in /var/run 
+             write pids in /var/run
              SIGHUP = reload configuration
 
 31/03/2002 - cleaned up source
 
-             added error reporting routines. 
+             added error reporting routines.
 
 29/03/2002 - mon and monmux no use monpacket to communicate with each
              other. This format defines: version, lenght and crc of the traffic
@@ -279,7 +281,7 @@
              mon no longer connects. monmux and mon can be started and stopped
              independently.
 
-             monmux now checks if incoming traffic is allowed from a certain host.             
+             monmux now checks if incoming traffic is allowed from a certain host.
 
              added rrd write support to monmux
 
@@ -304,8 +306,8 @@
 
 24/11/2001 - Rewrote lib to KNF, OpCodes removed
 03/11/2001 - Added datatypes and rewrote readconf to use SLISTs.
-01/10/2001 - Mon configuration is read from a mon.conf. 
-29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
+01/10/2001 - Mon configuration is read from a mon.conf.
+29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.23 2003/12/13 14:44:30 dijkstra Exp $
+$Id: CHANGELOG,v 1.24 2003/12/20 16:30:44 dijkstra Exp $

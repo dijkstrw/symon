@@ -10,7 +10,7 @@
 int verbose;
 
 int
-main(int argc, char *argv[]) 
+main(int argc, char *argv[])
 {
     int i;
     int j;
@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 /* test forking n clients */
     for (i=0; i<clients; i++)
 	spawn_client();
-    
+
 /* throughput test */
     for (i=50000; i > 0; i--) {
 	master_forbidread();
@@ -37,4 +37,3 @@ main(int argc, char *argv[])
     exit(1);
 
 }
-

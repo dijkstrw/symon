@@ -1,7 +1,7 @@
-/* $Id: readconf.h,v 1.5 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.6 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,6 @@
 #include "data.h"
 
 __BEGIN_DECLS
-int read_config_file(struct muxlist *, const char *);
+int read_config_file(struct muxlist *, char *);
 __END_DECLS
 #endif				/* _SYMON_READCONF_H */

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.17 2003/10/12 17:26:10 dijkstra Exp $
+# $Id: Makefile,v 1.18 2003/12/20 16:30:44 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
@@ -27,7 +27,7 @@ install: symux symux.cat8 c_smrrds.sh symux.conf
 
 cleanipc:
 	ipcs | egrep "^m" | awk '{print $$2}' | xargs -n1 ipcrm -m &
-	ipcs | egrep "^s" | awk '{print $$2}' | xargs -n1 ipcrm -s 
+	ipcs | egrep "^s" | awk '{print $$2}' | xargs -n1 ipcrm -s
 
 conf.h:  Makefile
 	@echo Generating conf.h

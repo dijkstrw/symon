@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.17 2003/10/10 15:19:49 dijkstra Exp $ */
+/* $Id: lex.c,v 1.18 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -49,10 +49,11 @@
 #include <sys/types.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "xmalloc.h"
 #include "lex.h"
@@ -71,6 +72,7 @@ static struct {
     { "cpu", LXT_CPU },
     { "datadir", LXT_DATADIR },
     { "debug", LXT_DEBUG },
+    { "every", LXT_EVERY },
     { "if", LXT_IF },
     { "in", LXT_IN },
     { "io", LXT_IO },
@@ -81,6 +83,8 @@ static struct {
     { "pf", LXT_PF },
     { "port", LXT_PORT },
     { "proc", LXT_PROC },
+    { "second", LXT_SECOND },
+    { "seconds", LXT_SECONDS },
     { "sensor", LXT_SENSOR },
     { "source", LXT_SOURCE },
     { "stream", LXT_STREAM },
@@ -91,7 +95,7 @@ static struct {
 #define KW_OPS "{},()"
 
 /* Return the number of the token pointed to by cp or LXT_BADTOKEN */
-int 
+int
 parse_token(const char *cp)
 {
     u_int i;
@@ -115,8 +119,8 @@ parse_opcode(const int op)
     return NULL;
 }
 /* Read a line and increase buffer if needed */
-int 
-lex_readline(struct lex * l)
+int
+lex_readline(struct lex *l)
 {
     char *bp;
 
@@ -129,19 +133,17 @@ lex_readline(struct lex * l)
 	    l->buffer = xrealloc(l->buffer, l->bsize);
 	    bp = l->buffer;
 	    bp += l->endpos;
-	}
-	else {
+	} else {
 	    l->curpos = 0;
 	    l->endpos = 0;
 	}
-    }
-    else {
+    } else {
 	l->bsize = _POSIX2_LINE_MAX;
 	l->buffer = xmalloc(l->bsize);
 	bp = l->buffer;
     }
 
-    if (!fgets(bp, (l->buffer + l->bsize) - bp, l->fh))
+    if (!read(l->fh, bp, (l->buffer + l->bsize) - bp))
 	return 0;
     else {
 	l->endpos += strlen(bp) - 1;
@@ -149,20 +151,20 @@ lex_readline(struct lex * l)
     }
 }
 /* Copy char out of input stream */
-void 
-lex_copychar(struct lex * l)
+void
+lex_copychar(struct lex *l)
 {
     l->token[l->tokpos] = l->buffer[l->curpos];
 
     if (++l->tokpos >= _POSIX2_LINE_MAX) {
 	l->token[_POSIX2_LINE_MAX - 1] = '\0';
-	fatal("%s:%d: parse error at '%s'", l->filename, l->cline, l->token);
+	fatal("%.200s:%d: parse error at '%.200s'", l->filename, l->cline, l->token);
 	/* NOT REACHED */
     }
 }
 /* Get next char, read next line if needed */
-int 
-lex_nextchar(struct lex * l)
+int
+lex_nextchar(struct lex *l)
 {
     l->curpos++;
 
@@ -176,21 +178,21 @@ lex_nextchar(struct lex * l)
     return 1;
 }
 /* Close of current token with a '\0' */
-void 
-lex_termtoken(struct lex * l)
+void
+lex_termtoken(struct lex *l)
 {
     l->token[l->tokpos] = l->token[_POSIX2_LINE_MAX - 1] = '\0';
     l->tokpos = 0;
 }
 /* Unget token; the lexer allows 1 look a head. */
-void 
-lex_ungettoken(struct lex * l)
+void
+lex_ungettoken(struct lex *l)
 {
     l->unget = 1;
 }
 /* Get the next token in lex->token. return 0 if no more tokens found. */
-int 
-lex_nexttoken(struct lex * l)
+int
+lex_nexttoken(struct lex *l)
 {
     /* return same token as last time if it has been pushed back */
     if (l->unget) {
@@ -214,8 +216,7 @@ lex_nexttoken(struct lex * l)
 	    while (l->buffer[l->curpos] != '\n')
 		if (!lex_nextchar(l))
 		    return 0;
-	}
-	else if (!lex_nextchar(l))
+	} else if (!lex_nextchar(l))
 	    return 0;
     }
 
@@ -224,13 +225,13 @@ lex_nexttoken(struct lex * l)
     /* "delimited string" */
     if (l->buffer[l->curpos] == '"') {
 	if (!lex_nextchar(l)) {
-	    warning("%s:%d: unbalanced '\"'", l->filename, l->cline);
+	    warning("%.200s:%d: unbalanced '\"'", l->filename, l->cline);
 	    return 0;
 	}
 	while (l->buffer[l->curpos] != '"') {
 	    lex_copychar(l);
 	    if (!lex_nextchar(l)) {
-		warning("%s:%d: unbalanced '\"'", l->filename, l->cline);
+		warning("%.200s:%d: unbalanced '\"'", l->filename, l->cline);
 		return 0;
 	    }
 	}
@@ -242,13 +243,13 @@ lex_nexttoken(struct lex * l)
     /* 'delimited string' */
     if (l->buffer[l->curpos] == '\'') {
 	if (!lex_nextchar(l)) {
-	    warning("%s:%d: unbalanced \"\'\"", l->filename, l->cline);
+	    warning("%.200s:%d: unbalanced \"\'\"", l->filename, l->cline);
 	    return 0;
 	}
 	while (l->buffer[l->curpos] != '\'') {
 	    lex_copychar(l);
 	    if (!lex_nextchar(l)) {
-		warning("%s:%d: unbalanced \"\'\"", l->filename, l->cline);
+		warning("%.200s:%d: unbalanced \"\'\"", l->filename, l->cline);
 		return 0;
 	    }
 	}
@@ -297,36 +298,55 @@ open_lex(const char *filename)
     struct lex *l;
 
     l = xmalloc(sizeof(struct lex));
+    reset_lex(l);
     l->buffer = NULL;
-    l->cline = 1;
-    l->curpos = 0;
-    l->endpos = 0;
     l->filename = filename;
-    l->op = LXT_BADTOKEN;
     l->token = xmalloc(_POSIX2_LINE_MAX);
-    l->tokpos = 0;
-    l->type = LXY_UNKNOWN;
-    l->unget = 0;
-    l->value = 0;
 
-    if ((l->fh = fopen(l->filename, "r")) == NULL) {
-	warning("could not open file '%s':%s",
+    if ((l->fh = open(l->filename, O_RDONLY)) < 0) {
+	warning("could not open file '%.200s':%.200s",
 		l->filename, strerror(errno));
-	xfree(l);
+	close_lex(l);
 	return NULL;
     }
 
     lex_readline(l);
     return l;
 }
+/* Prepare file for another lexer run */
+void
+rewind_lex(struct lex *l)
+{
+    off_t filepos;
+
+    reset_lex(l);
+
+    if ((filepos = lseek(l->fh, (off_t)0, SEEK_SET)) == -1) {
+	warning("could not rewind file '%.200s':%.200s",
+		l->filename, strerror(errno));
+    }
+}
+/* Reset lexer to start of file defaults */
+void
+reset_lex(struct lex *l)
+{
+    l->cline = 1;
+    l->curpos = 0;
+    l->endpos = 0;
+    l->op = LXT_BADTOKEN;
+    l->tokpos = 0;
+    l->type = LXY_UNKNOWN;
+    l->unget = 0;
+    l->value = 0;
+}
 /* Destroy a lexical analyser */
-void 
-close_lex(struct lex * l)
+void
+close_lex(struct lex *l)
 {
     if (l == NULL)
 	return;
     if (l->fh)
-	fclose(l->fh);
+	close(l->fh);
     if (l->buffer)
 	xfree(l->buffer);
     if (l->token)
@@ -334,9 +354,9 @@ close_lex(struct lex * l)
     xfree(l);
 }
 /* Signal a parse error */
-void 
-parse_error(struct lex * l, const char *s)
+void
+parse_error(struct lex *l, const char *s)
 {
-    warning("%s:%d: expected %s (found '%.8s')",
+    warning("%.200s:%d: expected '%.200s' found '%.8s')",
 	    l->filename, l->cline, s, l->token);
 }

@@ -1,7 +1,7 @@
-/* $Id: net.h,v 1.9 2002/11/29 10:45:20 dijkstra Exp $ */
+/* $Id: net.h,v 1.10 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,4 +57,3 @@ void get_source_sockaddr(struct source *);
 __END_DECLS
 
 #endif				/* _SYMON_LIB_NET_H */
-

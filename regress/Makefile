@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2003/10/10 15:19:56 dijkstra Exp $
+# $Id: Makefile,v 1.5 2003/12/20 16:30:44 dijkstra Exp $
 
 SUBDIR=	npack share
 
@@ -14,4 +14,3 @@ _SUBDIRUSE: .USE
 		${MAKE} ${.MAKEFLAGS} ${.TARGET}; \
 	done
 .endif
-

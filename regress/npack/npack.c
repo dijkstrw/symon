@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.2 2003/10/10 15:19:58 dijkstra Exp $ */
+/* $Id: npack.c,v 1.3 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -11,7 +11,7 @@
 #include "xmalloc.h"
 #include "data.h"
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
     char *buffer;
     char *str;
@@ -22,9 +22,9 @@ int main(int argc, char **argv)
     str = xmalloc(_POSIX2_LINE_MAX);
     ps = xmalloc(sizeof(struct packedstream));
 
-    ilen = snpack(buffer, _POSIX2_LINE_MAX, "test pack", MT_TEST, 
+    ilen = snpack(buffer, _POSIX2_LINE_MAX, "test pack", MT_TEST,
 		  /* test L, u_int64_t */
-		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff, 
+		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff,
 		  /* test D, double */
 		  (double) 0, (double) 100000, (double) -100000, (double) -12.05,
 		  /* test l, u_int32_t */
@@ -66,6 +66,6 @@ int main(int argc, char **argv)
     assert(ps->data.ps_test.b[1] == 0xff);
     assert(ps->data.ps_test.b[2] == 0);
     assert(ps->data.ps_test.b[3] == 0x12);
-    
+
     return 0;
 }

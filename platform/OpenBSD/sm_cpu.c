@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.15 2003/10/10 15:20:01 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.16 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
  * The percentages function was written by William LeFebvre and is part of the
  * 'top' utility. His copyright statement is below.
  *
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,8 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *  */
+ *
+ */
 
 /*
  *  Top users/processes display for Unix
@@ -80,7 +81,7 @@ static int cp_states[CPUSTATES];
  *      The routine assumes modulo arithmetic.  This function is especially
  *      useful on BSD mchines for calculating cpu state percentages.
  */
-int 
+int
 percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
 {
     register int i;
@@ -116,7 +117,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
     return total_change;
 }
 /* Prepare cpu module for use */
-void 
+void
 init_cpu(char *s)
 {
     char buf[_POSIX2_LINE_MAX];
@@ -125,10 +126,10 @@ init_cpu(char *s)
     /* Call get_cpu once to fill the cp_old structure */
     get_cpu(buf, sizeof(buf), NULL);
 
-    info("started module cpu(%s)", s);
+    info("started module cpu(%.200s)", s);
 }
 /* Get new cpu measurements */
-int 
+int
 get_cpu(char *symon_buf, int maxlen, char *s)
 {
     int total;

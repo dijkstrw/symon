@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2003/10/10 15:19:45 dijkstra Exp $
+# $Id: Makefile,v 1.13 2003/12/20 16:30:44 dijkstra Exp $
 
 SUBDIR=	lib symon symux client
 
@@ -38,4 +38,3 @@ _SUBDIRUSE: .USE
 		${MAKE} ${.MAKEFLAGS} ${.TARGET}; \
 	done
 .endif
-

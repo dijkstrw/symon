@@ -9,5 +9,6 @@ TODO:
 == longer term
 - change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
+- test framework
 
-$Id: TODO,v 1.25 2003/10/10 15:19:45 dijkstra Exp $
+$Id: TODO,v 1.26 2003/12/20 16:30:44 dijkstra Exp $

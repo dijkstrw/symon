@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.17 2003/10/10 15:19:49 dijkstra Exp $ */
+/* $Id: lex.h,v 1.18 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -42,7 +42,7 @@
 
 #include <stdio.h>
 
-/* Tokens known to lex. */
+/* Tokens known to lex */
 #define LXT_BADTOKEN   0
 #define LXT_ACCEPT     1
 #define LXT_BEGIN      2
@@ -52,27 +52,30 @@
 #define LXT_DATADIR    6
 #define LXT_DEBUG      7
 #define LXT_END        8
-#define LXT_IF         9
-#define LXT_IN        10
-#define LXT_IO        11
-#define LXT_MEM       12
-#define LXT_MONITOR   13
-#define LXT_MUX       14
-#define LXT_OPEN      15
-#define LXT_PF        16
-#define LXT_PORT      17
-#define LXT_PROC      18
-#define LXT_SENSOR    19
-#define LXT_SOURCE    20
-#define LXT_STREAM    21
-#define LXT_TO        22
-#define LXT_WRITE     23
-#define LXT_MBUF      24
+#define LXT_EVERY      9
+#define LXT_IF        10
+#define LXT_IN        11
+#define LXT_IO        12
+#define LXT_MEM       13
+#define LXT_MONITOR   14
+#define LXT_MUX       15
+#define LXT_OPEN      16
+#define LXT_PF        17
+#define LXT_PORT      18
+#define LXT_PROC      19
+#define LXT_SECOND    20
+#define LXT_SECONDS   21
+#define LXT_SENSOR    22
+#define LXT_SOURCE    23
+#define LXT_STREAM    24
+#define LXT_TO        25
+#define LXT_WRITE     26
+#define LXT_MBUF      27
 
 struct lex {
     char *buffer;		/* current line(s) */
     const char *filename;
-    FILE *fh;
+    int fh;
     char *token;		/* last token seen */
     long value;			/* value of last token seen, if num */
     int bsize;			/* size of buffer  */
@@ -85,17 +88,19 @@ struct lex {
     enum {
 	LXY_STRING, LXY_NUMBER, LXY_UNKNOWN
     }
-         type;			/* type of token in buffer */
+	 type;			/* type of token in buffer */
 };
 
 __BEGIN_DECLS
+const char *parse_opcode(int);
+int lex_nexttoken(struct lex *);
+int parse_token(const char *);
 struct lex *open_lex(const char *);
 void close_lex(struct lex *);
-int lex_nexttoken(struct lex *);
 void lex_ungettoken(struct lex *);
-const char *parse_opcode(int);
-int parse_token(const char *);
 void parse_error(struct lex *, const char *);
+void reset_lex(struct lex *);
+void rewind_lex(struct lex *);
 __END_DECLS
 
 /* EXPECT(l,x) = next token in l must be opcode x or error.  */

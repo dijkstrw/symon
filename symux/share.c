@@ -1,7 +1,7 @@
-/* $Id: share.c,v 1.12 2003/10/10 15:20:03 dijkstra Exp $ */
+/* $Id: share.c,v 1.13 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,6 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- */
-
-/* TODO:
- * Dynamically allocate buffer size
- * Check wether one buffer suffices, do some performance tests
  */
 
 /* Share contains all routines needed for the ipc between symuxes */
@@ -124,13 +119,13 @@ shared_getmem()
     return &shm->data;
 }
 /* Get max length of data stored in shared region */
-long 
+long
 shared_getmaxlen()
 {
     return shm->reglen - sizeof(struct sharedregion);
 }
 /* Set length of data stored in shared region */
-void 
+void
 shared_setlen(long length)
 {
     if (length > (shm->reglen - (long) sizeof(struct sharedregion)))
@@ -141,13 +136,13 @@ shared_setlen(long length)
     shm->ctlen = length;
 }
 /* Get length of data stored in shared region */
-long 
+long
 shared_getlen()
 {
     return shm->ctlen;
 }
 /* Check whether semaphore is available */
-void 
+void
 check_sem()
 {
     if (semstat != SIPC_KEYED)
@@ -156,7 +151,7 @@ check_sem()
 }
 
 /* Check whether process is the master process */
-void 
+void
 check_master()
 {
     if (master == 0)
@@ -165,7 +160,7 @@ check_master()
 }
 
 /* Reset semaphores before each distribution cycle */
-void 
+void
 master_resetsem()
 {
     union semun semarg;
@@ -181,7 +176,7 @@ master_resetsem()
 	      __FILE__, __LINE__);
 }
 /* Prepare for writing to shm */
-void 
+void
 master_forbidread()
 {
     int clientsread;
@@ -207,7 +202,7 @@ master_forbidread()
     master_resetsem();
 }
 /* Signal 'permit read' to all clients */
-void 
+void
 master_permitread()
 {
     union semun semarg;
@@ -221,7 +216,7 @@ master_permitread()
 	      __FILE__, __LINE__);
 }
 /* Make clients wait until master signals */
-void 
+void
 client_waitread()
 {
     struct sembuf sops;
@@ -239,7 +234,7 @@ client_waitread()
     seqnr = shm->seqnr;
 }
 /* Client signal 'done reading' to master */
-void 
+void
 client_doneread()
 {
     struct sembuf sops;
@@ -264,14 +259,14 @@ client_doneread()
     sleep(1);
 }
 /* Client signal handler => always exit */
-void 
+void
 client_signalhandler(int s)
 {
     debug("client(%d) received signal %d - quitting", clientpid, s);
     exit(EX_TEMPFAIL);
 }
 /* Prepare sharing structures for use */
-void 
+void
 initshare(int bufsize)
 {
     newclients = 0;
@@ -322,8 +317,7 @@ spawn_client(int sock)
 	/* server */
 	if (pid == -1) {
 	    info("could not fork client process");
-	}
-	else {
+	} else {
 	    newclients++;
 	    info("forked client(%d) for incoming connection from %.17s",
 		 pid, &peername[0]);
@@ -332,8 +326,7 @@ spawn_client(int sock)
 	close(clientsock);
 
 	return pid;
-    }
-    else {
+    } else {
 	/* client */
 	master = 0;
 
@@ -353,7 +346,7 @@ spawn_client(int sock)
     }
 }
 /* Reap exit/stopped clients */
-void 
+void
 reap_clients()
 {
     pid_t pid;
@@ -380,7 +373,7 @@ reap_clients()
     }
 }
 /* Remove shared memory and semaphores at exit */
-void 
+void
 exitmaster()
 {
     union semun semarg;
@@ -423,7 +416,7 @@ exitmaster()
 		__FILE__, __LINE__);
     }
 }
-void 
+void
 client_loop()
 {
     int total;

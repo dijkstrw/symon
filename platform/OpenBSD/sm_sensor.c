@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.1 2003/10/12 17:32:22 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.2 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -58,12 +58,12 @@
 void
 init_sensor(char *s)
 {
-    fatal("sensor module requires system upgrade to OpenBSD 3.4");
+    fatal("sensor support not available");
 }
-int 
+int
 get_sensor(char *symon_buf, int maxlen, char *s)
 {
-    fatal("sensor module requires system upgrade to OpenBSD 3.4");
+    fatal("sensor support not available");
 }
 #else
 /* Globals for this module start with sn_ */
@@ -71,13 +71,13 @@ static int sn_mib[] = {CTL_HW, HW_SENSORS, 0};
 static struct sensor sn_sensor;
 
 /* Prepare if module for first use */
-void 
+void
 init_sensor(char *s)
 {
-    info("started module sensors(%s)", s);
+    info("started module sensors(%.200s)", s);
 }
 /* Get sensor statistics */
-int 
+int
 get_sensor(char *symon_buf, int maxlen, char *s)
 {
     size_t len;
@@ -89,11 +89,11 @@ get_sensor(char *symon_buf, int maxlen, char *s)
     l = strtol(s, NULL, 10);
     i = (int) (l & SYMON_SENSORMASK);
     sn_mib[2] = i;
-    
+
     len = sizeof(sn_sensor);
 
     if (sysctl(sn_mib, 3, &sn_sensor, &len, NULL, 0) == -1) {
-	warning("%s:%d: sensor can't get sensor %.200s -- %.200s", 
+	warning("%s:%d: sensor can't get sensor %.200s -- %.200s",
 		__FILE__, __LINE__, s, strerror(errno));
 
 	return 0;

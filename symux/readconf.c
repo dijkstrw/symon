@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.20 2003/10/10 15:20:03 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.21 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@ __END_DECLS
 
 const char *default_symux_port = SYMUX_PORT;
 
-int 
+int
 insert_filename(char *path, int maxlen, int type, char *args)
 {
     char *ts;
@@ -98,7 +98,7 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	ta = args;
 	break;
     default:
-	warning("%s:%d: internal error: type (%d) unknown",
+	warning("%.200s:%d: internal error: type (%d) unknown",
 		__FILE__, __LINE__, type);
 	return 0;
     }
@@ -109,21 +109,21 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	return 1;
 }
 /* mux <host> (port|,| ) <number> */
-int 
+int
 read_mux(struct muxlist * mul, struct lex * l)
 {
     char muxname[_POSIX2_LINE_MAX];
     struct mux *mux;
 
     if (!SLIST_EMPTY(mul)) {
-	warning("%s:%d: only one mux statement allowed",
+	warning("%.200s:%d: only one mux statement allowed",
 		l->filename, l->cline);
 	return 0;
     }
 
     lex_nexttoken(l);
     if (!getip(l->token)) {
-	warning("%s:%d: could not resolve '%s'",
+	warning("%.200s:%d: could not resolve '%s'",
 		l->filename, l->cline, l->token);
 	return 0;
     }
@@ -140,8 +140,7 @@ read_mux(struct muxlist * mul, struct lex * l)
     if (l->type != LXY_NUMBER) {
 	lex_ungettoken(l);
 	mux->port = xstrdup(default_symux_port);
-    }
-    else {
+    } else {
 	mux->port = xstrdup((const char *) l->token);
     }
 
@@ -155,7 +154,7 @@ read_mux(struct muxlist * mul, struct lex * l)
     return 1;
 }
 /* source <host> { accept ... | write ... | datadir ... } */
-int 
+int
 read_source(struct sourcelist * sol, struct lex * l)
 {
     struct source *source;
@@ -171,7 +170,7 @@ read_source(struct sourcelist * sol, struct lex * l)
     /* get hostname */
     lex_nexttoken(l);
     if (!getip(l->token)) {
-	warning("%s:%d: could not resolve '%s'",
+	warning("%.200s:%d: could not resolve '%s'",
 		l->filename, l->cline, l->token);
 	return 0;
     }
@@ -214,14 +213,13 @@ read_source(struct sourcelist * sol, struct lex * l)
 			    parse_error(l, ")");
 			    return 0;
 			}
-		    }
-		    else {
+		    } else {
 			lex_ungettoken(l);
 			sa[0] = '\0';
 		    }
 
 		    if ((stream = add_source_stream(source, st, sa)) == NULL) {
-			warning("%s:%d: stream %s(%s) redefined",
+			warning("%.200s:%d: stream %.200s(%.200s) redefined",
 				l->filename, l->cline, sn, sa);
 			return 0;
 		    }
@@ -242,7 +240,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    lex_nexttoken(l);
 	    /* is path absolute */
 	    if (l->token && l->token[0] != '/') {
-		warning("%s:%d: datadir path '%s' is not absolute",
+		warning("%.200s:%d: datadir path '%.200s' is not absolute",
 			l->filename, l->cline, l->token);
 		return 0;
 	    }
@@ -252,13 +250,12 @@ read_source(struct sourcelist * sol, struct lex * l)
 
 	    if (stat(l->token, &sb) == 0) {
 		if (!(sb.st_mode & S_IFDIR)) {
-		    warning("%s:%d: datadir path '%s' is not a directory",
+		    warning("%.200s:%d: datadir path '%.200s' is not a directory",
 			    l->filename, l->cline, l->token);
 		    return 0;
 		}
-	    }
-	    else {
-		warning("%s:%d: could not stat datadir path '%s'",
+	    } else {
+		warning("%.200s:%d: could not stat datadir path '%.200s'",
 			l->filename, l->cline, l->token);
 		return 0;
 	    }
@@ -281,15 +278,14 @@ read_source(struct sourcelist * sol, struct lex * l)
 					  stream->type,
 					  stream->args))) {
 			if (stream->args && strlen(stream->args)) {
-			    warning("%s:%d: failed to construct stream "
-				    "%s(%s) filename using datadir '%s'",
+			    warning("%.200s:%d: failed to construct stream "
+				    "%.200s(%.200s) filename using datadir '%.200s'",
 				    l->filename, l->cline,
 				    type2str(stream->type),
 				    stream->args, l->token);
-			}
-			else {
-			    warning("%s:%d: failed to construct stream "
-				    "%s) filename using datadir '%s'",
+			} else {
+			    warning("%.200s:%d: failed to construct stream "
+				    "%.200s) filename using datadir '%.200s'",
 				    l->filename, l->cline,
 				    type2str(stream->type),
 				    l->token);
@@ -299,11 +295,10 @@ read_source(struct sourcelist * sol, struct lex * l)
 
 		    /* try filename */
 		    if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			warning("%s:%d: file '%s', guessed by datadir,  cannot be opened",
+			warning("%.200s:%d: file '%.200s', guessed by datadir,  cannot be opened",
 				l->filename, l->cline, path);
 			return 0;
-		    }
-		    else {
+		    } else {
 			close(fd);
 			stream->file = xstrdup(path);
 		    }
@@ -341,8 +336,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			parse_error(l, ")");
 			return 0;
 		    }
-		}
-		else {
+		} else {
 		    lex_ungettoken(l);
 		    sa[0] = '\0';
 		}
@@ -353,28 +347,25 @@ read_source(struct sourcelist * sol, struct lex * l)
 
 		if ((stream = find_source_stream(source, st, sa)) == NULL) {
 		    if (strlen(sa)) {
-			warning("%s:%d: stream %s(%s) is not accepted for %s",
+			warning("%.200s:%d: stream %.200s(%.200s) is not accepted for %.200s",
 				l->filename, l->cline, sn, sa, source->addr);
 			return 0;
-		    }
-		    else {
-			warning("%s:%d: stream %s is not accepted for %s",
+		    } else {
+			warning("%.200s:%d: stream %.200s is not accepted for %.200s",
 				l->filename, l->cline, sn, source->addr);
 			return 0;
 		    }
-		}
-		else {
+		} else {
 		    /* try filename */
 		    if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			warning("%s:%d: file '%s' cannot be opened",
+			warning("%.200s:%d: file '%.200s' cannot be opened",
 				l->filename, l->cline, l->token);
 			return 0;
-		    }
-		    else {
+		    } else {
 			close(fd);
 
 			if (stream->file != NULL) {
-			    warning("%s:%d: file '%s' overwrites previous definition '%s'",
+			    warning("%.200s:%d: file '%.200s' overwrites previous definition '%.200s'",
 			     l->filename, l->cline, l->token, stream->file);
 			    xfree(stream->file);
 			}
@@ -397,13 +388,13 @@ read_source(struct sourcelist * sol, struct lex * l)
 	}
     }
 
-    warning("%s:%d: missing close brace on source statement",
+    warning("%.200s:%d: missing close brace on source statement",
 	    l->filename, l->cline);
 
     return 0;
 }
 /* Read symux.conf */
-int 
+int
 read_config_file(struct muxlist * mul, const char *filename)
 {
     struct lex *l;
@@ -443,11 +434,10 @@ read_config_file(struct muxlist * mul, const char *filename)
     /* sanity checks */
     if (SLIST_EMPTY(mul)) {
 	free_sourcelist(&sol);
-	warning("%s: no mux statement seen",
+	warning("%.200s: no mux statement seen",
 		l->filename);
 	return 0;
-    }
-    else {
+    } else {
 	mux = SLIST_FIRST(mul);
 	mux->sol = sol;
 	if (strncmp(SYMON_UNKMUX, mux->name, sizeof(SYMON_UNKMUX)) == 0) {
@@ -457,21 +447,20 @@ read_config_file(struct muxlist * mul, const char *filename)
     }
 
     if (SLIST_EMPTY(&sol)) {
-	warning("%s: no source section seen",
+	warning("%.200s: no source section seen",
 		l->filename);
 	return 0;
-    }
-    else {
+    } else {
 	SLIST_FOREACH(source, &sol, sources) {
 	    if (SLIST_EMPTY(&source->sl)) {
-		warning("%s: no streams accepted for source '%s'",
+		warning("%.200s: no streams accepted for source '%.200s'",
 			l->filename, source->addr);
 		return 0;
-	    }
-	    else {
+	    } else {
 		SLIST_FOREACH(stream, &source->sl, streams) {
 		    if (stream->file == NULL) {
-			warning("%s: no filename specified for stream '%s(%s)' in source '%s'",
+			/* warn, but allow */
+			warning("%.200s: no filename specified for stream '%.200s(%.200s)' in source '%.200s'",
 				l->filename, type2str(stream->type), stream->args, source->addr);
 		    }
 		}

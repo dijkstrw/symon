@@ -1,7 +1,7 @@
-/* $Id: symonnet.c,v 1.11 2002/11/29 10:45:21 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.12 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,7 @@
 #include "net.h"
 
 /* Fill a mux structure with inet details */
-void 
+void
 connect2mux(struct mux * mux)
 {
     struct sockaddr_storage sockaddr;
@@ -64,10 +64,10 @@ connect2mux(struct mux * mux)
     if (bind(mux->symuxsocket, (struct sockaddr *) & sockaddr, sockaddr.ss_len) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
-    info("sending packets to udp %s", mux->name);
+    info("sending packets to udp %.200s", mux->name);
 }
 /* Send data stored in the mux structure to a mux */
-void 
+void
 send_packet(struct mux * mux)
 {
     if (sendto(mux->symuxsocket, (void *) &mux->packet.data,
@@ -78,13 +78,13 @@ send_packet(struct mux * mux)
     }
 
     if (mux->senderr >= SYMON_WARN_SENDERR) {
-	warning("%d updates to mux(%s) lost due to send errors",
+	warning("%d updates to mux(%.200s) lost due to send errors",
 		mux->senderr, mux->name);
 	mux->senderr = 0;
     }
 }
 /* Prepare a packet for data */
-void 
+void
 prepare_packet(struct mux * mux)
 {
     time_t t = time(NULL);
@@ -99,7 +99,7 @@ prepare_packet(struct mux * mux)
 		  &mux->packet.header);
 }
 /* Put a stream into the packet for a mux */
-void 
+void
 stream_in_packet(struct stream * stream, struct mux * mux)
 {
     mux->offset +=
@@ -109,7 +109,7 @@ stream_in_packet(struct stream * stream, struct mux * mux)
      stream->args);
 }
 /* Ready a packet for transmission, set length and crc */
-void 
+void
 finish_packet(struct mux * mux)
 {
     mux->packet.header.length = mux->offset;

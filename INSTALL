@@ -5,15 +5,16 @@ Priviledges
 ===========
 symux needs read and write access to it's rrdfiles.
 
-monitoring needs:
+symon needs:
 cpu, debug, if, io, mbuf, mem, proc, sensor - symon can run as nobody
 pf                                          - symon needs r/w on /dev/pf
 
-Real quick 
+Real quick
 ==========
-make && make install && vi /etc/symux.conf /etc/symon.conf && 
-	~symon/symux/c_smrrds.sh all && 
-	/usr/local/libexec/symux && 
+make && make install && vi /etc/symux.conf /etc/symon.conf &&
+	~symon/symux/c_smrrds.sh all &&
+	/usr/local/libexec/symux &&
+	useradd _symon
 	/usr/local/libexec/symon
 
 or grab the port and do
@@ -25,7 +26,7 @@ Install the seperate syweb package to show the data stored in the rrd files.
 
 Less quick, but more verbose
 ============================
-- Install rrdtool where you want to run the gatherer. 
+- Install rrdtool where you want to run the gatherer.
 	cd /usr/ports/net/rrdtool && make install
 
 - Building by hand: Check Makefile.inc for settings. Things to watch out for
@@ -45,7 +46,7 @@ Less quick, but more verbose
 
    Run make && make install
 
-- Building from the port: 
+- Building from the port:
 	cd ~symon/ports/symon or cd /usr/ports/sysutils/symon
 	make package
 
@@ -53,11 +54,10 @@ Less quick, but more verbose
 	pkg_add symon-mon-version.tgz               on monitored hosts
 	pkg_add symon-mux-version.tgz               on the loghost | gatherer
 
-- Create an '/etc/symon.conf'. Note that there is an example configuration in
-  $PREFIX/$SHRDIR. 
-
-- Create a symux.conf on the gatherer host. You can specify alternative
-  locations than '/etc/symux.conf' using 'symux -f symux.conf'.
+- Create an '/etc/symon.conf' for each monitored host and one symux.conf for
+  the gatherer host. See the manual pages on how to specify alternative
+  configuration file locations, if necessary. Note that there are example
+  configurations for both in $PREFIX/$SHRDIR.
 
 - Create the rrd files where the incoming symon data is to be
   stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that syweb expects
@@ -65,14 +65,14 @@ Less quick, but more verbose
 
 - Fire up symon, symux. Check system logs for any failures.
 
-- Only if you need the webinterface: download and install syweb. 
+- Only if you need the webinterface: download and install syweb.
 
 Getting measurements without the web
 ====================================
 
 The client directory contains a perl module 'SymuxClient.pm' that can be used
 to read measurements as they come in at the symux host. A sample Perl program
-called 'getsymonitem.pl' shows how to use the module. 
+called 'getsymonitem.pl' shows how to use the module.
 
 Example:
 
@@ -85,10 +85,10 @@ Portability
 ===========
 
 This package is an OpenBSD application. You might be able to make symux and
-symon2web run on POSIX compliant unixes, but the monitoring application itself
+syweb run on POSIX compliant unixes, but the monitoring application itself
 (symon) is OpenBSD specific.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.11 2003/10/10 15:19:45 dijkstra Exp $
+$Id: INSTALL,v 1.12 2003/12/20 16:30:44 dijkstra Exp $
 

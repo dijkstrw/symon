@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.32 2003/10/12 17:26:09 dijkstra Exp $
+# $Id: Makefile,v 1.33 2003/12/20 16:30:44 dijkstra Exp $
 .include "../Makefile.inc"
 
 LIBS=	-L../lib -lsymon
-SRCS=	symon.c sm_cpu.c sm_debug.c sm_mem.c sm_if.c sm_io.c sm_pf.c sm_mbuf.c sm_proc.c sm_sensor.c readconf.c symonnet.c 
+SRCS=	symon.c sm_cpu.c sm_debug.c sm_mem.c sm_if.c sm_io.c sm_pf.c sm_mbuf.c sm_proc.c sm_sensor.c readconf.c symonnet.c
 OBJS+=	${SRCS:R:S/$/.o/g}
 CFLAGS+=-I../lib -I.
 

@@ -1,6 +1,6 @@
-# $Id: Makefile.inc,v 1.18 2003/10/12 17:26:04 dijkstra Exp $
+# $Id: Makefile.inc,v 1.19 2003/12/20 16:30:44 dijkstra Exp $
 
-V=2.62
+V=2.63
 
 AR=	ar
 CC=	cc
@@ -38,10 +38,8 @@ SYSCONFDIR=/etc
 
 .8.cat8:
 	${NROFF} -mandoc $< > $@ || (rm -f $@; false)
-		
+
 .pm.cat3p:
 	${POD2MAN} $< > $@.tmp || (rm -f $@; false)
 	${NROFF} -mandoc $@.tmp > $@ || (rm -f $@; false)
 	rm -f $@.tmp
-
-

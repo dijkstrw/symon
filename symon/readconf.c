@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.15 2003/10/10 15:20:01 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.16 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,14 +50,14 @@ __END_DECLS
 const char *default_symux_port = SYMUX_PORT;
 
 /* <hostname> (port|:|,| ) <number> */
-int 
+int
 read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 {
     char muxname[_POSIX2_LINE_MAX];
 
     lex_nexttoken(l);
     if (!getip(l->token)) {
-	warning("%s:%d: could not resolve '%s'",
+	warning("%.200s:%d: could not resolve '%.200s'",
 		l->filename, l->cline, l->token);
 	return 0;
     }
@@ -74,15 +74,14 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
     if (l->type != LXY_NUMBER) {
 	lex_ungettoken(l);
 	mux->port = xstrdup(default_symux_port);
-    }
-    else {
+    } else {
 	mux->port = xstrdup((const char *) l->token);
     }
 
     bzero(&muxname, sizeof(muxname));
     snprintf(&muxname[0], sizeof(muxname), "%s %s", mux->addr, mux->port);
     if (rename_mux(mul, mux, muxname) == NULL) {
-	warning("%s:%d: monitored data for host '%s' has already been specified",
+	warning("%.200s:%d: monitored data for host '%.200s' has already been specified",
 		l->filename, l->cline, muxname);
 	return 0;
     }
@@ -90,7 +89,7 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
     return 1;
 }
 /* parse "<cpu(arg)|mem|if(arg)|io(arg)|debug|pf|proc(arg)>", end condition == "}" */
-int 
+int
 read_symon_args(struct mux * mux, struct lex * l)
 {
     char sn[_POSIX2_LINE_MAX];
@@ -126,14 +125,13 @@ read_symon_args(struct mux * mux, struct lex * l)
 		    parse_error(l, ")");
 		    return 0;
 		}
-	    }
-	    else {
+	    } else {
 		lex_ungettoken(l);
 		sa[0] = '\0';
 	    }
 
 	    if ((add_mux_stream(mux, st, sa)) == NULL) {
-		warning("%s:%d: stream %s(%s) redefined",
+		warning("%.200s:%d: stream %.200s(%.200s) redefined",
 			l->filename, l->cline, sn, sa);
 		return 0;
 	    }
@@ -152,38 +150,64 @@ read_symon_args(struct mux * mux, struct lex * l)
 }
 
 /* parse monitor <args> stream [to] <host>:<port> */
-int 
+int
 read_monitor(struct muxlist * mul, struct lex * l)
 {
     struct mux *mux;
 
     mux = add_mux(mul, SYMON_UNKMUX);
 
-    /* parse cpu|mem|if|io */
+    /* parse [stream(streamarg)]+ */
     if (!read_symon_args(mux, l))
 	return 0;
 
-    /* parse stream to */
-    EXPECT(l, LXT_STREAM);
     lex_nexttoken(l);
+
+    /* parse [every x seconds]? */
+    if (l->op == LXT_EVERY) {
+	lex_nexttoken(l);
+
+	if (l->op == LXT_SECOND) {
+	    symon_interval = 1;
+	} else if (l->type == LXY_NUMBER) {
+	    symon_interval = l->value;
+	    lex_nexttoken(l);
+	    if (l->type != LXT_SECONDS) {
+		parse_error(l, "seconds");
+	    }
+	} else {
+	    parse_error(l, "<number> ");
+	    return 0;
+	}
+
+	lex_nexttoken(l);
+    }
+
+    /* parse [stream to] */
+    if (l->op != LXT_STREAM) {
+	parse_error(l, "stream");
+	return 0;
+    }
+
+    lex_nexttoken(l);
+
     if (l->op != LXT_TO)
 	lex_ungettoken(l);
 
-    /* parse host */
+    /* parse [host [port]?] */
     return read_host_port(mul, mux, l);
 }
 
 /* Read symon.conf */
-int 
-read_config_file(struct muxlist * muxlist, const char *filename)
+int
+read_config_file(struct muxlist *muxlist, char *filename)
 {
     struct lex *l;
     struct mux *mux;
 
     SLIST_INIT(muxlist);
 
-    if ((l = open_lex(filename)) == NULL)
-	return 0;
+    l = open_lex(filename);
 
     while (lex_nexttoken(l)) {
 	/* expecting keyword now */
@@ -206,12 +230,17 @@ read_config_file(struct muxlist * muxlist, const char *filename)
 	    return 0;
 	}
 	if (SLIST_EMPTY(&mux->sl)) {
-	    warning("%s: no monitors selected for mux '%s'",
+	    warning("%.200s: no monitors selected for mux '%.200s'",
 		    l->filename, mux->name);
 	    return 0;
 	}
     }
 
+    if (symon_interval < SYMON_DEFAULT_INTERVAL) {
+	warning("%.200s: monitoring set to every %d s", l->filename, symon_interval);
+    }
+
     close_lex(l);
+
     return 1;
 }

@@ -1,7 +1,7 @@
-/* $Id: error.c,v 1.10 2002/11/29 10:50:29 dijkstra Exp $ */
+/* $Id: error.c,v 1.11 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ struct {
  * Internal helper that actually outputs every
  * (fatal|warning|info|debug) message
  */
-void 
+void
 output_message(int level, char *fmt, va_list args)
 {
     char msgbuf[_POSIX2_LINE_MAX];
@@ -91,20 +91,18 @@ output_message(int level, char *fmt, va_list args)
 
     if (flag_daemon) {
 	syslog(logmapping[loglevel].priority, msgbuf);
-    }
-    else {
+    } else {
 	if (strlen(logmapping[loglevel].errtxt) > 0) {
-	    fprintf(logmapping[loglevel].stream, "%s: %s\n",
+	    fprintf(logmapping[loglevel].stream, "%.200s: %.200s\n",
 		    logmapping[loglevel].errtxt, msgbuf);
-	}
-	else
-	    fprintf(logmapping[loglevel].stream, "%s\n", msgbuf);
+	} else
+	    fprintf(logmapping[loglevel].stream, "%.200s\n", msgbuf);
 
 	fflush(logmapping[loglevel].stream);
     }
 }
 /* Output error and exit */
-__dead void 
+__dead void
 fatal(char *fmt,...)
 {
     va_list ap;
@@ -115,7 +113,7 @@ fatal(char *fmt,...)
     exit(1);
 }
 /* Warn and continue */
-void 
+void
 warning(char *fmt,...)
 {
     va_list ap;
@@ -124,7 +122,7 @@ warning(char *fmt,...)
     va_end(ap);
 }
 /* Inform and continue */
-void 
+void
 info(char *fmt,...)
 {
     va_list ap;
@@ -133,7 +131,7 @@ info(char *fmt,...)
     va_end(ap);
 }
 /* Debug statements only */
-void 
+void
 debug(char *fmt,...)
 {
     va_list ap;

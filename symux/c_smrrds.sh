@@ -1,21 +1,21 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.22 2003/12/13 14:45:42 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.23 2003/12/20 16:30:44 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2003 Willem Dijkstra
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
 # are met:
-# 
+#
 #    - Redistributions of source code must retain the above copyright
 #      notice, this list of conditions and the following disclaimer.
 #    - Redistributions in binary form must reproduce the above
 #      copyright notice, this list of conditions and the following
 #      disclaimer in the documentation and/or other materials provided
 #      with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -29,39 +29,39 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# symon datafiles "make" file. Valid arguments:
-#       all      Makes all files for active interfaces and disks
-#       mem      Make memory file
-#       cpu?     Make cpu file
-#       pf       Make pf file
-#       mbuf     Make mbuf file
-
 # --- user configuration starts here
-INTERVAL=`grep SYMON_INTERVAL ../symon/symon.h 2>/dev/null | cut -f3 -d\ `
 INTERVAL=${INTERVAL:-5}
-RRD_ARGS="--step=$INTERVAL --start=0"
 # --- user configuration ends here
 
 # get arguments
+select_interval=""
 for i
 do
 case $i in
+interval)
+    select_interval="yes"
+    ;;
 child)
     child=1
     ;;
-oneday)	
+oneday)
     config=$i
 # today only RRA setup:
 # - 1   day  of  5 second  samples = 17280 x 5 second samples
-    RRA_SETUP=" RRA:AVERAGE:0.5:1:17280 
-	    RRA:MAX:0.5:1:17280 
+    RRA_SETUP=" RRA:AVERAGE:0.5:1:17280
+	    RRA:MAX:0.5:1:17280
 	    RRA:MIN:0.5:1:17280"
-    if [ X"$child" == "X" ]; then 
+    if [ X"$child" == "X" ]; then
 	echo "RRDs will only contain a single day of data"
     fi
     ;;
 *)
-    args="$args $i"
+    if [ -n "$select_interval" ]; then
+	INTERVAL=$i
+	select_interval=""
+    else
+	args="$args $i"
+    fi
     ;;
 esac
 done
@@ -69,20 +69,20 @@ done
 if [ X"$RRA_SETUP" == "X" ]; then
 # default RRA setup:
 # - 2   days of  5 second  samples = 34560 x 5 second samples
-# - 14  days of 30 minutes samples = 672 x 360 x 5 second samples 
+# - 14  days of 30 minutes samples = 672 x 360 x 5 second samples
 # - 50  days of  2 hour    samples = 600 x 1440 x 5 second samples
 # - 600 days of  1 day     samples = 600 x 17280 x 5 second samples
-RRA_SETUP=" RRA:AVERAGE:0.5:1:34560 
-	    RRA:AVERAGE:0.5:360:672 
-	    RRA:AVERAGE:0.5:1440:600 
-	    RRA:AVERAGE:0.5:17280:600 
-	    RRA:MAX:0.5:1:34560 
-	    RRA:MAX:0.5:360:672 
-	    RRA:MAX:0.5:1440:600 
-	    RRA:MAX:0.5:17280:600 
-	    RRA:MIN:0.5:1:34560 
-	    RRA:MIN:0.5:360:672 
-	    RRA:MIN:0.5:1440:600 
+RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
+	    RRA:AVERAGE:0.5:360:672
+	    RRA:AVERAGE:0.5:1440:600
+	    RRA:AVERAGE:0.5:17280:600
+	    RRA:MAX:0.5:1:34560
+	    RRA:MAX:0.5:360:672
+	    RRA:MAX:0.5:1440:600
+	    RRA:MAX:0.5:17280:600
+	    RRA:MIN:0.5:1:34560
+	    RRA:MIN:0.5:360:672
+	    RRA:MIN:0.5:1440:600
 	    RRA:MIN:0.5:17280:600"
 fi
 
@@ -102,15 +102,47 @@ addsuffix() {
     echo $newlist | cut -b2-
 }
 
-this=$0
-if [ X"$1$2$3$4$5$6$7$8$9" == "X" ]; then
-    sh $this help
-    exit 1;
-fi
-
 DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
 VIRTUALINTERFACES=`addsuffix $VIRTUALINTERFACES \\.\\*`
+
+this=$0
+if [ X"$1$2$3$4$5$6$7$8$9" == "X" ]; then
+    cat <<EOF
+Create rrd files for symux.
+
+Usage: $0 [oneday] [interval <seconds>] all | cpu0 | mem |
+		   pf | mbuf | debug | proc_<process> |
+		   <if> | <io> | sensor[0-25]
+
+Where:
+oneday  = modify rrds to only contain one day of information
+seconds = modify rrds for non standard monitoring interval
+process = the name of a process as specified in sy{mon,mux}.conf
+	  e.g. proc(httpd) -> proc_httpd
+
+if=	`echo $INTERFACES|
+   awk 'BEGIN  {FS="|"}
+	   {for (i=1; i<=NF; i++) {
+	       printf("%s|",$i);
+	       if ((i%6)==0) {
+		  printf("%s","\n\t")
+	       }
+	   }
+	   print " ";}'`
+io=	`echo $DISKS|
+   awk 'BEGIN  {FS="|"}
+		{for (i=1; i<=NF; i++) {
+		    printf("%s|",$i);
+		    if ((i%6)==0) {
+			printf("%s","\n\t")
+		    }
+		}
+		print " ";}'`
+
+EOF
+    exit 1;
+fi
 
 for i in $args
 do
@@ -127,15 +159,17 @@ if [ -f $i ]; then
     i="done"
 fi
 
+RRD_ARGS="--step=$INTERVAL --start=0"
+
 case $i in
 
 all)
     echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf|mbuf}"
-    sh $this child $config cpu0 mem
-    sh $this child $config interfaces
-    sh $this child $config disks
-    sh $this child $config pf
-    sh $this child $config mbuf
+    sh $this interval $INTERVAL child $config cpu0 mem
+    sh $this interval $INTERVAL child $config interfaces
+    sh $this interval $INTERVAL child $config disks
+    sh $this interval $INTERVAL child $config pf
+    sh $this interval $INTERVAL child $config mbuf
     ;;
 
 if|interfaces)
@@ -214,11 +248,11 @@ proc_*.rrd)
 	DS:number:GAUGE:5:0:U DS:uticks:GAUGE:5:0:U \
 	DS:sticks:GAUGE:5:0:U DS:iticks:GAUGE:5:0:U \
 	DS:cpusec:GAUGE:5:0:U DS:cpupct:GAUGE:5:0:100 \
-        DS:procsz:GAUGE:5:0:U DS:rsssz:GAUGE:5:0:U \
+	DS:procsz:GAUGE:5:0:U DS:rsssz:GAUGE:5:0:U \
 	$RRA_SETUP
     echo "$i created"
     ;;
-    
+
 pf.rrd)
     # Build pf file
     rrdtool create $i $RRD_ARGS \
@@ -273,33 +307,6 @@ io_*.rrd)
 *)
     # Default match
     echo $i - unknown
-    cat <<EOF
-Create rrd files for symux.
-
-Usage: $0 [oneday] all
-       $0 [oneday] cpu0|mem|pf|mbuf|debug|proc|<if>|<io>|sensor[0-25]
-
-Where:
-if=	`echo $INTERFACES|
-    awk 'BEGIN  {FS="|"}
-		{for (i=1; i<=NF; i++) { 
-		    printf("%s|",$i); 
-		    if ((i%6)==0) {
-			printf("%s","\n	")
-		    }
-		} 
-		print " ";}'`
-io=	`echo $DISKS|
-	awk 'BEGIN  {FS="|"}
-		{for (i=1; i<=NF; i++) { 
-		    printf("%s|",$i); 
-		    if ((i%6)==0) {
-			printf("%s","\n	")
-		    }
-		} 
-		print " ";}'`
-
-EOF
     ;;
 esac
 done

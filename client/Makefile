@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2002/11/08 15:40:25 dijkstra Exp $
+# $Id: Makefile,v 1.2 2003/12/20 16:30:44 dijkstra Exp $
 .include "../Makefile.inc"
 
 all: SymuxClient.cat3p
@@ -11,4 +11,3 @@ install: SymuxClient.pm SymuxClient.cat3p getsymonitem.pl
 	${INSTALL} -c -m 555 -g bin   -o root getsymonitem.pl      ${PREFIX}/${CLIENTDIR}
 	${INSTALL} -c -m 444 -g wheel -o root SymuxClient.pm       ${PREFIX}/${CLIENTDIR}
 	${INSTALL} -c -m 444 -g wheel -o root SymuxClient.cat3p    ${PREFIX}/${CLIENTDIR}/SymuxClient.0
-

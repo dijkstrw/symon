@@ -1,4 +1,4 @@
-/* $Id: xmalloc.c,v 1.5 2002/11/29 10:50:29 dijkstra Exp $ */
+/* $Id: xmalloc.c,v 1.6 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -55,7 +55,7 @@ xrealloc(void *ptr, size_t new_size)
     return new_ptr;
 }
 
-void 
+void
 xfree(void *ptr)
 {
     if (ptr == NULL)

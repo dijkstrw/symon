@@ -1,7 +1,7 @@
-/* $Id: sm_mem.c,v 1.13 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.14 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,7 +64,7 @@ static int me_pagesize;
 static int me_nswap;
 struct swapent *me_swdev = NULL;
 /* Prepare mem module for first use */
-void 
+void
 init_mem(char *s)
 {
     me_pagesize = sysconf(_SC_PAGESIZE);
@@ -91,10 +91,10 @@ init_mem(char *s)
     if (me_swdev == NULL && me_nswap != 0)
 	me_nswap = 0;
 
-    info("started module mem(%s)", s);
+    info("started module mem(%.200s)", s);
 }
 /* Get memory statistics */
-int 
+int
 get_mem(char *symon_buf, int maxlen, char *s)
 {
     int i, rnswap;

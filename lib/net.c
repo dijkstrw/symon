@@ -1,7 +1,7 @@
-/* $Id: net.c,v 1.7 2002/11/29 10:45:20 dijkstra Exp $ */
+/* $Id: net.c,v 1.8 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@
  */
 char res_host[NI_MAXHOST];
 struct sockaddr_storage res_addr;
-int 
+int
 getip(char *name)
 {
     struct addrinfo hints, *res;
@@ -77,8 +77,7 @@ getip(char *name)
 
 	freeaddrinfo(res);
 	return 1;
-    }
-    else {
+    } else {
 	if (res->ai_addr) {
 	    if ((error = getnameinfo(res->ai_addr, res->ai_addrlen,
 				     res_host, NI_MAXHOST,
@@ -89,12 +88,10 @@ getip(char *name)
 
 		freeaddrinfo(res);
 		return 1;
-	    }
-	    else
+	    } else
 		warning("getnameinfo(%.200s): %.200s", name, gai_strerror(error));
-	}
-	else
-	    warning("getip(%s): could not get numeric host via getaddrinfo nor getnameinfo", name);
+	} else
+	    warning("getip(%.200s): could not get numeric host via getaddrinfo nor getnameinfo", name);
     }
 
     return 0;
@@ -105,7 +102,7 @@ getip(char *name)
  * getaddr returns a sockaddr structure in res_addr. it will only resolve
  * the address if that is necessary.
  */
-int 
+int
 getaddr(char *name, char *service, int socktype, int flags)
 {
     struct addrinfo hints, *res;
@@ -135,7 +132,7 @@ getaddr(char *name, char *service, int socktype, int flags)
 
     return 1;
 }
-void 
+void
 cpysock(struct sockaddr * source, struct sockaddr_storage * dest)
 {
     bzero(dest, sizeof(struct sockaddr_storage));
@@ -146,7 +143,7 @@ cpysock(struct sockaddr * source, struct sockaddr_storage * dest)
  *
  * compare if two sockaddr are talking about the same host
  */
-int 
+int
 cmpsock_addr(struct sockaddr * first, struct sockaddr * second)
 {
 
@@ -180,7 +177,7 @@ cmpsock_addr(struct sockaddr * first, struct sockaddr * second)
     return 0;
 }
 /* generate INADDR_ANY info */
-void 
+void
 get_inaddrany_sockaddr(struct sockaddr_storage * sockaddr, int family, int socktype, char *port)
 {
     struct addrinfo hints, *res;
@@ -197,21 +194,21 @@ get_inaddrany_sockaddr(struct sockaddr_storage * sockaddr, int family, int sockt
     }
 }
 /* fill a source->sockaddr with a sockaddr for use in address compares */
-void 
+void
 get_source_sockaddr(struct source * source)
 {
     if (!getip(source->addr))
-	fatal("could not get address information for %s",
+	fatal("could not get address information for %.200s",
 	      source->addr);
 
     cpysock((struct sockaddr *) & res_addr, &source->sockaddr);
 }
 /* fill mux->sockaddr with a udp listen sockaddr */
-void 
+void
 get_mux_sockaddr(struct mux * mux, int socktype)
 {
     if (getaddr(mux->addr, mux->port, socktype, AI_PASSIVE) == 0)
-	fatal("could not get address information for %s %s",
+	fatal("could not get address information for %.200s %.200s",
 	      mux->addr, mux->port);
 
     cpysock((struct sockaddr *) & res_addr, &mux->sockaddr);

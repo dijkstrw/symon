@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.2 2003/10/12 17:26:09 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.3 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -44,26 +44,26 @@
 #include "symon.h"
 
 #ifndef HAS_KERN_MBSTAT
-void 
+void
 init_mbuf(char *s)
 {
     fatal("mbuf module requires system upgrade (sysctl.h/KERN_MBSTAT)");
 }
-int 
+int
 get_mbuf(char *symon_buf, int maxlen, char *arg)
 {
     fatal("mbuf module requires system upgrade (sysctl.h/KERN_MBSTAT)");
 }
 #else
 /* Prepare if module for first use */
-void 
+void
 init_mbuf(char *s)
 {
-    info("started module mbuf(%s)", s);
+    info("started module mbuf(%.200s)", s);
 }
 
 /* Get mbuf statistics */
-int 
+int
 get_mbuf(char *symon_buf, int maxlen, char *arg)
 {
     struct mbstat mbstat;
@@ -78,24 +78,24 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     int page_size = getpagesize();
     int totmem, totused, totmbufs, totpct;
     u_int32_t stats[15];
-    
+
     mib[0] = CTL_KERN;
     mib[1] = KERN_MBSTAT;
     size = sizeof(mbstat);
     if (sysctl(mib, 2, &mbstat, &size, NULL, 0) < 0) {
-	warning("mbuf(%s) failed (sysctl() %s)", arg, strerror(errno));
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
 	return (0);
     }
-    
+
     mib[0] = CTL_KERN;
     mib[1] = KERN_POOL;
     mib[2] = KERN_POOL_NPOOLS;
     size = sizeof(npools);
     if (sysctl(mib, 3, &npools, &size, NULL, 0) < 0) {
-	warning("mbuf(%s) failed (sysctl() %s)", arg, strerror(errno));
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
 	return (0);
     }
-    
+
     for (i = 1; npools; ++i) {
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_POOL;
@@ -103,14 +103,14 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	mib[3] = i;
 	size = sizeof(pool);
 	if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
-	    warning("mbuf(%s) failed (sysctl() %s)", arg, strerror(errno));
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
 	    return (0);
 	}
 	npools--;
 	mib[2] = KERN_POOL_NAME;
 	size = sizeof(name);
 	if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
-	    warning("mbuf(%s) failed (sysctl() %s)", arg, strerror(errno));
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
 	    return (0);
 	}
 	if (!strcmp(name, "mbpl")) {
@@ -124,10 +124,10 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	    break;
     }
     if (flag != 3) {
-	warning("mbuf(%s) failed (flag != 3)", arg);
+	warning("mbuf(%.200s) failed (flag != 3)", arg);
 	return (0);
     }
-    
+
     totmbufs = 0;
     for (i = 0; i < nmbtypes; ++i)
 	totmbufs += mbstat.m_mtypes[i];
@@ -135,7 +135,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     totused = (mbpool.pr_nget - mbpool.pr_nput) * mbpool.pr_size +
 	(mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
     totpct = (totmem == 0) ? 0 : ((totused * 100) / totmem);
-    
+
     stats[0] = totmbufs;
     stats[1] = mbstat.m_mtypes[MT_DATA];
     stats[2] = mbstat.m_mtypes[MT_OOBDATA];
@@ -151,7 +151,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     stats[12] = mbstat.m_drops;
     stats[13] = mbstat.m_wait;
     stats[14] = mbstat.m_drain;
-    
+
     return snpack(symon_buf, maxlen, arg, MT_MBUF,
 		  stats[0],
 		  stats[1],

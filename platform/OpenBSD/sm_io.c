@@ -1,7 +1,7 @@
-/* $Id: sm_io.c,v 1.12 2003/06/20 08:41:19 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.13 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,7 +57,7 @@ static int io_dks = 0;
 static int io_maxdks = 0;
 static size_t io_maxstr = 0;
 
-void 
+void
 gets_io()
 {
     int mib[3];
@@ -122,7 +122,7 @@ gets_io()
 
     p = io_dkstr;
     io_dks = 0;
-    
+
     io_dknames[io_dks] = p;
 
     while ((*p != '\0') && ((p - io_dkstr) < io_maxstr)) {
@@ -135,13 +135,13 @@ gets_io()
     }
 }
 /* Prepare io module for first use */
-void 
+void
 init_io(char *s)
 {
-    info("started module io(%s)", s);
+    info("started module io(%.200s)", s);
 }
 /* Get new io statistics */
-int 
+int
 get_io(char *symon_buf, int maxlen, char *disk)
 {
     int i;

@@ -1,7 +1,7 @@
-/* $Id: symux.c,v 1.26 2002/11/29 10:45:22 dijkstra Exp $ */
+/* $Id: symux.c,v 1.27 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,13 +64,13 @@ int flag_hup = 0;
 fd_set fdset;
 int maxfd;
 
-void 
+void
 exithandler(int s)
 {
     info("received signal %d - quitting", s);
     exit(EX_TEMPFAIL);
 }
-void 
+void
 huphandler(int s)
 {
     info("hup received");
@@ -92,7 +92,7 @@ huphandler(int s)
  * Symon can keep track of cpu, memory, disk and network interface
  * interactions. Symon was built specifically for OpenBSD.
  */
-int 
+int
 main(int argc, char *argv[])
 {
     struct symonpacket packet;
@@ -141,8 +141,7 @@ main(int argc, char *argv[])
 		cfgfile[maxstringlen] = '\0';
 
 		free(cfgpath);
-	    }
-	    else
+	    } else
 		cfgfile = xstrdup(optarg);
 
 	    break;
@@ -214,8 +213,7 @@ main(int argc, char *argv[])
 	    if (!read_config_file(&newmul, cfgfile)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
-	    }
-	    else {
+	    } else {
 		info("read configuration file '%.100s' succesfully", cfgfile);
 		free_muxlist(&mul);
 		mul = newmul;
@@ -223,8 +221,7 @@ main(int argc, char *argv[])
 		get_symon_sockets(mux);
 		get_client_socket(mux);
 	    }
-	}
-	else {
+	} else {
 
 	    /*
 	     * Put information from packet into stringbuf (shared region).
@@ -283,21 +280,18 @@ main(int argc, char *argv[])
 			/*
 			 * This call will cost a lot (symux will become
 			 * unresponsive and eat up massive amounts of cpu) if
-			 * the rrdfile is out of sync. While I could update
-			 * the rrd in a separate process, I choose not to at
-			 * this time.
+			 * the rrdfile is out of sync.
 			 */
 			rrd_update(4, arg_ra);
 
 			if (rrd_test_error()) {
-			    warning("rrd_update:%s", rrd_get_error());
-			    warning("%s %s %s %s", arg_ra[0], arg_ra[1],
+			    warning("rrd_update:%.200s", rrd_get_error());
+			    warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
 				    arg_ra[2], arg_ra[3]);
 			    rrd_clear_error();
-			}
-			else {
+			} else {
 			    if (flag_debug == 1)
-				debug("%s %s %s %s", arg_ra[0], arg_ra[1],
+				debug("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
 				      arg_ra[2], arg_ra[3]);
 			}
 		    }

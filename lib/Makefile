@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2002/09/14 15:56:18 dijkstra Exp $
+# $Id: Makefile,v 1.9 2003/12/20 16:30:44 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
@@ -16,4 +16,3 @@ clean:
 	rm -f libsymon.a ${OBJS}
 
 install: libsymon.a
-

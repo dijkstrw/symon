@@ -1,7 +1,7 @@
-/* $Id: sm_debug.c,v 1.2 2002/12/15 14:22:36 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.3 2003/12/20 16:30:44 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2002 Willem Dijkstra
+ * Copyright (c) 2001-2003 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,13 +51,13 @@
 static int db_mib[] = {CTL_DEBUG, 0, CTL_DEBUG_VALUE};
 static int db_v[SYMON_MAXDEBUGID];
 /* Prepare if module for first use */
-void 
+void
 init_debug(char *s)
 {
-    info("started module debug(%s)", s);
+    info("started module debug(%.200s)", s);
 }
 /* Get debug statistics */
-int 
+int
 get_debug(char *symon_buf, int maxlen, char *s)
 {
     size_t len;
