@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.14 2002/09/16 06:26:27 dijkstra Exp $ */
+/* $Id: symux.h,v 1.15 2002/10/18 12:30:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,9 +33,9 @@
 #ifndef _SYMUX_SYMUX_H
 #define _SYMUX_SYMUX_H
 
-#define SYMUX_CONFIG_FILE "/etc/symux.conf"
+#include "conf.h"
+
 #define SYMUX_PID_FILE "/var/run/symux.pid"
-#define SYMUX_VERSION "2.51"
 
 /* Amount of connections allowed in listen backlog 
  * - note that more than 128 makes no sense in OpenBSD

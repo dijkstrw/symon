@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.13 2002/09/14 15:54:55 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.14 2002/10/18 12:30:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -263,8 +263,6 @@ read_config_file(struct muxlist *mul,
     if ((l = open_lex(filename)) == NULL)
 	return 0;
     
-    info("reading configfile '%s'", filename);
-
     while (lex_nexttoken(l)) {
     /* expecting keyword now */
 	switch (l->op) {

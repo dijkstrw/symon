@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.23 2002/09/20 09:38:41 dijkstra Exp $ */
+/* $Id: symux.c,v 1.24 2002/10/18 12:30:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -71,7 +71,7 @@ exithandler(int s) {
 }
 void
 huphandler(int s) {
-    info("sighup (%d) received", s);
+    info("hup received");
     flag_hup = 1;
 }
 /* 
@@ -153,6 +153,13 @@ main(int argc, char *argv[])
 	}
     }
 
+    /* parse configuration file */
+    if (!read_config_file(&mul, &sol, cfgfile))
+	fatal("configuration contained errors; quitting");
+
+    setegid(getgid());
+    setgid(getgid());
+
     if (flag_debug != 1) {
 	if (daemon(0,0) != 0)
 	    fatal("daemonize failed");
@@ -168,11 +175,6 @@ main(int argc, char *argv[])
     } 
     
     info("symux version %s", SYMUX_VERSION);
-
-    /* parse configuration file */
-    if (!read_config_file(&mul, &sol, cfgfile))
-	fatal("configuration contained errors; quitting");
-
 
     if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
@@ -190,7 +192,7 @@ main(int argc, char *argv[])
     signal(SIGTERM, exithandler);
     signal(SIGTERM, exithandler); 
 
-    /* Prepare crc32 */
+    /* prepare crc32 */
     init_crc32();
 
     getsymonsocket(mux);
@@ -210,7 +212,7 @@ main(int argc, char *argv[])
 		free_muxlist(&newmul);
 		free_sourcelist(&newsol);
 	    } else {
-		info("read configuration file succesfully");
+		info("read configuration file '%.100s' succesfully", cfgfile);
 		free_muxlist(&mul);
 		free_sourcelist(&sol);
 		mul = newmul;
@@ -219,93 +221,96 @@ main(int argc, char *argv[])
 		getsymonsocket(mux);
 		getclientsocket(mux);
 	    }
-	    break; /* wait for next alarm */
-	} 
+	} else {
 
-	/* Put information from packet into stringbuf (shared region). Note
-	 * that the stringbuf is used twice: 1) to update the rrdfile and 2) to
-	 * collect all the data from a single packet that needs to shared to
-	 * the clients. This is the reason for the hasseling with stringptr.
-	 */
-	
-	offset = mux->offset;
-	maxstringlen = shared_getmaxlen();
-	/* put time:ip: into shared region */
-	master_forbidread();
-	timestamp = (time_t) packet.header.timestamp;
-	stringbuf = (char *)shared_getmem();
-	snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u;",
-		 IPAS4BYTES(source->ip));
-	
-	/* hide this string region from rrd update */
-	maxstringlen -= strlen(stringbuf);
-	stringptr = stringbuf + strlen(stringbuf);
-	
-	while (offset < packet.header.length) {
-	    bzero(&ps, sizeof(struct packedstream));
-	    offset += sunpack(packet.data + offset, &ps);
+	    /* Put information from packet into stringbuf (shared region). Note
+	     * that the stringbuf is used twice: 1) to update the rrdfile and 2) to
+	     * collect all the data from a single packet that needs to shared to
+	     * the clients. This is the reason for the hasseling with stringptr.
+	     */
 	    
-	    /* find stream in source */
-	    stream = find_source_stream(source, ps.type, ps.args);
+	    offset = mux->offset;
+	    maxstringlen = shared_getmaxlen();
+	    /* put time:ip: into shared region */
+	    master_forbidread();
+	    timestamp = (time_t) packet.header.timestamp;
+	    stringbuf = (char *)shared_getmem();
+	    snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u;",
+		     IPAS4BYTES(source->ip));
 	    
-	    if (stream != NULL) {
-		/* put type in and hide from rrd */
-		snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		/* put arguments in and hide from rrd */
-		snprintf(stringptr, maxstringlen, "%s:", 
-			 ((ps.args == NULL) ? "0" : ps.args));
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		/* put timestamp in and show to rrd */
-		snprintf(stringptr, maxstringlen, "%u", timestamp);
-		arg_ra[3] = stringptr;
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
+	    /* hide this string region from rrd update */
+	    maxstringlen -= strlen(stringbuf);
+	    stringptr = stringbuf + strlen(stringbuf);
+	    
+	    while (offset < packet.header.length) {
+		bzero(&ps, sizeof(struct packedstream));
+		offset += sunpack(packet.data + offset, &ps);
 		
-		/* put measurements in */
-		ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
+		/* find stream in source */
+		stream = find_source_stream(source, ps.type, ps.args);
 		
-		if (stream->file != NULL) {
-		    /* save if file specified */
-		    arg_ra[0] = "rrdupdate";
-		    arg_ra[1] = "--";
-		    arg_ra[2] = stream->file;
+		if (stream != NULL) {
+		    /* put type in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    /* put arguments in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:", 
+			     ((ps.args == NULL) ? "0" : ps.args));
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    /* put timestamp in and show to rrd */
+		    snprintf(stringptr, maxstringlen, "%u", timestamp);
+		    arg_ra[3] = stringptr;
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
 		    
-		    /* This call will cost a lot (symux will become
-		     * unresponsive and eat up massive amounts of cpu) if
-		     * the rrdfile is out of sync. While I could update the
-		     * rrd in a separate process, I choose not to at this
-		     * time.  
-		     */
-		    rrd_update(4, arg_ra);
+		    /* put measurements in */
+		    ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
 		    
-		    if (rrd_test_error()) {
-			warning("rrd_update:%s", rrd_get_error());
-			warning("%s %s %s %s", arg_ra[0], arg_ra[1], 
-				arg_ra[2], arg_ra[3]);
-			rrd_clear_error();                                                            
-		    } else {
-			if (flag_debug == 1) 
-			    debug("%s %s %s %s", arg_ra[0], arg_ra[1], 
-				  arg_ra[2], arg_ra[3]);
+		    if (stream->file != NULL) {
+			/* clear optind for getopt call by rrdupdate */
+			optind = 0;
+			/* save if file specified */
+			arg_ra[0] = "rrdupdate";
+			arg_ra[1] = "--";
+			arg_ra[2] = stream->file;
+			
+			/* This call will cost a lot (symux will become
+			 * unresponsive and eat up massive amounts of cpu) if
+			 * the rrdfile is out of sync. While I could update the
+			 * rrd in a separate process, I choose not to at this
+			 * time.  
+			 */
+			rrd_update(4, arg_ra);
+			
+			if (rrd_test_error()) {
+			    warning("rrd_update:%s", rrd_get_error());
+			    warning("%s %s %s %s", arg_ra[0], arg_ra[1], 
+				    arg_ra[2], arg_ra[3]);
+			    rrd_clear_error();                                                            
+			} else {
+			    if (flag_debug == 1) 
+				debug("%s %s %s %s", arg_ra[0], arg_ra[1], 
+				      arg_ra[2], arg_ra[3]);
+			}
 		    }
+		    maxstringlen -= strlen(stringptr);
+		    stringptr += strlen(stringptr);
+		    snprintf(stringptr, maxstringlen, ";");
+		maxstringlen -= strlen(stringptr);
+		stringptr += strlen(stringptr);
 		}
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
-		snprintf(stringptr, maxstringlen, ";");
-		maxstringlen -= strlen(stringptr);
-		stringptr += strlen(stringptr);
 	    }
-	}
-	/* packet = parsed and in ascii in shared region -> copy to clients */
-	snprintf(stringptr, maxstringlen, "\n");
-	stringptr += strlen(stringptr);
-	shared_setlen((stringptr - stringbuf));
-	debug("Churnbuffer used: %d", (stringptr - stringbuf));
-	master_permitread();
-    }
+	    /* packet = parsed and in ascii in shared region -> copy to clients */
+	    snprintf(stringptr, maxstringlen, "\n");
+	    stringptr += strlen(stringptr);
+	    shared_setlen((stringptr - stringbuf));
+	    debug("Churnbuffer used: %d", (stringptr - stringbuf));
+	    master_permitread();
+	} /* flag_hup == 0 */
+    } /* forever */
+
     /* NOT REACHED */
     return (EX_SOFTWARE);
 }
