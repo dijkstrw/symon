@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.5 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.6 2002/06/21 15:53:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -49,7 +49,7 @@ connect2mux(struct mux *mux)
 {
     struct sockaddr_in sockaddr;
 
-    if ((mux->socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    if ((mux->monsocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
     sockaddr.sin_family = AF_INET;
@@ -57,7 +57,7 @@ connect2mux(struct mux *mux)
     sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     bzero(&sockaddr.sin_zero, 8);
 
-    if (bind(mux->socket, (struct sockaddr *) &sockaddr, 
+    if (bind(mux->monsocket, (struct sockaddr *) &sockaddr, 
 	     sizeof(struct sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
@@ -70,7 +70,7 @@ connect2mux(struct mux *mux)
 void 
 send_packet(struct mux *mux)
 {   
-    if (sendto(mux->socket, (void *)&mux->packet, 
+    if (sendto(mux->monsocket, (void *)&mux->packet, 
 	       mux->offset + sizeof(mux->packet.header), 0,
 	       (struct sockaddr *)&mux->sockaddr, sizeof(mux->sockaddr)) 
 	!= (mux->offset + sizeof(mux->packet.header))) {

@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.12 2002/06/21 12:24:20 dijkstra Exp $ */
+/* $Id: symux.c,v 1.13 2002/06/21 15:53:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -55,13 +55,11 @@
 
 __BEGIN_DECLS
 void exithandler();
-void close_listensock();
 void huphandler(int);
 void signalhandler(int);
 __END_DECLS
 
 int flag_hup = 0;
-int listen_sock;
 fd_set fdset;
 int maxfd;
 
@@ -69,11 +67,6 @@ void
 exithandler(int s) {
     info("received signal - quitting");
     exit(1);
-}
-void 
-close_listensock() 
-{
-    close(listen_sock);
 }
 void
 huphandler(int s) {
@@ -101,7 +94,9 @@ main(int argc, char *argv[])
 {
     struct monpacket packet;
     struct packedstream ps;
-    char stringbuf[_POSIX2_LINE_MAX];
+    char *stringbuf;
+    char *stringptr;
+/*    char stringbuf[_POSIX2_LINE_MAX]; */
     struct muxlist mul, newmul;
     struct sourcelist sol, newsol;
     char *arg_ra[4];
@@ -112,7 +107,8 @@ main(int argc, char *argv[])
     int ch;
     int offset;
     time_t t;
-    
+    int churnbuflen;
+
     SLIST_INIT(&mul);
     SLIST_INIT(&sol);
 	
@@ -158,7 +154,9 @@ main(int argc, char *argv[])
 
     mux = SLIST_FIRST(&mul);
 
-    calculate_churnbuffer(mux, &sol);
+    churnbuflen = calculate_churnbuffer(&sol);
+    debug("Size of churnbuffer = %d", churnbuflen);
+    initshare(churnbuflen);
 
     /* catch signals */
     signal(SIGHUP, huphandler);
@@ -195,6 +193,15 @@ main(int argc, char *argv[])
 	}
 
 	offset = 0;
+
+	/* put time:ip: into shared region */
+	master_forbidread();
+	t = (time_t) packet.header.timestamp;
+	stringbuf = (char *)shared_getmem();
+	sprintf(stringbuf, "%u:%u.%u.%u.%u:", t,
+		IPAS4BYTES(source->ip));
+	stringptr = stringbuf + strlen(stringbuf);
+
 	while (offset < packet.header.length) {
 	    offset += sunpack(packet.data + offset, &ps);
 
@@ -202,19 +209,22 @@ main(int argc, char *argv[])
 	    stream = find_source_stream(source, ps.type, ps.args);
 
 	    if (stream != NULL) {
+		/* put type and args in for clients */
+		sprintf(stringptr, "%s:", type2str(ps.type));
+		stringptr += strlen(stringptr);
+		sprintf(stringptr, "%s:", ((ps.args == NULL)?"0":ps.args));
+		stringptr += strlen(stringptr);
+		ps2strn(&ps, stringptr,
+			(shared_getmaxlen() - (stringptr - stringbuf)),
+			PS2STR_RRD);
+
 		if (stream->file != NULL) {
 		    /* save if file specified */
 		    arg_ra[0] = "rrdupdate";
 		    arg_ra[1] = "--";
 		    arg_ra[2] = stream->file;
-
-		    t = (time_t) packet.header.timestamp;
-		    sprintf(stringbuf, "%u", t);
-		    ps2strn(&ps, stringbuf + strlen(stringbuf), 
-				sizeof(stringbuf) - strlen(stringbuf), 
-				PS2STR_RRD);
-
-		    arg_ra[3] = stringbuf;
+		    
+		    arg_ra[3] = stringptr;
 		    rrd_update(4, arg_ra);
 
 		    if (rrd_test_error()) {
@@ -225,10 +235,15 @@ main(int argc, char *argv[])
 			if (flag_debug == 1) 
 			    debug("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
 		    }
-
 		}
+		stringptr += strlen(stringptr);
+		sprintf(stringptr, ";");
+		stringptr += strlen(stringptr);
 	    }
 	}
+	/* packet = parsed and in ascii in shared region -> copy to clients */
+	shared_setlen((stringptr - stringbuf));
+	master_permitread();
     }
     /* NOT REACHED */
 }

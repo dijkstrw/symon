@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.9 2002/05/31 14:24:46 dijkstra Exp $ */
+/* $Id: data.c,v 1.10 2002/06/21 15:53:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -637,7 +637,8 @@ free_muxlist(struct muxlist *mul)
 	np = SLIST_NEXT(p, muxes);
 
 	if (p->name != NULL) xfree(p->name);
-	close(p->socket);
+	close(p->clientsocket);
+	close(p->monsocket);
 	free_streamlist(&p->sl);
 	xfree(p);
 
@@ -683,5 +684,36 @@ free_sourcelist(struct sourcelist *sol)
 
 	p = np;
     }
+}
+/* Calculate maximum buffer space needed for a single mon hit */
+int 
+calculate_churnbuffer(struct sourcelist *sol) { 
+    struct source *source; 
+    struct stream *stream; 
+    int prefixlen;
+    int maxlen;
+    int len; 
+    int n;
+    
+    double t;
+    /* determine length of a timestamp + ip as strings */
+    prefixlen = (sizeof(time_t)*3) + strlen(":") + 15 + strlen(":");
+    
+    len = n = 0; 
+    source = NULL; 
+    stream = NULL;
+    maxlen = 0;
+    /* determine maximum string size for a single source */
+    SLIST_FOREACH(source, sol, sources) {
+	len = prefixlen;
+	SLIST_FOREACH(stream, &source->sl, streams) {
+	    len += strlen(type2str(stream->type)) + strlen(":");
+	    len += strlen(stream->args) + strlen(":");
+	    len += strlentype(stream->type);
+	    n++;
+	}
+	if (len > maxlen) maxlen = len;
+    }
+    return maxlen;
 }
     

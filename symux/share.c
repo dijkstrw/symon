@@ -63,7 +63,7 @@
  * - master adds any pending new clients
  * - master resets all semaphores, preventing clients to start reading
  *
- * master calls master_allowread:
+ * master calls master_permitread:
  * - increment sequence number in the shared region
  * - increment 'SEM_WAIT' with the number of registered clients
  *
@@ -80,6 +80,17 @@
  *
  */
 
+__BEGIN_DECLS
+void check_master();
+void check_sem();
+void client_doneread();
+void client_loop();
+void client_waitread();
+void exitmaster();
+void master_resetsem();
+void reap_clients();
+__END_DECLS
+
 #define SEM_WAIT     0              /* wait semaphore */
 #define SEM_READ     1              /* have read semaphore */
 #define SEM_TOTAL    2
@@ -91,12 +102,39 @@ int   clientsock;                /* connected client */
 
 enum  ipcstat { SIPC_FREE, SIPC_KEYED, SIPC_ATTACHED };
 key_t shmid;
-long  *shm;
+struct sharedregion *shm;
 enum ipcstat shmstat;
 key_t semid;
 enum ipcstat semstat;
 int   seqnr;
-
+/* Get start of data in shared region */
+long *
+shared_getmem()
+{
+    return &shm->data;
+}
+/* Get max length of data stored in shared region */
+long
+shared_getmaxlen()
+{
+    return shm->reglen - sizeof(struct sharedregion);
+}
+/* Set length of data stored in shared region */
+void
+shared_setlen(long length)
+{
+    if (length > (shm->reglen - (long)sizeof(struct sharedregion)))
+	fatal("%s:%d: Internal error:"
+	      "set_length of shared region called with value larger than actual size",
+	      __FILE__, __LINE__);
+    shm->ctlen = length;
+}
+/* Get length of data stored in shared region */
+long
+shared_getlen()
+{
+    return shm->ctlen;
+}
 /* Check whether semaphore is available */
 void
 check_sem()
@@ -149,11 +187,11 @@ master_forbidread()
     newclients = 0;    
     master_resetsem();
 }
-/* Signal 'allow read' to all clients */
+/* Signal 'permit read' to all clients */
 void
 master_permitread()
 {
-    shm[0]++;
+    shm->seqnr++;
 
     if (semctl(semid, SEM_WAIT, SETVAL, realclients) != 0)
 	fatal("%s:%d: Internal error: Cannot reset semaphores",
@@ -176,7 +214,7 @@ client_waitread()
 	fatal("%s:%d: Internal error: Cannot obtain semaphore (%.200s)",
 	      __FILE__, __LINE__, strerror(errno));
 
-    seqnr = shm[0];
+    seqnr = shm->seqnr;
 }
 
 /* Client signal 'done reading' to master */
@@ -187,9 +225,9 @@ client_doneread()
 
     check_sem();
 
-    if (seqnr != shm[0])
+    if (seqnr != shm->seqnr)
 	fatal("%s:%d: Internal error: Client lagging behind (%d, %d)",
-	      __FILE__, __LINE__, seqnr, shm[0]);
+	      __FILE__, __LINE__, seqnr, shm->seqnr);
 
     sops.sem_num = SEM_READ;
     sops.sem_op  = 1;
@@ -202,27 +240,31 @@ client_doneread()
 
 /* Prepare sharing structures for use */
 void 
-initshare()
+initshare(int bufsize)
 {
     newclients = 0;
     realclients = 0;
     master = 1;
     
+    /* need some extra space for housekeeping */
+    bufsize += sizeof(struct sharedregion);
+
     /* allocate shared memory region for control information */
     shmstat = semstat = SIPC_FREE;
 
     atexit(exitmaster);
 
-    if ((shmid = shmget(IPC_PRIVATE, sizeof(long) * 4096, SHM_R | SHM_W)) < 0)
+    if ((shmid = shmget(IPC_PRIVATE, bufsize, SHM_R | SHM_W)) < 0)
 	fatal("Could not get a shared memory identifier");
     
     shmstat = SIPC_KEYED;
 
-    if ((int)(shm = (long *)shmat(shmid, 0, 0)) < 0)
+    if ((int)(shm = (struct sharedregion *)shmat(shmid, 0, 0)) < 0)
 	fatal("Could not attach shared memory");
 
     shmstat = SIPC_ATTACHED;
-    bzero(shm, (sizeof(long) * 4096));
+    bzero(shm, bufsize);
+    shm->reglen = bufsize;
     
     /* allocate semaphores */
     if ((semid = semget(IPC_PRIVATE, SEM_TOTAL, SEM_A | SEM_R)) < 0)
@@ -315,32 +357,6 @@ exitmaster()
 		__FILE__, __LINE__);
     }
 }
-
-/* Calculate maximum buffer space needed for a single mon hit */
-int 
-calculate_churnbuffer(struct sourcelist *sol) { 
-    struct source *source; 
-    struct stream *stream; 
-    int maxlen;
-    int len; 
-    int n;
-
-    len = n = 0; 
-    source = NULL; 
-    stream = NULL;
-    /* determine maximum string size for a single source */
-    SLIST_FOREACH(source, sol, sources) {
-	maxlen = 0;
-	SLIST_FOREACH(stream, &source->sl, streams) {
-	    
-	    len += strlentype(stream->type);
-	    if (len > maxlen) maxlen = len;
-	}
-	debug("Source %s has %d sources and maxlen %d (=%d)", source->name, n, maxlen, n*maxlen);
-    }
-    return maxlen;
-}
-
 void 
 client_loop()
 {
@@ -351,11 +367,11 @@ client_loop()
 	
 	client_waitread();
 	
-	total = shm[1];
+	total = shared_getlen();
 	sent = 0;
 
 	while (sent < total) {
-	    sent += write(clientsock, &shm[2], total - sent);
+	    sent += write(clientsock, (char *)(shared_getmem() + sent), total - sent);
 	}
 
 	client_doneread();

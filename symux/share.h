@@ -1,4 +1,4 @@
-/* $Id: */
+/* $Id: share.h,v 1.3 2002/06/21 15:53:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,6 +35,9 @@
  * Check wether one buffer suffices, do some performance tests
  */
 
+#ifndef _MONMUX_SHARE_H
+#define _MONMUX_SHARE_H
+
 #include "data.h"
 
 /* Share contains all routines needed for the ipc between monmuxes */
@@ -42,20 +45,23 @@
 #define SEM_READ     1              /* have read semaphore */
 #define SEM_TOTAL    2
 
-extern long *shm;
+struct sharedregion {
+    long seqnr;
+    long reglen;                   /* size of buffer */
+    long ctlen;                    /* amount of content in buffer, assert(< size) */
+    long data;
+};
 
 /* prototypes */
-int  calculate_churnbuffer(struct mux *, struct sourcelist *);
-void check_master();
-void check_sem();
-void client_doneread();
-void client_loop();
-void client_waitread();
-void exitmaster();
-void initshare();
-void master_forbidread();
-void master_allowread();
-void master_resetsem();
-void reap_clients();
-void spawn_client(int);
+__BEGIN_DECLS
+void  master_forbidread();
+void  master_permitread();
+long  shared_getlen();
+long  shared_getmaxlen();
+long *shared_getmem();
+void  initshare();
+void  shared_setlen(long);
+void  spawn_client(int);
+__END_DECLS
 
+#endif /*_MONMUX_SHARE_H*/
