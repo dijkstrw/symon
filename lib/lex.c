@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.6 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: lex.c,v 1.7 2002/04/01 14:43:40 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -146,7 +146,7 @@ lex_copychar(struct lex *l)
     
     if (++l->tokpos >= _POSIX2_LINE_MAX) {
 	l->token[_POSIX2_LINE_MAX-1] = '\0';
-	fatal("%s:%d:Parse error at '%s'.", l->filename, l->cline, l->token);
+	fatal("%s:%d: parse error at '%s'", l->filename, l->cline, l->token);
 	/* NOT REACHED */
     }
 }
@@ -213,13 +213,13 @@ lex_nexttoken(struct lex *l)
     /* "delimited string" */
     if (l->buffer[l->curpos] == '"') {
 	if (!lex_nextchar(l)) {
-	    warning("%s:%d:unbalanced '\"'", l->filename, l->cline);
+	    warning("%s:%d: unbalanced '\"'", l->filename, l->cline);
 	    return 0;
 	}
 	while (l->buffer[l->curpos] != '"') {
 	    lex_copychar(l);
 	    if (!lex_nextchar(l)) {
-		warning("%s:%d:unbalanced '\"'", l->filename, l->cline);
+		warning("%s:%d: unbalanced '\"'", l->filename, l->cline);
 		return 0;
 	    }
 	}
@@ -231,13 +231,13 @@ lex_nexttoken(struct lex *l)
     /* 'delimited string' */
     if (l->buffer[l->curpos] == '\'') {
 	if (!lex_nextchar(l)) {
-	    warning("%s:%d:unbalanced \"\'\"", l->filename, l->cline);
+	    warning("%s:%d: unbalanced \"\'\"", l->filename, l->cline);
 	    return 0;
 	}
 	while (l->buffer[l->curpos] != '\'') {
 	    lex_copychar(l);
 	    if (!lex_nextchar(l)) {
-		warning("%s:%d:unbalanced \"\'\"", l->filename, l->cline);
+		warning("%s:%d: unbalanced \"\'\"", l->filename, l->cline);
 		return 0;
 	    }
 	}
@@ -299,8 +299,8 @@ open_lex(const char *filename)
     l->value = 0;
 
     if ((l->fh = fopen(l->filename, "r")) == NULL) {
-	fatal("Could not open file '%s':%s", 
-	     l->filename,strerror(errno));
+	fatal("could not open file '%s':%s", 
+	     l->filename, strerror(errno));
     }
 
     lex_nextchar(l);
@@ -320,6 +320,6 @@ close_lex(struct lex *l)
 void
 parse_error(struct lex *l, const char *s)
 {
-    fatal("%s:%d: Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
+    fatal("%s:%d: expected %s (found '%.5s')", l->filename, l->cline, s, l->token);
 }
 
