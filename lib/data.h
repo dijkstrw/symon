@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.16 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: data.h,v 1.17 2002/11/29 10:46:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -56,48 +56,48 @@
 #define ntohq(n) (n)
 #else
 static inline u_int64_t
-htonq (u_int64_t v)
+       htonq(u_int64_t v)
 {
-    return (u_int64_t)htonl(v) << 32 | htonl(v >> 32);
+    return (u_int64_t) htonl(v) << 32 | htonl(v >> 32);
 }
 static inline u_int64_t
-ntohq (u_int64_t v) 
+       ntohq(u_int64_t v)
 {
-    return (u_int64_t)ntohl(v) << 32 | ntohl(v >> 32);
+    return (u_int64_t) ntohl(v) << 32 | ntohl(v >> 32);
 }
 #endif
 
-/* Symon packet version 
+/* Symon packet version
  * version 1:
  * symon_version:timestamp:length:crc:n*packedstream
- * 
+ *
  * Note that the data portion is limited. The current (31/03/2002) largest
  * streamtype (if) needs 42 bytes without arguments. My _POSIX2_LINE_MAX is 2k,
- * so that works out to about 38 packedstreams in a single symon packet.  
+ * so that works out to about 38 packedstreams in a single symon packet.
  */
 #define SYMON_PACKET_VER  1
 
 /* Sending structures over the network is dangerous as the compiler might have
  * added extra padding between items. symonpacketheader below is therefore also
  * marshalled and demarshalled via snpack and sunpack. The actual values are
- * copied out of memory into this structure one by one. 
+ * copied out of memory into this structure one by one.
  */
 struct symonpacketheader {
-	u_int64_t timestamp;
-	u_int32_t crc;
-	u_int16_t length;
-	u_int8_t symon_version;
-	u_int8_t reserved;
+    u_int64_t timestamp;
+    u_int32_t crc;
+    u_int16_t length;
+    u_int8_t symon_version;
+    u_int8_t reserved;
 };
 
 struct symonpacket {
     struct symonpacketheader header;
     char data[_POSIX2_LINE_MAX];
-};  
-  
+};
+
 /* The difference between a stream and a packed stream:
- * - A stream ties stream information to a file. 
- * - A packed stream is the measured data itself 
+ * - A stream ties stream information to a file.
+ * - A packed stream is the measured data itself
  *
  * A stream is meta data describing properties, a packed stream is the data itself.
  */
@@ -110,9 +110,8 @@ struct stream {
 SLIST_HEAD(streamlist, stream);
 
 struct source {
-    char *name;
-    u_int32_t ip;
-    u_int16_t port;
+    char *addr;
+    struct sockaddr_storage sockaddr;
     struct streamlist sl;
     SLIST_ENTRY(source) sources;
 };
@@ -120,15 +119,17 @@ SLIST_HEAD(sourcelist, source);
 
 struct mux {
     char *name;
+    char *addr;
+    char *port;
+    struct sourcelist sol;
     int offset;
-    int clientsocket;
-    int symonsocket;
+    int clientsocket;		/* symux; incoming tcp connections */
+    int symonsocket[AF_MAX];	/* symux; incoming symon data */
+    int symuxsocket;		/* symon; outgoing data to mux */
     struct symonpacket packet;
-    struct sockaddr_in sockaddr;
+    struct sockaddr_storage sockaddr;
     struct streamlist sl;
     u_int32_t senderr;
-    u_int32_t ip;
-    u_int16_t port;
     SLIST_ENTRY(mux) muxes;
 };
 SLIST_HEAD(muxlist, mux);
@@ -143,54 +144,55 @@ SLIST_HEAD(muxlist, mux);
 #define MT_MEM    2
 #define MT_IF     3
 #define MT_PF     4
-#define MT_EOT    5
+#define MT_DEBUG  5
+#define MT_EOT    6
 
-/* NOTE: struct packetstream
- *
+/*
  * Unpacking of incoming packets is done via a packedstream structure. This
  * structure defines the maximum amount of data that can be contained in a
  * single network representation of a stream. It is used internally for sizing
  * only. Although the union members are here, they could also read u_int64_t[4]
  * with io, for instance.
  */
-#define SYMON_PS_ARGLEN    16
+#define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
+#define SYMON_PS_ARGLEN    16	/* maximum argument length */
 struct packedstream {
     int type;
     int padding;
     char args[SYMON_PS_ARGLEN];
     union {
 	struct symonpacketheader header;
-	struct { 
+	struct {
 	    u_int64_t mtotal_transfers;
 	    u_int64_t mtotal_seeks;
 	    u_int64_t mtotal_bytes;
-	} ps_io;
+	}      ps_io;
 	struct {
 	    u_int16_t muser;
 	    u_int16_t mnice;
 	    u_int16_t msystem;
 	    u_int16_t minterrupt;
 	    u_int16_t midle;
-	} ps_cpu;
+	}      ps_cpu;
 	struct {
-	    u_int32_t mreal_active; 
+	    u_int32_t mreal_active;
 	    u_int32_t mreal_total;
 	    u_int32_t mfree;
 	    u_int32_t mswap_used;
 	    u_int32_t mswap_total;
-	} ps_mem;
+	}      ps_mem;
 	struct {
 	    u_int32_t mipackets;
 	    u_int32_t mopackets;
-	    u_int32_t mibytes; 
+	    u_int32_t mibytes;
 	    u_int32_t mobytes;
-	    u_int32_t mimcasts; 
+	    u_int32_t mimcasts;
 	    u_int32_t momcasts;
-	    u_int32_t mierrors; 
+	    u_int32_t mierrors;
 	    u_int32_t moerrors;
 	    u_int32_t mcolls;
 	    u_int32_t mdrops;
-	} ps_if;
+	}      ps_if;
 	struct {
 	    u_int64_t bytes_v4_in;
 	    u_int64_t bytes_v4_out;
@@ -214,35 +216,57 @@ struct packedstream {
 	    u_int64_t counters_short;
 	    u_int64_t counters_normalize;
 	    u_int64_t counters_memory;
-	} ps_pf;
-    } data;
+	}      ps_pf;
+	struct {
+	    u_int32_t debug0;
+	    u_int32_t debug1;
+	    u_int32_t debug2;
+	    u_int32_t debug3;
+	    u_int32_t debug4;
+	    u_int32_t debug5;
+	    u_int32_t debug6;
+	    u_int32_t debug7;
+	    u_int32_t debug8;
+	    u_int32_t debug9;
+	    u_int32_t debug10;
+	    u_int32_t debug11;
+	    u_int32_t debug12;
+	    u_int32_t debug13;
+	    u_int32_t debug14;
+	    u_int32_t debug15;
+	    u_int32_t debug16;
+	    u_int32_t debug17;
+	    u_int32_t debug18;
+	    u_int32_t debug19;
+	}      ps_debug;
+    }     data;
 };
 
 /* prototypes */
 __BEGIN_DECLS
-const char    *type2str(const int);
-const int      token2type(const int);
-int            calculate_churnbuffer(struct sourcelist *);
-int            getheader(char *, struct symonpacketheader *);
-int            ps2strn(struct packedstream *, char *, int, int);
-int            setheader(char *, struct symonpacketheader *);
-int            snpack(char *, int, char*, int, ...);
-int            strlentype(int);
-int            sunpack(char *, struct packedstream *);
-struct mux    *add_mux(struct muxlist *, char *);
-struct mux    *find_mux(struct muxlist *, char *);
-struct mux *   rename_mux(struct muxlist *, struct mux *, char *);
+const char *type2str(const int);
+const int token2type(const int);
+int calculate_churnbuffer(struct sourcelist *);
+int getheader(char *, struct symonpacketheader *);
+int ps2strn(struct packedstream *, char *, int, int);
+int setheader(char *, struct symonpacketheader *);
+int snpack(char *, int, char *, int,...);
+int strlentype(int);
+int sunpack(char *, struct packedstream *);
+struct mux *add_mux(struct muxlist *, char *);
+struct mux *find_mux(struct muxlist *, char *);
+struct mux *rename_mux(struct muxlist *, struct mux *, char *);
 struct source *add_source(struct sourcelist *, char *);
 struct source *find_source(struct sourcelist *, char *);
-struct source *find_source_ip(struct sourcelist *, u_int32_t);
+struct source *find_source_sockaddr(struct sourcelist *, struct sockaddr *);
 struct stream *add_mux_stream(struct mux *, int, char *);
-struct stream *add_source_stream(struct source *, int, char *); 
-struct stream *find_mux_stream(struct mux *,  int, char *);
+struct stream *add_source_stream(struct source *, int, char *);
+struct stream *find_mux_stream(struct mux *, int, char *);
 struct stream *find_source_stream(struct source *, int, char *);
-u_int32_t      crc32(const void*, unsigned int);
-void           free_muxlist(struct muxlist *);
-void           free_sourcelist(struct sourcelist *);
-void           free_streamlist(struct streamlist *);
-void           init_crc32();
+u_int32_t crc32(const void *, unsigned int);
+void free_muxlist(struct muxlist *);
+void free_sourcelist(struct sourcelist *);
+void free_streamlist(struct streamlist *);
+void init_crc32();
 __END_DECLS
-#endif /*_SYMON_LIB_DATA_H*/
+#endif				/* _SYMON_LIB_DATA_H */

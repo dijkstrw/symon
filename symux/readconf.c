@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.15 2002/10/25 15:25:07 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.16 2002/11/29 10:49:35 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -32,37 +32,35 @@
 
 #include <sys/queue.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
-#include <assert.h>
-#include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "xmalloc.h"
-#include "lex.h"
-#include "error.h"
-#include "net.h"
 #include "data.h"
+#include "error.h"
+#include "lex.h"
+#include "net.h"
+#include "readconf.h"
+#include "xmalloc.h"
 
 __BEGIN_DECLS
-int read_mux(struct muxlist *mul, struct lex *);
-int read_source(struct sourcelist *sol, struct lex *);
+int read_mux(struct muxlist * mul, struct lex *);
+int read_source(struct sourcelist * sol, struct lex *);
 int insert_filename(char *, int, int, char *);
 __END_DECLS
 
+const char *default_symux_port = SYMUX_PORT;
+
 int 
-insert_filename(char *path, int maxlen, int type, char *args) 
+insert_filename(char *path, int maxlen, int type, char *args)
 {
     char *ts;
     char *ta;
 
     ts = ta = NULL;
 
-    switch(type) {
+    switch (type) {
     case MT_CPU:
 	ts = "cpu";
 	ta = args;
@@ -83,63 +81,70 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	ts = "pf";
 	ta = "";
 	break;
+    case MT_DEBUG:
+	ts = "debug";
+	ta = "";
+	break;
     default:
 	warning("%s:%d: internal error: type (%d) unknown",
 		__FILE__, __LINE__, type);
 	return 0;
     }
-    
-    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen) 
+
+    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen)
 	return 0;
     else
 	return 1;
 }
-/* mux <host> (port|:|,| ) <number> */
+/* mux <host> (port|,| ) <number> */
 int 
-read_mux(struct muxlist *mul, struct lex *l)
+read_mux(struct muxlist * mul, struct lex * l)
 {
-    struct mux *m;
+    char muxname[_POSIX2_LINE_MAX];
+    struct mux *mux;
 
-    if (! SLIST_EMPTY(mul)) {
-	warning("%s:%d: only one mux statement allowed", 
+    if (!SLIST_EMPTY(mul)) {
+	warning("%s:%d: only one mux statement allowed",
 		l->filename, l->cline);
 	return 0;
     }
-    
+
     lex_nexttoken(l);
-    if (!lookup(l->token)) {
+    if (!getip(l->token)) {
 	warning("%s:%d: could not resolve '%s'",
-		l->filename, l->cline, l->token );
+		l->filename, l->cline, l->token);
 	return 0;
     }
 
-    m = add_mux(mul, lookup_address);
-    m->ip = lookup_ip;
+    mux = add_mux(mul, SYMON_UNKMUX);
+    mux->addr = xstrdup((const char *) &res_host);
 
     /* check for port statement */
     lex_nexttoken(l);
-    if (l->op == LXT_PORT || l->op == LXT_COLON || l->op == LXT_COMMA)
+
+    if (l->op == LXT_PORT || l->op == LXT_COMMA)
 	lex_nexttoken(l);
-    else {
-	if (l->type != LXY_NUMBER) {
-	    lex_ungettoken(l);
-	    m->port = SYMUX_PORT;
-	    return 1;
-	}
-    }
 
     if (l->type != LXY_NUMBER) {
-	parse_error(l, "<number>");
-	return 0;
+	lex_ungettoken(l);
+	mux->port = xstrdup(default_symux_port);
+    }
+    else {
+	mux->port = xstrdup((const char *) l->token);
     }
 
-    m->port = l->value;
+    bzero(&muxname, sizeof(muxname));
+    snprintf(&muxname[0], sizeof(muxname), "%s %s", mux->addr, mux->port);
+
+    if (rename_mux(mul, mux, muxname) == NULL)
+	fatal("%s:%d: internal error: dual mux", __FILE__, __LINE__);
+
 
     return 1;
 }
 /* source <host> { accept ... | write ... | datadir ... } */
 int 
-read_source(struct sourcelist *sol, struct lex *l)
+read_source(struct sourcelist * sol, struct lex * l)
 {
     struct source *source;
     struct stream *stream;
@@ -153,15 +158,14 @@ read_source(struct sourcelist *sol, struct lex *l)
 
     /* get hostname */
     lex_nexttoken(l);
-    if (!lookup(l->token)) {
+    if (!getip(l->token)) {
 	warning("%s:%d: could not resolve '%s'",
-		l->filename, l->cline, l->token );
-	return 0; 
+		l->filename, l->cline, l->token);
+	return 0;
     }
 
-    source = add_source(sol, lookup_address);
-    source->ip = lookup_ip;
-    
+    source = add_source(sol, res_host);
+
     EXPECT(l, LXT_BEGIN);
     while (lex_nexttoken(l)) {
 	switch (l->op) {
@@ -175,6 +179,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 		case LXT_IO:
 		case LXT_MEM:
 		case LXT_PF:
+		case LXT_DEBUG:
 		    st = token2type(l->op);
 		    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -194,28 +199,29 @@ read_source(struct sourcelist *sol, struct lex *l)
 			    parse_error(l, ")");
 			    return 0;
 			}
-		    } else {
+		    }
+		    else {
 			lex_ungettoken(l);
-			sa[0]='\0';
+			sa[0] = '\0';
 		    }
 
 		    if ((stream = add_source_stream(source, st, sa)) == NULL) {
-			warning("%s:%d: stream %s(%s) redefined", 
+			warning("%s:%d: stream %s(%s) redefined",
 				l->filename, l->cline, sn, sa);
 			return 0;
 		    }
 
-		    break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM/LXT_PF */
+		    break;	/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
 		case LXT_COMMA:
 		    break;
 		default:
-		    parse_error(l, "{cpu|mem|if|io|pf}");
+		    parse_error(l, "{cpu|mem|if|io|pf|debug}");
 		    return 0;
 
 		    break;
 		}
 	    }
-	    break; /* LXT_ACCEPT */
+	    break;		/* LXT_ACCEPT */
 	    /* datadir "path" */
 	case LXT_DATADIR:
 	    lex_nexttoken(l);
@@ -230,62 +236,65 @@ read_source(struct sourcelist *sol, struct lex *l)
 	    bzero(&sb, sizeof(struct stat));
 
 	    if (stat(l->token, &sb) == 0) {
-		if (! (sb.st_mode & S_IFDIR)) {
+		if (!(sb.st_mode & S_IFDIR)) {
 		    warning("%s:%d: datadir path '%s' is not a directory",
 			    l->filename, l->cline, l->token);
 		    return 0;
 		}
-	    } else {
+	    }
+	    else {
 		warning("%s:%d: could not stat datadir path '%s'",
 			l->filename, l->cline, l->token);
 		return 0;
 	    }
 
 	    strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
-	    path[_POSIX2_LINE_MAX-1] = '\0';
-	    
+	    path[_POSIX2_LINE_MAX - 1] = '\0';
+
 	    pc = strlen(path);
-	    
-	    if (path[pc-1] == '/') {
-		path[pc-1] = '\0';
+
+	    if (path[pc - 1] == '/') {
+		path[pc - 1] = '\0';
 		pc--;
 	    }
-	    
+
 	    /* add path to empty streams */
 	    SLIST_FOREACH(stream, &source->sl, streams) {
 		if (stream->file == NULL) {
-		    if (!(insert_filename(&path[pc], 
-					  _POSIX2_LINE_MAX - pc, 
-					  stream->type, 
+		    if (!(insert_filename(&path[pc],
+					  _POSIX2_LINE_MAX - pc,
+					  stream->type,
 					  stream->args))) {
 			if (stream->args && strlen(stream->args)) {
 			    warning("%s:%d: failed to construct stream "
 				    "%s(%s) filename using datadir '%s'",
-				    l->filename, l->cline, 
-				    type2str(stream->type), 
+				    l->filename, l->cline,
+				    type2str(stream->type),
 				    stream->args, l->token);
-			} else {
+			}
+			else {
 			    warning("%s:%d: failed to construct stream "
 				    "%s) filename using datadir '%s'",
-				    l->filename, l->cline, 
-				    type2str(stream->type), 
+				    l->filename, l->cline,
+				    type2str(stream->type),
 				    l->token);
 			}
 			return 0;
 		    }
-		    
+
 		    /* try filename */
 		    if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			warning("%s:%d: file '%s', guessed by datadir,  cannot be opened", 
+			warning("%s:%d: file '%s', guessed by datadir,  cannot be opened",
 				l->filename, l->cline, path);
 			return 0;
-		    } else {
+		    }
+		    else {
 			close(fd);
 			stream->file = xstrdup(path);
 		    }
 		}
 	    }
-	    break; /* LXT_DATADIR */
+	    break;		/* LXT_DATADIR */
 	    /* write cpu(0) in "filename" */
 	case LXT_WRITE:
 	    lex_nexttoken(l);
@@ -295,9 +304,10 @@ read_source(struct sourcelist *sol, struct lex *l)
 	    case LXT_IO:
 	    case LXT_MEM:
 	    case LXT_PF:
+	    case LXT_DEBUG:
 		st = token2type(l->op);
 		strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
-		
+
 		/* parse arg */
 		lex_nexttoken(l);
 		if (l->op == LXT_OPEN) {
@@ -313,50 +323,54 @@ read_source(struct sourcelist *sol, struct lex *l)
 			parse_error(l, ")");
 			return 0;
 		    }
-		} else {
-		    lex_ungettoken(l);
-		    sa[0]='\0';
 		}
-		
+		else {
+		    lex_ungettoken(l);
+		    sa[0] = '\0';
+		}
+
 		EXPECT(l, LXT_IN);
 
 		lex_nexttoken(l);
-		
+
 		if ((stream = find_source_stream(source, st, sa)) == NULL) {
 		    if (strlen(sa)) {
-			warning("%s:%d: stream %s(%s) is not accepted for %s", 
-				l->filename, l->cline, sn, sa, source->name);
-			return 0;
-		    } else {
-			warning("%s:%d: stream %s is not accepted for %s", 
-				l->filename, l->cline, sn, source->name);
+			warning("%s:%d: stream %s(%s) is not accepted for %s",
+				l->filename, l->cline, sn, sa, source->addr);
 			return 0;
 		    }
-		} else {
+		    else {
+			warning("%s:%d: stream %s is not accepted for %s",
+				l->filename, l->cline, sn, source->addr);
+			return 0;
+		    }
+		}
+		else {
 		    /* try filename */
 		    if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			warning("%s:%d: file '%s' cannot be opened", 
+			warning("%s:%d: file '%s' cannot be opened",
 				l->filename, l->cline, l->token);
 			return 0;
-		    } else {
+		    }
+		    else {
 			close(fd);
 
 			if (stream->file != NULL) {
 			    warning("%s:%d: file '%s' overwrites previous definition '%s'",
-				    l->filename, l->cline, l->token, stream->file);
+			     l->filename, l->cline, l->token, stream->file);
 			    xfree(stream->file);
 			}
 
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM/LXT_PF */
+		break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
 	    default:
-		parse_error(l, "{cpu|mem|if|io}");
+		parse_error(l, "{cpu|mem|if|io|debug}");
 		return 0;
 		break;
 	    }
-	    break; /* LXT_WRITE */
+	    break;		/* LXT_WRITE */
 	case LXT_END:
 	    return 1;
 	default:
@@ -365,75 +379,90 @@ read_source(struct sourcelist *sol, struct lex *l)
 	}
     }
 
-    warning("%s:%d: missing close brace on source statement", 
+    warning("%s:%d: missing close brace on source statement",
 	    l->filename, l->cline);
 
     return 0;
 }
 /* Read symux.conf */
-int  
-read_config_file(struct muxlist *mul, 
-		 struct sourcelist *sol, 
-		 const char *filename)
+int 
+read_config_file(struct muxlist * mul, const char *filename)
 {
     struct lex *l;
     struct source *source;
     struct stream *stream;
-
+    struct mux *mux;
+    struct sourcelist sol;
     SLIST_INIT(mul);
-    SLIST_INIT(sol);
+    SLIST_INIT(&sol);
 
     if ((l = open_lex(filename)) == NULL)
 	return 0;
-    
+
     while (lex_nexttoken(l)) {
-    /* expecting keyword now */
+	/* expecting keyword now */
 	switch (l->op) {
 	case LXT_MUX:
-	    if (!read_mux(mul, l))
+	    if (!read_mux(mul, l)) {
+		free_sourcelist(&sol);
 		return 0;
+	    }
 	    break;
 	case LXT_SOURCE:
-	    if (!read_source(sol, l))
+	    if (!read_source(&sol, l)) {
+		free_sourcelist(&sol);
 		return 0;
+	    }
 	    break;
 	default:
-	    parse_error(l, "mux|source" );
+	    parse_error(l, "mux|source");
+	    free_sourcelist(&sol);
 	    return 0;
 	    break;
 	}
     }
-    
+
     /* sanity checks */
     if (SLIST_EMPTY(mul)) {
+	free_sourcelist(&sol);
 	warning("%s: no mux statement seen",
 		l->filename);
 	return 0;
     }
+    else {
+	mux = SLIST_FIRST(mul);
+	mux->sol = sol;
+	if (strncmp(SYMON_UNKMUX, mux->name, sizeof(SYMON_UNKMUX)) == 0) {
+	    /* mux was not initialised for some reason */
+	    return 0;
+	}
+    }
 
-    if (SLIST_EMPTY(sol)) {
-	warning("%s: no source section seen", 
+    if (SLIST_EMPTY(&sol)) {
+	warning("%s: no source section seen",
 		l->filename);
 	return 0;
-    } else {
-	SLIST_FOREACH(source, sol, sources) {
+    }
+    else {
+	SLIST_FOREACH(source, &sol, sources) {
 	    if (SLIST_EMPTY(&source->sl)) {
-		warning("%s: no streams accepted for source '%s'", 
-			l->filename, source->name);
+		warning("%s: no streams accepted for source '%s'",
+			l->filename, source->addr);
 		return 0;
-	    } else {
+	    }
+	    else {
 		SLIST_FOREACH(stream, &source->sl, streams) {
 		    if (stream->file == NULL) {
 			warning("%s: no filename specified for stream '%s(%s)' in source '%s'",
-				l->filename, type2str(stream->type), stream->args, source->name);
+				l->filename, type2str(stream->type), stream->args, source->addr);
 			return 0;
 		    }
 		}
 	    }
 	}
     }
-    
+
     close_lex(l);
-    
+
     return 1;
 }
