@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.11 2002/04/09 05:37:37 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.12 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,7 +31,7 @@
  */
 
 /*
- * Get current memory statistics in bytes; reports them back in mon_buf as
+ * Get current memory statistics in bytes; reports them back in symon_buf as
  *
  * real active : real total : free : [swap used : swap total]
  *
@@ -49,7 +49,7 @@
 #include <limits.h>
 
 #include "error.h"
-#include "mon.h"
+#include "symon.h"
 #include "xmalloc.h"
 
 #define pagetob(size) ((size) << me_pageshift)
@@ -95,7 +95,7 @@ init_mem(char *s)
 }
 /* Get memory statistics */
 int 
-get_mem(char *mon_buf, int maxlen, char *s)
+get_mem(char *symon_buf, int maxlen, char *s)
 {
     int i,rnswap;
 
@@ -127,7 +127,7 @@ get_mem(char *mon_buf, int maxlen, char *s)
 	}
     }
 
-    return snpack(mon_buf, maxlen, s, MT_MEM, 
+    return snpack(symon_buf, maxlen, s, MT_MEM, 
 		  me_stats[0], me_stats[1], me_stats[2], 
 		  me_stats[3], me_stats[4]);
 }

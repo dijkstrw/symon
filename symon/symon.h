@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.18 2002/09/13 07:42:53 dijkstra Exp $ */
+/* $Id: symon.h,v 1.19 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,22 +30,22 @@
  *
  */
 
-#ifndef _MON_MON_H
-#define _MON_MON_H
+#ifndef _SYMON_SYMON_H
+#define _SYMON_SYMON_H
 
 #include <sys/queue.h>
 
 #include "lex.h"
 #include "data.h"
 
-#define MON_CONFIG_FILE "/etc/mon.conf"
-#define MON_PID_FILE    "/var/run/mon.pid"
-#define MON_VERSION     "2.4"
-#define MON_INTERVAL 5                           /* measurement interval */
-#define MON_WARN_SENDERR 50                      /* warn every x errors */
-#define MON_MAX_DOBJECTS  100                    /* max dynamic alloction
+#define SYMON_CONFIG_FILE "/etc/symon.conf"
+#define SYMON_PID_FILE    "/var/run/symon.pid"
+#define SYMON_VERSION     "2.5"
+#define SYMON_INTERVAL 5                           /* measurement interval */
+#define SYMON_WARN_SENDERR 50                      /* warn every x errors */
+#define SYMON_MAX_DOBJECTS  100                    /* max dynamic alloction
                                                      = 100 objects */
-#define MON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)      /* max allocation unit 
+#define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)      /* max allocation unit 
 						     = _POSIX2_LINE_MAX */
 struct funcmap {
     int type;
@@ -79,4 +79,4 @@ extern void init_pf(char *);
 extern int  get_pf(char *, int, char *);
 __END_DECLS
 
-#endif /*_MON_MON_H*/
+#endif /*_SYMON_SYMON_H*/

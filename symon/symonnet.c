@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.9 2002/09/02 06:16:55 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.10 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -41,7 +41,7 @@
 
 #include "error.h"
 #include "data.h"
-#include "mon.h"
+#include "symon.h"
 #include "net.h"
 
 /* Fill a mux structure with inet details */
@@ -50,7 +50,7 @@ connect2mux(struct mux *mux)
 {
     struct sockaddr_in sockaddr;
 
-    if ((mux->monsocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    if ((mux->symonsocket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
     sockaddr.sin_family = AF_INET;
@@ -58,7 +58,7 @@ connect2mux(struct mux *mux)
     sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     bzero(&sockaddr.sin_zero, 8);
 
-    if (bind(mux->monsocket, (struct sockaddr *) &sockaddr, 
+    if (bind(mux->symonsocket, (struct sockaddr *) &sockaddr, 
 	     sizeof(struct sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
@@ -74,14 +74,14 @@ connect2mux(struct mux *mux)
 void 
 send_packet(struct mux *mux)
 {   
-    if (sendto(mux->monsocket, (void *)&mux->packet.data, 
+    if (sendto(mux->symonsocket, (void *)&mux->packet.data, 
 	       mux->offset, 0, (struct sockaddr *)&mux->sockaddr, 
 	       sizeof(mux->sockaddr))
 	!= mux->offset) {
 	mux->senderr++;
     }
 
-    if (mux->senderr >= MON_WARN_SENDERR)
+    if (mux->senderr >= SYMON_WARN_SENDERR)
 	warning("%d updates to mux(%u.%u.%u.%u) lost due to send errors",
 		mux->senderr, 
 		IPAS4BYTES(mux->ip)), mux->senderr = 0;
@@ -93,10 +93,10 @@ prepare_packet(struct mux *mux)
     time_t t = time(NULL);
 
     bzero(&mux->packet, sizeof(mux->packet));
-    mux->packet.header.mon_version = MON_PACKET_VER;
+    mux->packet.header.symon_version = SYMON_PACKET_VER;
     mux->packet.header.timestamp = t;
 
-    /* monpacketheader is always first stream */
+    /* symonpacketheader is always first stream */
     mux->offset = 
 	setheader((char *)&mux->packet.data, 
 		  &mux->packet.header);

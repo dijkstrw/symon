@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.12 2002/08/29 19:38:53 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.13 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  * 
@@ -46,7 +46,7 @@
 
 /*
  * Get current cpu statistics in percentages (total of all counts = 100.0)
- * and returns them in mon_buf as
+ * and returns them in symon_buf as
  *
  * user : nice : system : interrupt : idle
  *
@@ -59,7 +59,7 @@
 #include <sys/sysctl.h>
 
 #include "error.h"
-#include "mon.h"
+#include "symon.h"
 
 __BEGIN_DECLS
 int percentages(int, int *, long *, long *, long *);
@@ -129,7 +129,7 @@ init_cpu(char *s)
 }
 /* Get new cpu measurements */
 int 
-get_cpu(char *mon_buf, int maxlen, char *s) 
+get_cpu(char *symon_buf, int maxlen, char *s) 
 {
     int total;
 
@@ -141,7 +141,7 @@ get_cpu(char *mon_buf, int maxlen, char *s)
     /* convert cp_time counts to percentages */
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
-    return snpack(mon_buf, maxlen, s, MT_CPU,
+    return snpack(symon_buf, maxlen, s, MT_CPU,
 		  cp_states[CP_USER], 
 		  cp_states[CP_NICE], 
 		  cp_states[CP_SYS], 

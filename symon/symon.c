@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.23 2002/09/13 07:42:53 dijkstra Exp $ */
+/* $Id: symon.c,v 1.24 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -43,8 +43,8 @@
 
 #include "data.h"
 #include "error.h"
-#include "mon.h"
-#include "monnet.h"
+#include "symon.h"
+#include "symonnet.h"
 #include "net.h"
 #include "readconf.h"
 #include "xmalloc.h"
@@ -67,7 +67,7 @@ struct funcmap streamfunc[] = {
     {MT_EOT, NULL, NULL}
 };
 
-/* Alarmhandler that gets called every MON_INTERVAL */
+/* Alarmhandler that gets called every SYMON_INTERVAL */
 void 
 alarmhandler(int s) {
     /* EMPTY */
@@ -83,9 +83,9 @@ huphandler(int s) {
     flag_hup = 1;
 }
 /* 
- * Mon is a system measurement utility. 
+ * Symon is a system measurement utility. 
  *
- * The main goals mon hopes to accomplish is:
+ * The main goals symon hopes to accomplish is:
  * - to take fine grained measurements of system parameters 
  * - with minimal performance impact 
  * - in a secure way.
@@ -93,10 +93,10 @@ huphandler(int s) {
  * Measuring system parameters (e.g. interfaces) sometimes means traversing
  * lists in kernel memory. Because of this the measurement of data has been
  * decoupled from the processing and storage of data. Storing the measured
- * information that mon provides is done by a second program, called monmux.
+ * information that symon provides is done by a second program, called symux.
  * 
- * Mon can keep track of cpu, memory, disk and network interface
- * interactions. Mon was built specifically for OpenBSD.
+ * Symon can keep track of cpu, memory, disk and network interface
+ * interactions. Symon was built specifically for OpenBSD.
  */
 int 
 main(int argc, char *argv[])
@@ -121,7 +121,7 @@ main(int argc, char *argv[])
 	    flag_debug = 1;
 	    break;
 	case 'v':
-	    info("mon version %s", MON_VERSION);
+	    info("symon version %s", SYMON_VERSION);
 	default:
 	    info("usage: %s [-d] [-v]", __progname);
 	    exit(1);
@@ -138,16 +138,16 @@ main(int argc, char *argv[])
 	flag_daemon = 1;
 
 	/* record pid */
-	f = fopen(MON_PID_FILE, "w");
+	f = fopen(SYMON_PID_FILE, "w");
 	if (f) {
 	    fprintf(f, "%u\n", (u_int) getpid());
 	    fclose(f);
 	}
     } 
 
-    info("mon version %s", MON_VERSION);
+    info("symon version %s", SYMON_VERSION);
 
-    if (!read_config_file(&mul, MON_CONFIG_FILE))
+    if (!read_config_file(&mul, SYMON_CONFIG_FILE))
 	fatal("configuration contained errors; quitting");
 
     if (flag_debug == 1)
@@ -175,21 +175,21 @@ main(int argc, char *argv[])
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
     alarminterval.it_interval.tv_sec=
-	alarminterval.it_value.tv_sec=MON_INTERVAL;
+	alarminterval.it_value.tv_sec=SYMON_INTERVAL;
 
     if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
 	fatal("alarm setup failed -- %s", strerror(errno));
     }
 
     for (;;) {  /* FOREVER */
-	sleep(MON_INTERVAL*2);    /* alarm will always interrupt sleep */
+	sleep(SYMON_INTERVAL*2);    /* alarm will always interrupt sleep */
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
 
 	    SLIST_INIT(&newmul);
 
-	    if (!read_config_file(&newmul, MON_CONFIG_FILE)) {
+	    if (!read_config_file(&newmul, SYMON_CONFIG_FILE)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
 	    } else {

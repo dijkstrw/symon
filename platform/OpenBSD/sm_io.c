@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.7 2002/09/13 07:42:53 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.8 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,7 +31,7 @@
  */
 
 /*
- * Get current disk transfer statistics from kernel and return them in mon_buf as
+ * Get current disk transfer statistics from kernel and return them in symon_buf as
  * 
  * total nr of transfers : total seeks : total bytes transferred
  *
@@ -46,7 +46,7 @@
 #include <string.h>
 
 #include "error.h"
-#include "mon.h"
+#include "symon.h"
 #include "xmalloc.h"
 
 /* Globals for this module start with io_ */
@@ -88,14 +88,14 @@ gets_io()
 	io_maxdks = dks;
 	io_maxstr = strsize;
 
-	if (io_maxdks > MON_MAX_DOBJECTS) {
+	if (io_maxdks > SYMON_MAX_DOBJECTS) {
 	    fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
-		  __FILE__, __LINE__, MON_MAX_DOBJECTS);
+		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
 	}
 	
-	if (io_maxstr > MON_MAX_OBJSIZE) {
+	if (io_maxstr > SYMON_MAX_OBJSIZE) {
 	    fatal("%s:%d: string size exceeded (%d)",
-		  __FILE__, __LINE__, MON_MAX_OBJSIZE);
+		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE);
 	}
 
 	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct diskstats));
@@ -133,7 +133,7 @@ init_io(char *s)
 }
 /* Get new io statistics */
 int 
-get_io(char *mon_buf, int maxlen, char *disk) 
+get_io(char *symon_buf, int maxlen, char *disk) 
 {
     int i;
 
@@ -141,7 +141,7 @@ get_io(char *mon_buf, int maxlen, char *disk)
     for (i=0; i<io_dks; i++) {
 	if (strncmp(io_dknames[i], disk, 
 		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
-	    return snpack(mon_buf, maxlen, disk, MT_IO,
+	    return snpack(symon_buf, maxlen, disk, MT_IO,
 			  io_dkstats[i].ds_xfer, 
 			  io_dkstats[i].ds_seek,
 			  io_dkstats[i].ds_bytes);

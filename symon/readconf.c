@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.9 2002/08/29 19:38:53 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.10 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -43,14 +43,14 @@
 #include "data.h"
 #include "error.h"
 #include "lex.h"
-#include "mon.h"
+#include "symon.h"
 #include "net.h"
 #include "readconf.h"
 #include "xmalloc.h"
 
 __BEGIN_DECLS
 int read_host_port(struct muxlist *, struct mux *, struct lex *);
-int read_mon_args(struct mux *, struct lex *);
+int read_symon_args(struct mux *, struct lex *);
 int read_monitor(struct muxlist *, struct lex *);
 __END_DECLS
 
@@ -82,7 +82,7 @@ read_host_port(struct muxlist *mul, struct mux *mux, struct lex *l)
     else {
 	if (l->type != LXY_NUMBER) {
 	    lex_ungettoken(l);
-	    mux->port = MONMUX_PORT;
+	    mux->port = SYMUX_PORT;
 	    return 1;
 	}
     }
@@ -97,7 +97,7 @@ read_host_port(struct muxlist *mul, struct mux *mux, struct lex *l)
 }
 /* parse "<cpu(arg)|mem|if(arg)|io(arg)>", end condition == "}" */
 int 
-read_mon_args(struct mux *mux, struct lex *l) 
+read_symon_args(struct mux *mux, struct lex *l) 
 {
     char sn[_POSIX2_LINE_MAX];
     char sa[_POSIX2_LINE_MAX];
@@ -161,7 +161,7 @@ read_monitor(struct muxlist *mul, struct lex *l)
     mux = add_mux(mul, "<unnamed host>");
 
     /* parse cpu|mem|if|io */
-    if (!read_mon_args(mux, l))
+    if (!read_symon_args(mux, l))
 	return 0;
 
     /* parse stream to */
@@ -177,7 +177,7 @@ read_monitor(struct muxlist *mul, struct lex *l)
     return 1;
 }
 
-/* Read mon.conf */
+/* Read symon.conf */
 int
 read_config_file(struct muxlist *muxlist, 
 		 const char *filename)

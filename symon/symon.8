@@ -28,10 +28,10 @@
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\" 
 .Dd April 5, 2002
-.Dt MON 8
+.Dt SYMON 8
 .Os
 .Sh NAME
-.Nm mon
+.Nm symon
 .Nd system monitor
 .Sh SYNOPSIS
 .Nm 
@@ -41,20 +41,20 @@
 .Nm
 is a lightweight system monitor that measures cpu, memory, interface and disk
 statistics every 5 seconds. This information is then spooled to
-.Xr monmux 8
+.Xr symux 8
 for further processing. 
 .Pp
 .Nm
 has been designed to inflict minimal performance and security impact on the system it monitors. 
-.Xr monmux 8
+.Xr symux 8
 has performance impact proportional to the amount of streams it needs to manage. Ideally 
-.Xr monmux 
+.Xr symux 
 should live on a different system and collect data from several 
 .Nm
 instances in a LAN. 
 .Lp
 .Nm
-priviledge needs depend on the probes used. The cpu, mem and interface probes will work even when mon runs as 
+priviledge needs depend on the probes used. The cpu, mem, disk and interface probes will work even when symon runs as 
 .Ar "nobody" . 
 For pf, read and write access to 
 .Pa /dev/pf
@@ -62,9 +62,6 @@ is needed, so
 .Nm 
 will have to run as
 .Ar "root".
-Only the io probe requires 
-.Ar kmem
-priviledges. All other probes use ioctls and sysctls to obtain their data.
 .Lp
 The options:
 .Bl -tag -width Ds
@@ -78,9 +75,9 @@ from becoming a daemon and show debug information on stdout.
 .Sh CONFIGURATION
 .Nm
 obtains configuration data from 
-.Pa /etc/mon.conf .
+.Pa /etc/symon.conf .
 The configuration file contains monitor stanzas that define what resources should be monitored and to which 
-.Xr monmux 8
+.Xr symux 8
 the information should be streamed to.
 .Pp
 Multiple monitor statements to different muxes are allowed. Whitespace, newlines and text behind '#' are ignored. The format in BNF:
@@ -95,7 +92,7 @@ argument     = number | interfacename | diskname
 .fi
 .Sh EXAMPLE
 Here is an example 
-.Ar mon.conf
+.Ar symon.conf
 that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1]
 and streams that information to localhost on port 2100.
 .Pp
@@ -111,31 +108,31 @@ monitor { cpu(0),  mem, pf, if(xl0), if(de0),
 Causes
 .Nm
 to read 
-.Pa /etc/mon.conf .
+.Pa /etc/symon.conf .
 .Nm
 will keep the old configuration if errors occured during parsing of the configuration file.
 .Sh FILES
 .Bl -tag -width Ds
-.It Pa /var/run/mon.pid
+.It Pa /var/run/symon.pid
 Contains the program id of the
 .Nm
 daemon.
-.It Pa /etc/mon.conf
+.It Pa /etc/symon.conf
 .Nm
 system wide configuration file. 
 .El
 .Sh BUGS
 Every monitored resource mentioned 
-.Pa /etc/mon.conf 
+.Pa /etc/symon.conf 
 gets queried. Mentioning, for example, cpu(0) twice for different muxes will result in two distinct cpu(0) measurement actions. 
 .Pp
 .Nm 
 does not check whether resources mentioned in 
-.Pa /etc/mon.conf
+.Pa /etc/symon.conf
 exist. 
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
 contributed the pf probe and helped to port to big-endian architectures.
 .Sh SEE ALSO
-.Xr monmux 8 
+.Xr symux 8 
  

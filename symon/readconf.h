@@ -1,4 +1,4 @@
-/* $Id: readconf.h,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.4 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef _MON_READCONF_H
-#define _MON_READCONF_H
+#ifndef _SYMON_READCONF_H
+#define _SYMON_READCONF_H
 
 #include <sys/cdefs.h>
 
@@ -39,7 +39,7 @@
 #include "lex.h"
 
 /* Monitor subsystem structure */
-struct monm {
+struct symonm {
     int type;
     void  (*init)(char *);
     char* (*get)(char *);
@@ -48,6 +48,6 @@ struct monm {
 __BEGIN_DECLS
 int read_config_file(struct muxlist *, const char *);
 __END_DECLS
-#endif /*_MON_READCONF_H*/
+#endif /*_SYMON_READCONF_H*/
 
 

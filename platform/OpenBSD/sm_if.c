@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.5 2002/08/31 15:01:04 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.6 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,7 +31,7 @@
  */
 
 /*
- * Get current interface statistics from kernel and return them in mon_buf as
+ * Get current interface statistics from kernel and return them in symon_buf as
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
@@ -60,7 +60,7 @@
 #include <string.h>
 
 #include "error.h"
-#include "mon.h"
+#include "symon.h"
 
 /* Globals for this module start with if_ */
 int if_s = -1;
@@ -77,7 +77,7 @@ init_if(char *s)
 }
 /* Get interface statistics */
 int 
-get_if(char *mon_buf, int maxlen, char *interface) 
+get_if(char *symon_buf, int maxlen, char *interface) 
 {
     struct ifreq ifr;
     struct if_data ifdata;
@@ -91,7 +91,7 @@ get_if(char *mon_buf, int maxlen, char *interface)
 	return 0;
     }
     
-    return snpack(mon_buf, maxlen, interface, MT_IF,
+    return snpack(symon_buf, maxlen, interface, MT_IF,
 		  ifdata.ifi_ipackets, 
 		  ifdata.ifi_opackets, 
 		  ifdata.ifi_ibytes, 

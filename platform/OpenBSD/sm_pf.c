@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.2 2002/08/31 15:02:10 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.3 2002/09/14 15:49:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -31,7 +31,7 @@
  */
 
 /*
- * Get current pf statistics and return them in mon_buf as 
+ * Get current pf statistics and return them in symon_buf as 
  *
  *   bytes_v4_in : bytes_v4_out : bytes_v6_in : bytes_v6_out :
  *   packets_v4_in_pass : * packets_v4_in_drop : packets_v4_out_pass :
@@ -54,7 +54,7 @@
 #include <string.h>
 
 #include "error.h"
-#include "mon.h"
+#include "symon.h"
 
 /* Globals for this module start with pf_ */
 static int pf_dev = -1;
@@ -72,7 +72,7 @@ init_pf(char *s)
 }
 /* Get pf statistics */
 int
-get_pf(char *mon_buf, int maxlen, char *arg)
+get_pf(char *symon_buf, int maxlen, char *arg)
 {
     struct pf_status s;
     u_int64_t n;
@@ -91,7 +91,7 @@ get_pf(char *mon_buf, int maxlen, char *arg)
 	return 0;
     
     n = s.states;
-    return snpack(mon_buf, maxlen, arg, MT_PF,
+    return snpack(symon_buf, maxlen, arg, MT_PF,
 		  s.bcounters[0][PF_IN],
 		  s.bcounters[0][PF_OUT],
 		  s.bcounters[1][PF_IN],
