@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.8 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: error.c,v 1.9 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -46,10 +46,10 @@ __END_DECLS
 int flag_daemon = 0;
 int flag_debug = 0;
 
-enum { MON_LOG_FATAL, 
-       MON_LOG_WARNING,
-       MON_LOG_INFO,
-       MON_LOG_DEBUG } loglevels;
+enum { SYMON_LOG_FATAL, 
+       SYMON_LOG_WARNING,
+       SYMON_LOG_INFO,
+       SYMON_LOG_DEBUG } loglevels;
 
 struct {
     int type;
@@ -57,10 +57,10 @@ struct {
     char *errtxt;
     FILE *stream;
 } logmapping[] = {
-    {MON_LOG_FATAL,   LOG_ERR,     "fatal",   stderr},
-    {MON_LOG_WARNING, LOG_WARNING, "warning", stderr},
-    {MON_LOG_INFO,    LOG_INFO,    "",        stdout},
-    {MON_LOG_DEBUG,   LOG_DEBUG,   "debug",   stdout},
+    {SYMON_LOG_FATAL,   LOG_ERR,     "fatal",   stderr},
+    {SYMON_LOG_WARNING, LOG_WARNING, "warning", stderr},
+    {SYMON_LOG_INFO,    LOG_INFO,    "",        stdout},
+    {SYMON_LOG_DEBUG,   LOG_DEBUG,   "debug",   stdout},
     {-1,              0,           "",        NULL}
 };
 /* 
@@ -73,7 +73,7 @@ output_message(int level, char *fmt, va_list args)
     char msgbuf[_POSIX2_LINE_MAX];
     int loglevel;
 
-    if (level == MON_LOG_DEBUG && flag_debug == 0)
+    if (level == SYMON_LOG_DEBUG && flag_debug == 0)
 	return;
 
     vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
@@ -105,7 +105,7 @@ fatal(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    output_message(MON_LOG_FATAL, fmt, ap);
+    output_message(SYMON_LOG_FATAL, fmt, ap);
     va_end(ap);
         
     exit( 1 );
@@ -116,7 +116,7 @@ warning(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    output_message(MON_LOG_WARNING, fmt, ap);
+    output_message(SYMON_LOG_WARNING, fmt, ap);
     va_end(ap);
 }
 /* Inform and continue */
@@ -125,7 +125,7 @@ info(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    output_message(MON_LOG_INFO, fmt, ap);
+    output_message(SYMON_LOG_INFO, fmt, ap);
     va_end(ap);
 }
 /* Debug statements only */
@@ -134,7 +134,7 @@ debug(char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    output_message(MON_LOG_DEBUG, fmt, ap);
+    output_message(SYMON_LOG_DEBUG, fmt, ap);
     va_end(ap);
 }
 

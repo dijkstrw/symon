@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.15 2002/09/02 06:15:52 dijkstra Exp $ */
+/* $Id: data.c,v 1.16 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,7 +34,7 @@
 
 /* Terminology: 
  * 
- * A host carrying a 'mon' is considered a 'source' of information. A single
+ * A host carrying a 'symon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
  * source can provide multiple 'streams' simultaniously. A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
@@ -236,27 +236,27 @@ checklen(int maxlen, int current, int extra)
     }
 }
 int 
-setheader(char *buf, struct monpacketheader *hph) 
+setheader(char *buf, struct symonpacketheader *hph) 
 {
-    struct monpacketheader nph;
+    struct symonpacketheader nph;
     char *p;
 
     nph.timestamp = htonq(hph->timestamp);
     nph.crc = htonl(hph->crc);
     nph.length = htons(hph->length);
-    nph.mon_version = hph->mon_version;
+    nph.symon_version = hph->symon_version;
 
     p = buf;
 
     bcopy(&nph.crc, p, sizeof(u_int32_t)); p += sizeof(u_int32_t);
     bcopy(&nph.timestamp, p, sizeof(u_int64_t)); p += sizeof(u_int64_t);
     bcopy(&nph.length, p, sizeof(u_int16_t)); p += sizeof(u_int16_t);
-    bcopy(&nph.mon_version, p, sizeof(u_int8_t)); p += sizeof(u_int8_t);
+    bcopy(&nph.symon_version, p, sizeof(u_int8_t)); p += sizeof(u_int8_t);
 
     return (p - buf);
 }
 int
-getheader(char *buf, struct monpacketheader *hph)
+getheader(char *buf, struct symonpacketheader *hph)
 {
     char *p;
 
@@ -265,7 +265,7 @@ getheader(char *buf, struct monpacketheader *hph)
     bcopy(p, &hph->crc, sizeof(u_int32_t)); p += sizeof(u_int32_t);
     bcopy(p, &hph->timestamp, sizeof(u_int64_t)); p += sizeof(u_int64_t);
     bcopy(p, &hph->length, sizeof(u_int16_t)); p += sizeof(u_int16_t);
-    bcopy(p, &hph->mon_version, sizeof(u_int8_t)); p += sizeof(u_int8_t);
+    bcopy(p, &hph->symon_version, sizeof(u_int8_t)); p += sizeof(u_int8_t);
 
     hph->timestamp = ntohq(hph->timestamp);
     hph->crc = ntohl(hph->crc);
@@ -739,7 +739,7 @@ free_muxlist(struct muxlist *mul)
 
 	if (p->name != NULL) xfree(p->name);
 	close(p->clientsocket);
-	close(p->monsocket);
+	close(p->symonsocket);
 	free_streamlist(&p->sl);
 	xfree(p);
 
@@ -786,7 +786,7 @@ free_sourcelist(struct sourcelist *sol)
 	p = np;
     }
 }
-/* Calculate maximum buffer space needed for a single mon hit */
+/* Calculate maximum buffer space needed for a single symon hit */
 int 
 calculate_churnbuffer(struct sourcelist *sol) { 
     struct source *source; 
@@ -839,7 +839,7 @@ init_crc32()
     for (i = 0; i < 256; ++i) {
 	c = i << 24;
 	for (j = 8; j > 0; --j)
-	    c = c & 0x80000000 ? (c << 1) ^ MON_CRCPOLY : (c << 1);
+	    c = c & 0x80000000 ? (c << 1) ^ SYMON_CRCPOLY : (c << 1);
 	crc32_table[i] = c;
     }
 }

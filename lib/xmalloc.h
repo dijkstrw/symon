@@ -1,4 +1,4 @@
-/* $Id: xmalloc.h,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: xmalloc.h,v 1.5 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,8 +14,8 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-#ifndef _MON_LIB_XMALLOC_H
-#define _MON_LIB_XMALLOC_H
+#ifndef _SYMON_LIB_XMALLOC_H
+#define _SYMON_LIB_XMALLOC_H
 
 #include <sys/types.h>
 
@@ -26,4 +26,4 @@ void   *xrealloc(void *, size_t);
 void    xfree(void *);
 char   *xstrdup(const char *);
 __END_DECLS
-#endif /*_MON_LIB_XMALLOC_H*/
+#endif /*_SYMON_LIB_XMALLOC_H*/

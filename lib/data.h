@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.15 2002/09/02 06:15:52 dijkstra Exp $ */
+/* $Id: data.h,v 1.16 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,14 +31,14 @@
  */
 
 /*
- * A host carrying a 'mon' is considered a 'source' of information. A single
+ * A host carrying a 'symon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
  * source can provide multiple 'streams' simultaneously. A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
  * representation is called a 'packedstream'.
  */
-#ifndef _MON_LIB_DATA_H
-#define _MON_LIB_DATA_H
+#ifndef _SYMON_LIB_DATA_H
+#define _SYMON_LIB_DATA_H
 
 #include <sys/queue.h>
 #include <sys/types.h>
@@ -49,7 +49,7 @@
 #include "lex.h"
 
 /* Polynominal to use for CRC generation */
-#define MON_CRCPOLY  0x04c11db7
+#define SYMON_CRCPOLY  0x04c11db7
 
 #if BYTE_ORDER == BIG_ENDIAN
 #define htonq(n) (n)
@@ -67,31 +67,31 @@ ntohq (u_int64_t v)
 }
 #endif
 
-/* Mon packet version 
+/* Symon packet version 
  * version 1:
- * mon_version:timestamp:length:crc:n*packedstream
+ * symon_version:timestamp:length:crc:n*packedstream
  * 
  * Note that the data portion is limited. The current (31/03/2002) largest
  * streamtype (if) needs 42 bytes without arguments. My _POSIX2_LINE_MAX is 2k,
- * so that works out to about 38 packedstreams in a single mon packet.  
+ * so that works out to about 38 packedstreams in a single symon packet.  
  */
-#define MON_PACKET_VER  1
+#define SYMON_PACKET_VER  1
 
 /* Sending structures over the network is dangerous as the compiler might have
- * added extra padding between items. monpacketheader below is therefore also
+ * added extra padding between items. symonpacketheader below is therefore also
  * marshalled and demarshalled via snpack and sunpack. The actual values are
  * copied out of memory into this structure one by one. 
  */
-struct monpacketheader {
+struct symonpacketheader {
 	u_int64_t timestamp;
 	u_int32_t crc;
 	u_int16_t length;
-	u_int8_t mon_version;
+	u_int8_t symon_version;
 	u_int8_t reserved;
 };
 
-struct monpacket {
-    struct monpacketheader header;
+struct symonpacket {
+    struct symonpacketheader header;
     char data[_POSIX2_LINE_MAX];
 };  
   
@@ -122,8 +122,8 @@ struct mux {
     char *name;
     int offset;
     int clientsocket;
-    int monsocket;
-    struct monpacket packet;
+    int symonsocket;
+    struct symonpacket packet;
     struct sockaddr_in sockaddr;
     struct streamlist sl;
     u_int32_t senderr;
@@ -153,13 +153,13 @@ SLIST_HEAD(muxlist, mux);
  * only. Although the union members are here, they could also read u_int64_t[4]
  * with io, for instance.
  */
-#define MON_PS_ARGLEN    16
+#define SYMON_PS_ARGLEN    16
 struct packedstream {
     int type;
     int padding;
-    char args[MON_PS_ARGLEN];
+    char args[SYMON_PS_ARGLEN];
     union {
-	struct monpacketheader header;
+	struct symonpacketheader header;
 	struct { 
 	    u_int64_t mtotal_transfers;
 	    u_int64_t mtotal_seeks;
@@ -223,9 +223,9 @@ __BEGIN_DECLS
 const char    *type2str(const int);
 const int      token2type(const int);
 int            calculate_churnbuffer(struct sourcelist *);
-int            getheader(char *, struct monpacketheader *);
+int            getheader(char *, struct symonpacketheader *);
 int            ps2strn(struct packedstream *, char *, int, int);
-int            setheader(char *, struct monpacketheader *);
+int            setheader(char *, struct symonpacketheader *);
 int            snpack(char *, int, char*, int, ...);
 int            strlentype(int);
 int            sunpack(char *, struct packedstream *);
@@ -245,4 +245,4 @@ void           free_sourcelist(struct sourcelist *);
 void           free_streamlist(struct streamlist *);
 void           init_crc32();
 __END_DECLS
-#endif /*_MON_LIB_DATA_H*/
+#endif /*_SYMON_LIB_DATA_H*/

@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.6 2002/09/02 06:15:52 dijkstra Exp $ */
+/* $Id: net.h,v 1.7 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,12 +30,12 @@
  *
  */
 
-#ifndef _MON_LIB_NET_H
-#define _MON_LIB_NET_H
+#ifndef _SYMON_LIB_NET_H
+#define _SYMON_LIB_NET_H
 
 #include <sys/types.h>
 
-#define MONMUX_PORT  2100                     /* default monmux port */
+#define SYMUX_PORT  2100                     /* default symux port */
 
 /* Rewrite an ipadress uint32_t as 4 comma seperated bytes */
 #define IPAS4BYTES(x) \
@@ -49,4 +49,4 @@ __BEGIN_DECLS
 int lookup(char *);
 __END_DECLS
 
-#endif /* _MON_LIB_NET_H */
+#endif /* _SYMON_LIB_NET_H */

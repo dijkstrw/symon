@@ -1,19 +1,19 @@
-# $Id: Makefile,v 1.7 2002/08/29 05:59:34 dijkstra Exp $
+# $Id: Makefile,v 1.8 2002/09/14 15:56:18 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
 OBJS+=	${SRCS:R:S/$/.o/g}
 
-all: libmon.a
+all: libsymon.a
 
-libmon.a: ${OBJS}
-	@echo building standard mon library
-	@rm -f libmon.a
-	@${AR} cq libmon.a `${LORDER} ${OBJS} | tsort -q`
-	${RANLIB} libmon.a
+libsymon.a: ${OBJS}
+	@echo building standard symon library
+	@rm -f libsymon.a
+	@${AR} cq libsymon.a `${LORDER} ${OBJS} | tsort -q`
+	${RANLIB} libsymon.a
 
 clean:
-	rm -f libmon.a ${OBJS}
+	rm -f libsymon.a ${OBJS}
 
-install: libmon.a
+install: libsymon.a
 

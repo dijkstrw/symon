@@ -1,4 +1,4 @@
-/* $Id: error.h,v 1.5 2002/04/01 14:44:16 dijkstra Exp $ */
+/* $Id: error.h,v 1.6 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,8 +30,8 @@
  *
  */
 
-#ifndef _MON_LIB_ERROR_H
-#define _MON_LIB_ERROR_H
+#ifndef _SYMON_LIB_ERROR_H
+#define _SYMON_LIB_ERROR_H
 
 #include <sys/cdefs.h>
 
@@ -46,4 +46,4 @@ void        info(char *, ...);
 void        debug(char *, ...);
 __END_DECLS
 
-#endif /*_MON_LIB_ERROR_H*/
+#endif /*_SYMON_LIB_ERROR_H*/

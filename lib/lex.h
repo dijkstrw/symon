@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.11 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: lex.h,v 1.12 2002/09/14 15:56:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,8 +35,8 @@
  * lexical analyser. 
  */
 
-#ifndef _MON_LIB_LEX_H
-#define _MON_LIB_LEX_H
+#ifndef _SYMON_LIB_LEX_H
+#define _SYMON_LIB_LEX_H
 
 #include <sys/cdefs.h>
 
@@ -101,5 +101,5 @@ __END_DECLS
 	}                                         \
     } while (0);
 
-#endif /*_MON_LIB_LEX_H*/
+#endif /*_SYMON_LIB_LEX_H*/
 
