@@ -1,5 +1,5 @@
 /*
- * $Id: data.c,v 1.2 2002/03/22 16:38:59 dijkstra Exp $
+ * $Id: data.c,v 1.3 2002/03/29 15:16:34 dijkstra Exp $
  *
  * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
@@ -33,9 +33,9 @@ struct {
     int  bytelen;
     u_int64_t max;
 } streamvar[] = {
-    {'L', " %20qu",   21, sizeof(u_int64_t), (u_int64_t) 36893488147419103231},
-    {'l', " %10lu",   11, sizeof(u_int32_t), (u_int64_t)           8589934591},
-    {'c', "  %3.2f",   6, sizeof(u_int16_t), (u_int64_t)                  100},
+    {'L', " %20qu",   21, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
+    {'l', " %10lu",   11, sizeof(u_int32_t), (u_int64_t) 0xffffffff},
+    {'c', "  %3.2f",   6, sizeof(u_int16_t), (u_int64_t) 100},
     {'\0', NULL, 0, 0, 0}
 };
 
@@ -166,46 +166,6 @@ int checklen(maxlen, current, extra)
 		maxlen, current, extra);
 	return 1;
     }
-}
-/* setpreamble(buffer, maxlen)
- * Set mon version and current time into the buffer
- */
-int setpreamble(buf, maxlen) 
-    char *buf;
-    int maxlen;
-{
-    int offset = 0;
-    time_t t = time(NULL);
-
-    if (checklen(maxlen, 0, (sizeof(u_int8_t) + sizeof(u_int32_t)))) {
-	fatal("maxlen too small!");
-    }
-    
-    buf[offset] = MON_STREAMVER; offset++;
-    bcopy(&t, buf+offset, sizeof(u_int32_t));
-    offset += sizeof(u_int32_t);
-
-    return offset;
-}
-/* getpreamble(buffer, time)
- * Check if mon version id can be parsed by us and get the time that this
- * packet was sent out. 
- */
-int getpreamble(buf, time)
-    char *buf;
-    time_t *time;
-{
-    int offset = 0;
-
-    if (buf[offset] != MON_STREAMVER) {
-	fatal("Packet received with wrong version (%d)", buf[offset]);
-    }
-
-    offset++;
-    bcopy(buf+offset, &time, sizeof(u_int32_t));
-    offset += sizeof(u_int32_t);
-    
-    return offset;
 }
 /* snpack(buffer, maxlen, type, <args>)
  * Pack multiple arguments of a certain MT_TYPE into a big-endian bytestream.

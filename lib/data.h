@@ -1,5 +1,5 @@
 /*
- * $Id: data.h,v 1.2 2002/03/22 16:38:59 dijkstra Exp $
+ * $Id: data.h,v 1.3 2002/03/29 15:16:34 dijkstra Exp $
  *
  * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
@@ -13,22 +13,11 @@
 #include <sys/cdefs.h>
 #include <sys/queue.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <limits.h>
 
 #include "lex.h"
-
-/* Stream types */
-#define MT_IO     0
-#define MT_CPU    1
-#define MT_MEM    2
-#define MT_IF     3
-#define MT_EOT    4
-
-/* Mon stream version 
- * version 1:
- * <mon version:8><time in seconds since epoch:32><streams>*
- */
-#define MON_STREAMVER  1
 
 #ifdef WORDS_BIGENDIAN
 #define htonq(n) n
@@ -48,6 +37,22 @@ ntohq (u_int64_t v)
 }
 #endif
 
+/* Mon stream version 
+ * version 1:
+ * <mon version:8><time in seconds since epoch:32><streams>*
+ */
+#define MON_STREAMVER  1
+
+struct monpacket {
+    struct {
+	u_int8_t mon_version;
+	u_int64_t timestamp;
+	u_int16_t length;
+	u_int16_t crc;
+    } header;
+    char data[_POSIX2_LINE_MAX];
+};  
+  
 /* Note that packedstreams are never associated with streams directly. The
    streams are only used to see what should be done to the data in the
    packedstream. */
@@ -74,20 +79,30 @@ struct mux {
     u_int32_t senderr;
     u_int32_t ip;
     u_int16_t port;
+    struct sockaddr_in sockaddr;
     struct streamlist sl;
-    char data[_POSIX2_LINE_MAX];
+    struct monpacket packet;
     int offset;
     SLIST_ENTRY(mux) muxes;
 };
 SLIST_HEAD(muxlist, mux);
 
-/* Unpacking of incoming packets is done via a packedstream structure. This
-   structure defines the maximum amount of data that can be contained in a
-   single network representation of a stream. 
+/* Stream types */
+#define MT_IO     0
+#define MT_CPU    1
+#define MT_MEM    2
+#define MT_IF     3
+#define MT_EOT    4
 
-   This sucks in the way of portability (e.g. adding multiple cpu types) and
-   maintainabilty. I believe in refactoring only when there is a tangible need,
-   so I'm going to use this code as is. */
+/* NOTE: struct packetstream
+ *
+ * Unpacking of incoming packets is done via a packedstream structure. This
+ * structure defines the maximum amount of data that can be contained in a
+ * single network representation of a stream. 
+ *
+ * This sucks in the way of portability (e.g. adding multiple cpu types) and
+ * maintainabilty. This code will be refactored when I port it to other oses. 
+ */
 #define MON_PS_ARGLEN    16
 struct packedstream {
     int type;
@@ -156,8 +171,6 @@ struct packedstream {
 /* prototypes */
 __BEGIN_DECLS
 int            token2type __P((int));
-int            setpreamble __P((char *, int));
-int            getpreamble __P((char *, time_t *));
 int            snpack __P((char *, int, char*, int, ...));
 int            sunpack __P((char *, struct packedstream *));
 int            psdata2strn __P((struct packedstream *, char *, int));
