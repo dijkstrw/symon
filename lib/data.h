@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.11 2002/07/25 09:51:42 dijkstra Exp $ */
+/* $Id: data.h,v 1.12 2002/08/11 20:02:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -238,4 +238,3 @@ void           free_streamlist(struct streamlist *);
 void           init_crc32();
 __END_DECLS
 #endif /*_MON_LIB_DATA_H*/
-
