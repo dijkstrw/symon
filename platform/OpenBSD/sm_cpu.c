@@ -1,5 +1,5 @@
 /*
- * $Id: sm_cpu.c,v 1.7 2002/03/09 16:25:33 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.8 2002/03/22 16:40:00 dijkstra Exp $
  *
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
@@ -107,6 +107,9 @@ int get_cpu(mon_buf, maxlen, s)
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
     return snpack(mon_buf, maxlen, s, MT_CPU,
-		  cp_states[CP_USER], cp_states[CP_NICE], cp_states[CP_SYS], 
-		  cp_states[CP_INTR], cp_states[CP_IDLE]);
+		  (u_int16_t) cp_states[CP_USER], 
+		  (u_int16_t) cp_states[CP_NICE], 
+		  (u_int16_t) cp_states[CP_SYS], 
+		  (u_int16_t) cp_states[CP_INTR], 
+		  (u_int16_t) cp_states[CP_IDLE]);
 }

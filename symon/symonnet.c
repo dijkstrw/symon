@@ -1,5 +1,5 @@
 /*
- * $Id: symonnet.c,v 1.1 2002/03/17 13:37:31 dijkstra Exp $
+ * $Id: symonnet.c,v 1.2 2002/03/22 16:40:00 dijkstra Exp $
  *
  * Holds all network functions for mon
  */
@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <syslog.h>
 #include <string.h>
+#include <errno.h>
 
 #include "error.h"
 #include "data.h"
@@ -19,7 +20,7 @@ void connect2mux(struct mux *mux) {
     struct sockaddr_in sockaddr;
 
     if ((mux->socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-	fatal("Could not obtain socket.");
+	fatal("Could not obtain socket: %.200s", strerror(errno));
     }
 
     sockaddr.sin_family = AF_INET;
@@ -28,7 +29,7 @@ void connect2mux(struct mux *mux) {
     bzero(&sockaddr.sin_zero, 8);
 
     if (bind(mux->socket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) == -1) {
-	fatal("Could not bind socket.");
+	fatal("Could not bind socket: %.200s", strerror(errno));
     }
 
     sockaddr.sin_family = AF_INET;
@@ -40,7 +41,7 @@ void connect2mux(struct mux *mux) {
 	fatal("Could not connect to %u.%u.%u.%u", 
 	      (mux->ip >> 24), (mux->ip >> 16) & 0xff, 
 	      (mux->ip >> 8) & 0xff, mux->ip & 0xff);
-    }
+    } 
 }
 
 /* send data stored in the mux structure to a mux */
