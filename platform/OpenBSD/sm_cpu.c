@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.18 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.19 2004/08/08 17:21:18 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -121,13 +121,17 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 void
 init_cpu(char *s)
 {
-    char buf[_POSIX2_LINE_MAX];
+    char buf[SYMON_MAX_OBJSIZE];
 
     cp_size = sizeof(cp_time);
     /* Call get_cpu once to fill the cp_old structure */
     get_cpu(buf, sizeof(buf), NULL);
 
     info("started module cpu(%.200s)", s);
+}
+void
+gets_cpu()
+{
 }
 /* Get new cpu measurements */
 int

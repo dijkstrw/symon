@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.2 2004/08/08 17:21:18 dijkstra Exp $ */
 
 /* The author of this code is Matthew Gream.
  *
@@ -99,10 +99,10 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 
     /* calculate changes for each state and the overall change */
     for (i = 0; i < cnt; i++) {
-        if (*new < *old)
-            change = (ULONG_MAX - *old) + *new;
-        else
-            change = *new - *old;
+	if (*new < *old)
+	    change = (ULONG_MAX - *old) + *new;
+	else
+	    change = *new - *old;
 	total_change += (*dp++ = change);
 	*old++ = *new++;
     }
@@ -126,13 +126,17 @@ init_cpu(char *s)
     cp_time_len = CTL_MAXNAME;
     if (sysctlnametomib(cp_time_mib_str, cp_time_mib, &cp_time_len) < 0) {
 	warning("sysctlnametomib for cpu failed");
-        cp_time_len = 0;
+	cp_time_len = 0;
     }
 
     cp_size = sizeof(cp_time);
     get_cpu(NULL, 0, NULL);
 
     info("started module cpu(%.200s)", s);
+}
+void
+gets_cpu()
+{
 }
 /* Get new cpu measurements */
 int

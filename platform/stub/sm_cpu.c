@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.2 2004/08/08 17:21:18 dijkstra Exp $ */
 
 #include <stdlib.h>
 
@@ -6,6 +6,12 @@
 
 void
 init_cpu(char *s)
+{
+    fatal("cpu module not available");
+}
+
+void
+gets_cpu(char *s)
 {
     fatal("cpu module not available");
 }

@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.2 2004/08/07 14:48:35 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.3 2004/08/08 17:21:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -137,7 +137,7 @@ get_if(char *symon_buf, int maxlen, char *interface)
     /* Inter-|   Receive                                                |  Transmit
      *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
      */
-    if (16 > sscanf(line, ":%8lu %7lu %4lu %4lu %4lu %5lu %10lu %9lu %8lu %7lu %4lu %4lu %4lu %5lu %7lu %10lu\n",
+    if (16 > sscanf(line, ":%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
 		    &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
 		    &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
 		    &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,

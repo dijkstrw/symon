@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.2 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.1 2004/08/08 17:21:18 dijkstra Exp $ */
 
-/* The author of this code is Matthew Gream.
+/* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
  * The percentages function was written by William LeFebvre and is part
  * of the 'top' utility. His copyright statement is below.
  *
- * Copyright (c) 2004      Matthew Gream
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,25 +56,40 @@
  * This module uses the sysctl interface and can run as any user.
  */
 
-#include <sys/dkstat.h>
-#include <sys/param.h>
-#include <sys/sysctl.h>
-#include <sys/sched.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
+#include <ctype.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <unistd.h>
+
+#include "conf.h"
 #include "error.h"
 #include "symon.h"
+#include "xmalloc.h"
+
+#define CPUSTATES 4
+#define CP_USER 0
+#define CP_NICE 1
+#define CP_SYS  2
+#define CP_IDLE 3
 
 __BEGIN_DECLS
-int percentages(int, int *, u_int64_t *, u_int64_t *, u_int64_t *);
+int percentages(int, int *, long *, long *, long *);
 __END_DECLS
 
 /* Globals for this module all start with cp_ */
-static int cp_time_mib[] = {CTL_KERN, KERN_CP_TIME};
-static size_t cp_size;
-static u_int64_t cp_time[CPUSTATES];
-static u_int64_t cp_old[CPUSTATES];
-static u_int64_t cp_diff[CPUSTATES];
-static int cp_states[CPUSTATES];
+static void *cp_buf = NULL;
+static int cp_size = 0;
+static int cp_maxsize = 0;
+static long cp_time[SYMON_MAXCPUS][CPUSTATES];
+static long cp_old[SYMON_MAXCPUS][CPUSTATES];
+static long cp_diff[SYMON_MAXCPUS][CPUSTATES];
+static int cp_states[SYMON_MAXCPUS][CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -84,13 +99,13 @@ static int cp_states[CPUSTATES];
  *      useful on BSD mchines for calculating cpu state percentages.
  */
 int
-percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old, u_int64_t *diffs)
+percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
 {
     register int i;
-    register u_int64_t change;
-    register u_int64_t total_change;
-    register u_int64_t *dp;
-    u_int64_t half_total;
+    register long change;
+    register long total_change;
+    register long *dp;
+    long half_total;
 
     /* initialization */
     total_change = 0;
@@ -98,10 +113,10 @@ percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old,
 
     /* calculate changes for each state and the overall change */
     for (i = 0; i < cnt; i++) {
-	if (*new < *old)
-	    change = (ULLONG_MAX - *old) + *new;
-	else
-	    change = *new - *old;
+	if ((change = *new - *old) < 0) {
+	    /* this only happens when the counter wraps */
+	    change = ((unsigned int) *new - (unsigned int) *old);
+	}
 	total_change += (*dp++ = change);
 	*old++ = *new++;
     }
@@ -111,7 +126,7 @@ percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old,
 	total_change = 1;
 
     /* calculate percentages based on overall change, rounding up */
-    half_total = total_change / 2;
+    half_total = total_change / 2l;
     for (i = 0; i < cnt; i++)
 	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
@@ -122,34 +137,89 @@ percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old,
 void
 init_cpu(char *s)
 {
-    cp_size = sizeof(cp_time);
-    get_cpu(0, 0, NULL);
+    char buf[SYMON_MAX_OBJSIZE];
+
+    if (cp_buf == NULL) {
+	cp_maxsize = SYMON_MAX_OBJSIZE;
+	cp_buf = xmalloc(cp_maxsize);
+    }
+
+    gets_cpu();
+    /* Call get_cpu once to fill the cp_old structure */
+    get_cpu(buf, sizeof(buf), s);
 
     info("started module cpu(%.200s)", s);
 }
 void
 gets_cpu()
 {
+    int fd;
+
+    if ((fd = open("/proc/stat", O_RDONLY)) < 0) {
+	warning("cannot access /proc/stat: %.200s", strerror(errno));
+	return;
+    }
+
+    bzero(cp_buf, cp_maxsize);
+    cp_size = read(fd, cp_buf, cp_maxsize);
+    close(fd);
+
+    if (cp_size == cp_maxsize) {
+	/* buffer is too small to hold all interface data */
+	cp_maxsize += SYMON_MAX_OBJSIZE;
+	if (cp_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+	    fatal("%s:%d: dynamic object limit (%d) exceeded for cp data",
+		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+	}
+	cp_buf = xrealloc(cp_buf, cp_maxsize);
+	gets_cpu();
+	return;
+    }
+
+    if (cp_size == -1) {
+	warning("could not read if statistics from /proc/stat: %.200s", strerror(errno));
+    }
 }
 /* Get new cpu measurements */
 int
 get_cpu(char *symon_buf, int maxlen, char *s)
 {
-    if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
+    char cpuname[SYMON_MAX_OBJSIZE];
+    int nr = 0;
+    char *line;
+
+    if (cp_size <= 0) {
 	return 0;
     }
 
-    /* convert cp_time counts to percentages */
-    (void)percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+    bzero(&cpuname, sizeof(cpuname));
+    if (s != NULL && isdigit(*s)) {
+	snprintf(cpuname, sizeof(cpuname), "cpu%s", s);
+	nr = strtol(s, NULL, 10);
+    } else {
+	snprintf(cpuname, sizeof(cpuname), "cpu");
+	nr = 0;
+    }
 
-    if (!symon_buf)
+    if ((line = strstr(cp_buf, cpuname)) == NULL) {
+	warning("could not find %s", &cpuname);
 	return 0;
+    }
+
+    line += strlen(cpuname);
+    if (4 > sscanf(line, "%lu %lu %lu %lu\n",
+		   &cp_time[nr][CP_USER], &cp_time[nr][CP_NICE],
+		   &cp_time[nr][CP_SYS], &cp_time[nr][CP_IDLE])) {
+	warning("could not parse cpu statistics for %.200s", &cpuname);
+	return 0;
+    }
+
+    percentages(CPUSTATES, cp_states[nr], cp_time[nr], cp_old[nr], cp_diff[nr]);
 
     return snpack(symon_buf, maxlen, s, MT_CPU,
-		  (double) (cp_states[CP_USER] / 10.0),
-		  (double) (cp_states[CP_NICE] / 10.0),
-		  (double) (cp_states[CP_SYS] / 10.0),
-		  (double) (cp_states[CP_INTR] / 10.0),
-		  (double) (cp_states[CP_IDLE] / 10.0));
+		  (double) (cp_states[nr][CP_USER] / 10.0),
+		  (double) (cp_states[nr][CP_NICE] / 10.0),
+		  (double) (cp_states[nr][CP_SYS] / 10.0),
+		  (double) (0),
+		  (double) (cp_states[nr][CP_IDLE] / 10.0));
 }

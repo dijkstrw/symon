@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.30 2004/08/07 14:49:00 dijkstra Exp $ */
+/* $Id: symon.h,v 1.31 2004/08/08 17:21:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -43,6 +43,7 @@
 					 * measurement module */
 #define SYMON_MAX_OBJSIZE (_POSIX2_LINE_MAX)
 #define SYMON_SENSORMASK 0xFF           /* sensors 0-255 are allowed */
+#define SYMON_MAXCPUS 4
 
 /* funcmap holds functions to be called for the individual monitors:
  *
@@ -68,6 +69,7 @@ extern int symon_interval;
 __BEGIN_DECLS
 /* sm_cpu.c */
 extern void init_cpu(char *);
+extern void gets_cpu();
 extern int get_cpu(char *, int, char *);
 
 /* sm_mem.c */

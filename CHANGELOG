@@ -4,11 +4,14 @@
      Probes for FreeBSD: cpu, debug, mbuf, mem and proc.  Probes for NetBSD:
      cpu, debug, if, io, mbuf, proc and sensor.
 
-   - Added initial support for Linux.
+   - Added initial support for Linux: if.
 
    - Textual: INSTALL (Hiddo Hut)
 
    - Removed net_iso from symon.c
+
+   - Time since last update gets checked in symon.c to ensure correct
+     operation with ntp
 
 05/06/2004 - 2.66
 
@@ -354,4 +357,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.32 2004/08/07 12:21:35 dijkstra Exp $
+$Id: CHANGELOG,v 1.33 2004/08/08 17:21:18 dijkstra Exp $
