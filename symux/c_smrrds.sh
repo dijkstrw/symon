@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.15 2002/12/15 14:28:10 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.16 2002/12/15 15:00:01 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -174,10 +174,10 @@ debug.rrd)
 proc_*.rrd)
     # Build proc file
     rrdtool create $i $RRD_ARGS \
-	DS:number:COUNTER:5:U:U DS:uticks:COUNTER:5:U:U \
-	DS:sticks:COUNTER:5:U:U DS:iticks:COUNTER:5:U:U \
-	DS:cpusec:COUNTER:5:U:U DS:procsz:COUNTER:5:U:U \
-	DS:rsssz:COUNTER:5:U:U \
+	DS:number:COUNTER:5:0:U DS:uticks:COUNTER:5:0:U \
+	DS:sticks:COUNTER:5:0:U DS:iticks:COUNTER:5:0:U \
+	DS:cpusec:COUNTER:5:0:U DS:cpupct:GAUGE:5:0:100 \
+        DS:procsz:COUNTER:5:0:U DS:rsssz:COUNTER:5:0:U \
 	$RRA_SETUP
     echo "$i created"
     ;;

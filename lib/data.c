@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.18 2002/12/15 14:27:43 dijkstra Exp $ */
+/* $Id: data.c,v 1.19 2002/12/15 15:00:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -99,7 +99,7 @@ struct {
     { MT_IF, "llllllllll" },
     { MT_PF, "LLLLLLLLLLLLLLLLLLLLLL" },
     { MT_DEBUG, "llllllllllllllllllll" },
-    { MT_PROC, "lLLLlll" },
+    { MT_PROC, "lLLLlcll" },
     { MT_EOT, "" }
 };
 
