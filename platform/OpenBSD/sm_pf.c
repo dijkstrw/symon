@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.1 2002/08/29 19:42:32 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.2 2002/08/31 15:02:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -30,40 +30,59 @@
  *
  */
 
+/*
+ * Get current pf statistics and return them in mon_buf as 
+ *
+ *   bytes_v4_in : bytes_v4_out : bytes_v6_in : bytes_v6_out :
+ *   packets_v4_in_pass : * packets_v4_in_drop : packets_v4_out_pass :
+ *   packets_v4_out_drop : * packets_v6_in_pass : packets_v6_in_drop :
+ *   packets_v6_out_pass : * packets_v6_out_drop : states_entries :
+ *   states_searches : states_inserts : * states_removals : counters_match :
+ *   counters_badoffset : counters_fragment : * counters_short :
+ *   counters_normalize : counters_memory 
+ *
+ */
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+
 #include <netinet/in.h>
 #include <net/if.h>
 #include <net/pfvar.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "error.h"
 #include "mon.h"
 
-static int dev = -1;
+/* Globals for this module start with pf_ */
+static int pf_dev = -1;
 
+/* Prepare if module for first use */
 void
 init_pf(char *s)
 {
-    dev = open("/dev/pf", O_RDWR);
-    if (dev == -1)
-	fatal("%s:%d: open(\"/dev/pf\") failed", __FILE__, __LINE__);
+    if (pf_dev == -1)
+	if ((pf_dev = open("/dev/pf", O_RDWR)) == -1)
+	    fatal("%s:%d: open(\"/dev/pf\") failed, %.200s", 
+		  __FILE__, __LINE__, strerror(errno));
+
     info("started module pf(%s)", s);
 }
-
+/* Get pf statistics */
 int
 get_pf(char *mon_buf, int maxlen, char *arg)
 {
     struct pf_status s;
     u_int64_t n;
     
-    if (dev == -1) {
+    if (pf_dev == -1) {
 	warning("pf(%s) failed (dev == -1)", arg);
 	return 0;
     }
     
-    if (ioctl(dev, DIOCGETSTATUS, &s)) {
+    if (ioctl(pf_dev, DIOCGETSTATUS, &s)) {
 	warning("pf(%s) failed (ioctl error)", arg);
 	return 0;
     }
