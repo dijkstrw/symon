@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.12 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: error.c,v 1.13 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
+#include <stdlib.h>
 
 #include "error.h"
 
@@ -52,18 +53,22 @@ enum {
     SYMON_LOG_INFO,
     SYMON_LOG_DEBUG
 }    loglevels;
+enum {
+    SYMON_OUT_STDERR,
+    SYMON_OUT_STDOUT
+}    outstreams;
 
 struct {
     int type;
     int priority;
     char *errtxt;
-    FILE *stream;
+    int stream;
 }      logmapping[] = {
-    { SYMON_LOG_FATAL, LOG_ERR, "fatal", stderr },
-    { SYMON_LOG_WARNING, LOG_WARNING, "warning", stderr },
-    { SYMON_LOG_INFO, LOG_INFO, "", stdout },
-    { SYMON_LOG_DEBUG, LOG_DEBUG, "debug", stdout },
-    { -1, 0, "", NULL }
+    { SYMON_LOG_FATAL, LOG_ERR, "fatal", SYMON_OUT_STDERR },
+    { SYMON_LOG_WARNING, LOG_WARNING, "warning", SYMON_OUT_STDERR },
+    { SYMON_LOG_INFO, LOG_INFO, "", SYMON_OUT_STDOUT },
+    { SYMON_LOG_DEBUG, LOG_DEBUG, "debug", SYMON_OUT_STDOUT },
+    { -1, 0, "", 0 }
 };
 /*
  * Internal helper that actually outputs every
@@ -93,16 +98,16 @@ output_message(int level, char *fmt, va_list args)
 	syslog(logmapping[loglevel].priority, msgbuf);
     } else {
 	if (strlen(logmapping[loglevel].errtxt) > 0) {
-	    fprintf(logmapping[loglevel].stream, "%.200s: %.200s\n",
+	    fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s: %.200s\n",
 		    logmapping[loglevel].errtxt, msgbuf);
 	} else
-	    fprintf(logmapping[loglevel].stream, "%.200s\n", msgbuf);
+	    fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s\n", msgbuf);
 
-	fflush(logmapping[loglevel].stream);
+	fflush(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout);
     }
 }
 /* Output error and exit */
-__dead void
+void
 fatal(char *fmt,...)
 {
     va_list ap;

@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.25 2004/03/20 15:46:27 dijkstra Exp $ */
+/* $Id: data.c,v 1.26 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -49,6 +49,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "lex.h"
@@ -83,8 +84,8 @@ struct {
     int bytelen;
     u_int64_t max;
 }      streamvar[] = {
-    { 'L', ":%llu", " %20llu", 22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff },
-    { 'D', ":%7.6f", " %7.6f", 23, sizeof(int64_t), (u_int64_t) 0xffffffffffffffff },
+    { 'L', ":%llu", " %20llu", 22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffffLL },
+    { 'D', ":%7.6f", " %7.6f", 23, sizeof(int64_t), (u_int64_t) 0xffffffffffffffffLL },
     { 'l', ":%lu", " %10lu", 12, sizeof(u_int32_t), (u_int64_t) 0xffffffff },
     { 's', ":%u", " %5u", 7, sizeof(u_int16_t), (u_int64_t) 0xffff },
     { 'c', ":%3.2f", " %3.2f", 8, sizeof(u_int16_t), (u_int64_t) 100 },
@@ -613,12 +614,12 @@ find_source_stream(struct source * source, int type, char *args)
 {
     struct stream *p;
 
-    if (source == NULL)
+    if (source == NULL || args == NULL)
 	return NULL;
 
     SLIST_FOREACH(p, &source->sl, streams) {
-	if ((p->type == type)
-	    && (((void *) args != (void *) p != NULL)
+	if (((void *) p != NULL) && (p->type == type)
+	    && (((void *) args != (void *) p)
 		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
@@ -649,12 +650,12 @@ find_mux_stream(struct mux * mux, int type, char *args)
 {
     struct stream *p;
 
-    if (mux == NULL)
+    if (mux == NULL || args == NULL)
 	return NULL;
 
     SLIST_FOREACH(p, &mux->sl, streams) {
-	if ((p->type == type)
-	    && (((void *) args != (void *) p != NULL)
+	if (((void *) p != NULL) && (p->type == type)
+	    && (((void *) args != (void *) p)
 		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
@@ -685,11 +686,11 @@ find_source(struct sourcelist * sol, char *name)
 {
     struct source *p;
 
-    if (sol == NULL || SLIST_EMPTY(sol))
+    if (sol == NULL || SLIST_EMPTY(sol) || name == NULL)
 	return NULL;
 
     SLIST_FOREACH(p, sol, sources) {
-	if (((void *) name != (void *) p != NULL)
+	if (((void *) p != NULL) && ((void *) name != (void *) p)
 	    && strncmp(name, p->addr, _POSIX2_LINE_MAX) == 0)
 	    return p;
     }
@@ -738,11 +739,11 @@ find_mux(struct muxlist * mul, char *name)
 {
     struct mux *p;
 
-    if (mul == NULL || SLIST_EMPTY(mul))
+    if (mul == NULL || SLIST_EMPTY(mul) || name == NULL)
 	return NULL;
 
     SLIST_FOREACH(p, mul, muxes) {
-	if (((void *) name != (void *) p != NULL)
+	if (((void *) p != NULL) && ((void *) name != (void *) p)
 	    && strncmp(name, p->name, _POSIX2_LINE_MAX) == 0)
 	    return p;
     }

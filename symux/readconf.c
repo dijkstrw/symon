@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.25 2004/06/05 12:08:53 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.26 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -30,13 +30,13 @@
  *
  */
 
-#include <sys/queue.h>
 #include <sys/stat.h>
 
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "lex.h"
@@ -126,7 +126,7 @@ read_mux(struct muxlist * mul, struct lex * l)
     }
 
     lex_nexttoken(l);
-    if (!getip(l->token)) {
+    if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
 	warning("%.200s:%d: could not resolve '%s'",
 		l->filename, l->cline, l->token);
 	return 0;
@@ -173,7 +173,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 
     /* get hostname */
     lex_nexttoken(l);
-    if (!getip(l->token)) {
+    if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
 	warning("%.200s:%d: could not resolve '%s'",
 		l->filename, l->cline, l->token);
 	return 0;

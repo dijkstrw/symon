@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.20 2004/03/20 15:46:27 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.21 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -30,10 +30,9 @@
  *
  */
 
-#include <sys/queue.h>
-
 #include <string.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "lex.h"
@@ -56,7 +55,7 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
     char muxname[_POSIX2_LINE_MAX];
 
     lex_nexttoken(l);
-    if (!getip(l->token)) {
+    if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
 	warning("%.200s:%d: could not resolve '%.200s'",
 		l->filename, l->cline, l->token);
 	return 0;

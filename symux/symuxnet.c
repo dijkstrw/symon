@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.16 2004/02/29 21:23:19 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.17 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -39,6 +39,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "symux.h"
@@ -65,7 +66,7 @@ get_symon_sockets(struct mux * mux)
 
     /* iterate over our sources to determine what types of sockets we need */
     SLIST_FOREACH(source, &mux->sol, sources) {
-	get_source_sockaddr(source);
+	get_source_sockaddr(source, AF_INET);
 
 	family = source->sockaddr.ss_family;
 	/* do we have a socket for this type of family */
@@ -82,7 +83,7 @@ get_symon_sockets(struct mux * mux)
 		}
 
 		if (bind(mux->symonsocket[family], (struct sockaddr *) & sockaddr,
-			 sockaddr.ss_len) == -1) {
+			 SS_LEN(&sockaddr)) == -1) {
 		    switch (errno) {
 		    case EADDRNOTAVAIL:
 			warning("mux address %.200s is not a local address", mux->addr);
@@ -92,6 +93,9 @@ get_symon_sockets(struct mux * mux)
 			break;
 		    case EACCES:
 			warning("mux port %.200s is restricted from current user", mux->port);
+			break;
+		    default:
+			warning("mux port %.200s bind failed", mux->port);
 			break;
 		    }
 		    close(mux->symonsocket[family]);

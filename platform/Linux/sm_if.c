@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.11 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -60,19 +60,30 @@
 #include "error.h"
 #include "symon.h"
 
-/* Globals for this module start with if_ */
-static int if_s = -1;
 /* Prepare if module for first use */
 void
 init_if(char *s)
 {
-    if (if_s == -1)
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	    fatal("%s:%d: socket failed, %.200",
-		  __FILE__, __LINE__, strerror(errno));
-
     info("started module if(%.200s)", s);
 }
+void
+gets_if()
+{
+    char buf[SYMON_MAX_OBJSIZE];
+    char *bptr;
+    int readsize;
+    int if_s;
+
+    if ((if_s = open("/proc/net/dev", O_RDONLY)) < 0) {
+	warning("cannot access /proc/net/dev: %.200s", strerror(errno));
+	return;
+    }
+
+    bzero(&buf, sizeof(buf));
+
+    read(if_s, &buf, 
+
+    if (
 /* Get interface statistics */
 int
 get_if(char *symon_buf, int maxlen, char *interface)

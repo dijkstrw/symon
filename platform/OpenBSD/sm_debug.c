@@ -1,4 +1,4 @@
-/* $Id: sm_debug.c,v 1.4 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.5 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -48,7 +48,7 @@
 #define SYMON_MAXDEBUGID      20/* = CTL_DEBUG_MAXID; depends lib/data.h */
 
 /* Globals for this module start with db_ */
-static int db_mib[] = {CTL_DEBUG, 0, CTL_DEBUG_VALUE};
+static int db_mib[] = { CTL_DEBUG, 0, CTL_DEBUG_VALUE };
 static int db_v[SYMON_MAXDEBUGID];
 /* Prepare if module for first use */
 void
@@ -69,7 +69,7 @@ get_debug(char *symon_buf, int maxlen, char *s)
     for (i = 0; i < SYMON_MAXDEBUGID; i++) {
 	db_mib[1] = i;
 
-	sysctl(db_mib, 3, &db_v[i], &len, NULL, 0);
+	sysctl(db_mib, sizeof(db_mib)/sizeof(int), &db_v[i], &len, NULL, 0);
     }
 
     return snpack(symon_buf, maxlen, s, MT_DEBUG,

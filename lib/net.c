@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.11 2004/02/29 21:23:19 dijkstra Exp $ */
+/* $Id: net.c,v 1.12 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -37,6 +37,7 @@
 #include <netdb.h>
 #include <string.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "net.h"
@@ -52,7 +53,7 @@ char res_host[NI_MAXHOST];
 char res_service[NI_MAXSERV];
 struct sockaddr_storage res_addr;
 int
-getip(char *name)
+getip(char *name, int family)
 {
     struct addrinfo hints, *res;
     int error;
@@ -62,6 +63,7 @@ getip(char *name)
 
     /* don't lookup if we have a numeric address already */
     hints.ai_flags = AI_NUMERICHOST;
+    hints.ai_family = family;
     if (getaddrinfo(name, NULL, &hints, &res) != 0) {
 	hints.ai_flags = 0;
 	if ((error = getaddrinfo(name, NULL, &hints, &res)) < 0) {
@@ -139,7 +141,7 @@ get_numeric_name(struct sockaddr_storage * source)
     snprintf(res_host, sizeof(res_host), "<unknown>");
     snprintf(res_service, sizeof(res_service), "<unknown>");
 
-    return getnameinfo((struct sockaddr *)source, source->ss_len,
+    return getnameinfo((struct sockaddr *)source, SS_LEN(source),
 		       res_host, sizeof(res_host),
 		       res_service, sizeof(res_service),
 		       NI_NUMERICHOST | NI_NUMERICSERV);
@@ -148,7 +150,7 @@ void
 cpysock(struct sockaddr * source, struct sockaddr_storage * dest)
 {
     bzero(dest, sizeof(struct sockaddr_storage));
-    bcopy(source, dest, source->sa_len);
+    bcopy(source, dest, SA_LEN(source));
 }
 /*
  * cmpsock_addr(sockaddr, sockaddr)
@@ -162,7 +164,7 @@ cmpsock_addr(struct sockaddr * first, struct sockaddr * second)
     if (first == NULL || second == NULL)
 	return 0;
 
-    if ((first->sa_len != second->sa_len) ||
+    if ((SA_LEN(first) != SA_LEN(second)) ||
 	(first->sa_family != second->sa_family))
 	return 0;
 
@@ -206,9 +208,9 @@ get_inaddrany_sockaddr(struct sockaddr_storage * sockaddr, int family, int sockt
 }
 /* fill a source->sockaddr with a sockaddr for use in address compares */
 void
-get_source_sockaddr(struct source * source)
+get_source_sockaddr(struct source * source, int family)
 {
-    if (!getip(source->addr))
+    if (!getip(source->addr, family))
 	fatal("could not get address information for %.200s",
 	      source->addr);
 

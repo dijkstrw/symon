@@ -1,7 +1,7 @@
-/* $Id: sm_io.c,v 1.16 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,95 +46,51 @@
 
 #include <limits.h>
 #include <string.h>
+#include <stdlib.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 #include "xmalloc.h"
 
 /* Globals for this module start with io_ */
-static char *io_dkstr = NULL;
-static struct diskstats *io_dkstats = NULL;
-static char **io_dknames = NULL;
+static struct disk_sysctl *io_dkstats = NULL;
 static int io_dks = 0;
 static int io_maxdks = 0;
-static size_t io_maxstr = 0;
 
 void
 gets_io()
 {
     int mib[3];
-    char *p;
-    int dks;
     size_t size;
-    size_t strsize;
 
-    /* how much memory is needed */
+    /* read size */
     mib[0] = CTL_HW;
-    mib[1] = HW_DISKCOUNT;
-    size = sizeof(dks);
-    if (sysctl(mib, 2, &dks, &size, NULL, 0) < 0) {
-	fatal("%s:%d: sysctl failed: can't get hw.diskcount",
+    mib[1] = HW_DISKSTATS;
+    mib[2] = sizeof (struct disk_sysctl);
+    size = 0;
+    if (sysctl(mib, 3, NULL, &size, NULL, 0) < 0) {
+	fatal("%s:%d: io can't get hw.diskstats"
 	      __FILE__, __LINE__);
     }
+    io_dks = size / sizeof (struct disk_sysctl);
 
-    mib[0] = CTL_HW;
-    mib[1] = HW_DISKNAMES;
-    strsize = 0;
-    if (sysctl(mib, 2, NULL, &strsize, NULL, 0) < 0) {
-	fatal("%s:%d: sysctl failed: can't get hw.disknames",
-	      __FILE__, __LINE__);
-    }
-
-    /* increase buffers if necessary */
-    if (dks > io_maxdks || strsize > io_maxstr) {
-	io_maxdks = dks;
-	io_maxstr = strsize;
+    /* adjust buffer if necessary */
+    if (io_dks > io_maxdks) {
+	io_maxdks = io_dks;
 
 	if (io_maxdks > SYMON_MAX_DOBJECTS) {
 	    fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
 		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
 	}
 
-	if (io_maxstr > SYMON_MAX_OBJSIZE) {
-	    fatal("%s:%d: string size exceeded (%d)",
-		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE);
-	}
-
-	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct diskstats));
-	io_dknames = xrealloc(io_dknames, io_maxdks * sizeof(char *));
-	io_dkstr = xrealloc(io_dkstr, io_maxstr + 1);
+	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct disk_sysctl));
     }
 
-    /* read data in anger */
-    mib[0] = CTL_HW;
-    mib[1] = HW_DISKNAMES;
-    if (sysctl(mib, 2, io_dkstr, &io_maxstr, NULL, 0) < 0) {
-	fatal("%s:%d: io can't get hw.disknames"
-	      __FILE__, __LINE__);
-    }
-    io_dkstr[io_maxstr] = '\0';
-
-    mib[0] = CTL_HW;
-    mib[1] = HW_DISKSTATS;
-    size = io_maxdks * sizeof(struct diskstats);
-    if (sysctl(mib, 2, io_dkstats, &size, NULL, 0) < 0) {
+    /* read structure  */
+    size = io_maxdks * sizeof(struct disk_sysctl);
+    if (sysctl(mib, 3, io_dkstats, &size, NULL, 0) < 0) {
 	fatal("%s:%d: io can't get hw.diskstats"
 	      __FILE__, __LINE__);
-    }
-
-    p = io_dkstr;
-    io_dks = 0;
-
-    io_dknames[io_dks] = p;
-
-    while ((*p != '\0') && ((p - io_dkstr) < io_maxstr)) {
-	if ((*p == ',') && (*p+1 != '\0')) {
-	    *p = '\0';
-	    io_dks++; p++;
-	    io_dknames[io_dks] = p;
-	}
-	p++;
     }
 }
 /* Prepare io module for first use */
@@ -149,24 +105,15 @@ get_io(char *symon_buf, int maxlen, char *disk)
 {
     int i;
 
-    /* look for disk */
-    for (i = 0; i <= io_dks; i++) {
-	if (strncmp(io_dknames[i], disk,
-		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
-#ifdef HAS_IO2
+    for (i = 0; i < io_maxdks; i++)
+	if (strncmp(io_dkstats[i].dk_name, disk,
+		    sizeof(io_dkstats[i].dk_name)) == 0)
 	    return snpack(symon_buf, maxlen, disk, MT_IO2,
-			  io_dkstats[i].ds_rxfer,
-			  io_dkstats[i].ds_wxfer,
-			  io_dkstats[i].ds_seek,
-			  io_dkstats[i].ds_rbytes,
-			  io_dkstats[i].ds_wbytes);
-#else
-	    return snpack(symon_buf, maxlen, disk, MT_IO1,
-			  io_dkstats[i].ds_xfer,
-			  io_dkstats[i].ds_seek,
-			  io_dkstats[i].ds_bytes);
-#endif
-    }
+			  io_dkstats[i].dk_rxfer,
+			  io_dkstats[i].dk_wxfer,
+			  io_dkstats[i].dk_seek,
+			  io_dkstats[i].dk_rbytes,
+			  io_dkstats[i].dk_wbytes);
 
     return 0;
 }

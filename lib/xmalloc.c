@@ -1,4 +1,4 @@
-/* $Id: xmalloc.c,v 1.6 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: xmalloc.c,v 1.7 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -14,9 +14,10 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-#include <strings.h>
+#include <string.h>
 #include <stdlib.h>
 
+#include "conf.h"
 #include "xmalloc.h"
 #include "error.h"
 

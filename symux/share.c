@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.15 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: share.c,v 1.16 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,6 +35,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/shm.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 
 #include <errno.h>
@@ -45,8 +46,11 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
+#include "os.h"
+#include "symux.h"
 #include "symuxnet.h"
 #include "share.h"
 #include "net.h"
@@ -294,7 +298,7 @@ initshare(int bufsize)
     shm->reglen = bufsize;
 
     /* allocate semaphores */
-    if ((semid = semget(IPC_PRIVATE, SEM_TOTAL, SEM_A | SEM_R)) < 0)
+    if ((semid = semget(IPC_PRIVATE, SEM_TOTAL, SEM_ARGS)) < 0)
 	fatal("could not get a semaphore");
 
     semstat = SIPC_KEYED;

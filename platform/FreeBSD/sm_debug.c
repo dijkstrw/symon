@@ -1,6 +1,7 @@
-/* $Id: net.h,v 1.13 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
+ * Copyright (c)      2004 Matthew Gream
  * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
@@ -30,29 +31,51 @@
  *
  */
 
-#ifndef _SYMON_LIB_NET_H
-#define _SYMON_LIB_NET_H
+/*
+ * Get current debug statistics from kernel and return them in symon_buf as
+ *
+ * debug0 : debug1 : ... : debug19
+ *
+ */
 
-#include <sys/queue.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/sysctl.h>
 
-#define SYMUX_PORT  "2100"	/* default symux port */
+#include <string.h>
 
-extern char res_host[];
-extern char res_service[];
-extern struct sockaddr_storage res_addr;
+#include "error.h"
+#include "symon.h"
 
-__BEGIN_DECLS
-int cmpsock_addr(struct sockaddr *, struct sockaddr *);
-int get_numeric_name(struct sockaddr_storage *);
-int getaddr(char *, char *, int, int);
-int getip(char *, int);
-int lookup(char *);
-void cpysock(struct sockaddr *, struct sockaddr_storage *);
-void get_inaddrany_sockaddr(struct sockaddr_storage *, int, int, char *);
-void get_mux_sockaddr(struct mux *, int);
-void get_source_sockaddr(struct source *, int);
-__END_DECLS
+#define SYMON_MAXDEBUGID      20/* = CTL_DEBUG_MAXID; depends lib/data.h */
 
-#endif				/* _SYMON_LIB_NET_H */
+/* Globals for this module start with db_ */
+static int db_mib[] = { CTL_DEBUG, 0 };
+static int db_v[SYMON_MAXDEBUGID];
+/* Prepare if module for first use */
+void
+init_debug(char *s)
+{
+    info("started module debug(%.200s)", s);
+}
+/* Get debug statistics */
+int
+get_debug(char *symon_buf, int maxlen, char *s)
+{
+    size_t len;
+    int i;
+
+    bzero((void *) db_v, sizeof(db_v));
+    len = sizeof(int);
+
+    for (i = 0; i < SYMON_MAXDEBUGID; i++) {
+	db_mib[1] = i;
+
+	sysctl(db_mib, sizeof(db_mib)/sizeof(int), &db_v[i], &len, NULL, 0);
+    }
+
+    return snpack(symon_buf, maxlen, s, MT_DEBUG,
+		  db_v[0], db_v[1], db_v[2], db_v[3], db_v[4], db_v[5], db_v[6],
+		  db_v[7], db_v[8], db_v[9], db_v[10], db_v[11], db_v[12], db_v[13],
+		  db_v[14], db_v[15], db_v[16], db_v[17], db_v[18], db_v[19]);
+
+}

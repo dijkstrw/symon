@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.13 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.14 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <time.h>
 
+#include "conf.h"
 #include "error.h"
 #include "data.h"
 #include "symon.h"
@@ -49,6 +50,7 @@ void
 connect2mux(struct mux * mux)
 {
     struct sockaddr_storage sockaddr;
+
     int family;
 
     bzero((void *) &sockaddr, sizeof(sockaddr));
@@ -61,7 +63,7 @@ connect2mux(struct mux * mux)
     if ((mux->symuxsocket = socket(family, SOCK_DGRAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
-    if (bind(mux->symuxsocket, (struct sockaddr *) & sockaddr, sockaddr.ss_len) == -1)
+    if (bind(mux->symuxsocket, (struct sockaddr *) & sockaddr, SS_LEN(&sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
     info("sending packets to udp %.200s", mux->name);
@@ -72,7 +74,7 @@ send_packet(struct mux * mux)
 {
     if (sendto(mux->symuxsocket, (void *) &mux->packet.data,
 	       mux->offset, 0, (struct sockaddr *) & mux->sockaddr,
-	       mux->sockaddr.ss_len)
+	       SS_LEN(&mux->sockaddr))
 	!= mux->offset) {
 	mux->senderr++;
     }

@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.18 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
 
-/* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
+/* The author of this code is Matthew Gream.
  *
  * The percentages function was written by William LeFebvre and is part
  * of the 'top' utility. His copyright statement is below.
  *
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,20 +59,21 @@
 #include <sys/dkstat.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#include <sys/sched.h>
 
 #include "error.h"
 #include "symon.h"
 
 __BEGIN_DECLS
-int percentages(int, int *, long *, long *, long *);
+int percentages(int, int *, u_int64_t *, u_int64_t *, u_int64_t *);
 __END_DECLS
 
 /* Globals for this module all start with cp_ */
-static int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
+static int cp_time_mib[] = {CTL_KERN, KERN_CP_TIME};
 static size_t cp_size;
-static long cp_time[CPUSTATES];
-static long cp_old[CPUSTATES];
-static long cp_diff[CPUSTATES];
+static u_int64_t cp_time[CPUSTATES];
+static u_int64_t cp_old[CPUSTATES];
+static u_int64_t cp_diff[CPUSTATES];
 static int cp_states[CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
@@ -83,13 +84,13 @@ static int cp_states[CPUSTATES];
  *      useful on BSD mchines for calculating cpu state percentages.
  */
 int
-percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
+percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old, u_int64_t *diffs)
 {
     register int i;
-    register long change;
-    register long total_change;
-    register long *dp;
-    long half_total;
+    register u_int64_t change;
+    register u_int64_t total_change;
+    register u_int64_t *dp;
+    u_int64_t half_total;
 
     /* initialization */
     total_change = 0;
@@ -97,10 +98,10 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 
     /* calculate changes for each state and the overall change */
     for (i = 0; i < cnt; i++) {
-	if ((change = *new - *old) < 0) {
-	    /* this only happens when the counter wraps */
-	    change = ((unsigned int) *new - (unsigned int) *old);
-	}
+	if (*new < *old)
+	    change = (ULLONG_MAX - *old) + *new;
+	else
+	    change = *new - *old;
 	total_change += (*dp++ = change);
 	*old++ = *new++;
     }
@@ -110,7 +111,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 	total_change = 1;
 
     /* calculate percentages based on overall change, rounding up */
-    half_total = total_change / 2l;
+    half_total = total_change / 2;
     for (i = 0; i < cnt; i++)
 	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
@@ -121,11 +122,8 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 void
 init_cpu(char *s)
 {
-    char buf[_POSIX2_LINE_MAX];
-
     cp_size = sizeof(cp_time);
-    /* Call get_cpu once to fill the cp_old structure */
-    get_cpu(buf, sizeof(buf), NULL);
+    get_cpu(0, 0, NULL);
 
     info("started module cpu(%.200s)", s);
 }
@@ -133,15 +131,16 @@ init_cpu(char *s)
 int
 get_cpu(char *symon_buf, int maxlen, char *s)
 {
-    int total;
-
     if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
 	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
 	return 0;
     }
 
     /* convert cp_time counts to percentages */
-    total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+    (void)percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+
+    if (!symon_buf)
+	return 0;
 
     return snpack(symon_buf, maxlen, s, MT_CPU,
 		  (double) (cp_states[CP_USER] / 10.0),

@@ -1,13 +1,14 @@
-# $Id: Makefile.inc,v 1.23 2004/06/05 12:08:53 dijkstra Exp $
+# $Id: Makefile.inc,v 1.24 2004/08/07 12:21:36 dijkstra Exp $
 
-V=2.66
+V=2.67
+OS!=uname -s
 
 AR=	ar
 CC=	cc
 .ifdef DEBUG
-CFLAGS+=-g -Wall
+CFLAGS+=-g -Wall -D__USE_XOPEN
 .else
-CFLAGS+=-Wall
+CFLAGS+=-Wall -D__USE_XOPEN
 .endif
 INSTALL=install
 LORDER=	lorder
@@ -16,7 +17,8 @@ RANLIB= ranlib
 STRIP=  strip
 POD2MAN= pod2man
 
-BINDIR= libexec
+RRDDIR= /usr/local
+BINDIR= sbin
 MANDIR=	man
 SHRDIR= share/symon
 EXADIR= share/examples/symon
@@ -34,7 +36,7 @@ SYSCONFDIR=/etc
 .SUFFIXES: .c .o .8 .cat8 .pm .cat3p
 
 .c.o:
-	${CC} ${CFLAGS} -c $<
+	${CC} ${CFLAGS} -o $*.o -c $<
 
 .8.cat8:
 	${NROFF} -mandoc $< > $@ || (rm -f $@; false)

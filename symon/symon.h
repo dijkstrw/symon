@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.28 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symon.h,v 1.29 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -33,15 +33,10 @@
 #ifndef _SYMON_SYMON_H
 #define _SYMON_SYMON_H
 
-#include <conf.h>
-
-#include <sys/queue.h>
-
 #include "lex.h"
 #include "data.h"
 
 #define SYMON_PID_FILE "/var/run/symon.pid"
-#define SYMON_USER "_symon"
 #define SYMON_DEFAULT_INTERVAL 5	/* measurement interval */
 #define SYMON_WARN_SENDERR 50	        /* warn every x errors */
 #define SYMON_MAX_DOBJECTS 2000	        /* max dynamic allocation; local limit per
@@ -107,6 +102,7 @@ extern void gets_proc();
 extern int get_proc(char *, int, char *);
 
 /* sm_sensor.c */
+extern void privinit_sensor();
 extern void init_sensor(char *);
 extern int get_sensor(char *, int, char *);
 __END_DECLS

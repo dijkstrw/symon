@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.31 2004/03/20 15:46:27 dijkstra Exp $ */
+/* $Id: symux.c,v 1.32 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -31,11 +31,12 @@
  */
 
 #include <sys/types.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 
-#include <machine/endian.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,6 +45,7 @@
 #include <unistd.h>
 #include <rrd.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "limits.h"
@@ -257,7 +259,7 @@ main(int argc, char *argv[])
 		    maxstringlen -= strlen(stringptr);
 		    stringptr += strlen(stringptr);
 		    /* put timestamp in and show to rrd */
-		    snprintf(stringptr, maxstringlen, "%u", timestamp);
+		    snprintf(stringptr, maxstringlen, "%u", (unsigned int)timestamp);
 		    arg_ra[3] = stringptr;
 		    maxstringlen -= strlen(stringptr);
 		    stringptr += strlen(stringptr);

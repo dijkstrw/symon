@@ -1,4 +1,4 @@
-/* $Id: error.h,v 1.9 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: error.h,v 1.10 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -40,7 +40,7 @@ extern int flag_debug;
 extern int flag_daemon;
 
 __BEGIN_DECLS
-__dead void fatal(char *,...);
+void fatal(char *,...);
 void warning(char *,...);
 void info(char *,...);
 void debug(char *,...);

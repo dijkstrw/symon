@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.34 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symon.c,v 1.35 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -36,13 +36,16 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <sys/time.h>
 
+#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "symon.h"
@@ -73,7 +76,7 @@ struct funcmap streamfunc[] = {
     {MT_DEBUG, 0, NULL, init_debug, NULL, get_debug},
     {MT_PROC, 0, NULL, init_proc, gets_proc, get_proc},
     {MT_MBUF, 0, NULL, init_mbuf, NULL, get_mbuf},
-    {MT_SENSOR, 0, NULL, init_sensor, NULL, get_sensor},
+    {MT_SENSOR, 0, privinit_sensor, init_sensor, NULL, get_sensor},
     {MT_IO2, 0, NULL, init_io, gets_io, get_io},
     {MT_EOT, 0, NULL, NULL, NULL}
 };

@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.7 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.8 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -42,19 +42,42 @@
  *   counters_normalize : counters_memory
  *
  */
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
 #include <netinet/in.h>
 #include <net/if.h>
+#ifndef SM_PF_UNSUPPORTED
 #include <net/pfvar.h>
+#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 
 #include "error.h"
 #include "symon.h"
+
+#ifdef SM_PF_UNSUPPORTED
+
+void
+privinit_pf()
+{
+}
+void
+init_pf(char *s)
+{
+    fatal("pf support not available");
+}
+int
+get_pf(char *symon_buf, int maxlen, char *s)
+{
+    fatal("pf support not available");
+    return 0;
+}
+
+#else
 
 /* Globals for this module start with pf_ */
 int pf_dev = -1;
@@ -120,3 +143,5 @@ get_pf(char *symon_buf, int maxlen, char *arg)
 		  s.counters[5]
 	);
 }
+
+#endif

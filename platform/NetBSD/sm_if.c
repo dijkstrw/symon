@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.11 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,10 +48,6 @@
 #include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#include <netipx/ipx.h>
-#include <netipx/ipx_if.h>
 
 #include <errno.h>
 #include <limits.h>
@@ -77,27 +73,26 @@ init_if(char *s)
 int
 get_if(char *symon_buf, int maxlen, char *interface)
 {
-    struct ifreq ifr;
-    struct if_data ifdata;
+    struct ifdatareq ifdr;
+    const struct if_data* ifi;
 
-    strncpy(ifr.ifr_name, interface, IFNAMSIZ - 1);
-    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_data = (caddr_t) & ifdata;
+    strncpy(ifdr.ifdr_name, interface, sizeof (ifdr.ifdr_name));
 
-    if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
+    if (ioctl(if_s, SIOCGIFDATA, (caddr_t)&ifdr)) {
 	warning("if(%.200s) failed (ioctl error)", interface);
 	return 0;
     }
+    ifi = &ifdr.ifdr_data;
 
     return snpack(symon_buf, maxlen, interface, MT_IF,
-		  ifdata.ifi_ipackets,
-		  ifdata.ifi_opackets,
-		  ifdata.ifi_ibytes,
-		  ifdata.ifi_obytes,
-		  ifdata.ifi_imcasts,
-		  ifdata.ifi_omcasts,
-		  ifdata.ifi_ierrors,
-		  ifdata.ifi_oerrors,
-		  ifdata.ifi_collisions,
-		  ifdata.ifi_iqdrops);
+		  (u_int32_t) ifi->ifi_ipackets,
+		  (u_int32_t) ifi->ifi_opackets,
+		  (u_int32_t) ifi->ifi_ibytes,
+		  (u_int32_t) ifi->ifi_obytes,
+		  (u_int32_t) ifi->ifi_imcasts,
+		  (u_int32_t) ifi->ifi_omcasts,
+		  (u_int32_t) ifi->ifi_ierrors,
+		  (u_int32_t) ifi->ifi_oerrors,
+		  (u_int32_t) ifi->ifi_collisions,
+		  (u_int32_t) ifi->ifi_iqdrops);
 }
