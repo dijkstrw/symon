@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: data.c,v 1.6 2002/04/01 14:43:00 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -110,8 +110,8 @@ token2type(int token)
 	if (streamtoken[i].token == token) 
 	    return streamtoken[i].type;
 
-    fatal("internal error: Token (%d) could not be translated into a stream type.\n", 
-	  token);
+    fatal("%s:%d: internal error: token (%d) could not be translated into a stream type", 
+	  __FILE__, __LINE__, token);
 
     /* NOT REACHED */
     return 0;
@@ -126,7 +126,8 @@ strlenvar(char var)
 	if (streamvar[i].type == var)
 	    return streamvar[i].strlen;
     
-    fatal("internal error: Type spefication for stream var '%c' not found", var);
+    fatal("%s:%d: internal error: type spefication for stream var '%c' not found", 
+	  __FILE__, __LINE__, var);
     
     /* NOT REACHED */
     return 0;
@@ -141,7 +142,8 @@ bytelenvar(char var)
 	if (streamvar[i].type == var)
 	    return streamvar[i].bytelen;
     
-    fatal("internal error: Type spefication for stream var '%c' not found", var);
+    fatal("%s:%d: internal error: type spefication for stream var '%c' not found", 
+	  __FILE__, __LINE__, var);
     
     /* NOT REACHED */
     return 0;
@@ -156,7 +158,8 @@ formatstrvar(char var)
 	if (streamvar[i].type == var)
 	    return streamvar[i].strformat;
     
-    fatal("internal error: Type spefication for stream var '%c' not found", var);
+    fatal("%s:%d: internal error: type spefication for stream var '%c' not found", 
+	  __FILE__, __LINE__, var);
     
     /* NOT REACHED */
     return "";
@@ -171,7 +174,7 @@ rrdstrvar(char var)
 	if (streamvar[i].type == var)
 	    return streamvar[i].rrdformat;
     
-    fatal("internal error: Type spefication for stream var '%c' not found", var);
+    fatal("internal error: type spefication for stream var '%c' not found", var);
     
     /* NOT REACHED */
     return "";
@@ -208,7 +211,7 @@ snpack(char *buf, int maxlen, char *id, int type, ...)
     }
 
     if ( maxlen < 2 ) {
-	fatal("maxlen too small");
+	fatal("%s:%d: maxlen too small", __FILE__, __LINE__);
     } else {
 	buf[offset++] = type & 0xff;
     }
@@ -252,7 +255,7 @@ snpack(char *buf, int maxlen, char *id, int type, ...)
 	    break;
 
 	default:
-	    warning("Unknown stream format identifier");
+	    warning("unknown stream format identifier");
 	    return 0;
 	}
 	i++;
@@ -329,7 +332,7 @@ sunpack(char *buf, struct packedstream *ps)
 	    break;
 
 	default:
-	    warning("Unknown stream format identifier");
+	    warning("unknown stream format identifier");
 	    return 0;
 	}
 	i++;
@@ -364,7 +367,7 @@ ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 	    formatstr = rrdstrvar(vartype);
 	    break;
 	default:
-	    warning("Unknown pretty identifier");
+	    warning("%s:%d: unknown pretty identifier", __FILE__, __LINE__);
 	    return 0;
 	}
 
@@ -402,7 +405,7 @@ create_stream(int type, char *args)
     struct stream *p;
 
     if (type < 0 || type >= MT_EOT)
-	fatal("internal error: Stream type unknown.\n");
+	fatal("%s:%d: internal error: stream type unknown", __FILE__, __LINE__);
 
     p = (struct stream *)xmalloc(sizeof(struct stream));
     bzero(p, sizeof(struct stream));
