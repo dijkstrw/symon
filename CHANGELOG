@@ -1,3 +1,15 @@
+01/09/2002 - Internal cosmetics - not released
+
+   mon/mon.c: 
+     - mon packetsize is still limited by size of struct monpacket in
+       data.h:79. All other limits have been removed.
+
+   lib/data.c mon/monnet.c monmux/muxnet.c:
+     - header structure is now safely transported across the network.
+
+   lib/data.c
+     - added streamtypes b(yte) and s(hort) in preparation for new streams.
+
 31/08/2002 - 2.3
 
     Makefiles, mon/mon.c: 
@@ -101,4 +113,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.1 2002/08/31 15:54:57 dijkstra Exp $
+$Id: CHANGELOG,v 1.2 2002/09/02 06:15:19 dijkstra Exp $
