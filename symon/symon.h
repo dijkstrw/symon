@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.8 2002/03/17 13:37:31 dijkstra Exp $
+ * $Id: symon.h,v 1.9 2002/03/29 15:17:08 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -32,6 +32,14 @@ extern struct nlist mon_nl[];
 #define MON_DL    1
 extern int kread(u_long,char *,int);
 #endif
+
+struct funcmap {
+    int type;
+    void (*init)(char *);
+    int (*get)(char*, int, char *);
+};
+
+extern struct funcmap streamfunc[];
 
 /* prototypes */
 __BEGIN_DECLS

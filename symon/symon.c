@@ -1,5 +1,5 @@
 /*
- * $Id: symon.c,v 1.11 2002/03/22 16:40:00 dijkstra Exp $
+ * $Id: symon.c,v 1.12 2002/03/29 15:17:08 dijkstra Exp $
  *
  * This program wakes up every MON_INTERVAL to measure cpu, memory and
  * interface statistics. This code takes care of waking up every so often,
@@ -13,7 +13,6 @@
 #include <string.h>
 #include <sys/param.h>
 #include <syslog.h>
-#include <time.h>
 #include <unistd.h>
 #include <varargs.h>
 
@@ -47,11 +46,7 @@ int kread(addr, buf, size)
 #endif /* MON_KVM */
 
 /* map stream types to inits and getters */
-struct {
-    int type;
-    void (*init)(char *);
-    int (*get)(char*, int, char *);
-} streamfunc[] = {
+struct funcmap streamfunc[] = {
     {MT_IO,  init_io,  get_io},
     {MT_CPU, init_cpu, get_cpu},
     {MT_MEM, init_mem, get_mem},
@@ -103,7 +98,7 @@ int main(argc, argv)
 #endif
 
     /* Init modules */
-    syslog(LOG_INFO, "mon $Revision: 1.11 $ started");
+    syslog(LOG_INFO, "mon $Revision: 1.12 $ started");
 
     offset = 0;
     SLIST_FOREACH(mux, &muxlist, muxes) {
@@ -135,25 +130,17 @@ int main(argc, argv)
 
     for (;;) {  /* forever */
 	sleep(MON_INTERVAL*2);    /* alarm will always interrupt sleep */
-/*	printf("sleeping.\n"); */
 
 	SLIST_FOREACH(mux, &muxlist, muxes) {
-	    /* fill mux->data with stream getters.
-	       mux->offset stores the amount of data actually written */
-	    memset(mux->data, 0, _POSIX2_LINE_MAX);
-	    mux->offset = 0;
-
-	    mux->offset = setpreamble(mux->data, _POSIX2_LINE_MAX);
+	    prepare_packet(mux);
 
 	    SLIST_FOREACH(stream, &mux->sl, streams) {
-		mux->offset += 
-		    (streamfunc[stream->type].get) (&mux->data[mux->offset], 
-						    _POSIX2_LINE_MAX - mux->offset, 
-						    stream->args);
+		stream_in_packet(stream, mux);
 	    }
 
-	    /* send monitored data to mux */
-	    senddata(mux);
+	    finish_packet(mux);
+
+	    send_packet(mux);
 	}
     }
     /* NOTREACHED */
