@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.10 2002/08/31 16:09:55 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.11 2002/09/06 12:17:11 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -55,6 +55,7 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 	    RRA:MIN:0.5:360:672 
 	    RRA:MIN:0.5:1440:600 
 	    RRA:MIN:0.5:17280:600"
+RRD_ARGS="--step=$INTERVAL --start=0"
 # --- user configuration ends here
 
 # All interfaces and disks
@@ -117,7 +118,7 @@ io|disks)
 
 cpu[0-9].rrd)
     # Build cpu file
-    rrdtool create $i --step=$INTERVAL \
+    rrdtool create $i $RRD_ARGS \
 	DS:user:GAUGE:5:0:100 \
 	DS:nice:GAUGE:5:0:100 \
 	DS:system:GAUGE:5:0:100 \
@@ -129,7 +130,7 @@ cpu[0-9].rrd)
 
 mem.rrd)
     # Build memory file
-    rrdtool create $i --step=$INTERVAL \
+    rrdtool create $i $RRD_ARGS \
 	DS:real_active:GAUGE:5:0:U \
 	DS:real_total:GAUGE:5:0:U \
 	DS:free:GAUGE:5:0:U \
@@ -141,7 +142,7 @@ mem.rrd)
 
 if_*.rrd)
     # Build interface files
-    rrdtool create $i --step=$INTERVAL \
+    rrdtool create $i $RRD_ARGS \
 	DS:ipackets:COUNTER:5:U:U DS:opackets:COUNTER:5:U:U \
 	DS:ibytes:COUNTER:5:U:U DS:obytes:COUNTER:5:U:U \
 	DS:imcasts:COUNTER:5:U:U DS:omcasts:COUNTER:5:U:U \
@@ -153,7 +154,7 @@ if_*.rrd)
 
 pf.rrd)
     # Build pf file
-    rrdtool create $i --step=$INTERVAL \
+    rrdtool create $i $RRD_ARGS \
 	DS:bytes_v4_in:DERIVE:5:0:U DS:bytes_v4_out:DERIVE:5:0:U \
 	DS:bytes_v6_in:DERIVE:5:0:U DS:bytes_v6_out:DERIVE:5:0:U \
 	DS:packets_v4_in_pass:DERIVE:5:0:U DS:packets_v4_in_drop:DERIVE:5:0:U \
@@ -176,7 +177,7 @@ pf.rrd)
 
 io_*.rrd)
     # Build disk files
-    rrdtool create $i --step=$INTERVAL \
+    rrdtool create $i $RRD_ARGS \
 	DS:transfers:COUNTER:5:U:U \
 	DS:seeks:COUNTER:5:U:U \
 	DS:bytes:COUNTER:5:U:U \
