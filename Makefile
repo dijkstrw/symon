@@ -1,7 +1,11 @@
-# $Id: Makefile,v 1.4 2002/08/16 13:55:42 dijkstra Exp $
+# $Id: Makefile,v 1.5 2002/08/29 19:37:38 dijkstra Exp $
 
 SUBDIR=	lib mon monmux 
-V=2.0
+V=2.1
+
+.if make(clean)
+SUBDIR+= ports/mon
+.endif
 
 .include "Makefile.inc"
 

@@ -1,5 +1,3 @@
-Programming rules:
-
 - Cpu cost matters more than storage. 
 
 - Structures are not overloaded in functionality even if that would be possible
@@ -14,5 +12,3 @@ Programming rules:
 
 - Marshalling is hard. Alignment is carried out by bcopy.
 
-- Interesting observation:
-	Adding data to a stale rrdfile costs a lot of resources!

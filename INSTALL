@@ -3,7 +3,10 @@ Installation notes
 
 Real quick 
 ==========
-make && make install && vi /etc/monmux.conf /etc/mon.conf && monmux && mon
+make && make install && vi /etc/monmux.conf /etc/mon.conf && 
+	~mon/monmux/c_monrrds.sh all && 
+	/usr/local/libexec/monmux && 
+	/usr/local/libexec/mon
 
 Slightly less quick but with pretty pictures
 ============================================
@@ -43,11 +46,25 @@ Slightly less quick but with pretty pictures
   mon2web/datasources.inc to reflect your filelocations. Note that it uses php,
   so you may need to (cd /usr/ports/www/php4; make install).
 
-This package is an OpenBSD application. You can make monmux and mon2web run on
-most POSIX compliant unixes, but the monitoring application itself (mon) is
-OpenBSD specific.
+Installing mon on many machines
+===============================
+
+- Copy the mon-version.tar.gz to /usr/ports/distfiles/
+
+- Use the ports directory to create a mon package. 
+  cd ~mon/ports/mon
+  make package
+- The binary package can be found at 
+  /usr/ports/packages/<arch>/All/mon-2.0.tgz
+
+- You can transfer the resulting package to many machines and install it by
+  pkg_add it.
+
+This package is an OpenBSD application. You might be able to make monmux and
+mon2web run on POSIX compliant unixes, but the monitoring application itself
+(mon) is OpenBSD specific.
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.1 2002/08/16 13:55:42 dijkstra Exp $
+$Id: INSTALL,v 1.2 2002/08/29 19:37:38 dijkstra Exp $
 
