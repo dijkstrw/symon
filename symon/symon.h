@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.5 2001/05/19 14:24:35 dijkstra Exp $
+ * $Id: symon.h,v 1.6 2001/07/01 12:50:24 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -33,6 +33,7 @@ struct monm {
 extern kvm_t *kvmd;
 extern struct nlist mon_nl[];
 #define MON_IFNET 0
+#define MON_DL    1
 extern int kread(u_long,char *,int);
 #endif
 
@@ -47,4 +48,8 @@ extern char *get_mem(char *);
 /* ifstat.c */
 extern void init_ifstat(char *);
 extern char *get_ifstat(char *);
+
+/* disk.c */
+extern void init_disk(char *);
+extern char *get_disk(char *);
 

@@ -1,5 +1,5 @@
 /*
- * $Id: symon.c,v 1.6 2001/06/24 12:27:37 dijkstra Exp $
+ * $Id: symon.c,v 1.7 2001/07/01 12:50:24 dijkstra Exp $
  *
  * All configuration is done in the source. The main program
  * does not take any arguments (yet)
@@ -28,15 +28,18 @@ char mon_buf[_POSIX2_LINE_MAX];
 
 struct monm monm[] = {
     {"cpu", "0", "/home/dijkstra/project/mon/cpu.rrd", init_cpu, get_cpu},  /* arg is not used */
-#ifdef MEM_SWAP
     {"mem", "real+swap", "/home/dijkstra/project/mon/mem.rrd", init_mem, get_mem}, /* arg is not used */
-#else
-    {"mem", "real", "/home/dijkstra/project/mon/mem.rrd", init_mem, get_mem}, /* arg is not used */
-#endif  
 #ifdef MON_KVM
     {"ifstat",  "xl0", "/home/dijkstra/project/mon/if_xl0.rrd", init_ifstat,  get_ifstat},
     {"ifstat",  "de0", "/home/dijkstra/project/mon/if_de0.rrd", init_ifstat,  get_ifstat},
     {"ifstat",  "wi0", "/home/dijkstra/project/mon/if_wi0.rrd", init_ifstat,  get_ifstat},
+    {"disk",    "wd0", "/home/dijkstra/project/mon/disk_wd0.rrd", init_disk,  get_disk},
+    {"disk",    "wd1", "/home/dijkstra/project/mon/disk_wd1.rrd", init_disk,  get_disk},
+    {"disk",    "wd2", "/home/dijkstra/project/mon/disk_wd2.rrd", init_disk,  get_disk},
+    {"disk",    "ccd0", "/home/dijkstra/project/mon/disk_ccd0.rrd", init_disk,  get_disk},
+    {"disk",    "ccd1", "/home/dijkstra/project/mon/disk_ccd1.rrd", init_disk,  get_disk},
+    {"disk",    "cd0", "/home/dijkstra/project/mon/disk_cd0.rrd", init_disk,  get_disk},
+    {"disk",    "cd1", "/home/dijkstra/project/mon/disk_cd1.rrd", init_disk,  get_disk},
 #endif
     { NULL, NULL, NULL, NULL, NULL}
 };
@@ -44,7 +47,8 @@ struct monm monm[] = {
 #ifdef MON_KVM
 kvm_t *kvmd;
 struct nlist mon_nl[] = {
-    {"_ifnet"}, /* MON_IFNET = 0  (mon.h)*/
+    {"_ifnet"},      /* MON_IFNET = 0  (mon.h)*/
+    {"_disklist"},   /* MON_DL    = 1  (mon.h)*/
     {""},
 };
 
@@ -99,7 +103,7 @@ int main(argc, argv)
 #endif
 
     /* Init modules */
-    syslog(LOG_INFO,"system monitor $Revision: 1.6 $ started");
+    syslog(LOG_INFO,"system monitor $Revision: 1.7 $ started");
 
     i=-1;
     while (monm[++i].type) {
