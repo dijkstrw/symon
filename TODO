@@ -1,11 +1,14 @@
 Project Overview:
 == short term
-+ write a parser for the configuration files
-- write 'streams' and stream to network conversion
-+ rewrite monitors to offer streams
-- write multiplexer that can take incoming streams
 - add rrd support to multiplexer
 - change rrd to accommodate batch updates
+- make programs robust. failure => fatal now (by design :)
+- mon should not connect. This allows monmux and mon to be totally
+  asynchronous. Mon will not send additional packets if monmux was killed
+  during execution of mon.
+- streams should include a crc
+- clean up source
+- monmux incoming source address computation fails
 
 == longer term
 - write a muxer that supports unix pipes
@@ -22,7 +25,11 @@ Project Overview:
   packet format.  
 - Rewrite readconf monmux to deal with new data routines in lib/
 
-== log
+== log 
+
+22/03/2002 - Added get/set preamble, still tinkering with those s(u)(n)pack
+             functions. Added one that translates it into text.
+
 06/01/2002 - Removed init and get functions from the monlib. (init functions
              were also required in non-mon applications, not like it is
              supposed to be :)
