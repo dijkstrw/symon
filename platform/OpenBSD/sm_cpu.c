@@ -1,10 +1,12 @@
 /*
- * $Id: sm_cpu.c,v 1.6 2001/05/19 14:24:35 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.7 2002/03/09 16:25:33 dijkstra Exp $
  *
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
  *
  * user : nice : system : interrupt : idle
+ *
+ * This code is not re-entrant and UP only.
  *
  * This module uses the sysctl interface and can run as any user.
  */
@@ -83,12 +85,16 @@ int percentages(cnt, out, new, old, diffs)
 void init_cpu(s) 
     char *s;
 {
+    char buf[_POSIX2_LINE_MAX];
+
     cp_size = sizeof(cp_time);
     /* Call get_cpu once to fill the cp_old structure */
-    get_cpu(NULL);
+    get_cpu(buf, sizeof(buf), NULL);
 }
 
-char *get_cpu(s) 
+int get_cpu(mon_buf, maxlen, s) 
+    char *mon_buf;
+    int maxlen;
     char *s;
 {
     int total;
@@ -100,9 +106,7 @@ char *get_cpu(s)
     /* convert cp_time counts to percentages */
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
-    snprintf( &mon_buf[0], _POSIX2_LINE_MAX, 
-	      "N:%3.2f:%3.2f:%3.2f:%3.2f:%3.2f", 
-	      cp_states[CP_USER]/10, cp_states[CP_NICE]/10, cp_states[CP_SYS]/10, 
-	      cp_states[CP_INTR]/10, cp_states[CP_IDLE]/10);
-    return &mon_buf[0];
+    return snpack(mon_buf, maxlen, s, MT_CPU,
+		  cp_states[CP_USER], cp_states[CP_NICE], cp_states[CP_SYS], 
+		  cp_states[CP_INTR], cp_states[CP_IDLE]);
 }

@@ -1,9 +1,11 @@
 /*
- * $Id: sm_mem.c,v 1.7 2001/07/01 12:50:24 dijkstra Exp $
+ * $Id: sm_mem.c,v 1.8 2002/03/09 16:25:33 dijkstra Exp $
  *
  * Get current memory statistics in bytes; reports them back in mon_buf as
  *
  * real active : real total : free : [swap used : swap total]
+ *
+ * This code is not re-entrant.
  * 
  * -DMEM_SWAP controls whether the swap statistics are generated.  */
 
@@ -56,7 +58,9 @@ void init_mem(s)
     me_swdev = malloc(me_nswap * sizeof(*me_swdev));
     if (me_swdev == NULL && me_nswap != 0) me_nswap=0; 
 }
-char *get_mem(s)
+int get_mem(mon_buf, maxlen, s)
+    char *mon_buf;
+    int maxlen;
     char *s;
 {
     int i,rnswap;
@@ -89,9 +93,8 @@ char *get_mem(s)
     }
 
     /* real active, real total, free, swap used, swap total */
-    snprintf(&mon_buf[0], _POSIX2_LINE_MAX, "N:%lu:%lu:%lu:%lu:%lu", 
-	     me_stats[0], me_stats[1], me_stats[2], 
-	     me_stats[3], me_stats[4]);
-
-    return &mon_buf[0];
+    return snpack(mon_buf, maxlen, s, MT_MEM, 
+		  me_stats[0], me_stats[1], me_stats[2], 
+		  me_stats[3], me_stats[4]);
 }
+

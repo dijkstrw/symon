@@ -1,12 +1,13 @@
-# $Id: Makefile,v 1.11 2001/07/01 12:50:24 dijkstra Exp $
+# $Id: Makefile,v 1.12 2002/03/09 16:25:33 dijkstra Exp $
 
 PROG=	mon
-SRCS=	mon.c cpu.c mem.c ifstat.c disk.c
+SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c
 NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
-LDADD=  -lkvm -L/usr/local/lib -lrrd
+LDADD=  -g -lkvm -L../lib -L/usr/local/lib -lrrd -lmon
 DPADD=	${LIBKVM}
-CPPFLAGS+=-DMON_KVM -DNET_INET6 -Wall -I/usr/local/include -Wall
+CPPFLAGS+=-DDEBUG -g -DMON_KVM -DNET_INET6 -Wall -I/usr/local/include -I ../lib -Wall
+#CPPFLAGS+=-DDEBUG -g -Wall -I/usr/local/include -I ../lib -Wall
 
 .include <bsd.prog.mk>

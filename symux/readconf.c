@@ -1,5 +1,5 @@
 /*
- * $Id: readconf.c,v 1.4 2001/09/30 14:42:29 dijkstra Exp $
+ * $Id: readconf.c,v 1.5 2002/03/09 16:25:36 dijkstra Exp $
  *
  * Parse monmux.conf style configuration files 
  * 
@@ -11,18 +11,12 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/queue.h>
 #include "xmalloc.h"
 #include "monmux.h"
 #include "lex.h"
 #include "error.h"
 #include "net.h"
-
-void parse_error(l, s)
-    struct lex *l;
-    const char *s;
-{
-    fatal("%s:%d: Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
-}
 
 struct source *add_source(s)
     char *s;
@@ -93,17 +87,6 @@ struct stream *add_stream(s, t, a)
 
     return p;
 }
-/*
- * expect(x) = next token must be x or return. 
- */
-#define expect(x)    do {                         \
-	lex_nexttoken(l);                         \
-	if (l->op != (x)) {                       \
-	    parse_error(l, parse_opcode((x)));    \
-	    return;                               \
-	}                                         \
-    } while(0);
-
 /*
  * hub <host> (port|:|,| ) <number> } 
  */

@@ -1,0 +1,17 @@
+Programming rules:
+
+- Cpu cost matters more than storage.
+
+- Structures are not overloaded in functionality even if that would be possible
+  memberwise. Overloading = code can be understood in more than one way and
+  leads to more maintenance and bugs.
+
+- Defines are not overloaded in functionality if possible. Same reason as
+  above.
+
+== Problems to be solved ==
+
+- Generate a format for network traversal of data
+
+	1) all data is big-endian
+	2) streams are considered elements

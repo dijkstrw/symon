@@ -1,0 +1,41 @@
+Project Overview:
+== short term
++ write a parser for the configuration files
+- write 'streams' and stream to network conversion
++ rewrite monitors to offer streams
+- write multiplexer that can take incoming streams
+- add rrd support to multiplexer
+- change rrd to accommodate batch updates
+
+== longer term
+- write a muxer that supports unix pipes
+- write a client that drives a crystal fontz lcd
+- port to freebsd
+- port to linux
+
+== current problems
+- spack should be snpack
+- Rewrite io/cpu/mem/if stream function storage
+- Lexer does not deal correctly with "}<eof>" 
+- Consolidate readconf(s) of mon and monmux.
+- Define a packet format. Make mon spew the packet format. Make monmux grok the
+  packet format.  
+- Rewrite readconf monmux to deal with new data routines in lib/
+
+== log
+06/01/2002 - Removed init and get functions from the monlib. (init functions
+             were also required in non-mon applications, not like it is
+             supposed to be :)
+
+             Next step is to rewrite the get functions into using the pack
+             function.
+
+05/01/2002 - Wrote spack and sunpack; endianess agnostic values to bytestream
+             (and back) functions. The packet format has almost been defined
+             now.
+
+24/11/2001 - Rewrote lib to KNF, OpCodes removed
+03/11/2001 - Added datatypes and rewrote readconf to use SLISTs.
+01/10/2001 - Mon configuration is read from a mon.conf. 
+29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
+             parsing code and removed a second comment reader.

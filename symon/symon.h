@@ -1,32 +1,25 @@
 /*
- * $Id: symon.h,v 1.6 2001/07/01 12:50:24 dijkstra Exp $
+ * $Id: symon.h,v 1.7 2002/03/09 16:25:33 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
  * General (global) definitions
  */
+#ifndef _MON_H
+#define _MON_H
+
 #include <kvm.h>
 #include <nlist.h>
+#include <sys/queue.h>
+
+#include "lex.h"
+#include "data.h"
 
 /* Log base 2 of 1024 is 10 (2^10=1024) */
 #define LOG1024		10
-/* Buffer used for reporting status from subsystems */
-extern char mon_buf[];
 
-/* Monitor subsystem structure */
-struct monm {
-    char* type;
-    char* arg;
-    char* file;
-    void  (*init)(char *);
-    char* (*get)(char *);
-};
 /* Number of seconds between measurement intervals */
-#define MON_INTERVAL 5
-
-/* Semaphores for entering and exitting the measurement region */
-#define S_STARTMEASURE 0
-#define S_STOPMEASURE  1
+#define MON_INTERVAL 1
 
 /* kvm interface */
 #ifdef MON_KVM
@@ -37,19 +30,23 @@ extern struct nlist mon_nl[];
 extern int kread(u_long,char *,int);
 #endif
 
+/* prototypes */
+__BEGIN_DECLS
 /* cpu.c */
-extern void init_cpu(char *);
-extern char *get_cpu(char *);
+extern void init_cpu __P((char *));
+extern int  get_cpu __P((char *, int, char *));
 
 /* mem.c */
-extern void init_mem(char *);
-extern char *get_mem(char *);
+extern void init_mem __P((char *));
+extern int  get_mem __P((char *, int, char *));
 
 /* ifstat.c */
-extern void init_ifstat(char *);
-extern char *get_ifstat(char *);
+extern void init_if __P((char *));
+extern int  get_if __P((char *, int, char *));
 
 /* disk.c */
-extern void init_disk(char *);
-extern char *get_disk(char *);
+extern void init_io __P((char *));
+extern int  get_io __P((char *, int, char *));
+__END_DECLS
 
+#endif /* _MON_H */
