@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.10 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: net.h,v 1.11 2003/12/21 13:01:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -39,14 +39,13 @@
 
 #define SYMUX_PORT  "2100"	/* default symux port */
 
-extern char lookup_hostname[];
-extern char lookup_address[];
-extern u_int32_t lookup_ip;
 extern char res_host[];
+extern char res_service[];
 extern struct sockaddr_storage res_addr;
 
 __BEGIN_DECLS
 int cmpsock_addr(struct sockaddr *, struct sockaddr *);
+int get_numeric_name(struct sockaddr_storage *);
 int getaddr(char *, char *, int, int);
 int getip(char *);
 int lookup(char *);

@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.13 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.14 2003/12/21 13:01:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -58,7 +58,6 @@ get_symon_sockets(struct mux * mux)
     struct source *source;
     struct sockaddr_storage sockaddr;
     int family, nsocks;
-    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     nsocks = 0;
 
     /* generate the udp listen socket specified in the mux statement */
@@ -86,13 +85,12 @@ get_symon_sockets(struct mux * mux)
 			 sockaddr.ss_len) == -1)
 		    close(mux->symonsocket[family]);
 		else {
-		    if (getnameinfo((struct sockaddr *) & sockaddr, sockaddr.ss_len,
-				    hbuf, sizeof(hbuf), sbuf, sizeof(sbuf),
-				    NI_NUMERICHOST | NI_NUMERICSERV)) {
+		    if (get_numeric_name(&sockaddr)) {
 			info("getnameinfo error - cannot determine numeric hostname and service");
 			info("listening for incoming symon traffic for family %d", family);
 		    } else
-			info("listening for incoming symon traffic on udp %.200s %.200s", hbuf, sbuf);
+			info("listening for incoming symon traffic on udp %.200s %.200s",
+			     res_host, res_service);
 
 		    nsocks++;
 		}
@@ -192,7 +190,6 @@ int
 recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
 		  struct symonpacket * packet)
 {
-    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     struct sockaddr_storage sind;
     socklen_t sl;
     int size, tries;
@@ -201,15 +198,14 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
 
     received = 0;
     tries = 0;
-    bzero((void *) hbuf, sizeof(hbuf));
-    bzero((void *) sbuf, sizeof(sbuf));
 
     do {
 	sl = sizeof(sind);
 
-	size = recvfrom(mux->symonsocket[socknr], (void *) packet->data + received,
+	size = recvfrom(mux->symonsocket[socknr],
+			(void *) (packet->data + received),
 			sizeof(struct symonpacket) - received,
-			0, (struct sockaddr *) & sind, &sl);
+			0, (struct sockaddr *) &sind, &sl);
 	if (size > 0)
 	    received += size;
 
@@ -223,12 +219,12 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
 	errno)
 	warning("recvfrom failed: %.200s", strerror(errno));
 
-    *source = find_source_sockaddr(&mux->sol, (struct sockaddr *) & sind);
+    *source = find_source_sockaddr(&mux->sol, (struct sockaddr *) &sind);
+
+    get_numeric_name(&sind);
 
     if (*source == NULL) {
-	getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
-		    sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
-	debug("ignored data from %.200s:%.200s", hbuf, sbuf);
+	debug("ignored data from %.200s:%.200s", res_host, res_service);
 	return 0;
     } else {
 	/* get header stream */
@@ -239,50 +235,35 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
 	setheader(packet->data, &packet->header);
 	crc ^= crc32(packet->data, received);
 	if (crc != 0) {
-	    getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
-			sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
 	    warning("ignored packet with bad crc from %.200s:%.200s",
-		    hbuf, sbuf);
+		    res_host, res_service);
 	    return 0;
 	}
 	/* check packet version */
 	if (packet->header.symon_version != SYMON_PACKET_VER) {
-	    getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
-			sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
 	    warning("ignored packet with wrong version %d from %.200s:%.200s",
-		    packet->header.symon_version, hbuf, sbuf);
+		    packet->header.symon_version, res_host, res_service);
 	    return 0;
 	} else {
 	    if (flag_debug) {
-		getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
-		       sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV);
-		debug("good data received from %.200s:%.200s", hbuf, sbuf);
+		debug("good data received from %.200s:%.200s", res_host, res_service);
 	    }
 	    return 1;		/* good packet received */
 	}
     }
 }
 int
-accept_connection(int sock, char *peername, int peernamesize)
+accept_connection(int sock)
 {
-    char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
     struct sockaddr_storage sind;
     socklen_t len;
     int clientsock;
 
-    bzero((void *) hbuf, sizeof(hbuf));
-    bzero((void *) sbuf, sizeof(sbuf));
-
-    if ((clientsock = accept(sock, (struct sockaddr *) & sind, &len)) < 0)
+    if ((clientsock = accept(sock, (struct sockaddr *) &sind, &len)) < 0)
 	fatal("failed to accept an incoming connection. (%.200s)",
 	      strerror(errno));
 
-
-    if (getnameinfo((struct sockaddr *) & sind, sind.ss_len, hbuf, sizeof(hbuf),
-		    sbuf, sizeof(sbuf), NI_NUMERICHOST | NI_NUMERICSERV))
-	snprintf(peername, peernamesize, "<unknown>");
-    else
-	snprintf(peername, peernamesize, "%.200s:%.200s", hbuf, sbuf);
+    get_numeric_name(&sind);
 
     return clientsock;
 }

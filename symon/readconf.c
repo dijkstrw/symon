@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.16 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.17 2003/12/21 13:01:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -172,7 +172,7 @@ read_monitor(struct muxlist * mul, struct lex * l)
 	} else if (l->type == LXY_NUMBER) {
 	    symon_interval = l->value;
 	    lex_nexttoken(l);
-	    if (l->type != LXT_SECONDS) {
+	    if (l->op != LXT_SECONDS) {
 		parse_error(l, "seconds");
 	    }
 	} else {

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.33 2003/12/20 16:30:44 dijkstra Exp $
+# $Id: Makefile,v 1.34 2003/12/21 13:01:05 dijkstra Exp $
 .include "../Makefile.inc"
 
 LIBS=	-L../lib -lsymon
@@ -15,7 +15,7 @@ symon: ${OBJS}
 .endif
 
 clean:
-	rm -f conf.h symon symon.cat8 ${OBJS}
+	rm -f conf.h symon symon.cat8 symon.core ${OBJS}
 
 install: symon symon.cat8 symon.conf
 	${INSTALL} -c -m 555  -g wheel -o root symon      ${PREFIX}/${BINDIR}

@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.2 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.3 2003/12/21 13:01:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -44,7 +44,7 @@
 
 #ifdef HAS_SENSORS_H
 #include <sys/sensors.h>
-#endif HAS_SENSORS_H
+#endif
 
 #include <errno.h>
 #include <limits.h>

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.18 2003/12/20 16:30:44 dijkstra Exp $
+# $Id: Makefile,v 1.19 2003/12/21 13:01:05 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
@@ -15,7 +15,7 @@ symux: ${OBJS}
 .endif
 
 clean:
-	rm -f conf.h symux symux.cat8 ${OBJS}
+	rm -f conf.h symux symux.cat8 symux.core ${OBJS}
 
 install: symux symux.cat8 c_smrrds.sh symux.conf
 	${INSTALL} -c -m 555 -g bin   -o root symux      ${PREFIX}/${BINDIR}

@@ -1,5 +1,7 @@
 20/10/2003 - 2.63
 
+   - removed large char arrays on the stack that broke name resolution
+
    - symon(8) now chroots and drop priviledges to user "_symon" (Henning
      Brauer)
 
@@ -310,4 +312,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.24 2003/12/20 16:30:44 dijkstra Exp $
+$Id: CHANGELOG,v 1.25 2003/12/21 13:01:05 dijkstra Exp $

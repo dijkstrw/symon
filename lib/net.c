@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.8 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: net.c,v 1.9 2003/12/21 13:01:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -49,6 +49,7 @@
  * aslo filled with sockaddr information that was obtained.
  */
 char res_host[NI_MAXHOST];
+char res_service[NI_MAXSERV];
 struct sockaddr_storage res_addr;
 int
 getip(char *name)
@@ -132,6 +133,17 @@ getaddr(char *name, char *service, int socktype, int flags)
 
     return 1;
 }
+int
+get_numeric_name(struct sockaddr_storage * source)
+{
+    snprintf(res_host, sizeof(res_host), "<unknown>");
+    snprintf(res_service, sizeof(res_service), "<unknown>");
+
+    return getnameinfo((struct sockaddr *)source, source->ss_len,
+		       res_host, sizeof(res_host),
+		       res_service, sizeof(res_service),
+		       NI_NUMERICHOST | NI_NUMERICSERV);
+}
 void
 cpysock(struct sockaddr * source, struct sockaddr_storage * dest)
 {
@@ -201,7 +213,7 @@ get_source_sockaddr(struct source * source)
 	fatal("could not get address information for %.200s",
 	      source->addr);
 
-    cpysock((struct sockaddr *) & res_addr, &source->sockaddr);
+    cpysock((struct sockaddr *) &res_addr, &source->sockaddr);
 }
 /* fill mux->sockaddr with a udp listen sockaddr */
 void
@@ -211,5 +223,5 @@ get_mux_sockaddr(struct mux * mux, int socktype)
 	fatal("could not get address information for %.200s %.200s",
 	      mux->addr, mux->port);
 
-    cpysock((struct sockaddr *) & res_addr, &mux->sockaddr);
+    cpysock((struct sockaddr *) &res_addr, &mux->sockaddr);
 }

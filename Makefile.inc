@@ -1,11 +1,11 @@
-# $Id: Makefile.inc,v 1.19 2003/12/20 16:30:44 dijkstra Exp $
+# $Id: Makefile.inc,v 1.20 2003/12/21 13:01:05 dijkstra Exp $
 
 V=2.63
 
 AR=	ar
 CC=	cc
 .ifdef DEBUG
-CFLAGS+= -g -Wall
+CFLAGS+=-g -Wall
 .else
 CFLAGS+=-Wall
 .endif
