@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.18 2002/08/09 08:21:31 dijkstra Exp $ */
+/* $Id: symon.c,v 1.19 2002/08/11 19:52:16 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -166,9 +166,6 @@ main(int argc, char *argv[])
     setegid(getgid());
     setgid(getgid());
 
-    if (!read_config_file(&mul, MON_CONFIG_FILE))
-	fatal("configuration contained errors; quitting");
-
     if (flag_debug != 1) {
 	if (daemon(0,0) != 0)
 	    fatal("daemonize failed");
@@ -184,6 +181,9 @@ main(int argc, char *argv[])
     } 
 
     info("mon version %s", MON_VERSION);
+
+    if (!read_config_file(&mul, MON_CONFIG_FILE))
+	fatal("configuration contained errors; quitting");
 
     if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
