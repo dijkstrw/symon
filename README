@@ -14,3 +14,5 @@ Programming rules:
 
 - Marshalling is hard. Alignment is carried out by bcopy.
 
+- Interesting observation:
+	Adding data to a stale rrdfile costs a lot of resources!

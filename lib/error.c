@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.6 2002/04/01 14:44:15 dijkstra Exp $ */
+/* $Id: error.c,v 1.7 2002/07/20 14:28:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -83,7 +83,8 @@ output_message(int level, char *fmt, va_list args)
     }
 
     if (logmapping[loglevel].type == -1)
-	fatal("internal error: illegal loglevel encountered");
+	fatal("%s:%d:internal error: illegal loglevel encountered",
+	      __FILE__, __LINE__);
 
     if (flag_daemon) {
 	syslog(logmapping[loglevel].priority, msgbuf);

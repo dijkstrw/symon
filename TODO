@@ -1,9 +1,8 @@
 Project Overview:
 
 == current problems / short term
-- add timestamp:source:rrdstring in monmux
-  add master running routines in monmux
-  walk through the entire sequence
+
+- rewrite stringptr functions in monmux to snprintf ones
 - ensure that functions have names to look alike
 - ensure same coding style troughout the source
 - build a website
@@ -30,6 +29,8 @@ Project Overview:
 - port to linux
 
 == log 
+22/06/2002 - added shared code, upgraded networking code
+
 04/04/2002 - changed mon/monmux.conf format
 	     written manual pages
              look at mon/cpu.c/percentages, give appropriate people credits.

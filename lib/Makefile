@@ -1,11 +1,19 @@
-# $Id: Makefile,v 1.5 2002/04/01 14:43:49 dijkstra Exp $
+# $Id: Makefile,v 1.6 2002/07/20 14:28:29 dijkstra Exp $
+.include "../Makefile.inc"
 
-LIB=	mon
 SRCS=   error.c lex.c xmalloc.c net.c data.c
+OBJS+=	${SRCS:R:S/$/.o/g}
 
-NOPROFILE= yes
-NOPIC=	yes
-DEBUG=-g -Wall
+all: libmon.a
 
-.include <bsd.own.mk>
-.include <bsd.lib.mk>
+libmon.a: ${OBJS}
+	@echo building standard mon library
+	@rm -f libmon.a
+	@${AR} cq libmon.a `${LORDER} ${OBJS} | tsort -q`
+	${RANLIB} libmon.a
+
+clean:
+	rm -f libmon.a ${OBJS}
+
+install:
+

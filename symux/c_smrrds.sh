@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.4 2002/04/01 20:16:04 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.5 2002/07/20 14:28:33 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -57,7 +57,7 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 # --- user configuration ends here
 
 # All interfaces and disks
-INTERFACES="an|awi|bge|bridge|cnw|dc|de|ec|ef|eg|el|ep|ep|ex|faith|fea|fpa|fxp|gif|gre|ie|lc|le|le|lge|lmc|lo|ne|ne|nge|ray|rl|pflog|ppp|sf|sis|sk|skc|sl|sm|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vr|wb|we|wi|wx|xe|xl"
+INTERFACES="an|awi|bge|bridge|cnw|dc|de|ec|ef|eg|el|enc|ep|ex|faith|fea|fpa|fxp|gif|gre|ie|lc|le|le|lge|lmc|lo|ne|ne|nge|ray|rl|pflog|ppp|sf|sis|sk|skc|sl|sm|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vr|wb|we|wi|wx|xe|xl"
 DISKS="sd|st|cd|ch|rd|raid|ss|uk|vnc|wd"
 
 # addsuffix adds a suffix to each entry of a list (item|item|...)

@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.10 2002/06/21 15:53:29 dijkstra Exp $ */
+/* $Id: data.c,v 1.11 2002/07/20 14:28:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -695,7 +695,6 @@ calculate_churnbuffer(struct sourcelist *sol) {
     int len; 
     int n;
     
-    double t;
     /* determine length of a timestamp + ip as strings */
     prefixlen = (sizeof(time_t)*3) + strlen(":") + 15 + strlen(":");
     
