@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.4 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.5 2003/01/26 20:41:00 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -92,18 +92,18 @@ get_pf(char *symon_buf, int maxlen, char *arg)
 
     n = s.states;
     return snpack(symon_buf, maxlen, arg, MT_PF,
-		  s.bcounters[0][PF_IN],
-		  s.bcounters[0][PF_OUT],
-		  s.bcounters[1][PF_IN],
-		  s.bcounters[1][PF_OUT],
-		  s.pcounters[0][PF_IN][PF_PASS],
-		  s.pcounters[0][PF_IN][PF_DROP],
-		  s.pcounters[0][PF_OUT][PF_PASS],
-		  s.pcounters[0][PF_OUT][PF_DROP],
-		  s.pcounters[1][PF_IN][PF_PASS],
-		  s.pcounters[1][PF_IN][PF_DROP],
-		  s.pcounters[1][PF_OUT][PF_PASS],
-		  s.pcounters[1][PF_OUT][PF_DROP],
+		  s.bcounters[0][0],
+		  s.bcounters[0][1],
+		  s.bcounters[1][0],
+		  s.bcounters[1][1],
+		  s.pcounters[0][0][PF_PASS],
+		  s.pcounters[0][0][PF_DROP],
+		  s.pcounters[0][1][PF_PASS],
+		  s.pcounters[0][1][PF_DROP],
+		  s.pcounters[1][0][PF_PASS],
+		  s.pcounters[1][0][PF_DROP],
+		  s.pcounters[1][1][PF_PASS],
+		  s.pcounters[1][1][PF_DROP],
 		  n,
 		  s.fcounters[0],
 		  s.fcounters[1],
