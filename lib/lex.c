@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.11 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: lex.c,v 1.12 2002/09/20 09:38:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -117,12 +117,13 @@ lex_readline(struct lex *l)
     char *bp;
 
     bp = l->buffer;
-    
+
     if (l->buffer) {
 	if ((l->curpos < l->endpos) && 
 	    ((l->bsize - l->endpos) < _POSIX2_LINE_MAX)) {
 	    l->bsize += _POSIX2_LINE_MAX;
 	    l->buffer = xrealloc(l->buffer, l->bsize);
+	    bp = l->buffer;
 	    bp += l->endpos;
 	} else {
 	    l->curpos = 0;
@@ -308,7 +309,7 @@ open_lex(const char *filename)
 	return NULL;
     }
 
-    lex_nextchar(l);
+    lex_readline(l);
     return l;
 }
 /* Destroy a lexical analyser */
