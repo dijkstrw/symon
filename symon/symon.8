@@ -40,23 +40,26 @@
 .Pp
 .Sh DESCRIPTION
 .Nm
-is a lightweight system monitor that measures cpu, memory, debug, process,
-interface and disk statistics every 5 seconds. This information is then spooled
-to
+is a lightweight system monitor that measures cpu, memory, debug,
+process, interface and disk statistics every 5 seconds. This information
+is then spooled to
 .Xr symux 8
 for further processing. 
 .Pp
 .Nm
-has been designed to inflict minimal performance and security impact on the system it monitors. 
+has been designed to inflict minimal performance and security impact on
+the system it monitors.
 .Xr symux 8
-has performance impact proportional to the amount of streams it needs to manage. Ideally 
+has performance impact proportional to the amount of streams it needs to
+manage. Ideally
 .Xr symux 
 should live on a different system and collect data from several 
 .Nm
 instances in a LAN. 
 .Lp
 .Nm
-priviledge needs depend on the probes used. The cpu, mem, disk, debug and interface probes will work even when symon runs as 
+priviledge needs depend on the probes used. The cpu, mem, mbuf, disk,
+debug and interface probes will work even when symon runs as
 .Ar "nobody" . 
 For pf, read and write access to 
 .Pa /dev/pf
@@ -83,16 +86,18 @@ instead of
 .Nm
 obtains configuration data from 
 .Pa /etc/symon.conf .
-The configuration file contains monitor stanzas that define what resources should be monitored and to which 
+The configuration file contains monitor stanzas that define what
+resources should be monitored and to which
 .Xr symux 8
 the information should be streamed to.
 .Pp
-Multiple monitor statements to different muxes are allowed. Whitespace, newlines and text behind '#' are ignored. The format in BNF:
+Multiple monitor statements to different muxes are allowed. Whitespace,
+newlines and text behind '#' are ignored. The format in BNF:
 .Pp
 .nf
 monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | "proc"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | "proc" | "mbuf"
 host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
 argument     = number | interfacename | diskname
@@ -101,8 +106,8 @@ argument     = number | interfacename | diskname
 Here is an example 
 .Ar symon.conf
 that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks
-wd[0-3]/cd[0-1], debug variables debug0 to debug19 and streams that information
-to localhost on port 2100.
+wd[0-3]/cd[0-1], debug variables debug0 to debug19 and streams that
+information to localhost on port 2100.
 .Pp
 .nf
 monitor { cpu(0),  mem, pf, if(xl0), if(de0),
@@ -118,7 +123,8 @@ Causes
 to read 
 .Pa /etc/symon.conf .
 .Nm
-will keep the old configuration if errors occured during parsing of the configuration file.
+will keep the old configuration if errors occured during parsing of the
+configuration file.
 .Sh FILES
 .Bl -tag -width Ds
 .It Pa /var/run/symon.pid

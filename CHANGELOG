@@ -1,4 +1,23 @@
-24/01/2002 - 2.58
+30/03/2003 - 2.61
+
+   - graph_debug and graph_proc were not included in the symon2web package
+     PLIST (David Norman)
+
+23/03/2003 - 2.60
+
+   - sm_io was broken on sparc64
+   - ntohq functions were not detected for big endian machines
+   - c_config.sh broke on nfs mounts and pfsync
+   
+   All: thanks to Henning Brauer
+
+26/02/2003 - 2.59
+
+   - mbuf probe (Daniel Hartmeier; depends on 3.2)
+   - example configuration is now installed in to symon/examples +
+     better conflicts in port's PLIST (Christian Weisgerber)
+
+24/01/2003 - 2.58
 
    Gustavo Chamone helped find a rare bug in symon/sm_io.c. strsep()
    would clobber stream information and make the first stream in the
@@ -7,7 +26,7 @@
    Daniel Hartmeier patched symon/sm_pf.c to deal with changes pf. His
    patch should also work for previous versions of pf.
 
-10/01/2002 - 2.57
+10/01/2003 - 2.57
 
    Christian Weisgerber reported that netinet/ip_ipsp.h already defines
    htonq - fixed. Will Wainwright reported 1) a small bug in
@@ -258,4 +277,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.17 2003/01/26 20:40:46 dijkstra Exp $
+$Id: CHANGELOG,v 1.18 2003/06/20 08:41:00 dijkstra Exp $

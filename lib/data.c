@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.19 2002/12/15 15:00:01 dijkstra Exp $ */
+/* $Id: data.c,v 1.20 2003/06/20 08:41:07 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -100,6 +100,7 @@ struct {
     { MT_PF, "LLLLLLLLLLLLLLLLLLLLLL" },
     { MT_DEBUG, "llllllllllllllllllll" },
     { MT_PROC, "lLLLlcll" },
+    { MT_MBUF, "lllllllllllllll" },
     { MT_EOT, "" }
 };
 
@@ -114,6 +115,7 @@ struct {
     { MT_PF, LXT_PF },
     { MT_DEBUG, LXT_DEBUG },
     { MT_PROC, LXT_PROC },
+    { MT_MBUF, LXT_MBUF },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

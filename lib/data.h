@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.19 2003/01/08 16:04:12 dijkstra Exp $ */
+/* $Id: data.h,v 1.20 2003/06/20 08:41:07 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -51,11 +51,11 @@
 /* Polynominal to use for CRC generation */
 #define SYMON_CRCPOLY  0x04c11db7
 
+#ifndef ntohq
 #if BYTE_ORDER == BIG_ENDIAN
 #define htonq(n) (n)
 #define ntohq(n) (n)
 #else
-#ifndef ntohq
 static inline u_int64_t
        htonq(u_int64_t v)
 {
@@ -66,8 +66,8 @@ static inline u_int64_t
 {
     return (u_int64_t) ntohl(v) << 32 | ntohl(v >> 32);
 }
-#endif /* ntohq */
 #endif /* BYTE_ORDER */
+#endif /* ntohq */
 
 /* Symon packet version
  * version 1:
@@ -148,7 +148,8 @@ SLIST_HEAD(muxlist, mux);
 #define MT_PF     4
 #define MT_DEBUG  5
 #define MT_PROC   6
-#define MT_EOT    7
+#define MT_MBUF   7
+#define MT_EOT    8
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -242,6 +243,23 @@ struct packedstream {
 	    u_int32_t debug18;
 	    u_int32_t debug19;
 	}      ps_debug;
+	struct {
+	    u_int32_t totmbufs;
+	    u_int32_t mt_data;
+	    u_int32_t mt_oobdata;
+	    u_int32_t mt_control;
+	    u_int32_t mt_header;
+	    u_int32_t mt_ftable;
+	    u_int32_t mt_soname;
+	    u_int32_t mt_soopts;
+	    u_int32_t pgused;
+	    u_int32_t pgtotal;
+	    u_int32_t totmem;
+	    u_int32_t totpct;
+	    u_int32_t m_drops;
+	    u_int32_t m_wait;
+	    u_int32_t m_drain;
+	}      ps_mbuf;
     }     data;
 };
 

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.13 2002/12/15 14:23:27 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.14 2003/06/20 08:41:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -105,6 +105,7 @@ read_symon_args(struct mux * mux, struct lex * l)
 	case LXT_IO:
 	case LXT_MEM:
 	case LXT_PF:
+	case LXT_MBUF:
 	case LXT_DEBUG:
 	case LXT_PROC:
 	    st = token2type(l->op);
@@ -136,7 +137,7 @@ read_symon_args(struct mux * mux, struct lex * l)
 		return 0;
 	    }
 
-	    break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG/PROC */
+	    break;		/* LXT_CPU/IF/IO/MEM/PF/MBUF/DEBUG/PROC */
 	case LXT_COMMA:
 	    break;
 	default:

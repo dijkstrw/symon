@@ -1,6 +1,6 @@
-# $Id: Makefile.inc,v 1.15 2003/01/24 13:33:50 dijkstra Exp $
+# $Id: Makefile.inc,v 1.16 2003/06/20 08:41:00 dijkstra Exp $
 
-V=2.58
+V=2.60
 
 AR=	ar
 CC=	cc
@@ -19,6 +19,7 @@ POD2MAN= pod2man
 BINDIR= libexec
 MANDIR=	man
 SHRDIR= share/symon
+EXADIR= share/examples/symon
 WEBDIR= ${SHRDIR}/web
 CLIENTDIR= ${SHRDIR}/client
 

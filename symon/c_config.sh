@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_config.sh,v 1.3 2002/12/14 14:03:48 dijkstra Exp $
+# $Id: c_config.sh,v 1.4 2003/06/20 08:41:19 dijkstra Exp $
 #
 # Create an example configuration file for symon on a host and print to stdout
 
@@ -18,7 +18,7 @@ fi
 interfaces=`netstat -ni | sed '1,1d;s/^\([a-z]*[0-9]\).*$/\1/g' | uniq`
 for i in $interfaces; do
 case $i in
-bridge*|enc*|gif*|gre*|lo*|pflog*|ppp*|sl*|tun*|vlan*)
+bridge*|enc*|gif*|gre*|lo*|pflog*|pfsync*|ppp*|sl*|tun*|vlan*)
 	# ignore this interface
 	;;
 *)
@@ -26,7 +26,7 @@ bridge*|enc*|gif*|gre*|lo*|pflog*|ppp*|sl*|tun*|vlan*)
 	;;
 esac
 done
-io=`mount | grep -v ' type mfs ' | sed '1,1d;s/^\/dev\/\([a-z]*[0-9]\).*$/io(\1), /g' | uniq | tr -d \\\n`
+io=`mount | egrep -v ' type mfs | type nfs ' | sed '1,1d;s/^\/dev\/\([a-z]*[0-9]\).*$/io(\1), /g' | uniq | tr -d \\\n`
 host=${1:-127.0.0.1}
 port=${2:-2100}
 cat <<EOF

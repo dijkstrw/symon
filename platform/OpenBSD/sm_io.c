@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.11 2003/01/24 13:33:52 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.12 2003/06/20 08:41:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -55,7 +55,7 @@ static struct diskstats *io_dkstats = NULL;
 static char **io_dknames = NULL;
 static int io_dks = 0;
 static int io_maxdks = 0;
-static int io_maxstr = 0;
+static size_t io_maxstr = 0;
 
 void 
 gets_io()

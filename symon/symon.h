@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.23 2002/12/15 14:23:27 dijkstra Exp $ */
+/* $Id: symon.h,v 1.24 2003/06/20 08:41:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -42,7 +42,7 @@
 #define SYMON_PID_FILE    "/var/run/symon.pid"
 #define SYMON_INTERVAL 5	/* measurement interval */
 #define SYMON_WARN_SENDERR 50	/* warn every x errors */
-#define SYMON_MAX_DOBJECTS  100	/* max dynamic allocation; local limit per
+#define SYMON_MAX_DOBJECTS  200	/* max dynamic allocation; local limit per
 				 * measurement module */
 #define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)	/* max allocation unit =
 						 * _POSIX2_LINE_MAX */
@@ -76,6 +76,10 @@ extern int get_io(char *, int, char *);
 /* sm_pf.c */
 extern void init_pf(char *);
 extern int get_pf(char *, int, char *);
+
+/* sm_mbuf.c */
+extern void init_mbuf(char *);
+extern int get_mbuf(char *, int, char *);
 
 /* sm_debug.c */
 extern void init_debug(char *);

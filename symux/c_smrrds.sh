@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.18 2003/01/17 16:21:35 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.19 2003/06/20 08:41:23 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,6 +34,7 @@
 #       mem      Make memory file
 #       cpu?     Make cpu file
 #       pf       Make pf file
+#       mbuf     Make mbuf file
 
 # --- user configuration starts here
 INTERVAL=`grep SYMON_INTERVAL ../symon/symon.h 2>/dev/null | cut -f3 -d\ `
@@ -119,7 +120,7 @@ if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|debug$|proc_)"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_)"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -129,11 +130,12 @@ fi
 case $i in
 
 all)
-    echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf}"
+    echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf|mbuf}"
     sh $this child $config cpu0 mem
     sh $this child $config interfaces
     sh $this child $config disks
     sh $this child $config pf
+    sh $this child $config mbuf
     ;;
 
 if|interfaces)
@@ -232,6 +234,21 @@ pf.rrd)
     echo "$i created"
     ;;
 
+mbuf.rrd)
+    # Build mbuf file
+    rrdtool create $i $RRD_ARGS \
+	DS:totmbufs:GAUGE:5:0:U DS:mt_data:GAUGE:5:0:U \
+	DS:mt_oobdata:GAUGE:5:0:U DS:mt_control:GAUGE:5:0:U \
+	DS:mt_header:GAUGE:5:0:U DS:mt_ftable:GAUGE:5:0:U \
+	DS:mt_soname:GAUGE:5:0:U DS:mt_soopts:GAUGE:5:0:U \
+	DS:pgused:GAUGE:5:0:U DS:pgtotal:GAUGE:5:0:U \
+	DS:totmem:GAUGE:5:0:U DS:totpct:GAUGE:5:0:100 \
+	DS:m_drops:COUNTER:5:0:U DS:m_wait:COUNTER:5:0:U \
+	DS:m_drain:COUNTER:5:0:U \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+
 io_*.rrd)
     # Build disk files
     rrdtool create $i $RRD_ARGS \
@@ -247,9 +264,10 @@ io_*.rrd)
     ;;
 *)
     # Default match
+    echo $i - unknown
     cat <<EOF
 Usage: $0 [oneday] all
-       $0 [oneday] cpu0|mem|pf|debug|proc|<if>|<io>
+       $0 [oneday] cpu0|mem|pf|mbuf|debug|proc|<if>|<io>
 
 Where:
 if=	`echo $INTERFACES|

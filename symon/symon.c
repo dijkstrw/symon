@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.28 2002/12/15 14:23:27 dijkstra Exp $ */
+/* $Id: symon.c,v 1.29 2003/06/20 08:41:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -68,6 +68,7 @@ struct funcmap streamfunc[] = {
     {MT_PF, init_pf, NULL, get_pf},
     {MT_DEBUG, init_debug, NULL, get_debug},
     {MT_PROC, init_proc, gets_proc, get_proc},
+    {MT_MBUF, init_mbuf, NULL, get_mbuf},
     {MT_EOT, NULL, NULL}
 };
 
@@ -92,7 +93,7 @@ huphandler(int s)
 /*
  * Symon is a system measurement utility.
  *
- * The main goals symon hopes to accomplish is:
+ * The main goals symon hopes to accomplish are:
  * - to take fine grained measurements of system parameters
  * - with minimal performance impact
  * - in a secure way.
