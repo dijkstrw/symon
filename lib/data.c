@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.12 2002/07/25 09:51:42 dijkstra Exp $ */
+/* $Id: data.c,v 1.13 2002/08/29 05:59:34 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -346,7 +346,7 @@ sunpack(char *buf, struct packedstream *ps)
     while (streamform[type].form[i] != '\0') {
 	switch (streamform[type].form[i]) {
 	case 'c':
-	    c = *((u_int16_t *)in);
+	    bcopy((void *)in, &c, sizeof(u_int16_t));
 	    c = ntohs(c);
 	    bcopy(&c, (void *)out, sizeof(u_int16_t));
 	    in  += sizeof(u_int16_t);
@@ -354,7 +354,7 @@ sunpack(char *buf, struct packedstream *ps)
 	    break;
 
 	case 'l': 
-	    l = *((u_int32_t *)in);
+	    bcopy((void *)in, &l, sizeof(u_int32_t));
 	    l = ntohl(l);
 	    bcopy(&l, (void *)out, sizeof(u_int32_t));
 	    in  += sizeof(u_int32_t);
@@ -362,7 +362,7 @@ sunpack(char *buf, struct packedstream *ps)
 	    break;
 
 	case 'L': 
-	    q = *((u_int64_t *)in);
+	    bcopy((void *)in, &q, sizeof(u_int64_t));
 	    q = ntohq(q);
 	    bcopy(&q, (void *)out, sizeof(u_int64_t));
 	    in  += sizeof(u_int64_t);

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2002/07/20 14:28:29 dijkstra Exp $
+# $Id: Makefile,v 1.7 2002/08/29 05:59:34 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
@@ -15,5 +15,5 @@ libmon.a: ${OBJS}
 clean:
 	rm -f libmon.a ${OBJS}
 
-install:
+install: libmon.a
 
