@@ -1,4 +1,4 @@
-/* $Id: share.h,v 1.3 2002/06/21 15:53:32 dijkstra Exp $ */
+/* $Id: share.h,v 1.4 2002/09/14 15:54:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,12 +35,12 @@
  * Check wether one buffer suffices, do some performance tests
  */
 
-#ifndef _MONMUX_SHARE_H
-#define _MONMUX_SHARE_H
+#ifndef _SYMUX_SHARE_H
+#define _SYMUX_SHARE_H
 
 #include "data.h"
 
-/* Share contains all routines needed for the ipc between monmuxes */
+/* Share contains all routines needed for the ipc between symuxes */
 #define SEM_WAIT     0              /* wait semaphore */
 #define SEM_READ     1              /* have read semaphore */
 #define SEM_TOTAL    2
@@ -64,4 +64,4 @@ void  shared_setlen(long);
 void  spawn_client(int);
 __END_DECLS
 
-#endif /*_MONMUX_SHARE_H*/
+#endif /*_SYMUX_SHARE_H*/

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.11 2002/09/06 12:17:11 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.12 2002/09/14 15:54:55 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -29,14 +29,14 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# mon datafiles "make" file. Valid arguments:
+# symon datafiles "make" file. Valid arguments:
 #       all      Makes all files for active interfaces and disks
 #       mem      Make memory file
 #       cpu?     Make cpu file
 #       pf       Make pf file
 
 # --- user configuration starts here
-INTERVAL=`grep MON_INTERVAL ../mon/mon.h 2>/dev/null | cut -f3 -d\ `
+INTERVAL=`grep SYMON_INTERVAL ../symon/symon.h 2>/dev/null | cut -f3 -d\ `
 INTERVAL=${INTERVAL:-5}
 # RRA setup:
 # - 2   days of  5 second  samples = 34560 x 5 second samples

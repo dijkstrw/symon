@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.5 2002/09/02 06:17:24 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.6 2002/09/14 15:54:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -30,21 +30,21 @@
  *
  */
 
-#ifndef _MONMUX_MUXNET_H
-#define _MONMUX_MUXNET_H
+#ifndef _SYMUX_SYMUXNET_H
+#define _SYMUX_SYMUXNET_H
 
 #include "data.h"
 
 /* prototypes */
 __BEGIN_DECLS
 int  acceptconnection(int);
-int  getmonsocket(struct mux *);
+int  getsymonsocket(struct mux *);
 int  getclientsocket(struct mux *);
 void waitfortraffic(struct mux *, struct sourcelist *, 
-		    struct source **, struct monpacket *);
-int  recvmonpacket(struct mux *, struct sourcelist *, 
-		   struct source **, struct monpacket *);
-int  check_crc_packet(struct monpacket *);
+		    struct source **, struct symonpacket *);
+int  recvsymonpacket(struct mux *, struct sourcelist *, 
+		   struct source **, struct symonpacket *);
+int  check_crc_packet(struct symonpacket *);
 __END_DECLS
-#endif /*_MONMUX_MUXNET_H*/
+#endif /*_SYMUX_SYMUXNET_H*/
 

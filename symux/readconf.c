@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.12 2002/08/29 19:38:56 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.13 2002/09/14 15:54:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -80,7 +80,7 @@ read_mux(struct muxlist *mul, struct lex *l)
     else {
 	if (l->type != LXY_NUMBER) {
 	    lex_ungettoken(l);
-	    m->port = MONMUX_PORT;
+	    m->port = SYMUX_PORT;
 	    return 1;
 	}
     }
@@ -247,7 +247,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 
     return 0;
 }
-/* Read monmux.conf */
+/* Read symux.conf */
 int  
 read_config_file(struct muxlist *mul, 
 		 struct sourcelist *sol, 

@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.9 2002/09/02 06:17:37 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.10 2002/09/14 15:54:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -41,15 +41,15 @@
 
 #include "data.h"
 #include "error.h"
-#include "monmux.h"
-#include "muxnet.h"
+#include "symux.h"
+#include "symuxnet.h"
 #include "net.h"
 #include "xmalloc.h"
 #include "share.h"
 
-/* Obtain a udp socket for incoming mon traffic */
+/* Obtain a udp socket for incoming symon traffic */
 int 
-getmonsocket(struct mux *mux) 
+getsymonsocket(struct mux *mux) 
 {
     struct sockaddr_in sockaddr;
     int sock;
@@ -66,9 +66,9 @@ getmonsocket(struct mux *mux)
 	     sizeof(struct sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
-    mux->monsocket = sock;
+    mux->symonsocket = sock;
 
-    info("listening for incoming mon traffic on udp:%s:%d", 
+    info("listening for incoming symon traffic on udp:%s:%d", 
 	 mux->name, mux->port);
 
     return sock;
@@ -92,7 +92,7 @@ getclientsocket(struct mux *mux)
 	     sizeof(struct sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
-    if (listen(sock, MONMUX_TCPBACKLOG) == -1)
+    if (listen(sock, SYMUX_TCPBACKLOG) == -1)
       fatal("could not listen to socket: %.200s", strerror(errno));
 
     fcntl(sock, O_NONBLOCK);
@@ -104,27 +104,27 @@ getclientsocket(struct mux *mux)
     return sock;
 }
 /*
- * Wait for traffic (mon reports from a source in sourclist | clients trying to connect
+ * Wait for traffic (symon reports from a source in sourclist | clients trying to connect
  * Returns the <source> and <packet>
  * Silently forks off clienthandlers
  */
 void
 waitfortraffic(struct mux *mux, struct sourcelist *sourcelist, 
-	       struct source **source, struct monpacket *packet) 
+	       struct source **source, struct symonpacket *packet) 
 {
     fd_set readset;
     int socksactive;
     int maxsock;
 
-    maxsock = ((mux->clientsocket > mux->monsocket) ?
+    maxsock = ((mux->clientsocket > mux->symonsocket) ?
 	       mux->clientsocket :
-	       mux->monsocket);
+	       mux->symonsocket);
     maxsock++;
 
-    for (;;) { /* FOREVER - until a valid mon packet is received */
+    for (;;) { /* FOREVER - until a valid symon packet is received */
 	FD_ZERO(&readset);
 	FD_SET(mux->clientsocket, &readset);
-	FD_SET(mux->monsocket, &readset);
+	FD_SET(mux->symonsocket, &readset);
 	
 	socksactive = select(maxsock, &readset, NULL, NULL, NULL);
 	
@@ -133,8 +133,8 @@ waitfortraffic(struct mux *mux, struct sourcelist *sourcelist,
 		spawn_client(mux->clientsocket);
 	    }
 
-	    if (FD_ISSET(mux->monsocket, &readset)) {
-		if (recvmonpacket(mux, sourcelist, source, packet))
+	    if (FD_ISSET(mux->symonsocket, &readset)) {
+		if (recvsymonpacket(mux, sourcelist, source, packet))
 		    return;
 	    }
 	} else {
@@ -143,12 +143,12 @@ waitfortraffic(struct mux *mux, struct sourcelist *sourcelist,
 	}
     }
 }
-/* Receive a mon packet for mux. Checks if the source is allowed and returns the source found.
+/* Receive a symon packet for mux. Checks if the source is allowed and returns the source found.
  * return 0 if no valid packet found 
  */
 int
-recvmonpacket(struct mux *mux, struct sourcelist *sourcelist, 
-	      struct source **source, struct monpacket *packet) 
+recvsymonpacket(struct mux *mux, struct sourcelist *sourcelist, 
+	      struct source **source, struct symonpacket *packet) 
 
 {
     struct sockaddr_in sind;
@@ -164,8 +164,8 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     do {
 	sl = sizeof(sind);
 
-	size = recvfrom(mux->monsocket, (void *)packet->data + received, 
-			sizeof(struct monpacket) - received, 
+	size = recvfrom(mux->symonsocket, (void *)packet->data + received, 
+			sizeof(struct symonpacket) - received, 
 			0, (struct sockaddr *)&sind, &sl);
 	if (size > 0)
 	  received += size;
@@ -173,7 +173,7 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
 	tries++;
     } while ((size == -1) && 
 	     (errno == EAGAIN || errno == EINTR) && 
-	     (tries < MONMUX_MAXREADTRIES) &&
+	     (tries < SYMUX_MAXREADTRIES) &&
 	     (received < sizeof(packet->data)));
 
     if ((size == -1) && 
@@ -201,9 +201,9 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
 	    return 0;
 	}
 	/* check packet version */
-	if (packet->header.mon_version != MON_PACKET_VER) {
+	if (packet->header.symon_version != SYMON_PACKET_VER) {
 	    warning("ignored packet with wrong version %d", 
-		    packet->header.mon_version);
+		    packet->header.symon_version);
 	    return 0;
 	} else {
 	    if (flag_debug) 

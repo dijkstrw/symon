@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.8 2002/08/31 16:09:56 dijkstra Exp $ */
+/* $Id: share.c,v 1.9 2002/09/14 15:54:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,7 +35,7 @@
  * Check wether one buffer suffices, do some performance tests
  */
 
-/* Share contains all routines needed for the ipc between monmuxes */
+/* Share contains all routines needed for the ipc between symuxes */
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
@@ -49,12 +49,12 @@
 
 #include "data.h"
 #include "error.h"
-#include "muxnet.h"
+#include "symuxnet.h"
 #include "share.h"
 
 /* Shared operation: 
  *
- * The moment the master monmux receives a new packet:
+ * The moment the master symux receives a new packet:
  *
  * master calls master_forbidread:
  * - master checks the 'SEM_READ' semaphore to be equal to the number of

@@ -1,4 +1,4 @@
-/* $Id: readconf.h,v 1.4 2002/04/01 20:16:04 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.5 2002/09/14 15:54:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,8 +31,8 @@
  * (copyrighting a file like this does seem rather pointless...)
  */
 
-#ifndef _MONMUX_READCONF_H
-#define _MONMUX_READCONF_H
+#ifndef _SYMUX_READCONF_H
+#define _SYMUX_READCONF_H
 
 #include "data.h"
 
@@ -40,6 +40,6 @@ __BEGIN_DECLS
 int read_config_file(struct muxlist *, struct sourcelist *, const char *);
 __END_DECLS
 
-#endif /*_MONMUX_READCONF_H*/
+#endif /*_SYMUX_READCONF_H*/
 
 

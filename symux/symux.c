@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.21 2002/09/02 06:17:37 dijkstra Exp $ */
+/* $Id: symux.c,v 1.22 2002/09/14 15:54:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -47,8 +47,8 @@
 #include "data.h"
 #include "error.h"
 #include "limits.h"
-#include "monmux.h"
-#include "muxnet.h"
+#include "symux.h"
+#include "symuxnet.h"
 #include "net.h"
 #include "readconf.h"
 #include "share.h"
@@ -75,9 +75,9 @@ huphandler(int s) {
     flag_hup = 1;
 }
 /* 
- * Monmux is the receiver of mon performance measurements.
+ * symux is the receiver of symon performance measurements.
  *
- * The main goals mon hopes to accomplish is:
+ * The main goals symon hopes to accomplish is:
  * - to take fine grained measurements of system parameters 
  * - with minimal performance impact 
  * - in a secure way.
@@ -85,15 +85,15 @@ huphandler(int s) {
  * Measuring system parameters (e.g. interfaces) sometimes means traversing
  * lists in kernel memory. Because of this the measurement of data has been
  * decoupled from the processing and storage of data. Storing the measured
- * information that mon provides is done by a second program, called monmux.
+ * information that symon provides is done by a second program, called symux.
  * 
- * Mon can keep track of cpu, memory, disk and network interface
- * interactions. Mon was built specifically for OpenBSD.
+ * Symon can keep track of cpu, memory, disk and network interface
+ * interactions. Symon was built specifically for OpenBSD.
  */
 int 
 main(int argc, char *argv[])
 {
-    struct monpacket packet;
+    struct symonpacket packet;
     struct packedstream ps;
     char *cfgfile;
     char *cfgpath;
@@ -119,7 +119,7 @@ main(int argc, char *argv[])
     flag_debug = 0;
     flag_daemon = 0;
     
-    cfgfile = MONMUX_CONFIG_FILE;
+    cfgfile = SYMUX_CONFIG_FILE;
     while ((ch = getopt(argc, argv, "dvf:")) != -1) {
 	switch (ch) {
 	case 'd':
@@ -146,7 +146,7 @@ main(int argc, char *argv[])
 
 	    break;
 	case 'v':
-	    info("monmux version %s", MONMUX_VERSION);
+	    info("symux version %s", SYMUX_VERSION);
 	default:
 	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
 	    exit(EX_USAGE);
@@ -160,14 +160,14 @@ main(int argc, char *argv[])
 	flag_daemon = 1;
 
 	/* record pid */
-	f = fopen(MONMUX_PID_FILE, "w");
+	f = fopen(SYMUX_PID_FILE, "w");
 	if (f) {
 	    fprintf(f, "%u\n", (u_int) getpid());
 	    fclose(f);
 	}
     } 
     
-    info("monmux version %s", MONMUX_VERSION);
+    info("symux version %s", SYMUX_VERSION);
 
     /* parse configuration file */
     if (!read_config_file(&mul, &sol, cfgfile))
@@ -193,7 +193,7 @@ main(int argc, char *argv[])
     /* Prepare crc32 */
     init_crc32();
 
-    getmonsocket(mux);
+    getsymonsocket(mux);
     getclientsocket(mux);
 
     for (;;) {
@@ -216,7 +216,7 @@ main(int argc, char *argv[])
 		mul = newmul;
 		sol = newsol;
 		mux = SLIST_FIRST(&mul);
-		getmonsocket(mux);
+		getsymonsocket(mux);
 		getclientsocket(mux);
 	    }
 	    break; /* wait for next alarm */
@@ -273,7 +273,7 @@ main(int argc, char *argv[])
 		    arg_ra[1] = "--";
 		    arg_ra[2] = stream->file;
 		    
-		    /* This call will cost a lot (monmux will become
+		    /* This call will cost a lot (symux will become
 		     * unresponsive and eat up massive amounts of cpu) if
 		     * the rrdfile is out of sync. While I could update the
 		     * rrd in a separate process, I choose not to at this
