@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.4 2002/06/21 12:24:21 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.5 2002/06/24 05:48:35 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -108,23 +108,30 @@ waitfortraffic(struct mux *mux, struct sourcelist *sourcelist,
 {
     fd_set readset;
     int socksactive;
+    int maxsock;
+
+    maxsock = ((mux->clientsocket > mux->monsocket)?mux->clientsocket:mux->monsocket);
+    maxsock++;
 
     for (;;) { /* FOREVER - until a valid mon packet is received */
 	FD_ZERO(&readset);
 	FD_SET(mux->clientsocket, &readset);
 	FD_SET(mux->monsocket, &readset);
 	
-	socksactive = select(2, &readset, NULL, NULL, NULL);
+	socksactive = select(maxsock, &readset, NULL, NULL, NULL);
 	
-	if (socksactive) {
+	if (socksactive != -1) {
+	    if (FD_ISSET(mux->clientsocket, &readset)) {
+		spawn_client(mux->clientsocket);
+	    }
+
 	    if (FD_ISSET(mux->monsocket, &readset)) {
 		if (recvmonpacket(mux, sourcelist, source, packet))
 		    return;
 	    }
-	    
-	    if (FD_ISSET(mux->clientsocket, &readset)) {
-		spawn_client(mux->clientsocket);
-	    }
+	} else {
+	    if (errno == EINTR)
+		return;  /* signal received while waiting, bail out */
 	}
     }
 }
@@ -182,7 +189,7 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
 			IPAS4BYTES(lookup_ip));
 	    } else {
 		if (flag_debug) 
-		    debug("good data received from %u.%u.%u.n%u",
+		    debug("good data received from %u.%u.%u.%u",
 			  IPAS4BYTES(sourceaddr));
 		return 1;  /* good packet received */
 	    }
@@ -194,10 +201,11 @@ int
 acceptconnection(int sock)
 {
     struct sockaddr_in sind;
+    socklen_t len;
     u_int32_t clientaddr;
     int clientsock;
 
-    if ((clientsock = accept(sock, &sind, sizeof(sind))) < 0)
+    if ((clientsock = accept(sock, (struct sockaddr *)&sind, &len)) < 0)
 	fatal("Failed to accept an incoming connection. (.200%s)",
 	      strerror(errno));
 

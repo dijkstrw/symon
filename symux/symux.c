@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.13 2002/06/21 15:53:32 dijkstra Exp $ */
+/* $Id: symux.c,v 1.14 2002/06/24 05:48:35 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #include <syslog.h>
 #include <unistd.h>
 #include <rrd.h>
@@ -65,12 +66,12 @@ int maxfd;
 
 void
 exithandler(int s) {
-    info("received signal - quitting");
-    exit(1);
+    info("received signal %d - quitting", s);
+    exit(EX_TEMPFAIL);
 }
 void
 huphandler(int s) {
-    info("hup received");
+    info("hup (%d) received", s);
     flag_hup = 1;
 }
 /* 
@@ -96,7 +97,7 @@ main(int argc, char *argv[])
     struct packedstream ps;
     char *stringbuf;
     char *stringptr;
-/*    char stringbuf[_POSIX2_LINE_MAX]; */
+    int maxstringlen;
     struct muxlist mul, newmul;
     struct sourcelist sol, newsol;
     char *arg_ra[4];
@@ -106,7 +107,7 @@ main(int argc, char *argv[])
     FILE *f;
     int ch;
     int offset;
-    time_t t;
+    time_t timestamp;
     int churnbuflen;
 
     SLIST_INIT(&mul);
@@ -125,7 +126,7 @@ main(int argc, char *argv[])
 	    info("monmux version %s", MONMUX_VERSION);
 	default:
 	    info("usage: %s [-d] [-v]", __progname);
-	    exit(1);
+	    exit(EX_USAGE);
 	}
     }
 
@@ -192,14 +193,23 @@ main(int argc, char *argv[])
 	    }
 	}
 
-	offset = 0;
+	/* Put information from packet into stringbuf (shared region). Note
+	 * that the stringbuf is used twice: 1) to update the rrdfile and 2) to
+	 * collect all the data from a single packet that needs to shared to
+	 * the clients. This is the reason for the hasseling with stringptr.
+	 */
 
+	offset = 0;
+	maxstringlen = shared_getmaxlen();
 	/* put time:ip: into shared region */
 	master_forbidread();
-	t = (time_t) packet.header.timestamp;
+	timestamp = (time_t) packet.header.timestamp;
 	stringbuf = (char *)shared_getmem();
-	sprintf(stringbuf, "%u:%u.%u.%u.%u:", t,
+	snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u:",
 		IPAS4BYTES(source->ip));
+	
+	/* hide this string region from rrd update */
+	maxstringlen -= strlen(stringbuf);
 	stringptr = stringbuf + strlen(stringbuf);
 
 	while (offset < packet.header.length) {
@@ -209,14 +219,22 @@ main(int argc, char *argv[])
 	    stream = find_source_stream(source, ps.type, ps.args);
 
 	    if (stream != NULL) {
-		/* put type and args in for clients */
-		sprintf(stringptr, "%s:", type2str(ps.type));
+		/* put type in and hide from rrd */
+		snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
+		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
-		sprintf(stringptr, "%s:", ((ps.args == NULL)?"0":ps.args));
+		/* put arguments in and hide from rrd */
+		snprintf(stringptr, maxstringlen, "%s:", ((ps.args == NULL) ? "0" : ps.args));
+		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
-		ps2strn(&ps, stringptr,
-			(shared_getmaxlen() - (stringptr - stringbuf)),
-			PS2STR_RRD);
+		/* put timestamp in and show to rrd */
+		snprintf(stringptr, maxstringlen, "%u", timestamp);
+		arg_ra[3] = stringptr;
+		maxstringlen -= strlen(stringptr);
+		stringptr += strlen(stringptr);
+
+		/* put measurements in */
+		ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
 
 		if (stream->file != NULL) {
 		    /* save if file specified */
@@ -224,11 +242,10 @@ main(int argc, char *argv[])
 		    arg_ra[1] = "--";
 		    arg_ra[2] = stream->file;
 		    
-		    arg_ra[3] = stringptr;
 		    rrd_update(4, arg_ra);
 
 		    if (rrd_test_error()) {
-			warning("rrd_update:%s",rrd_get_error());
+			warning("rrd_update:%s", rrd_get_error());
 			warning("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
 			rrd_clear_error();                                                            
 		    } else {
@@ -236,8 +253,10 @@ main(int argc, char *argv[])
 			    debug("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
 		    }
 		}
+		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
-		sprintf(stringptr, ";");
+		snprintf(stringptr, maxstringlen, "\n");
+		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
 	    }
 	}

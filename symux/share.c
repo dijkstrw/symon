@@ -89,6 +89,8 @@ void client_waitread();
 void exitmaster();
 void master_resetsem();
 void reap_clients();
+int  recvfd(int);
+int  sendfd(int, int);
 __END_DECLS
 
 #define SEM_WAIT     0              /* wait semaphore */
@@ -107,6 +109,12 @@ enum ipcstat shmstat;
 key_t semid;
 enum ipcstat semstat;
 int   seqnr;
+
+struct fdcmessage {
+    struct cmsghdr cm;
+    int fd;
+};
+
 /* Get start of data in shared region */
 long *
 shared_getmem()
@@ -280,16 +288,32 @@ void
 spawn_client(int sock) 
 {
     pid_t client_pid;
-
+    int filedes[2];
+    int acceptsock;
     check_master();
 
+    /* - spawn a new client
+     * - let the server accept the new connection
+     * - let the client kill all open filedescriptors
+     * - let the server send the client the socket to the exception
+     */
+/*    if (socketpair(AF_UNIX, SOCK_STREAM, 0, filedes) < 0) 
+      fatal("Could not open pipe: %-200s", strerror(errno));*/
+    clientsock = acceptconnection(sock);
+    
     if ((client_pid = fork())) {
 	/* server */
 	newclients++;
+//	close(filedes[0]);
+//	acceptsock = acceptconnection(sock);
+//	sendfd(filedes[0], acceptsock);
+//	close(filedes[1]);
+	close(clientsock);
     } else {
 	/* client */
 	master = 0;
-	clientsock = acceptconnection(sock);
+//	close(filedes[1]);
+//	clientsock = recvfd(filedes[1]);
 	client_loop();
     }
 }
@@ -357,6 +381,76 @@ exitmaster()
 		__FILE__, __LINE__);
     }
 }
+int
+sendfd(int comfd, int fd)
+{
+    struct msghdr msg;
+    struct fdcmessage fdm;
+    struct cmsghdr *cmp;
+
+    bzero(&msg, sizeof(struct msghdr));
+
+    msg.msg_control = (caddr_t)&fdm;
+    msg.msg_controllen = sizeof(fdm);
+
+    cmp = CMSG_FIRSTHDR(&msg);
+    cmp->cmsg_len = sizeof(fdm);
+    cmp->cmsg_level = SOL_SOCKET;
+    cmp->cmsg_type = SCM_RIGHTS;
+    fdm.fd = fd;
+
+    if (sendmsg(comfd, &msg, 0) < 0) {
+	warning("Could not transfer filedescriptor to the client");
+	return -1;
+    }
+    return 0;
+}
+int 
+recvfd(int comfd)
+{
+    struct msghdr msg;
+    struct fdcmessage fdm;
+    struct cmsghdr *cmp;
+
+    bzero(&msg, sizeof(struct msghdr));
+
+    msg.msg_control = (caddr_t)&fdm;
+    msg.msg_controllen = sizeof(fdm);
+
+    /* TODO: make it nonblocking ? */
+    if (recvmsg(comfd, &msg, 0) < 0) {
+	warning("Could not accept incoming filedescriptor from the server, Error=%-200s", strerror(errno));
+	return -1;
+    }
+
+    if (msg.msg_controllen == 0) {
+	warning("No control message received");
+	return -1;
+    }
+
+    if (msg.msg_flags & MSG_TRUNC) {
+	warning("Lost control message data");
+	return -1;
+    }
+
+    cmp = CMSG_FIRSTHDR(&msg);
+    if (cmp->cmsg_level != SOL_SOCKET) {
+	warning("Bad control message level %d", cmp->cmsg_level);
+	return -1;
+    }
+
+    if (cmp->cmsg_type != SCM_RIGHTS) {
+	warning("Unexpected control message");
+	return -1;
+    }
+
+    if (cmp->cmsg_len != sizeof(fdm)) {
+	warning("Bad control message length");
+	return -1;
+    }
+
+    return fdm.fd;
+}
 void 
 client_loop()
 {
@@ -372,6 +466,7 @@ client_loop()
 
 	while (sent < total) {
 	    sent += write(clientsock, (char *)(shared_getmem() + sent), total - sent);
+	    debug("client written %d bytes of %d total", sent, total);
 	}
 
 	client_doneread();
