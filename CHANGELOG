@@ -1,5 +1,11 @@
-25/09/2004 -
+14/01/2005 - 2.68
 
+   - mbuf interface change for FreeBSD 5.3 (Stefan T. Peters)
+   - Spelling errors in INSTALL/symon.8/symux.8 (Jan Sepp)
+   - platform/*BSD/sm_proc transferred cpucpt as uint16 instead of double
+     (Jamie Herre)
+   - states_entries is a GAUGE, not a ABSOLUTE (Lars Hansson, Marco Pfatschbacher)
+   - NetBSD/plaform.h -> platform.h (Joel Andersson)
    - tsort and lorder are not needed on Linux. (Mark Enzinas)
 
 09/08/2004 - 2.67
@@ -361,4 +367,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.36 2004/09/25 10:21:56 dijkstra Exp $
+$Id: CHANGELOG,v 1.37 2005/01/14 16:14:32 dijkstra Exp $

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.26 2004/02/26 22:48:08 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.27 2005/01/14 16:14:32 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2004 Willem Dijkstra
@@ -262,7 +262,7 @@ pf.rrd)
 	DS:packets_v4_out_pass:DERIVE:$INTERVAL:0:U DS:packets_v4_out_drop:DERIVE:$INTERVAL:0:U \
 	DS:packets_v6_in_pass:DERIVE:$INTERVAL:0:U DS:packets_v6_in_drop:DERIVE:$INTERVAL:0:U \
 	DS:packets_v6_out_pass:DERIVE:$INTERVAL:0:U DS:packets_v6_out_drop:DERIVE:$INTERVAL:0:U \
-	DS:states_entries:ABSOLUTE:$INTERVAL:0:U \
+	DS:states_entries:GAUGE:$INTERVAL:0:U \
 	DS:states_searches:DERIVE:$INTERVAL:0:U \
 	DS:states_inserts:DERIVE:$INTERVAL:0:U \
 	DS:states_removals:DERIVE:$INTERVAL:0:U \

@@ -1,12 +1,12 @@
 Installation notes
 ==================
 
-Priviledges
-===========
+Privileges
+==========
 symux needs read and write access to its rrdfiles.
 
 symon needs to interface with your kernel. Depending on your host system this
-leads to different priviledge requirements:
+leads to different privilege requirements:
 
 OpenBSD:  - sysctl: cpu, debug, if, io, mbuf, mem, proc, sensor
           - rw on /dev/pf for pf
@@ -99,5 +99,5 @@ rudimentary support for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.14 2004/08/08 19:56:03 dijkstra Exp $
+$Id: INSTALL,v 1.15 2005/01/14 16:14:32 dijkstra Exp $
 
