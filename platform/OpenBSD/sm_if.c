@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.11 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.12 2004/08/07 14:48:35 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -74,6 +74,10 @@ init_if(char *s)
     info("started module if(%.200s)", s);
 }
 /* Get interface statistics */
+void
+gets_if()
+{
+}
 int
 get_if(char *symon_buf, int maxlen, char *interface)
 {

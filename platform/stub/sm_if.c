@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.2 2004/08/07 14:48:35 dijkstra Exp $ */
 
 #include <stdlib.h>
 
@@ -6,6 +6,12 @@
 
 void
 init_if(char *s)
+{
+    fatal("if module not available");
+}
+
+void
+gets_if()
 {
     fatal("if module not available");
 }

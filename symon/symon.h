@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.29 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: symon.h,v 1.30 2004/08/07 14:49:00 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -76,6 +76,7 @@ extern int get_mem(char *, int, char *);
 
 /* sm_if.c */
 extern void init_if(char *);
+extern void gets_if();
 extern int get_if(char *, int, char *);
 
 /* sm_io.c */

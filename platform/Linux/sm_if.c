@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.2 2004/08/07 14:48:35 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -39,76 +39,122 @@
  */
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/sockio.h>
-
-#include <net/if.h>
-#include <net/if_dl.h>
-#include <net/if_types.h>
-#include <netinet/in.h>
-#include <netinet/in_var.h>
-#include <netns/ns.h>
-#include <netns/ns_if.h>
-#include <netipx/ipx.h>
-#include <netipx/ipx_if.h>
+#include <sys/stat.h>
 
 #include <errno.h>
-#include <limits.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "conf.h"
+#include "xmalloc.h"
 #include "error.h"
 #include "symon.h"
 
+/* Globals for this module start with if_ */
+static void *if_buf = NULL;
+static int if_size = 0;
+static int if_maxsize = 0;
+struct if_device_stats
+{
+	unsigned long   rx_packets;             /* total packets received       */
+	unsigned long   tx_packets;             /* total packets transmitted    */
+	unsigned long   rx_bytes;               /* total bytes received         */
+	unsigned long   tx_bytes;               /* total bytes transmitted      */
+	unsigned long   rx_errors;              /* bad packets received         */
+	unsigned long   tx_errors;              /* packet transmit problems     */
+	unsigned long   rx_dropped;             /* no space in linux buffers    */
+	unsigned long   tx_dropped;             /* no space available in linux  */
+	unsigned long   multicast;              /* multicast packets received   */
+	unsigned long   collisions;
+	unsigned long   rx_frame_errors;        /* recv'd frame alignment error */
+	unsigned long   rx_fifo_errors;         /* recv'r fifo overrun          */
+	unsigned long   tx_carrier_errors;
+	unsigned long   tx_fifo_errors;
+	unsigned long   rx_compressed;
+	unsigned long   tx_compressed;
+};
 /* Prepare if module for first use */
 void
 init_if(char *s)
 {
+    if (if_buf == NULL) {
+	if_maxsize = SYMON_MAX_OBJSIZE;
+	if_buf = xmalloc(if_maxsize);
+    }
+
     info("started module if(%.200s)", s);
 }
 void
 gets_if()
 {
-    char buf[SYMON_MAX_OBJSIZE];
-    char *bptr;
-    int readsize;
-    int if_s;
+    int fd;
 
-    if ((if_s = open("/proc/net/dev", O_RDONLY)) < 0) {
+    if ((fd = open("/proc/net/dev", O_RDONLY)) < 0) {
 	warning("cannot access /proc/net/dev: %.200s", strerror(errno));
 	return;
     }
 
-    bzero(&buf, sizeof(buf));
+    bzero(if_buf, if_maxsize);
+    if_size = read(fd, if_buf, if_maxsize);
+    close(fd);
 
-    read(if_s, &buf, 
+    if (if_size == if_maxsize) {
+	/* buffer is too small to hold all interface data */
+	if_maxsize += SYMON_MAX_OBJSIZE;
+	if (if_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+	    fatal("%s:%d: dynamic object limit (%d) exceeded for if data",
+		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+	}
+	if_buf = xrealloc(if_buf, if_maxsize);
+	gets_if();
+	return;
+    }
 
-    if (
+    if (if_size == -1) {
+	warning("could not read if statistics from /proc/net/dev: %.200s", strerror(errno));
+    }
+}
 /* Get interface statistics */
 int
 get_if(char *symon_buf, int maxlen, char *interface)
 {
-    struct ifreq ifr;
-    struct if_data ifdata;
+    char *line;
+    struct if_device_stats stats;
 
-    strncpy(ifr.ifr_name, interface, IFNAMSIZ - 1);
-    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_data = (caddr_t) & ifdata;
+    if (if_size <= 0) {
+	return 0;
+    }
 
-    if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
-	warning("if(%.200s) failed (ioctl error)", interface);
+    if ((line = strstr(if_buf, interface)) == NULL) {
+	warning("could not find interface %s", interface);
+	return 0;
+    }
+
+    line += strlen(interface);
+    bzero(&stats, sizeof(struct if_device_stats));
+
+    /* Inter-|   Receive                                                |  Transmit
+     *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
+     */
+    if (16 > sscanf(line, ":%8lu %7lu %4lu %4lu %4lu %5lu %10lu %9lu %8lu %7lu %4lu %4lu %4lu %5lu %7lu %10lu\n",
+		    &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
+		    &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
+		    &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,
+		    &stats.collisions, &stats.tx_carrier_errors, &stats.tx_compressed)) {
+	warning("could not parse interface statistics for %.200s", interface);
 	return 0;
     }
 
     return snpack(symon_buf, maxlen, interface, MT_IF,
-		  ifdata.ifi_ipackets,
-		  ifdata.ifi_opackets,
-		  ifdata.ifi_ibytes,
-		  ifdata.ifi_obytes,
-		  ifdata.ifi_imcasts,
-		  ifdata.ifi_omcasts,
-		  ifdata.ifi_ierrors,
-		  ifdata.ifi_oerrors,
-		  ifdata.ifi_collisions,
-		  ifdata.ifi_iqdrops);
+		  stats.rx_packets,
+		  stats.tx_packets,
+		  stats.rx_bytes,
+		  stats.tx_bytes,
+		  stats.multicast,
+		  0,
+		  (stats.rx_errors + stats.rx_fifo_errors + stats.rx_frame_errors),
+		  (stats.tx_errors + stats.tx_fifo_errors + stats.tx_carrier_errors),
+		  stats.collisions,
+		  (stats.rx_dropped + stats.tx_dropped));
 }
