@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.7 2002/07/25 09:51:44 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.8 2002/08/11 20:00:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -68,6 +68,9 @@ getmonsocket(struct mux *mux)
 
     mux->monsocket = sock;
 
+    info("listening for incoming mon traffic on udp:%s:%d", 
+	 mux->name, mux->port);
+
     return sock;
 }
 /* Obtain a listen socket for new clients */
@@ -94,6 +97,9 @@ getclientsocket(struct mux *mux)
 
     fcntl(sock, O_NONBLOCK);
     mux->clientsocket = sock;
+
+    info("listening for incoming connections on tcp:%s:%d", 
+	 mux->name, mux->port);
 
     return sock;
 }
