@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.10 2002/05/09 12:39:53 dijkstra Exp $ */
+/* $Id: symux.c,v 1.11 2002/05/31 14:24:38 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -156,6 +156,8 @@ main(int argc, char *argv[])
 	info("program id=%d", (u_int) getpid());
 
     mux = SLIST_FIRST(&mul);
+
+    calculate_churnbuffer(mux, &sol);
 
     /* catch signals */
     signal(SIGHUP, huphandler);
