@@ -1,4 +1,4 @@
-/* $Id: error.h,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: error.h,v 1.5 2002/04/01 14:44:16 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -36,11 +36,14 @@
 #include <sys/cdefs.h>
 
 extern char *__progname;
+extern int flag_debug;
+extern int flag_daemon;
 
 __BEGIN_DECLS
 __dead void fatal(char *, ...);
 void        warning(char *, ...);
-void        inform(char *, ...);
+void        info(char *, ...);
+void        debug(char *, ...);
 __END_DECLS
 
 #endif /*_MON_LIB_ERROR_H*/

@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: error.c,v 1.6 2002/04/01 14:44:15 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -31,45 +31,108 @@
  */
 #include <sys/cdefs.h>
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <syslog.h>
 
 #include "error.h"
 
+__BEGIN_DECLS
+void output_message(int, char *, va_list); 
+__END_DECLS
+
+int flag_daemon = 0;
+int flag_debug = 0;
+
+enum { MON_LOG_FATAL, 
+       MON_LOG_WARNING,
+       MON_LOG_INFO,
+       MON_LOG_DEBUG } loglevels;
+
+struct {
+    int type;
+    int priority;
+    char *errtxt;
+    FILE *stream;
+} logmapping[] = {
+    {MON_LOG_FATAL,   LOG_ERR,     "fatal",   stderr},
+    {MON_LOG_WARNING, LOG_WARNING, "warning", stderr},
+    {MON_LOG_INFO,    LOG_INFO,    "",        stdout},
+    {MON_LOG_DEBUG,   LOG_DEBUG,   "debug",   stdout},
+    {-1,              0,           "",        NULL}
+};
+/* 
+ * Internal helper that actually outputs every 
+ * (fatal|warning|info|debug) message 
+ */
+void
+output_message(int level, char *fmt, va_list args) 
+{
+    char msgbuf[_POSIX2_LINE_MAX];
+    int loglevel;
+
+    if (level == MON_LOG_DEBUG && flag_debug == 0)
+	return;
+
+    vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
+    
+    for (loglevel = 0; logmapping[loglevel].type != -1; loglevel++) {
+	if (logmapping[loglevel].type == level)
+	    break;
+    }
+
+    if (logmapping[loglevel].type == -1)
+	fatal("internal error: illegal loglevel encountered");
+
+    if (flag_daemon) {
+	syslog(logmapping[loglevel].priority, msgbuf);
+    } else {
+	if (strlen(logmapping[loglevel].errtxt) > 0) {
+	    fprintf(logmapping[loglevel].stream, "%s: %s\n", 
+		    logmapping[loglevel].errtxt, msgbuf);
+	} else 
+	    fprintf(logmapping[loglevel].stream, "%s\n", msgbuf);
+
+	fflush(logmapping[loglevel].stream);
+    }
+}
 /* Output error and exit */
 __dead void 
-fatal(char *str, ...)
+fatal(char *fmt, ...)
 {
     va_list ap;
-    
-/*    fprintf(stderr, "%s:", __progname); */
-    va_start(ap, str);
-    vfprintf(stderr, str, ap);
+    va_start(ap, fmt);
+    output_message(MON_LOG_FATAL, fmt, ap);
     va_end(ap);
         
     exit( 1 );
 }
 /* Warn and continue */
 void 
-warning(char *str, ...)
+warning(char *fmt, ...)
 {
     va_list ap;
-    
-/*    fprintf(stderr, "%s:", __progname); */
-    va_start(ap, str);
-    vfprintf(stderr, str, ap);
+    va_start(ap, fmt);
+    output_message(MON_LOG_WARNING, fmt, ap);
     va_end(ap);
 }
 /* Inform and continue */
 void 
-inform(char *str, ...)
+info(char *fmt, ...)
 {
     va_list ap;
-    
-/*    fprintf(stdout, "%s:", __progname); */
-    va_start(ap, str);
-    vfprintf(stdout, str, ap);
+    va_start(ap, fmt);
+    output_message(MON_LOG_INFO, fmt, ap);
     va_end(ap);
 }
-
+/* Debug statements only */
+void
+debug(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    output_message(MON_LOG_DEBUG, fmt, ap);
+    va_end(ap);
+}
 
