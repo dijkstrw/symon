@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.14 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: symon.c,v 1.15 2002/04/04 17:46:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -124,22 +124,12 @@ main(int argc, char *argv[])
     struct mux *mux;
     char mon_buf[_POSIX2_LINE_MAX];
     FILE *f;
-    char *p;
 #ifdef MON_KVM
     char *nlistf = NULL, *memf = NULL;
 #endif
-    char *version;
     int ch;
 
     SLIST_INIT(&mul);
-
-    /* prepare version number */
-    version = xstrdup("$Revision: 1.14 $");
-    version = strchr(version, ' ') + 1;
-    p = strchr(version, '$');
-    *--p = '\0';
-
-    info("mon version %s", version);
 
     /* reset flags */
     flag_debug = 0;
@@ -151,7 +141,7 @@ main(int argc, char *argv[])
 	    flag_debug = 1;
 	    break;
 	case 'v':
-	    info("mon version %s", version);
+	    info("mon version %s", MON_VERSION);
 	default:
 	    info("usage: %s [-d] [-v]", __progname);
 	    exit(1);
@@ -189,9 +179,12 @@ main(int argc, char *argv[])
 	    fprintf(f, "%u\n", (u_int) getpid());
 	    fclose(f);
 	}
-    } else {
+    } 
+
+    info("mon version %s", MON_VERSION);
+
+    if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
-    }
 
     /* Setup signal handlers */
     signal(SIGALRM, alarmhandler);

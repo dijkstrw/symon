@@ -10,8 +10,12 @@ Project Overview:
 - weird: rrd_update fails for monmux when not in daemon mode?
 - look at lib/net.c/lookup, give joe credits for his work.
 - look at mon/cpu.c/percentages, give appropriate people credits.
-- SIGHUP should be reload configuration
 - write manual pages
+- change configuration:
+  mon: stream monitor data cpu(0), mem to dikkeaap:port
+  monmux: accept data from dikkeaap cpu(0) 
+	    store in "file"
+
 
 == longer term
 - write a muxer that supports unix pipes
@@ -22,7 +26,8 @@ Project Overview:
 == log 
 01/04/2002 - changed all memsets into bzero
              all output messages have the same format now
-             write pids in /var/run
+             write pids in /var/run 
+             SIGHUP = reload configuration
 
 31/03/2002 - cleaned up source
 

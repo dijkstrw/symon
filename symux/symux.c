@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.8 2002/04/01 20:16:04 dijkstra Exp $ */
+/* $Id: symux.c,v 1.9 2002/04/04 17:47:00 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -108,8 +108,6 @@ main(int argc, char *argv[])
     struct source *source;
     struct mux *mux;
     FILE *f;
-    char *p;
-    char *version;
     int ch;
     int offset;
     time_t t;
@@ -117,14 +115,6 @@ main(int argc, char *argv[])
     SLIST_INIT(&mul);
     SLIST_INIT(&sol);
 	
-    /* prepare version number */
-    version = xstrdup("$Revision: 1.8 $");
-    version = strchr(version, ' ') + 1;
-    p = strchr(version, '$');
-    *--p = '\0';
-
-    info("monmux version %s", version);
-
     /* reset flags */
     flag_debug = 0;
     flag_daemon = 0;
@@ -135,7 +125,7 @@ main(int argc, char *argv[])
 	    flag_debug = 1;
 	    break;
 	case 'v':
-	    info("monmux version %s", version);
+	    info("monmux version %s", MONMUX_VERSION);
 	default:
 	    info("usage: %s [-d] [-v]", __progname);
 	    exit(1);
@@ -158,9 +148,12 @@ main(int argc, char *argv[])
 	    fprintf(f, "%u\n", (u_int) getpid());
 	    fclose(f);
 	}
-    } else {
+    } 
+    
+    info("monmux version %s", MONMUX_VERSION);
+
+    if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
-    }
 
     mux = SLIST_FIRST(&mul);
 

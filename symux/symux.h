@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.6 2002/04/01 20:16:04 dijkstra Exp $ */
+/* $Id: symux.h,v 1.7 2002/04/04 17:47:00 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,4 +35,6 @@
 
 #define MONMUX_CONFIG_FILE "/etc/monmux.conf"
 #define MONMUX_PID_FILE "/var/run/monmux.conf"
+#define MONMUX_VERSION "1.0"
+
 #endif /*_MONMUX_MONMUX_H*/

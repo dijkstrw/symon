@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.12 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: symon.h,v 1.13 2002/04/04 17:46:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -43,7 +43,7 @@
 
 #define MON_CONFIG_FILE "/etc/mon.conf"
 #define MON_PID_FILE    "/var/run/mon.pid"
-
+#define MON_VERSION "2.0"
 /* Number of seconds between measurement intervals */
 #define MON_INTERVAL 5
 
