@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.12 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: net.c,v 1.13 2005/02/16 20:24:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -67,7 +67,7 @@ getip(char *name, int family)
     if (getaddrinfo(name, NULL, &hints, &res) != 0) {
 	hints.ai_flags = 0;
 	if ((error = getaddrinfo(name, NULL, &hints, &res)) < 0) {
-	    warning("getaddrinfo(%.200s): %.200s", name, gai_strerror(error));
+	    debug("getaddrinfo(%.200s, %d): %.200s", name, family, gai_strerror(error));
 	    return 0;
 	}
     }
@@ -81,7 +81,7 @@ getip(char *name, int family)
 	freeaddrinfo(res);
 	return 1;
     } else {
-	if (res->ai_addr) {
+	if (res && res->ai_addr) {
 	    if ((error = getnameinfo(res->ai_addr, res->ai_addrlen,
 				     res_host, NI_MAXHOST,
 				     NULL, 0, NI_NUMERICHOST)) == 0) {
@@ -91,10 +91,12 @@ getip(char *name, int family)
 
 		freeaddrinfo(res);
 		return 1;
-	    } else
-		warning("getnameinfo(%.200s): %.200s", name, gai_strerror(error));
-	} else
-	    warning("getip(%.200s): could not get numeric host via getaddrinfo nor getnameinfo", name);
+	    } else {
+		debug("getnameinfo(%.200s, %d): %.200s", name, family, gai_strerror(error));
+	    }
+	} else {
+	    debug("getip(%.200s, family): could not get numeric host via getaddrinfo nor getnameinfo", name, family);
+	}
     }
 
     return 0;
@@ -207,14 +209,15 @@ get_inaddrany_sockaddr(struct sockaddr_storage * sockaddr, int family, int sockt
     }
 }
 /* fill a source->sockaddr with a sockaddr for use in address compares */
-void
+int
 get_source_sockaddr(struct source * source, int family)
 {
-    if (!getip(source->addr, family))
-	fatal("could not get address information for %.200s",
-	      source->addr);
+    if (getip(source->addr, family)) {
+	cpysock((struct sockaddr *) &res_addr, &source->sockaddr);
+	return 1;
+    }
 
-    cpysock((struct sockaddr *) &res_addr, &source->sockaddr);
+    return 0;
 }
 /* fill mux->sockaddr with a udp listen sockaddr */
 void

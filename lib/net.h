@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.13 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: net.h,v 1.14 2005/02/16 20:24:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -52,7 +52,7 @@ int lookup(char *);
 void cpysock(struct sockaddr *, struct sockaddr_storage *);
 void get_inaddrany_sockaddr(struct sockaddr_storage *, int, int, char *);
 void get_mux_sockaddr(struct mux *, int);
-void get_source_sockaddr(struct source *, int);
+int get_source_sockaddr(struct source *, int);
 __END_DECLS
 
 #endif				/* _SYMON_LIB_NET_H */

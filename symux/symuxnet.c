@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.18 2004/08/07 14:49:32 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.19 2005/02/16 20:24:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -66,7 +66,11 @@ get_symon_sockets(struct mux * mux)
 
     /* iterate over our sources to determine what types of sockets we need */
     SLIST_FOREACH(source, &mux->sol, sources) {
-	get_source_sockaddr(source, AF_INET);
+	if (!get_source_sockaddr(source, AF_INET)) {
+	    if (!get_source_sockaddr(source, AF_INET6)) {
+		warning("cannot determine socket family for source %.200s", source->addr);
+	    }
+	}
 
 	family = source->sockaddr.ss_family;
 	/* do we have a socket for this type of family */
@@ -128,7 +132,7 @@ get_client_socket(struct mux * mux)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
-        fatal ("could set socket options: %.200s", strerror (errno));
+	fatal ("could set socket options: %.200s", strerror (errno));
     }
 
     bzero((void *) &hints, sizeof(struct addrinfo));
