@@ -1,4 +1,4 @@
-/* $Id: plaform.h,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: platform.h,v 1.1 2004/11/21 10:26:55 dijkstra Exp $ */
 
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
