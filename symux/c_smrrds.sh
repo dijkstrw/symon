@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: c_smrrds.sh,v 1.1 2001/08/20 14:40:12 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
 #
 # mon datafiles "make" file. Valid arguments:
 #       all      Makes all known files
@@ -40,15 +40,15 @@ do
 case $i in
 
 all)
-    sh $this cpu mem
+    sh $this cpu0 mem
     sh $this wd0 wd1 wd2 ccd0 ccd1 cd0 cd1
-    sh $this xl0 de0 wi0
+    sh $this xl0 de0 wi0 lo0
     ;;
 
-cpu)
+cpu[0-9])
     # Build cpu file
-    if [ ! -f cpu.rrd ]; then
-	rrdtool create cpu.rrd --step=$INTERVAL \
+    if [ ! -f $i.rrd ]; then
+	rrdtool create $i.rrd --step=$INTERVAL \
 	    DS:user:GAUGE:5:0:100 \
 	    DS:nice:GAUGE:5:0:100 \
 	    DS:system:GAUGE:5:0:100 \
@@ -56,7 +56,7 @@ cpu)
 	    DS:idle:GAUGE:5:0:100 \
 	    $RRA_SETUP
     else
-	echo "cpu.rrd already exists; nop."
+	echo "$i.rrd already exists; nop."
     fi
     ;;
 
@@ -75,7 +75,7 @@ mem)
     fi
     ;;
 
-xl[0-9]|de[0-9]|wi[0-9])
+xl[0-9]|de[0-9]|wi[0-9]|lo[0-9])
     # Build interface files
     if [ ! -f if_$i.rrd ]; then
         rrdtool create if_$i.rrd --step=$INTERVAL \
@@ -92,14 +92,14 @@ xl[0-9]|de[0-9]|wi[0-9])
 
 wd[0-9]|sd[0-9]|cd[0-9]|ccd[0-9]|vnd[0-9]|raid[0-9]|rd[0-9])
     # Build disk files
-    if [ ! -f if_$i.rrd ]; then
-        rrdtool create disk_$i.rrd --step=$INTERVAL \
+    if [ ! -f io_$i.rrd ]; then
+        rrdtool create io_$i.rrd --step=$INTERVAL \
         DS:transfers:COUNTER:5:U:U \
 	DS:seeks:COUNTER:5:U:U \
 	DS:bytes:COUNTER:5:U:U \
         $RRA_SETUP
     else
-	echo "if_$i.rrd already exists; nop."
+	echo "io_$i.rrd already exists; nop."
     fi
 esac
 done

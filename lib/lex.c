@@ -1,5 +1,5 @@
 /*
- * $Id: lex.c,v 1.1 2001/08/20 14:40:12 dijkstra Exp $
+ * $Id: lex.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
  *
  * Simple lexical analyser:
  *
@@ -11,9 +11,10 @@
  * close_lex(l);
  *
  * Attributes:
+ * - push back one token
  * - keywords are in lex.h
  * - strings are delimited by " or '
- * - \ is not parsed
+ * - '\n' like statements are not parsed
  * - comments start with # and last until eol
  * - max token size = _POSIX2_LINE_LENGTH
  */
@@ -27,10 +28,32 @@
 #include "xmalloc.h"
 #include "lex.h"
 #include "error.h"
+
+static struct {
+    const char *name;
+    OpCodes opcode;
+} keywords[] = {
+    { "source", oSource },
+    { "accept", oAccept },
+    { "write", oWrite },
+    { "in", oIn },
+    { "cpu", oCpu },
+    { "mem", oMem },
+    { "if", oIf },
+    { "io", oIo },
+    { "{", oBegin },
+    { "}", oEnd },
+    { ",", oComma },
+    { "(", oOpen },
+    { ")", oClose },
+    { NULL, 0 }
+};
+#define KW_OPS "{},()"
+
 /*
  * Returns the number of the token pointed to by cp or oBadToken
  */
-static OpCodes parse_token(cp)
+OpCodes parse_token(cp)
     const char *cp;
 {
     u_int i;
@@ -40,6 +63,20 @@ static OpCodes parse_token(cp)
 	    return keywords[i].opcode;
         
     return oBadToken;
+}
+/*
+ * Returns the ascii representation of an opcode
+ */
+const char* parse_opcode(op)
+    const OpCodes op;
+{
+    u_int i;
+    
+    for (i=0; keywords[i].name; i++)
+	if (keywords[i].opcode == op)
+	    return keywords[i].name;
+
+    return keywords[i].name; /* NULL */
 }
 /*
  * Read a line from the configuration file and allocate extra room if
@@ -112,6 +149,11 @@ void lex_termtoken(l)
     l->token[l->tokpos] = l->token[_POSIX2_LINE_MAX-1] = '\0';
     l->tokpos=0;
 }
+void lex_ungettoken(l) 
+    struct lex *l;
+{
+    l->unget = 1;
+}
 /*
  * Get the next token in lex->token. return 0 if no more tokens found.
  */
@@ -120,6 +162,12 @@ int lex_nexttoken(l)
 {
     char *e;
 
+    /* return same token as last time if it has been pushed back */
+    if (l->unget) {
+	l->unget = 0;
+	return 1;
+    }
+	
     l->op = oBadToken;
 
     /* find first non whitespace */
@@ -228,7 +276,7 @@ int lex_nexttoken(l)
  * Create and initialize a lexical analyser
  */
 struct lex *open_lex(filename)
-    char *filename;
+    const char *filename;
 {
     struct lex *l;
     
@@ -237,6 +285,7 @@ struct lex *open_lex(filename)
     l->buffer = NULL;
     l->curpos = 0;
     l->endpos = 0;
+    l->unget = 0;
     l->cline = 1;
     l->type = tNumber;
     l->value = 0;

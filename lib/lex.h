@@ -1,12 +1,14 @@
 /*
- * $Id: lex.h,v 1.1 2001/08/20 14:40:12 dijkstra Exp $
+ * $Id: lex.h,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
  *
  * Simple lexical analyser.
  * Configuration of keywords and operators should be done here.
  */
 
-#ifndef LEX_H
-#define LEX_H
+#ifndef _LEX_H
+#define _LEX_H
+
+#include <stdio.h>
 
 /* Tokens known to lex */
 typedef enum {
@@ -16,26 +18,6 @@ typedef enum {
     oCpu, oMem, oIf, oIo,
     oBegin, oEnd, oComma, oOpen, oClose
 } OpCodes;
-static struct {
-    const char *name;
-    OpCodes opcode;
-} keywords[] = {
-    { "source", oSource },
-    { "accept", oAccept },
-    { "write", oWrite },
-    { "in", oIn },
-    { "cpu", oCpu },
-    { "mem", oMem },
-    { "if", oIf },
-    { "io", oIo },
-    { "{", oBegin },
-    { "}", oEnd },
-    { ",", oComma },
-    { "(", oOpen },
-    { ")", oClose },
-    { NULL, 0 }
-};
-#define KW_OPS "{},()"
 
 /* Lex structure */
 struct lex {
@@ -46,7 +28,8 @@ struct lex {
     int curpos;            /* current position in buffer */
     int cline;             /* current lineno */
     int endpos;            /* current maxpos in buffer */
-    char *filename;
+    int unget;             /* bool; token pushed back */
+    const char *filename;
     /* current token */
     int tokpos;            /* current position in token buffer */
     char *token;           /* last token seen */
@@ -56,8 +39,10 @@ struct lex {
 };
 
 /* prototypes */
-struct lex *open_lex(char *);
+struct lex *open_lex(const char *);
 void close_lex(struct lex *);
 int lex_nexttoken(struct lex *);
-
-#endif                                       /* LEX_H */
+void lex_ungettoken(struct lex *);
+const char* parse_opcode(const OpCodes);
+OpCodes parse_token(const char *);
+#endif                                       /* _LEX_H */

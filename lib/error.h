@@ -1,10 +1,11 @@
 /*
- * $Id: error.h,v 1.1 2001/08/20 14:40:12 dijkstra Exp $
+ * $Id: error.h,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
  */
-#ifndef ERROR_H
-#define ERROR_H
+#ifndef _ERROR_H
+#define _ERROR_H
 extern char *__progname;
 
 void fatal(char *, ...);
 void warning(char *, ...);
-#endif /* ERROR_H */
+
+#endif /* _ERROR_H */

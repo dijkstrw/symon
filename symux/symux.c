@@ -1,5 +1,5 @@
 /*
- * $Id: symux.c,v 1.1 2001/08/20 14:40:12 dijkstra Exp $
+ * $Id: symux.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
  *
  * Daemon that multiplexes incoming mon traffic to subscribed clients
  * and archives it periodically in rrd files.
@@ -14,7 +14,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "monmux.h"
 #include "readconf.h"
+#include "limits.h"
+
+struct source *sources;
 
 int listen_sock;
 fd_set fdset;
@@ -39,6 +43,9 @@ int main(argc, argv)
     struct sockaddr_in servaddr;
     int ret;
 
+    /* Clean globals */
+
+    sources = NULL;
     /* parse configuration file */
     read_config_file("/home/dijkstra/project/monmux/monmux.conf");
 
