@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.8 2002/08/11 20:00:57 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.9 2002/09/02 06:16:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -42,6 +42,7 @@
 #include "error.h"
 #include "data.h"
 #include "mon.h"
+#include "net.h"
 
 /* Fill a mux structure with inet details */
 void 
@@ -73,18 +74,17 @@ connect2mux(struct mux *mux)
 void 
 send_packet(struct mux *mux)
 {   
-    if (sendto(mux->monsocket, (void *)&mux->packet, 
-	       mux->offset + sizeof(mux->packet.header), 0,
-	       (struct sockaddr *)&mux->sockaddr, sizeof(mux->sockaddr)) 
-	!= (mux->offset + sizeof(mux->packet.header))) {
+    if (sendto(mux->monsocket, (void *)&mux->packet.data, 
+	       mux->offset, 0, (struct sockaddr *)&mux->sockaddr, 
+	       sizeof(mux->sockaddr))
+	!= mux->offset) {
 	mux->senderr++;
     }
 
     if (mux->senderr >= MON_WARN_SENDERR)
 	warning("%d updates to mux(%u.%u.%u.%u) lost due to send errors",
 		mux->senderr, 
-		(mux->ip >> 24), (mux->ip >> 16) & 0xff, 
-		(mux->ip >> 8) & 0xff, mux->ip & 0xff), mux->senderr = 0;
+		IPAS4BYTES(mux->ip)), mux->senderr = 0;
 }
 /* Prepare a packet for data */
 void 
@@ -93,10 +93,13 @@ prepare_packet(struct mux *mux)
     time_t t = time(NULL);
 
     bzero(&mux->packet, sizeof(mux->packet));
-    mux->offset = 0;
-
     mux->packet.header.mon_version = MON_PACKET_VER;
-    mux->packet.header.timestamp = htonq((u_int64_t) t);
+    mux->packet.header.timestamp = t;
+
+    /* monpacketheader is always first stream */
+    mux->offset = 
+	setheader((char *)&mux->packet.data, 
+		  &mux->packet.header);
 }
 /* Put a stream into the packet for a mux */
 void 
@@ -105,17 +108,20 @@ stream_in_packet(struct stream *stream, struct mux *mux)
     mux->offset += 
 	(streamfunc[stream->type].get)      /* call getter of stream */
 	(&mux->packet.data[mux->offset],    /* packet buffer */
-	 _POSIX2_LINE_MAX - mux->offset,    /* maxlen */
+	 sizeof(mux->packet.data) - mux->offset,    /* maxlen */
 	 stream->args);
 }
 /* Ready a packet for transmission, set length and crc */
 void finish_packet(struct mux *mux) 
 {
-    u_int32_t crc;
-
-    mux->packet.header.length = htons(mux->offset);
-    
+    mux->packet.header.length = mux->offset;
     mux->packet.header.crc = 0;
-    crc = crc32(&mux->packet, mux->offset + sizeof(mux->packet.header));
-    mux->packet.header.crc = htonl(crc);
+
+    /* fill in correct header with crc = 0 */
+    setheader((char *)&mux->packet.data, &mux->packet.header);
+
+    /* fill in correct header with crc */
+    mux->packet.header.crc = crc32(&mux->packet.data, mux->offset);
+    setheader((char *)&mux->packet.data, &mux->packet.header);
 }
+
