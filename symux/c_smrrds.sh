@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.20 2003/10/10 15:20:03 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.21 2003/10/12 17:26:10 dijkstra Exp $
 
 #
-# Copyright (c) 2001-2002 Willem Dijkstra
+# Copyright (c) 2001-2003 Willem Dijkstra
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 fi
 
 # All interfaces and disks
-INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|qe|qec|sf|sis|sk|skc|sl|sm|siop|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
+INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
 VIRTUALINTERFACES="bridge|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
 

@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.16 2002/11/29 10:45:22 dijkstra Exp $ */
+/* $Id: symux.h,v 1.17 2003/10/12 17:26:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,7 +33,7 @@
 #ifndef _SYMUX_SYMUX_H
 #define _SYMUX_SYMUX_H
 
-#include "conf.h"
+#include <conf.h>
 
 #define SYMUX_PID_FILE "/var/run/symux.pid"
 

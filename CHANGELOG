@@ -1,3 +1,9 @@
+12/10/2003 - 2.62
+
+   - removed errors in c_smrrds.sh (Henning Brauer)
+   
+   - detecting sensor support was broken (Nick Forbes)
+
 03/10/2003 - 2.61
 
    - added sensor probe
@@ -290,4 +296,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.20 2003/10/10 15:19:44 dijkstra Exp $
+$Id: CHANGELOG,v 1.21 2003/10/12 17:26:04 dijkstra Exp $

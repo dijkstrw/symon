@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.31 2003/10/10 15:20:01 dijkstra Exp $
+# $Id: Makefile,v 1.32 2003/10/12 17:26:09 dijkstra Exp $
 .include "../Makefile.inc"
 
 LIBS=	-L../lib -lsymon
 SRCS=	symon.c sm_cpu.c sm_debug.c sm_mem.c sm_if.c sm_io.c sm_pf.c sm_mbuf.c sm_proc.c sm_sensor.c readconf.c symonnet.c 
 OBJS+=	${SRCS:R:S/$/.o/g}
-CFLAGS+=-I../lib
+CFLAGS+=-I../lib -I.
 
 all: symon symon.cat8
 
@@ -35,8 +35,8 @@ conf.h:  Makefile
 	*)	echo "#undef HAS_KERN_MBSTAT" >> $@;;			\
 	esac;
 	@case `grep -csq "struct sensor" /usr/include/sys/sensors.h` in \
-	1)	echo "#define HAS_SENSOR_H	1" >> $@;;		\
-	*)	echo "#undef HAS_SENSOR_H" >> $@;;			\
+	1)	echo "#define HAS_SENSORS_H	1" >> $@;;		\
+	*)	echo "#undef HAS_SENSORS_H" >> $@;;			\
 	esac
 
 symon.h: conf.h

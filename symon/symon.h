@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.25 2003/10/10 15:20:01 dijkstra Exp $ */
+/* $Id: symon.h,v 1.26 2003/10/12 17:26:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,11 +33,12 @@
 #ifndef _SYMON_SYMON_H
 #define _SYMON_SYMON_H
 
+#include <conf.h>
+
 #include <sys/queue.h>
 
 #include "lex.h"
 #include "data.h"
-#include "conf.h"
 
 #define SYMON_PID_FILE    "/var/run/symon.pid"
 #define SYMON_INTERVAL 5	        /* measurement interval */

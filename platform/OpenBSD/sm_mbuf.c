@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.1 2003/06/20 08:42:03 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.2 2003/10/12 17:26:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -30,6 +30,8 @@
  *
  */
 
+#include <conf.h>
+
 #include <sys/param.h>
 #include <sys/mbuf.h>
 #include <sys/sysctl.h>
@@ -40,7 +42,6 @@
 
 #include "error.h"
 #include "symon.h"
-#include "conf.h"
 
 #ifndef HAS_KERN_MBSTAT
 void 
