@@ -188,19 +188,19 @@ The format is
 Data formats:
 .Bl -tag -width Ds
 .It cpu
-Time spent in (user, nice, system, interrupt, idle). Total time is 100, data is
-offered with precision 2.
+Time spent in ( user, nice, system, interrupt, idle ). Total time is 100, data
+is offered with precision 2.
 .It mem
-Memory in (real active, real total, free, swap used, swap total). All values
+Memory in ( real_active, real_total, free, swap_used, swap_total ). All values
 are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers
 internally.
 .It if
-Interface counters (packets in, packets out, bytes in, bytes out, multicasts
-in, multicasts out, errors in, errors out, collisions, drops). Values are 32
-bit unsigned integers internally.
+Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
+multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
+). Values are 32 bit unsigned integers internally.
 .It io
-Io/disk counters (total transfers, total seeks, total bytes). Values are 64 bit
-unsigned integers internally.
+Io/disk counters ( total_transfers, total_seeks, total_bytes ). Values are 64
+bit unsigned integers internally.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
 bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
