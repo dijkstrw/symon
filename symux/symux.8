@@ -74,11 +74,15 @@ Show version information.
 Stop 
 .Nm
 from becoming a daemon and show debug information on stdout.
-
+.It Fl f Ar filename
+Read configuration from 
+.Ar filename
+instead of 
+.Pa /etc/monmux.conf .
 .Sh CONFIGURATION
 .Nm
 obtains configuration data from 
-.Ar /etc/monmux.conf .
+.Pa /etc/monmux.conf .
 The configuration file contains one mux stanza that defines on what interface and port
 .Nm 
 should listen to for incoming monitored data. There is a source section for
@@ -208,7 +212,10 @@ unsigned integers internally.
 Causes
 .Nm
 to read 
-.Ar /etc/monmux.conf .
+.Pa /etc/monmux.conf 
+or the file specified by the 
+.Fl f 
+flag.
 .Nm
 will keep the old configuration if errors occured during parsing of the
 configuration file.
@@ -225,15 +232,13 @@ system wide configuration file.
 .El
 .Sh BUGS
 .Nm 
-writes incoming data to rrd files first. This causes 
+writes incoming data to rrd files "in process". An rrdupdate on a somewhat
+stale rrdfile -- with the last data from quite some time in the past -- is a
+very expensive operation. This can cause
 .Nm 
-to lockup while rrdupdate is updating the rrd file. 
+to lockup while rrdupdate is updating the rrd file.
 .Nm
 will be unresponsive during this process. 
-.Pp
-Only one 
-.Nm
-instance can be run concurrently.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>
 .Sh SEE ALSO
