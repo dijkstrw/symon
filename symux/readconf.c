@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.24 2004/03/20 15:46:27 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.25 2004/06/05 12:08:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -396,7 +396,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	case LXT_END:
 	    return 1;
 	default:
-	    parse_error(l, "accept|write");
+	    parse_error(l, "accept|datadir|write");
 	    return 0;
 	}
     }

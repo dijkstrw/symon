@@ -1,8 +1,11 @@
-20/03/2004 - 2.66
+05/06/2004 - 2.66
 
    - arguments in network streams are now bound to 15 characters. symon
      will use more characters if specified in monitoring, but will only
      send the first 15 over the network. (Michael)
+
+   - Textual: symux.8 and c_smrrds.sh agree on stream names.
+     (Okan Demirmen)
 
 29/02/2004 - 2.65
 
@@ -339,4 +342,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.30 2004/03/20 15:46:27 dijkstra Exp $
+$Id: CHANGELOG,v 1.31 2004/06/05 12:08:53 dijkstra Exp $

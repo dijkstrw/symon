@@ -106,7 +106,7 @@ host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
 source-stmt  = "source" host "{"
                accept-stmts
-               write-stmts
+               [ write-stmts ]
                [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
@@ -223,7 +223,7 @@ Alias for io2. See below.
 Pre OpenBSD 3.5 io/disk counters ( total_transfers, total_seeks, total_bytes
 ). Values are 64 bit unsigned integers.
 .It io2
-Io/disk counters ( total_rxfers, total_wxfers, total_seeks, total_rbytes,
+Io/disk counters ( total_rxfer, total_wxfer, total_seeks, total_rbytes,
 total_wbytes). Values are 64 bit unsigned integers.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
