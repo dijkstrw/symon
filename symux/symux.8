@@ -72,11 +72,13 @@ the rrd files. It should be run as
 The options:
 .Bl -tag -width Ds
 .It Fl v
-Show version information.
+Show version.
 .It Fl d
 Stop
 .Nm
-from becoming a daemon and show debug information on stdout.
+from becoming a daemon and show debug information on stdout. Use this setting
+to find hosts or specific statistics that do get sent, but are ignored due to
+configuration.
 .It Fl f Ar filename
 Read configuration from
 .Ar filename
@@ -102,12 +104,15 @@ stmt         = mux-stmt | source-stmt
 mux-stmt     = "mux" host [ port ]
 host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
-source-stmt  = "source" host "{" accept-stmts write-stmts [ datadir-stmt ] "}"
+source-stmt  = "source" host "{"
+               accept-stmts
+               write-stmts
+               [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
-	       "proc" | "mbuf" | "sensor"
+resource     = "cpu" | "mem" | "if" | "io" | "io1" | "pf" | "debug" |
+               "proc" | "mbuf" | "sensor"
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
@@ -148,7 +153,7 @@ source 127.0.0.1 {
 	     io(wd0), io(wd1), io(wd2),
 	     io(wd3), io(cd0), io(cd1) }
 
-    datadir "/export/symon/localhost"
+    datadir "/var/www/symon/rrds/localhost"
 }
 .fi
 .Sh LISTENERS
@@ -158,23 +163,25 @@ offers received
 data to other programs via tcp. An example of a listener session:
 .Pp
 .nf
-hoard:~/project/symon$ telnet 127.0.0.1 2100
-Trying 127.0.0.1...
-Connected to 127.0.0.1.
+nexus:~/project/symon$ telnet 10.0.0.1 2100
+Trying 10.0.0.1...
+Connected to 10.0.0.1.
 Escape character is '^]'.
 
-127.0.0.1;io:cd1:1027452867:262:308:536576;io:cd0:1027452867
-:0:0:0;io:wd3:1027452867:249140:249140:11797277696;io:wd2:10
-27452867:4074001:4074001:64923271168;io:wd1:1027452867:43183
-9:431839:11880622080;io:wd0:1027452867:10890717:10890717:125
-382360064;if:lo0:1027452867:86952111:86952111:1164079422:116
-4079422:0:0:0:0:0:0;if:de0:1027452867:117562055:90333984:405
-8603563:1844391820:2588654:1:0:0:4013757:0;if:xl0:1027452867
-:149845272:187785769:2494862812:739916810:43291:1:3:0:318440
-7:0;mem::1027452867:26566656:68579328:323141632:3571712:1047
-67488;cpu:0:1027452867:0.00:0.00:0.00:0.00:99.00;
-^]
+10.0.0.1;mem::1077662160:7630848:53850112:469417984:0:25600;cpu:0:
+1077662160:0.00:0.00:0.30:0.20:99.50;io:wd0:1077662160:2074:12759:
+0:30736384:131780608;
+10.0.0.2;mbuf::1077658247:138:74:0:0:41:0:23:0:90:360:868352:25:0:
+0:0;pf::1077658247:700930123:535398451:0:352:1107229:706391:119833
+9:4:0:0:2:3:29:4109383:83291:83262:980325:0:1:6:0:0;mem::107765824
+7:79155200:131956736:391430144:0:536739840;cpu:0:1077658247:0.50:0
+.00:0.00:0.90:98.60;proc:httpd:1077658247:9:216:172:8:3:0.00:14999
+552:0;if:lo0:1077658247:147104:147104:45868177:45868177:0:0:0:0:0:
+0;if:xl0:1077658247:284267:452077:150620236:273265863:372:89478:0:
+0:0:0;if:de0:1077658247:1813721:1197722:729054136:568900227:101:2:
+0:0:198:0;
 
+^]
 telnet> close
 Connection closed.
 .fi
@@ -184,7 +191,7 @@ The format is
 :
 .Va symon-host-ip
 :
-.Va io|if|cpu|mem|pf|mbuf|proc|debug
+.Va stream-name
 :
 .Va stream-argument
 :
@@ -206,8 +213,11 @@ Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
 multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
 ). Values are 32 bit unsigned integers internally.
 .It io
-Io/disk counters ( total_transfers, total_seeks, total_bytes ). Values are 64
-bit unsigned integers internally.
+Io/disk counters ( total_rxfers, total_wxfers, total_seeks, total_rbytes,
+total_wbytes). Values are 64 bit unsigned integers internally.
+.It io1
+Pre OpenBSD 3.5 io/disk counters ( total_transfers, total_seeks, total_bytes
+). Values are 64 bit unsigned integers internally.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
 bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
@@ -254,6 +264,11 @@ daemon.
 .Nm
 system wide configuration file.
 .El
+.Sh LEGACY
+.Nm
+supports symon(8) clients that send pre OpenBSD 3.5 disk statistics. These
+streams should be identified as "io1(wd0)" instead of "io(wd0)" in the
+configuration file.
 .Sh BUGS
 .Nm
 writes incoming data to rrd files "in process". An rrdupdate on a somewhat

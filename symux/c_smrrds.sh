@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.24 2003/12/21 13:23:15 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.25 2004/02/24 22:13:20 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2003 Willem Dijkstra
@@ -140,6 +140,7 @@ io=	`echo $DISKS|
 		}
 		print " ";}'`
 
+Pre 3.5 disk statistics are available via the io1_<disk> argument.
 EOF
     exit 1;
 fi
@@ -292,6 +293,18 @@ mbuf.rrd)
     ;;
 
 io_*.rrd)
+    # Build disk files
+    rrdtool create $i $RRD_ARGS \
+	DS:rxfer:COUNTER:$INTERVAL:U:U \
+	DS:wxfer:COUNTER:$INTERVAL:U:U \
+	DS:seeks:COUNTER:$INTERVAL:U:U \
+	DS:rbytes:COUNTER:$INTERVAL:U:U \
+	DS:wbytes:COUNTER:$INTERVAL:U:U \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+
+io1_*.rrd)
     # Build disk files
     rrdtool create $i $RRD_ARGS \
 	DS:transfers:COUNTER:$INTERVAL:U:U \

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.21 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.22 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -69,8 +69,12 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	ts = "if_";
 	ta = args;
 	break;
-    case MT_IO:
+    case MT_IO2:
 	ts = "io_";
+	ta = args;
+	break;
+    case MT_IO1:
+	ts = "io1_";
 	ta = args;
 	break;
     case MT_MEM:
@@ -188,6 +192,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		case LXT_CPU:
 		case LXT_IF:
 		case LXT_IO:
+		case LXT_IO1:
 		case LXT_MEM:
 		case LXT_PF:
 		case LXT_MBUF:
@@ -224,7 +229,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			return 0;
 		    }
 
-		    break;	/* LXT_CPU/IF/IO/MEM/PF/MBUF/DEBUG/PROC */
+		    break;	/* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC */
 		case LXT_COMMA:
 		    break;
 		default:
@@ -312,6 +317,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    case LXT_CPU:
 	    case LXT_IF:
 	    case LXT_IO:
+	    case LXT_IO1:
 	    case LXT_MEM:
 	    case LXT_PF:
 	    case LXT_MBUF:
@@ -373,7 +379,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break;		/* LXT_CPU/IF/IO/MEM/PF/MBUF/DEBUG/PROC/SENSOR */
+		break;		/* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC/SENSOR */
 	    default:
 		parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
 		return 0;

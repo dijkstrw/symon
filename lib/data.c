@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.22 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: data.c,v 1.23 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -95,7 +95,7 @@ struct {
     int type;
     char *form;
 }      streamform[] = {
-    { MT_IO, "LLL" },
+    { MT_IO1, "LLL" },
     { MT_CPU, "ccccc" },
     { MT_MEM, "lllll" },
     { MT_IF, "llllllllll" },
@@ -104,6 +104,7 @@ struct {
     { MT_PROC, "lLLLlcll" },
     { MT_MBUF, "lllllllllllllll" },
     { MT_SENSOR, "D" },
+    { MT_IO2, "LLLLL" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -112,7 +113,7 @@ struct {
     int type;
     int token;
 }      streamtoken[] = {
-    { MT_IO, LXT_IO },
+    { MT_IO1, LXT_IO1 },
     { MT_CPU, LXT_CPU },
     { MT_MEM, LXT_MEM },
     { MT_IF, LXT_IF },
@@ -121,6 +122,7 @@ struct {
     { MT_PROC, LXT_PROC },
     { MT_MBUF, LXT_MBUF },
     { MT_SENSOR, LXT_SENSOR },
+    { MT_IO2, LXT_IO },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

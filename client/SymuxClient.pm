@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.7 2003/12/20 16:30:44 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.8 2004/02/24 22:13:20 dijkstra Exp $
 #
 # Copyright (c) 2001-2003 Willem Dijkstra
 # All rights reserved.
@@ -34,36 +34,38 @@ use Carp;
 use IO::Socket;
 
 my $streamitem =
-    {cpu   => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5},
-     mem   => {real_active => 1, real_total => 2, free => 3, swap_used => 4,
-	       swap_total =>5},
-     if    => {packets_in => 1, packets_out => 2, bytes_in => 3, bytes_out => 4,
-	       multicasts_in => 5, multicasts_out => 6, errors_in => 7,
-	       errors_out => 8, collisions => 9, drops => 10},
-     io    => {total_transfers => 1, total_seeks => 2, total_bytes => 3},
-     pf    => {bytes_v4_in => 1, bytes_v4_out => 2, bytes_v6_in => 3,
-	       bytes_v6_out => 4, packets_v4_in_pass => 5,
-	       packets_v4_in_drop => 6, packets_v4_out_pass => 7,
-	       packets_v4_out_drop => 8, packets_v6_in_pass => 9,
-	       packets_v6_in_drop => 10, packets_v6_out_pass => 11,
-	       packets_v6_out_drop => 12, states_entries => 13,
-	       states_searches => 14, states_inserts => 15,
-	       states_removals => 16, counters_match => 17,
-	       counters_badoffset => 18, counters_fragment => 19,
-	       counters_short => 20, counters_normalize => 21,
-	       counters_memory => 22},
-     debug => {debug0 => 1, debug1 => 2, debug3 => 3, debug4 => 4, debug5 => 5,
-	       debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9,
-	       debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
-	       debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,
-	       debug18 => 18, debug19 => 19},
-     proc  => {number => 1, uticks => 2, sticks => 3, iticks => 4, cpusec => 5,
-	       cpupct => 6, procsz => 7, rsssz => 8},
-     mbuf => {totmbufs => 1, mt_data => 2, mt_oobdata => 3, mt_control => 4,
-	      mt_header => 5, mt_ftable => 6, mt_soname => 7, mt_soopts => 8,
-	      pgused => 9, pgtotal => 10, totmem => 11, totpct => 12,
-	      m_drops => 13, m_wait => 14, m_drain => 15 },
-     sensor => {value => 1}};
+    {cpu    => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5},
+     mem    => {real_active => 1, real_total => 2, free => 3, swap_used => 4,
+	        swap_total =>5},
+     if     => {packets_in => 1, packets_out => 2, bytes_in => 3, bytes_out => 4,
+	        multicasts_in => 5, multicasts_out => 6, errors_in => 7,
+	        errors_out => 8, collisions => 9, drops => 10},
+     io1    => {total_transfers => 1, total_seeks => 2, total_bytes => 3},
+     pf     => {bytes_v4_in => 1, bytes_v4_out => 2, bytes_v6_in => 3,
+	        bytes_v6_out => 4, packets_v4_in_pass => 5,
+	        packets_v4_in_drop => 6, packets_v4_out_pass => 7,
+	        packets_v4_out_drop => 8, packets_v6_in_pass => 9,
+	        packets_v6_in_drop => 10, packets_v6_out_pass => 11,
+	        packets_v6_out_drop => 12, states_entries => 13,
+	        states_searches => 14, states_inserts => 15,
+	        states_removals => 16, counters_match => 17,
+	        counters_badoffset => 18, counters_fragment => 19,
+	        counters_short => 20, counters_normalize => 21,
+	        counters_memory => 22},
+     debug  => {debug0 => 1, debug1 => 2, debug3 => 3, debug4 => 4, debug5 => 5,
+	        debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9,
+	        debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
+	        debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,
+	        debug18 => 18, debug19 => 19},
+     proc   => {number => 1, uticks => 2, sticks => 3, iticks => 4, cpusec => 5,
+	        cpupct => 6, procsz => 7, rsssz => 8},
+     mbuf   => {totmbufs => 1, mt_data => 2, mt_oobdata => 3, mt_control => 4,
+	        mt_header => 5, mt_ftable => 6, mt_soname => 7, mt_soopts => 8,
+	        pgused => 9, pgtotal => 10, totmem => 11, totpct => 12,
+	        m_drops => 13, m_wait => 14, m_drain => 15 },
+     sensor => {value => 1},
+     io     => {total_rxfers => 1, total_wxfers => 2, total_seeks => 3,
+		total_rbytes => 4, total_rbytes => 5 }};
 sub new {
     my ($class, %arg) = @_;
     my $self;

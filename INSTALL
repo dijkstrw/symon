@@ -63,7 +63,11 @@ Less quick, but more verbose
   stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that syweb expects
   an '.../machine/*.rrd' style directory structure somewhere under /var/www.
 
-- Fire up symon, symux. Check system logs for any failures.
+- Fire up symux and symon:
+
+  /usr/local/libexec/symux && /usr/local/libexec/symon
+
+  Check system logs for any failures.
 
 - Only if you need the webinterface: download and install syweb.
 
@@ -90,5 +94,5 @@ syweb run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.12 2003/12/20 16:30:44 dijkstra Exp $
+$Id: INSTALL,v 1.13 2004/02/24 22:13:20 dijkstra Exp $
 

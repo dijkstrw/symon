@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.13 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.14 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -31,7 +31,8 @@
  */
 
 /*
- * Get current disk transfer statistics from kernel and return them in symon_buf as
+ * Get current disk transfer statistics from kernel and return them in
+ * symon_buf as
  *
  * total nr of transfers : total seeks : total bytes transferred
  *
@@ -150,10 +151,19 @@ get_io(char *symon_buf, int maxlen, char *disk)
     for (i = 0; i <= io_dks; i++) {
 	if (strncmp(io_dknames[i], disk,
 		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
-	    return snpack(symon_buf, maxlen, disk, MT_IO,
+#ifdef HAS_IO2
+	    return snpack(symon_buf, maxlen, disk, MT_IO2,
+			  io_dkstats[i].ds_rxfer,
+			  io_dkstats[i].ds_wxfer,
+			  io_dkstats[i].ds_seek,
+			  io_dkstats[i].ds_rbytes,
+			  io_dkstats[i].ds_wbytes);
+#else
+	    return snpack(symon_buf, maxlen, disk, MT_IO1,
 			  io_dkstats[i].ds_xfer,
 			  io_dkstats[i].ds_seek,
 			  io_dkstats[i].ds_bytes);
+#endif
     }
 
     return 0;

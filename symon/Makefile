@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.34 2003/12/21 13:01:05 dijkstra Exp $
+# $Id: Makefile,v 1.35 2004/02/24 22:13:20 dijkstra Exp $
 .include "../Makefile.inc"
 
 LIBS=	-L../lib -lsymon
@@ -7,6 +7,8 @@ OBJS+=	${SRCS:R:S/$/.o/g}
 CFLAGS+=-I../lib -I.
 
 all: symon symon.cat8
+
+${OBJS}: conf.h
 
 symon: ${OBJS}
 	${CC} -o $@ ${OBJS} ${LIBS}
@@ -32,11 +34,15 @@ conf.h:  Makefile
 	@echo "#define SYMON_VERSION \"$(V)\"" >> $@
 	@case `grep -csq KERN_MBSTAT /usr/include/sys/sysctl.h` in	\
 	1)	echo "#define HAS_KERN_MBSTAT	1" >> $@;;		\
-	*)	echo "#undef HAS_KERN_MBSTAT" >> $@;;			\
+	0)	echo "#undef HAS_KERN_MBSTAT" >> $@;;			\
 	esac;
 	@case `grep -csq "struct sensor" /usr/include/sys/sensors.h` in \
 	1)	echo "#define HAS_SENSORS_H	1" >> $@;;		\
-	*)	echo "#undef HAS_SENSORS_H" >> $@;;			\
+	0)	echo "#undef HAS_SENSORS_H" >> $@;;			\
+	esac;
+	@case `grep -csq "ds_rxfer" /usr/include/sys/disk.h` in         \
+	1)	echo "#define HAS_IO2	1" >> $@;;                      \
+	0)	echo "#undef HAS_IO2" >> $@;;                           \
 	esac
 
 symon.h: conf.h

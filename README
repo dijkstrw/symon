@@ -1,4 +1,4 @@
-- Cpu cost matters more than storage. 
+- Cpu cost matters more than storage.
 
 - Structures are not overloaded in functionality even if that would be possible
   memberwise. Overloading = code can be understood in more than one way and
@@ -12,3 +12,6 @@
 
 - Marshalling is hard. Alignment is carried out by bcopy.
 
+- Support for improvements of kernel structures:
+	- add a new stream id with a postfix (i.e. IO2)
+	- make old stream accessable via lex with previous postfix (i.e. "io1")

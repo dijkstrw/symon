@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.22 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: data.h,v 1.23 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -141,7 +141,7 @@ SLIST_HEAD(muxlist, mux);
 #define PS2STR_RRD    1
 
 /* Stream types */
-#define MT_IO     0
+#define MT_IO1    0
 #define MT_CPU    1
 #define MT_MEM    2
 #define MT_IF     3
@@ -150,8 +150,9 @@ SLIST_HEAD(muxlist, mux);
 #define MT_PROC   6
 #define MT_MBUF   7
 #define MT_SENSOR 8
-#define MT_TEST   9
-#define MT_EOT    10
+#define MT_IO2    9
+#define MT_TEST   10
+#define MT_EOT    11
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -265,6 +266,13 @@ struct packedstream {
 	struct {
 	    int64_t value;
 	}      ps_sensor;
+	struct {
+	    u_int64_t mtotal_rtransfers;
+	    u_int64_t mtotal_wtransfers;
+	    u_int64_t mtotal_seeks2;
+	    u_int64_t mtotal_rbytes;
+	    u_int64_t mtotal_wbytes;
+	}      ps_io2;
 	struct {
 	    u_int64_t L[4];
 	    int64_t D[4];

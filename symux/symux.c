@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.28 2004/02/02 07:46:10 dijkstra Exp $ */
+/* $Id: symux.c,v 1.29 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -128,7 +128,8 @@ main(int argc, char *argv[])
 	case 'f':
 	    if (optarg && optarg[0] != '/') {
 		/* cfg path needs to be absolute, we will be a daemon soon */
-		if ((cfgpath = getwd(NULL)) == NULL)
+		cfgpath = xmalloc(MAXPATHLEN);
+		if ((cfgpath = getcwd(cfgpath, MAXPATHLEN)) == NULL)
 		    fatal("could not get working directory");
 
 		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
@@ -300,6 +301,9 @@ main(int argc, char *argv[])
 		    snprintf(stringptr, maxstringlen, ";");
 		    maxstringlen -= strlen(stringptr);
 		    stringptr += strlen(stringptr);
+		} else {
+		    debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
+			  ((ps.args == NULL) ? "0" : ps.args), source->addr);
 		}
 	    }
 	    /*

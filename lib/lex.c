@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.18 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: lex.c,v 1.19 2004/02/24 22:13:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2003 Willem Dijkstra
@@ -76,6 +76,7 @@ static struct {
     { "if", LXT_IF },
     { "in", LXT_IN },
     { "io", LXT_IO },
+    { "io1", LXT_IO1 },
     { "mbuf", LXT_MBUF },
     { "mem", LXT_MEM },
     { "monitor", LXT_MONITOR },
