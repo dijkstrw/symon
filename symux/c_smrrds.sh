@@ -1,22 +1,15 @@
 #!/bin/sh
 #
-# $Id: c_smrrds.sh,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.3 2002/03/29 15:17:55 dijkstra Exp $
 #
 # mon datafiles "make" file. Valid arguments:
-#       all      Makes all known files
+#       all      Makes all files for active interfaces and disks
 #       mem      Make memory file
-#       cpu      Make cpu file
-# Disks:
-#       wd*      "winchester" disk drives
-#       cd*      CD-ROMs
-#       ccd*     concatenated disk drives
-# Interfaces:
-#       xl*      3Com Fast XL Etherlink cards
-#       de*      DEC 21041 cards
-#       wi*      Lucent Orinoco/Wavelan cards
+#       cpu?     Make cpu file
 #
-# User configuration
-INTERVAL=5
+# --- user configuration starts here
+INTERVAL=`grep MON_INTERVAL ../mon/mon.h 2>/dev/null | cut -f3 -d\ `
+INTERVAL=${INTERVAL:-5}
 # RRA setup:
 # - 2   days of  5 second  samples = 34560 x 5 second samples
 # - 14  days of 30 minutes samples = 672 x 360 x 5 second samples 
@@ -34,73 +27,113 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 	    RRA:MIN:0.5:360:672 
 	    RRA:MIN:0.5:1440:600 
 	    RRA:MIN:0.5:17280:600"
+# --- user configuration ends here
+
+# All interfaces and disks
+INTERFACES="an|awi|bge|bridge|cnw|dc|de|ec|ef|eg|el|ep|ep|ex|faith|fea|fpa|fxp|gif|gre|ie|lc|le|le|lge|lmc|lo|ne|ne|nge|ray|rl|pflog|ppp|sf|sis|sk|skc|sl|sm|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vr|wb|we|wi|wx|xe|xl"
+DISKS="sd|st|cd|ch|rd|raid|ss|uk|vnc|wd"
+
+# addsuffix adds a suffix to each entry of a list (item|item|...)
+addsuffix() {
+    list=$1'|'
+    suffix=$2
+    while [ `echo $list | grep '|'` ]; do
+	newlist=$newlist'|'`echo $list | cut -f1 -d\|`$suffix
+	list=`echo $list | cut -f2- -d\|`
+    done
+    echo $newlist | cut -b2-
+}
+
 this=$0
-for i 
+DISKS=`addsuffix $DISKS [0-9]`
+INTERFACES=`addsuffix $INTERFACES [0-9]`
+
+for i
 do
+# add inter_*.rrd if it is an interface
+if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
+# add io_*.rrd if it is a disk
+if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
+# add .rrd if it is a cpu or mem
+if [ `echo $i | egrep -e "^(cpu[0-9]|mem)$"` ]; then i=$i.rrd; fi
+
+if [ -f $i ]; then
+    echo "$i exists"
+    i="done"
+fi
+
 case $i in
 
 all)
+    echo "Creating rrd files for {cpu|mem|disks|interfaces}"
     sh $this cpu0 mem
-    sh $this wd0 wd1 wd2 ccd0 ccd1 cd0 cd1
-    sh $this xl0 de0 wi0 lo0
+    sh $this interfaces
+    sh $this disks
     ;;
 
-cpu[0-9])
+if|interfaces)
+    # obtain all network cards
+    sh $this `ifconfig -a| egrep -e "^($INTERFACES):" | cut -f1 -d\:  | sort -u`
+    ;;
+
+io|disks)
+    # obtain all disks
+    sh $this `df | grep dev | sed 's/^\/dev\/\(.*\)[a-z] .*$/\1/' | sort -u`
+    ;;
+
+cpu[0-9].rrd)
     # Build cpu file
-    if [ ! -f $i.rrd ]; then
-	rrdtool create $i.rrd --step=$INTERVAL \
-	    DS:user:GAUGE:5:0:100 \
-	    DS:nice:GAUGE:5:0:100 \
-	    DS:system:GAUGE:5:0:100 \
-	    DS:interrupt:GAUGE:5:0:100 \
-	    DS:idle:GAUGE:5:0:100 \
-	    $RRA_SETUP
-    else
-	echo "$i.rrd already exists; nop."
-    fi
+    rrdtool create $i --step=$INTERVAL \
+	DS:user:GAUGE:5:0:100 \
+	DS:nice:GAUGE:5:0:100 \
+	DS:system:GAUGE:5:0:100 \
+	DS:interrupt:GAUGE:5:0:100 \
+	DS:idle:GAUGE:5:0:100 \
+	$RRA_SETUP
+    echo "$i created"
     ;;
 
-mem)
+mem.rrd)
     # Build memory file
-    if [ ! -f mem.rrd ]; then
-	rrdtool create mem.rrd --step=$INTERVAL \
-	    DS:real_active:GAUGE:5:0:U \
-	    DS:real_total:GAUGE:5:0:U \
-	    DS:free:GAUGE:5:0:U \
-	    DS:swap_used:GAUGE:5:0:U \
-	    DS:swap_total:GAUGE:5:0:U \
-	    $RRA_SETUP
-    else
-	echo "mem.rrd already exists; nop."
-    fi
+    rrdtool create $i --step=$INTERVAL \
+	DS:real_active:GAUGE:5:0:U \
+	DS:real_total:GAUGE:5:0:U \
+	DS:free:GAUGE:5:0:U \
+	DS:swap_used:GAUGE:5:0:U \
+	DS:swap_total:GAUGE:5:0:U \
+	$RRA_SETUP
+    echo "$i created"
     ;;
 
-xl[0-9]|de[0-9]|wi[0-9]|lo[0-9])
+if_*.rrd)
     # Build interface files
-    if [ ! -f if_$i.rrd ]; then
-        rrdtool create if_$i.rrd --step=$INTERVAL \
-        DS:ipackets:COUNTER:5:U:U DS:opackets:COUNTER:5:U:U \
-        DS:ibytes:COUNTER:5:U:U DS:obytes:COUNTER:5:U:U \
-        DS:imcasts:COUNTER:5:U:U DS:omcasts:COUNTER:5:U:U \
-        DS:ierrors:COUNTER:5:U:U DS:oerrors:COUNTER:5:U:U \
-        DS:collisions:COUNTER:5:U:U DS:drops:COUNTER:5:U:U \
-        $RRA_SETUP
-    else
-	echo "if_$i.rrd already exists; nop."
-    fi
+    rrdtool create $i --step=$INTERVAL \
+	DS:ipackets:COUNTER:5:U:U DS:opackets:COUNTER:5:U:U \
+	DS:ibytes:COUNTER:5:U:U DS:obytes:COUNTER:5:U:U \
+	DS:imcasts:COUNTER:5:U:U DS:omcasts:COUNTER:5:U:U \
+	DS:ierrors:COUNTER:5:U:U DS:oerrors:COUNTER:5:U:U \
+	DS:collisions:COUNTER:5:U:U DS:drops:COUNTER:5:U:U \
+	$RRA_SETUP
+    echo "$i created"
     ;;
 
-wd[0-9]|sd[0-9]|cd[0-9]|ccd[0-9]|vnd[0-9]|raid[0-9]|rd[0-9])
+io_*.rrd)
     # Build disk files
-    if [ ! -f io_$i.rrd ]; then
-        rrdtool create io_$i.rrd --step=$INTERVAL \
-        DS:transfers:COUNTER:5:U:U \
+    rrdtool create $i --step=$INTERVAL \
+	DS:transfers:COUNTER:5:U:U \
 	DS:seeks:COUNTER:5:U:U \
 	DS:bytes:COUNTER:5:U:U \
-        $RRA_SETUP
-    else
-	echo "io_$i.rrd already exists; nop."
-    fi
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+
+"done")
+    # ignore
+    ;;
+*)
+    # Default match
+    echo "Unknown command: $i"
+    ;;
 esac
 done
 

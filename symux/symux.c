@@ -1,5 +1,5 @@
 /*
- * $Id: symux.c,v 1.4 2002/03/22 16:40:22 dijkstra Exp $
+ * $Id: symux.c,v 1.5 2002/03/29 15:17:55 dijkstra Exp $
  *
  * Daemon that multiplexes incoming mon traffic to subscribed clients
  * and archives it periodically in rrd files.
@@ -46,15 +46,13 @@ int main(argc, argv)
     int argc;
     char *argv[];
 {
-    struct sockaddr_in sind;
     struct mux *mux;
+    struct monpacket packet;
     struct packedstream ps;
     struct source *source;
 
-    char netbuf[_POSIX2_LINE_MAX];
     char stringbuf[_POSIX2_LINE_MAX];
-    int offset, size;
-    socklen_t sl;
+    int offset;
 
     /* parse configuration file */
     read_config_file("monmux.conf");
@@ -76,29 +74,20 @@ int main(argc, argv)
     atexit(close_listensock);
 
     for (;;) {
-	sl = sizeof(sind);
-	size = recvfrom(listen_sock, netbuf, sizeof(netbuf), 0, (struct sockaddr *)&sind, &sl);
-	if ( size < 0 ) {
-	    /* do sth */
-	} else {
-	    time_t t;
-	    source = find_source_ip(&sourcelist, ntohl((u_int32_t)sind.sin_addr.s_addr));
+	time_t t;
+	
+	wait_for_packet(listen_sock, &sourcelist, &source, &packet);
 
-	    if (source == NULL) {
-		syslog(LOG_INFO, "ignored data from %u.%u.%u.%u",
-		       (lookup_ip >> 24), (lookup_ip >> 16) & 0xff, 
-		       (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
-	    } /* else { */
-	    
-		/* TODO: check mon type and get length */
-		offset = getpreamble(netbuf, &t);
-		while ((size - offset) > 0) {
-		    offset += sunpack(netbuf + offset, &ps);
-		    psdata2strn(&ps, stringbuf, sizeof(stringbuf));
-		    printf("type %d(%s):%s\n", ps.type, ps.args, stringbuf);
-//		}
-	    }
-//	    process(ntohl(sind.sin_addr.s_addr), cbuf);
+	/* print time in packet */
+	t = (time_t) packet.header.timestamp;
+	ctime_r(&t, stringbuf);
+	printf("Packet received with ts=%s", stringbuf);
+
+	offset = 0;
+	while (offset < packet.header.length) {
+	    offset += sunpack(packet.data + offset, &ps);
+	    psdata2strn(&ps, stringbuf, sizeof(stringbuf));
+	    printf("type %d(%s):%s\n", ps.type, ps.args, stringbuf);
 	}
     }
     /* NOT REACHED */
