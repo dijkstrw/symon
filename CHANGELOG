@@ -1,6 +1,12 @@
-01/12/2002 -
+14/12/2002 - 2.56
 
-   Tobias Gresch reported a typo in SymuxClient.pm - fixed.
+   Added the proc module. This can be used to retrieve accumulated information
+   about processes with the same name. A proc(apache) statement in symon.conf,
+   for instance, will result in the reporting of the number of processes called
+   "apache" and the amounts of cpu and memory that they take.
+   
+   Added em device to c_smrrds.sh - thanks
+   Fixed typo in SymuxClient.pm - thanks Tobias Gresch 
 
 29/11/2002 - 2.55
 
@@ -222,4 +228,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.11 2002/12/14 14:03:42 dijkstra Exp $
+$Id: CHANGELOG,v 1.12 2002/12/15 14:28:35 dijkstra Exp $
