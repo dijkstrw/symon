@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.15 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.16 2004/02/29 21:23:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -82,9 +82,23 @@ get_symon_sockets(struct mux * mux)
 		}
 
 		if (bind(mux->symonsocket[family], (struct sockaddr *) & sockaddr,
-			 sockaddr.ss_len) == -1)
+			 sockaddr.ss_len) == -1) {
+		    switch (errno) {
+		    case EADDRNOTAVAIL:
+			warning("mux address %.200s is not a local address", mux->addr);
+			break;
+		    case EADDRINUSE:
+			warning("mux address %.200s %.200s already in use", mux->addr, mux->port);
+			break;
+		    case EACCES:
+			warning("mux port %.200s is restricted from current user", mux->port);
+			break;
+		    }
 		    close(mux->symonsocket[family]);
-		else {
+		    mux->symonsocket[family] = 0;
+
+		} else {
+
 		    if (get_numeric_name(&sockaddr)) {
 			info("getnameinfo error - cannot determine numeric hostname and service");
 			info("listening for incoming symon traffic for family %d", family);

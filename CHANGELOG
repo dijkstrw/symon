@@ -1,4 +1,10 @@
-02/02/2004 - 2.64
+29/02/2004 - 2.65
+
+   - removed erroneous strlen in lex.c (Daniel Hartmeier)
+
+   - added better socket error reporting (Daniel Polak)
+
+27/02/2004 - 2.64
 
    - Added new disk structure. symon has a single notion of "io" - the
      new or the old depending on the machine it was built on. symux
@@ -12,7 +18,6 @@
 
    - Textual: INSTALL (Jan Sipke van der Veen), error texts in code
      (Stephen Tesch)
-
 
 20/12/2003 - 2.63
 
@@ -328,4 +333,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.28 2004/02/26 22:48:08 dijkstra Exp $
+$Id: CHANGELOG,v 1.29 2004/02/29 21:23:18 dijkstra Exp $

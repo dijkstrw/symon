@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.21 2004/02/27 09:50:18 dijkstra Exp $ */
+/* $Id: lex.c,v 1.22 2004/02/29 21:23:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -125,30 +125,25 @@ int
 lex_readline(struct lex *l)
 {
     char *bp;
+    int bytes_read;
 
     bp = l->buffer;
 
     if (l->buffer) {
-	if ((l->curpos < l->endpos) &&
-	    ((l->bsize - l->endpos) < _POSIX2_LINE_MAX)) {
-	    l->bsize += _POSIX2_LINE_MAX;
-	    l->buffer = xrealloc(l->buffer, l->bsize);
-	    bp = l->buffer;
-	    bp += l->endpos;
-	} else {
-	    l->curpos = 0;
-	    l->endpos = 0;
-	}
+	l->curpos = 0;
+	l->endpos = 0;
     } else {
 	l->bsize = _POSIX2_LINE_MAX;
 	l->buffer = xmalloc(l->bsize);
 	bp = l->buffer;
     }
 
-    if (!read(l->fh, bp, (l->buffer + l->bsize) - bp))
+    bytes_read = read(l->fh, bp, (l->buffer + l->bsize) - bp);
+
+    if (bytes_read == 0)
 	return 0;
     else {
-	l->endpos += strlen(bp) - 1;
+	l->endpos = bytes_read;
 	return 1;
     }
 }
@@ -170,7 +165,7 @@ lex_nextchar(struct lex *l)
 {
     l->curpos++;
 
-    if (l->curpos > l->endpos)
+    if (l->curpos >= l->endpos)
 	if (!lex_readline(l))
 	    return 0;
 

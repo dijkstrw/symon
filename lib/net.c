@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.10 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: net.c,v 1.11 2004/02/29 21:23:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -46,7 +46,7 @@
  *
  * getip returns 1 if address could be reworked into an ip address. Resolved
  * data is stored in the globals res_host. The address structure res_addr is
- * aslo filled with sockaddr information that was obtained.
+ * also filled with sockaddr information that was obtained.
  */
 char res_host[NI_MAXHOST];
 char res_service[NI_MAXSERV];
@@ -171,7 +171,6 @@ cmpsock_addr(struct sockaddr * first, struct sockaddr * second)
 		 (void *) &((struct sockaddr_in *) second)->sin_addr,
 		 sizeof(struct in_addr)) == 0)
 	    return 1;
-
 	else
 	    return 0;
     }
