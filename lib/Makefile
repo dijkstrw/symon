@@ -1,5 +1,6 @@
-# $Id: Makefile,v 1.11 2004/08/07 14:48:06 dijkstra Exp $
+# $Id: Makefile,v 1.12 2004/09/25 10:21:56 dijkstra Exp $
 .include "../Makefile.inc"
+.include "../platform/${OS}/Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
 OBJS+=	${SRCS:R:S/$/.o/g}
@@ -12,7 +13,7 @@ ${OBJS}: conf.h ../Makefile.inc
 libsymon.a: ${OBJS}
 	@echo building standard symon library
 	@rm -f libsymon.a
-	@${AR} cq libsymon.a `${LORDER} ${OBJS} | tsort`
+	@${AR} cq libsymon.a `${LORDER} ${OBJS} | ${TSORT}`
 	${RANLIB} libsymon.a
 
 conf.h:  Makefile ../Makefile.inc
@@ -25,6 +26,6 @@ conf.h:  Makefile ../Makefile.inc
 	@if [ -f ../platform/${OS}/conf.sh ]; then sh ../platform/${OS}/conf.sh >> $@; fi
 
 clean:
-	rm -f libsymon.a ${OBJS}
+	rm -f conf.h libsymon.a ${OBJS}
 
 install: libsymon.a

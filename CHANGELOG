@@ -1,4 +1,8 @@
-13/06/2004 - 2.67
+25/09/2004 -
+
+   - tsort and lorder are not needed on Linux. (Mark Enzinas)
+
+09/08/2004 - 2.67
 
    - Matthew Gream contributed the port and probes to NetBSD and FreeBSD.
      Probes for FreeBSD: cpu, debug, mbuf, mem and proc.  Probes for NetBSD:
@@ -357,4 +361,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.35 2004/08/09 06:26:17 dijkstra Exp $
+$Id: CHANGELOG,v 1.36 2004/09/25 10:21:56 dijkstra Exp $

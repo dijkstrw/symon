@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.26 2004/08/09 06:26:17 dijkstra Exp $
+# $Id: Makefile.inc,v 1.27 2004/09/25 10:21:56 dijkstra Exp $
 
 V=2.67
 OS!=uname -s
@@ -12,6 +12,7 @@ CFLAGS+=-Wall
 .endif
 INSTALL=install
 LORDER=	lorder
+TSORT=  tsort
 NROFF=	nroff
 RANLIB= ranlib
 STRIP=  strip
