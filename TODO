@@ -1,10 +1,9 @@
 TODO:
 
 == current problems / short term
+- add proper depends to pkgs
+- add mon2web manual page / readme, explain weird format
 - remove mon packet limit
-- rework port makefile, current version contains both (mon|monmux) on a host
-  and that does not make sense for a probe only host. flavors should be
-  default, kvm, no-pf (3.1 and up dep)
 - add pf graphs
 - rework io to use sysctl
 (- build sysctl to get disk structure)
@@ -14,4 +13,4 @@ TODO:
 - write a muxer that supports unix pipes
 - write a client that drives a crystal fontz lcd
 
-$Id: TODO,v 1.16 2002/09/02 06:15:19 dijkstra Exp $
+$Id: TODO,v 1.17 2002/09/09 22:04:40 dijkstra Exp $
