@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.7 2002/07/25 09:51:43 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.8 2002/08/11 20:00:57 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -65,6 +65,9 @@ connect2mux(struct mux *mux)
     mux->sockaddr.sin_port = htons(mux->port);
     mux->sockaddr.sin_addr.s_addr = htonl(mux->ip);
     bzero(&mux->sockaddr.sin_zero, 8);
+
+    info("sending packets to udp:%s:%d", 
+	 mux->name, mux->port);
 }
 /* Send data stored in the mux structure to a mux */
 void 
