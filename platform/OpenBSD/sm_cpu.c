@@ -1,17 +1,26 @@
 /*
- * $Id: sm_cpu.c,v 1.1 2001/04/23 20:02:56 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.2 2001/04/28 16:06:23 dijkstra Exp $
  *
- * Another quick try: get current cpu load.
+ * Get current cpu load.
  */
 #include <sys/param.h>
 #include <sys/dkstat.h>
 #include <sys/sysctl.h>
+#include <limits.h>
+#include <stdio.h>
+#include <err.h>
+#include "mon.h"
 
+/*
+ * globals for this module all start with cp_
+ */
+static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
+static size_t cp_size;
 static long cp_time[CPUSTATES];
 static long cp_old[CPUSTATES];
 static long cp_diff[CPUSTATES];
-int     cpu_states[CPUSTATES];
-
+static int cp_states[CPUSTATES];
+static char cp_buf[_POSIX2_LINE_MAX];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -66,29 +75,29 @@ int percentages(cnt, out, new, old, diffs)
   return(total_change);
 }
 
-int main(argc, argv)
-     int argc;
-     char *argv[];
+void init_cpu(s) 
+     char *s;
 {
-  static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
-  int total, i;
-  size_t size;
+  cp_size = sizeof(cp_time);
+  /* Call get_cpu once to fill the cp_old structure */
+  get_cpu(NULL);
+}
 
-  size = sizeof(cp_time);
-
-  for (;;) {
-    if (sysctl(cp_time_mib, 2, &cp_time, &size, NULL, 0) < 0) {
-      warn("sysctl kern.cp_time failed");
-      total = 0;
-    }
-
-    /* convert cp_time counts to percentages */
-    total = percentages(CPUSTATES, cpu_states, cp_time, cp_old, cp_diff);
-    
-    printf("user %d, nice %d, system %d, interrupt %d, idle %d\n", 
-	   cpu_states[CP_USER], cpu_states[CP_NICE], cpu_states[CP_SYS], 
-	   cpu_states[CP_INTR], cpu_states[CP_IDLE]);
-    sleep(1);
+char *get_cpu(s) 
+     char *s;
+{
+  int total;
+  if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
+    warn("sysctl kern.cp_time failed");
+    total = 0;
   }
 
+  /* convert cp_time counts to percentages */
+  total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+    
+  snprintf( &cp_buf[0], _POSIX2_LINE_MAX, 
+	    "%d:%d:%d:%d:%d", 
+	    cp_states[CP_USER], cp_states[CP_NICE], cp_states[CP_SYS], 
+	    cp_states[CP_INTR], cp_states[CP_IDLE]);
+  return &cp_buf[0];
 }
