@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.7 2002/07/25 09:51:43 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.8 2002/08/11 19:53:15 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -178,7 +178,8 @@ read_monitor(struct muxlist *mul, struct lex *l)
 
 /* Read mon.conf */
 int
-read_config_file(struct muxlist *muxlist, const char *filename)
+read_config_file(struct muxlist *muxlist, 
+		 const char *filename)
 {
     struct lex *l;
     struct mux *mux;
@@ -188,6 +189,8 @@ read_config_file(struct muxlist *muxlist, const char *filename)
     if ((l = open_lex(filename)) == NULL)
 	return 0;
     
+    info("reading configfile '%s'", filename);
+
     while (lex_nexttoken(l)) {
     /* expecting keyword now */
 	switch (l->op) {
