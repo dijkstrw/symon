@@ -36,6 +36,7 @@
 .Sh SYNOPSIS
 .Nm 
 .Op Fl vd
+.Op Fl f Ar filename
 .Pp
 .Sh DESCRIPTION
 .Nm
@@ -71,6 +72,11 @@ Show version information.
 Stop 
 .Nm
 from becoming a daemon and show debug information on stdout.
+.It Fl f Ar filename
+Read configuration from 
+.Ar filename
+instead of 
+.Pa /etc/symon.conf .
 .El
 .Sh CONFIGURATION
 .Nm

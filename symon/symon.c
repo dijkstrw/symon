@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.24 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: symon.c,v 1.25 2002/09/20 09:37:02 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -106,6 +106,10 @@ main(int argc, char *argv[])
     struct stream *stream;
     struct mux *mux;
     FILE *f;
+    char *cfgfile;
+    char *cfgpath;
+    char *stringptr;
+    int maxstringlen;
     int ch;
     int i;
 
@@ -114,16 +118,37 @@ main(int argc, char *argv[])
     /* reset flags */
     flag_debug = 0;
     flag_daemon = 0;
+    cfgfile = SYMON_CONFIG_FILE;
 
-    while ((ch = getopt(argc, argv, "dv")) != -1) {
+    while ((ch = getopt(argc, argv, "dvf:")) != -1) {
 	switch (ch) {
 	case 'd':
 	    flag_debug = 1;
 	    break;
+	case 'f':
+	    if (optarg && optarg[0] != '/') {
+		/* cfg path needs to be absolute, we will be a daemon soon */
+		if ((cfgpath = getwd(NULL)) == NULL)
+		    fatal("could not get working directory");
+		
+		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
+		cfgfile = xmalloc(maxstringlen);
+		strncpy(cfgfile, cfgpath, maxstringlen);
+		stringptr = cfgfile + strlen(cfgpath);
+		stringptr[0] = '/';
+		stringptr++;
+		strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
+		cfgfile[maxstringlen] = '\0';
+
+		free(cfgpath);
+	    } else 
+		cfgfile = xstrdup(optarg);
+
+	    break;
 	case 'v':
 	    info("symon version %s", SYMON_VERSION);
 	default:
-	    info("usage: %s [-d] [-v]", __progname);
+	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
 	    exit(1);
 	}
     }
@@ -147,7 +172,7 @@ main(int argc, char *argv[])
 
     info("symon version %s", SYMON_VERSION);
 
-    if (!read_config_file(&mul, SYMON_CONFIG_FILE))
+    if (!read_config_file(&mul, cfgfile))
 	fatal("configuration contained errors; quitting");
 
     if (flag_debug == 1)
@@ -189,7 +214,7 @@ main(int argc, char *argv[])
 
 	    SLIST_INIT(&newmul);
 
-	    if (!read_config_file(&newmul, SYMON_CONFIG_FILE)) {
+	    if (!read_config_file(&newmul, cfgfile)) {
 		info("new configuration contains errors; keeping old configuration");
 		free_muxlist(&newmul);
 	    } else {
