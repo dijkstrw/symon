@@ -57,5 +57,5 @@ void master_forbidread();
 void master_allowread();
 void master_resetsem();
 void reap_clients();
-void spawn_client();
+void spawn_client(int);
 

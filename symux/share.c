@@ -49,6 +49,7 @@
 
 #include "data.h"
 #include "error.h"
+#include "muxnet.h"
 #include "share.h"
 
 /* Shared operation: 
@@ -86,6 +87,7 @@
 int   realclients;               /* number of clients active */
 int   newclients;
 int   master;                    /* is current process master or child */
+int   clientsock;                /* connected client */
 
 enum  ipcstat { SIPC_FREE, SIPC_KEYED, SIPC_ATTACHED };
 key_t shmid;
@@ -149,7 +151,7 @@ master_forbidread()
 }
 /* Signal 'allow read' to all clients */
 void
-master_allowread()
+master_permitread()
 {
     shm[0]++;
 
@@ -233,7 +235,7 @@ initshare()
 
 /* Spawn off a new client */
 void
-spawn_client() 
+spawn_client(int sock) 
 {
     pid_t client_pid;
 
@@ -245,6 +247,7 @@ spawn_client()
     } else {
 	/* client */
 	master = 0;
+	clientsock = acceptconnection(sock);
 	client_loop();
     }
 }
@@ -315,7 +318,7 @@ exitmaster()
 
 /* Calculate maximum buffer space needed for a single mon hit */
 int 
-calculate_churnbuffer(struct mux *mux, struct sourcelist *sol) { 
+calculate_churnbuffer(struct sourcelist *sol) { 
     struct source *source; 
     struct stream *stream; 
     int maxlen;
@@ -329,6 +332,7 @@ calculate_churnbuffer(struct mux *mux, struct sourcelist *sol) {
     SLIST_FOREACH(source, sol, sources) {
 	maxlen = 0;
 	SLIST_FOREACH(stream, &source->sl, streams) {
+	    
 	    len += strlentype(stream->type);
 	    if (len > maxlen) maxlen = len;
 	}
@@ -351,10 +355,9 @@ client_loop()
 	sent = 0;
 
 	while (sent < total) {
-	    sent += write(2, &shm[2], total - sent);
+	    sent += write(clientsock, &shm[2], total - sent);
 	}
 
 	client_doneread();
-	write(0, "", 1);
     }
 }

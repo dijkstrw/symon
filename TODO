@@ -1,6 +1,15 @@
 Project Overview:
 
 == current problems / short term
+- add timestamp:source:rrdstring in monmux
+  add master running routines in monmux
+  walk through the entire sequence
+- ensure that functions have names to look alike
+- ensure same coding style troughout the source
+- build a website
+- package it for openbsd
+- write a paper for daemonnews
+
 - add a fast crc algorithm in netmon and netmux
 - allow other programs to connect to monmux for stream updates
   > add new rules to the language (filter {sources:types})

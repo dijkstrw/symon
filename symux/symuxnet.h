@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.2 2002/03/31 14:27:50 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.3 2002/06/21 12:24:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,11 +35,18 @@
 
 #include "data.h"
 
+#define IPAS4BYTES(x) \
+        ((x) >> 24), ((x) >> 16) & 0xff, ((x) >> 8) & 0xff, (x) & 0xff
+
 /* prototypes */
 __BEGIN_DECLS
-int  getmuxsocket(struct mux *);
-void wait_for_packet(int, struct sourcelist *, struct source **, 
-		     struct monpacket *packet); 
+int  acceptconnection(int);
+int  getmonsocket(struct mux *);
+int  getclientsocket(struct mux *);
+void waitfortraffic(struct mux *, struct sourcelist *, 
+		    struct source **, struct monpacket *);
+int  recvmonpacket(struct mux *, struct sourcelist *, 
+		   struct source **, struct monpacket *);
 int  check_crc_packet(struct monpacket *);
 __END_DECLS
 #endif /*_MONMUX_MUXNET_H*/

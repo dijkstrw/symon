@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.8 2002/05/31 14:24:46 dijkstra Exp $ */
+/* $Id: data.h,v 1.9 2002/06/21 12:24:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -111,7 +111,8 @@ SLIST_HEAD(sourcelist, source);
 struct mux {
     char *name;
     int offset;
-    int socket;
+    int clientsocket;
+    int monsocket;
     struct monpacket packet;
     struct sockaddr_in sockaddr;
     struct streamlist sl;

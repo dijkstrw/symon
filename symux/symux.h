@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.7 2002/04/04 17:47:00 dijkstra Exp $ */
+/* $Id: symux.h,v 1.8 2002/06/21 12:24:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -36,5 +36,13 @@
 #define MONMUX_CONFIG_FILE "/etc/monmux.conf"
 #define MONMUX_PID_FILE "/var/run/monmux.conf"
 #define MONMUX_VERSION "1.0"
+
+/* Amount of connections allowed in listen backlog 
+ * - note that more than 128 makes no sense in OpenBSD
+ */
+#define MONMUX_TCPBACKLOG 5
+
+/* Number of retries allowed in recvfrom */
+#define MONMUX_MAXREADTRIES 5
 
 #endif /*_MONMUX_MONMUX_H*/

@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.3 2002/04/01 20:16:04 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.4 2002/06/21 12:24:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,18 +34,22 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "data.h"
 #include "error.h"
+#include "monmux.h"
 #include "muxnet.h"
 #include "net.h"
 #include "xmalloc.h"
+#include "share.h"
 
-/* Obtain a mux socket for listening */
+/* Obtain a udp socket for incoming mon traffic */
 int 
-getmuxsocket(struct mux *mux) 
+getmonsocket(struct mux *mux) 
 {
     struct sockaddr_in sockaddr;
     int sock;
@@ -56,72 +60,153 @@ getmuxsocket(struct mux *mux)
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_port = htons(mux->port);
     sockaddr.sin_addr.s_addr = htonl(mux->ip);
-    bzero(&sockaddr.sin_zero, 8);
+    bzero(&sockaddr.sin_zero, sizeof(sockaddr.sin_zero));
 
     if (bind(sock, (struct sockaddr *) &sockaddr, 
 	     sizeof(struct sockaddr)) == -1)
 	fatal("could not bind socket: %.200s", strerror(errno));
 
+    mux->monsocket = sock;
+
+    return sock;
+}
+/* Obtain a listen socket for new clients */
+int
+getclientsocket(struct mux *mux)
+{
+  struct sockaddr_in sockaddr;
+  int sock;
+  
+  if ((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	fatal("could not obtain socket: %.200s", strerror(errno));
+
+    sockaddr.sin_family = AF_INET;
+    sockaddr.sin_port = htons(mux->port);
+    sockaddr.sin_addr.s_addr = htonl(mux->ip);
+    bzero(&sockaddr.sin_zero, sizeof(sockaddr.sin_zero));
+
+    if (bind(sock, (struct sockaddr *) &sockaddr, 
+	     sizeof(struct sockaddr)) == -1)
+	fatal("could not bind socket: %.200s", strerror(errno));
+
+    if (listen(sock, MONMUX_TCPBACKLOG) == -1)
+      fatal("could not listen to socket: %.200s", strerror(errno));
+
+    fcntl(sock, O_NONBLOCK);
+    mux->clientsocket = sock;
+
     return sock;
 }
 /*
- * Wait for a packet on <listen_sock> from a source in <sourcelist>
+ * Wait for traffic (mon reports from a source in sourclist | clients trying to connect
  * Returns the <source> and <packet>
+ * Silently forks off clienthandlers
  */
 void
-wait_for_packet(int listen_sock, struct sourcelist *sourcelist, 
-		struct source **source, struct monpacket *packet) 
+waitfortraffic(struct mux *mux, struct sourcelist *sourcelist, 
+	       struct source **source, struct monpacket *packet) 
 {
-    struct sockaddr_in sind;
-    u_int32_t sourceaddr;
-    int size;
-    socklen_t sl;
+    fd_set readset;
+    int socksactive;
 
-    for (;;) { /* FOREVER */
-	sl = sizeof(sind);
-	size = recvfrom(listen_sock, (void *)packet, sizeof(struct monpacket), 
-			0, (struct sockaddr *)&sind, &sl);
-
-	if ( size < 0 ) {
-	    if (errno != EAGAIN) {
-		fatal("recvfrom failed: %s", strerror(errno));
+    for (;;) { /* FOREVER - until a valid mon packet is received */
+	FD_ZERO(&readset);
+	FD_SET(mux->clientsocket, &readset);
+	FD_SET(mux->monsocket, &readset);
+	
+	socksactive = select(2, &readset, NULL, NULL, NULL);
+	
+	if (socksactive) {
+	    if (FD_ISSET(mux->monsocket, &readset)) {
+		if (recvmonpacket(mux, sourcelist, source, packet))
+		    return;
 	    }
-	} else {
-	    sourceaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
-	    *source = find_source_ip(sourcelist, sourceaddr);
 	    
-	    if (*source == NULL) {
-		debug("ignored data from %u.%u.%u.%u",
-		       (sourceaddr >> 24), (sourceaddr >> 16) & 0xff, 
-		       (sourceaddr >> 8) & 0xff, sourceaddr & 0xff);
-	    } else { 
-		/* check packet version */
-		if (packet->header.mon_version != MON_PACKET_VER) {
-		    warning("ignored packet with illegal type %d", 
-			   packet->header.mon_version);
-		} else {
-		    /* rewrite structs to host order */
-		    packet->header.length = ntohs(packet->header.length);
-		    packet->header.crc = ntohs(packet->header.crc);
-		    packet->header.timestamp = ntohq(packet->header.timestamp);
-		
-		    /* check crc */
-		    if (!check_crc_packet(packet)) {
-			warning("crc failure for packet from %u.%u.%u.%u",
-			       (lookup_ip >> 24), (lookup_ip >> 16) & 0xff, 
-			       (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
-		    } else {
-			if (flag_debug) 
-			    debug("good data received from %u.%u.%u.%u",
-				  (sourceaddr >> 24), (sourceaddr >> 16) & 0xff, 
-				  (sourceaddr >> 8) & 0xff, sourceaddr & 0xff);
-			return;  /* good packet received */
-		    }
-		} 
+	    if (FD_ISSET(mux->clientsocket, &readset)) {
+		spawn_client(mux->clientsocket);
 	    }
 	}
     }
 }
+/* Receive a mon packet for mux. Checks if the source is allowed and returns the source found.
+ * return 0 if no valid packet found 
+ */
+int
+recvmonpacket(struct mux *mux, struct sourcelist *sourcelist, 
+	      struct source **source, struct monpacket *packet) 
+
+{
+    struct sockaddr_in sind;
+    u_int32_t sourceaddr;
+    int size;
+    unsigned int received;
+    socklen_t sl;
+    int tries;
+
+    received = 0;
+    tries = 0;
+    do {
+	sl = sizeof(sind);
+	size = recvfrom(mux->monsocket, (void *)packet + received, 
+			sizeof(struct monpacket) - received, 
+			0, (struct sockaddr *)&sind, &sl);
+	received += size;
+	tries++;
+    } while ((errno == EAGAIN || errno == EINTR) &&
+	     (received < sizeof(struct monpacket)) &&
+	     (tries < MONMUX_MAXREADTRIES));
+    
+    if (errno) 
+	fatal("recvfrom failed: %s", strerror(errno));
+
+    sourceaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
+    *source = find_source_ip(sourcelist, sourceaddr);
+	    
+    if (*source == NULL) {
+	debug("ignored data from %u.%u.%u.%u",
+	      IPAS4BYTES(sourceaddr));
+    } else { 
+	/* check packet version */
+	if (packet->header.mon_version != MON_PACKET_VER) {
+	    warning("ignored packet with illegal type %d", 
+		    packet->header.mon_version);
+	} else {
+	    /* rewrite structs to host order */
+	    packet->header.length = ntohs(packet->header.length);
+	    packet->header.crc = ntohs(packet->header.crc);
+	    packet->header.timestamp = ntohq(packet->header.timestamp);
+		
+	    /* check crc */
+	    if (!check_crc_packet(packet)) {
+		warning("crc failure for packet from %u.%u.%u.%u",
+			IPAS4BYTES(lookup_ip));
+	    } else {
+		if (flag_debug) 
+		    debug("good data received from %u.%u.%u.n%u",
+			  IPAS4BYTES(sourceaddr));
+		return 1;  /* good packet received */
+	    }
+	} 
+    }
+    return 0;
+}
+int 
+acceptconnection(int sock)
+{
+    struct sockaddr_in sind;
+    u_int32_t clientaddr;
+    int clientsock;
+
+    if ((clientsock = accept(sock, &sind, sizeof(sind))) < 0)
+	fatal("Failed to accept an incoming connection. (.200%s)",
+	      strerror(errno));
+
+    clientaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
+    info("Accepted incoming client connection from %u.%u.%u.%u",
+	 IPAS4BYTES(clientaddr));
+
+    return clientsock;
+}   
 int 
 check_crc_packet(struct monpacket *packet)
 {

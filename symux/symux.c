@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.11 2002/05/31 14:24:38 dijkstra Exp $ */
+/* $Id: symux.c,v 1.12 2002/06/21 12:24:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -7,7 +7,7 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
+ 
  *    - Redistributions of source code must retain the above copyright
  *      notice, this list of conditions and the following disclaimer.
  *    - Redistributions in binary form must reproduce the above
@@ -50,6 +50,7 @@
 #include "muxnet.h"
 #include "net.h"
 #include "readconf.h"
+#include "share.h"
 #include "xmalloc.h"
 
 __BEGIN_DECLS
@@ -166,12 +167,13 @@ main(int argc, char *argv[])
     signal(SIGTERM, exithandler);
     signal(SIGTERM, exithandler); 
 
-    listen_sock = getmuxsocket(mux);
+    getmonsocket(mux);
+    getclientsocket(mux);
 
-    atexit(close_listensock);
+    /* TODO    atexit(close_listensock); */
 
     for (;;) {
-	wait_for_packet(listen_sock, &sol, &source, &packet);
+	waitfortraffic(mux, &sol, &source, &packet);
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
