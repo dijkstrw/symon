@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.5 2002/08/31 15:00:25 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.6 2002/09/02 06:16:26 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -62,10 +62,14 @@ char io_name[_POSIX2_LINE_MAX];
 void 
 init_io(char *s) 
 {
+#ifdef MON_KVM
     io_size_disk = sizeof io_disk;
     io_size_dihead = sizeof io_dihead;
 
     info("started module io(%s)", s);
+#else
+    warning("io(%s) requires kvm support which was disabled at compile time", s);
+#endif
 }
 /* Get new io statistics */
 int 
@@ -100,7 +104,6 @@ get_io(char *mon_buf, int maxlen, char *disk)
 
     return 0;
 #else
-    warning("io(%s) requires kvm support which was disabled at compile time", disk);
     return 0;
 #endif
 }
