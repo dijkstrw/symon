@@ -1,12 +1,20 @@
 14/01/2005 - 2.68
 
+   - NetBSD/sm_debug.c now has proper sysctl mib values
+
    - if and pf probes for FreeBSD 5.3 (Fredrik Söderblom)
+
    - mbuf interface change for FreeBSD 5.3 (Stefan T. Peters)
+
    - Spelling errors in INSTALL/symon.8/symux.8 (Jan Sepp)
+
    - platform/*BSD/sm_proc transferred cpucpt as uint16 instead of double
      (Jamie Herre)
+
    - states_entries is a GAUGE, not a ABSOLUTE (Lars Hansson, Marco Pfatschbacher)
+
    - NetBSD/plaform.h -> platform.h (Joel Andersson)
+
    - tsort and lorder are not needed on Linux. (Mark Enzinas)
 
 09/08/2004 - 2.67
@@ -368,4 +376,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.38 2005/01/14 16:15:21 dijkstra Exp $
+$Id: CHANGELOG,v 1.39 2005/02/04 09:49:26 dijkstra Exp $

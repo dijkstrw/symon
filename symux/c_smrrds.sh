@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.27 2005/01/14 16:14:32 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.28 2005/02/04 09:49:26 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2004 Willem Dijkstra
@@ -122,7 +122,7 @@ if [ X"$1$2$3$4$5$6$7$8$9" == "X" ]; then
     cat <<EOF
 Create rrd files for symux.
 
-Usage: $0 [oneday] [interval <seconds>] all | cpu0 | mem |
+Usage: `basename $0` [oneday] [interval <seconds>] all | cpu0 | mem |
 		   pf | mbuf | debug | proc_<process> |
 		   <if> | <io> | sensor[0-25]
 

@@ -1,4 +1,4 @@
-/* $Id: sm_debug.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.2 2005/02/04 09:49:26 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -46,10 +46,10 @@
 #include "error.h"
 #include "symon.h"
 
-#define SYMON_MAXDEBUGID      20/* = CTL_DEBUG_MAXID; depends lib/data.h */
+#define SYMON_MAXDEBUGID      20 /* = CTL_DEBUG_MAXID; depends lib/data.h */
 
 /* Globals for this module start with db_ */
-static int db_mib[] = { SM_DEBUG_MIB_VARS };
+static int db_mib[] = { CTL_DEBUG, 0, CTL_DEBUG_VALUE };
 static int db_v[SYMON_MAXDEBUGID];
 /* Prepare if module for first use */
 void

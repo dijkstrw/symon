@@ -1,6 +1,6 @@
-# $Id: Makefile.inc,v 1.27 2004/09/25 10:21:56 dijkstra Exp $
+# $Id: Makefile.inc,v 1.28 2005/02/04 09:49:26 dijkstra Exp $
 
-V=2.67
+V=2.68
 OS!=uname -s
 
 AR=	ar
