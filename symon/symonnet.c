@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.6 2002/06/21 15:53:31 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.7 2002/07/25 09:51:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -105,9 +105,14 @@ stream_in_packet(struct stream *stream, struct mux *mux)
 	 _POSIX2_LINE_MAX - mux->offset,    /* maxlen */
 	 stream->args);
 }
-/* Wrap up packet for sending */
+/* Ready a packet for transmission, set length and crc */
 void finish_packet(struct mux *mux) 
 {
+    u_int32_t crc;
+
     mux->packet.header.length = htons(mux->offset);
+    
     mux->packet.header.crc = 0;
+    crc = crc32(&mux->packet, mux->offset + sizeof(mux->packet.header));
+    mux->packet.header.crc = htonl(crc);
 }

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.9 2002/04/04 20:49:41 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.10 2002/07/25 09:51:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -115,12 +115,12 @@ read_source(struct sourcelist *sol, struct lex *l)
     source = add_source(sol, lookup_address);
     source->ip = lookup_ip;
 
-    EXPECT(LXT_BEGIN);
+    EXPECT(l, LXT_BEGIN);
     while (lex_nexttoken(l)) {
 	switch (l->op) {
 	    /* accept { cpu(x), ... } */
 	case LXT_ACCEPT:
-	    EXPECT(LXT_BEGIN);
+	    EXPECT(l, LXT_BEGIN);
 	    while (lex_nexttoken(l) && l->op != LXT_END) {
 		switch (l->op) {
 		case LXT_CPU:
@@ -199,7 +199,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 		    sa[0]='\0';
 		}
 		
-		EXPECT(LXT_IN);
+		EXPECT(l, LXT_IN);
 
 		lex_nexttoken(l);
 		

@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.10 2002/06/21 15:53:30 dijkstra Exp $ */
+/* $Id: data.h,v 1.11 2002/07/25 09:51:42 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -48,6 +48,9 @@
 
 #include "lex.h"
 
+/* Polynominal to use for CRC generation */
+#define MON_CRCPOLY  0x04c11db7
+
 #ifdef WORDS_BIGENDIAN
 #define htonq(n) n
 #define ntohq(n) n
@@ -80,7 +83,7 @@ struct monpacket {
 	u_int8_t mon_version;
 	u_int64_t timestamp;
 	u_int16_t length;
-	u_int16_t crc;
+	u_int32_t crc;
     } header;
     char data[_POSIX2_LINE_MAX];
 };  
@@ -228,9 +231,11 @@ struct stream *add_mux_stream(struct mux *, int, char *);
 struct stream *add_source_stream(struct source *, int, char *); 
 struct stream *find_mux_stream(struct mux *,  int, char *);
 struct stream *find_source_stream(struct source *, int, char *);
+u_int32_t      crc32(const void*, unsigned int);
 void           free_muxlist(struct muxlist *);
 void           free_sourcelist(struct sourcelist *);
 void           free_streamlist(struct streamlist *);
+void           init_crc32();
 __END_DECLS
 #endif /*_MON_LIB_DATA_H*/
 

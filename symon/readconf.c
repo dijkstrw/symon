@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.6 2002/04/09 05:37:37 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.7 2002/07/25 09:51:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -103,7 +103,7 @@ read_mon_args(struct mux *mux, struct lex *l)
     char sa[_POSIX2_LINE_MAX];
     int  st;
 
-    EXPECT(LXT_BEGIN)
+    EXPECT(l, LXT_BEGIN)
     while (lex_nexttoken(l) && l->op != LXT_END) {
 	switch (l->op) {
 	case LXT_CPU:
@@ -164,7 +164,7 @@ read_monitor(struct muxlist *mul, struct lex *l)
 	return 0;
 
     /* parse stream to */
-    EXPECT(LXT_STREAM);
+    EXPECT(l, LXT_STREAM);
     lex_nexttoken(l);
     if (l->op != LXT_TO) 
 	lex_ungettoken(l);

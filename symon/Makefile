@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.19 2002/07/20 14:28:30 dijkstra Exp $
+# $Id: Makefile,v 1.20 2002/07/25 09:51:43 dijkstra Exp $
 .include "../Makefile.inc"
 
 SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c monnet.c
@@ -9,8 +9,10 @@ CFLAGS+=-DMON_KVM -DNET_INET6 -I../lib
 all: mon mon.cat8
 
 mon: ${OBJS}
-	${CC} ${LDFLAGS} -o $@ ${OBJS} ${LIBS}
+	${CC} -o $@ ${OBJS} ${LIBS}
+.ifndef DEBUG
 	${STRIP} $@
+.endif
 
 clean:
 	rm -f mon mon.cat8 ${OBJS}

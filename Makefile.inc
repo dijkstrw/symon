@@ -1,8 +1,12 @@
-# $Id: Makefile.inc,v 1.1 2002/07/20 14:28:28 dijkstra Exp $
+# $Id: Makefile.inc,v 1.2 2002/07/25 09:51:41 dijkstra Exp $
 
 AR=	ar
 CC=	cc
+.ifdef DEBUG
+CFLAGS= -g -Wall
+.else
 CFLAGS= -O2 -Wall
+.endif
 INSTALL=install
 LORDER=	lorder
 NROFF=	nroff

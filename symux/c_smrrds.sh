@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.5 2002/07/20 14:28:33 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.6 2002/07/25 09:51:44 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -72,12 +72,17 @@ addsuffix() {
 }
 
 this=$0
+if [ X"$1" == "X" ]; then
+    sh $this help
+    exit 1;
+fi
+
 DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
 
 for i
 do
-# add inter_*.rrd if it is an interface
+# add if_*.rrd if it is an interface
 if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
@@ -85,7 +90,7 @@ if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 if [ `echo $i | egrep -e "^(cpu[0-9]|mem)$"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
-    echo "$i exists"
+    echo "$i exists - ignoring"
     i="done"
 fi
 
@@ -159,8 +164,31 @@ io_*.rrd)
     ;;
 *)
     # Default match
-    echo "Unknown command: $i"
+    cat <<EOF
+Usage: $0 all
+       $0 cpu|mem|<if>|<io>
+
+Where:
+if=	`echo $INTERFACES|
+    awk 'BEGIN  {FS="|"}
+		{for (i=1; i<=NF; i++) { 
+		    printf("%s|",$i); 
+		    if ((i%6)==0) {
+			printf("%s","\n	")
+		    }
+		} 
+		print " ";}'`
+io=	`echo $DISKS|
+	awk 'BEGIN  {FS="|"}
+		{for (i=1; i<=NF; i++) { 
+		    printf("%s|",$i); 
+		    if ((i%6)==0) {
+			printf("%s","\n	")
+		    }
+		} 
+		print " ";}'`
+
+EOF
     ;;
 esac
 done
-

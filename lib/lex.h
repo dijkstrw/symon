@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.9 2002/04/04 20:49:58 dijkstra Exp $ */
+/* $Id: lex.h,v 1.10 2002/07/25 09:51:42 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -91,11 +91,11 @@ int         parse_token(const char *);
 void        parse_error(struct lex *, const char *);
 __END_DECLS
 
-/* EXPECT(x) = next token in l must be x or return.  */
-#define EXPECT(x)    do {                         \
-	lex_nexttoken(l);                         \
-	if (l->op != (x)) {                       \
-	    parse_error(l, parse_opcode((x)));    \
+/* EXPECT(l,x) = next token in l must be opcode x or error.  */
+#define EXPECT(l, x)    do {                      \
+	lex_nexttoken((l));                       \
+	if ((l)->op != (x)) {                     \
+	    parse_error((l), parse_opcode((x)));  \
 	    return 0;                             \
 	}                                         \
     } while (0);

@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.6 2002/07/11 15:27:33 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.7 2002/07/25 09:51:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -151,6 +151,7 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     unsigned int received;
     socklen_t sl;
     int tries;
+    u_int32_t crc;
 
     received = 0;
     tries = 0;
@@ -179,30 +180,34 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     if (*source == NULL) {
 	debug("ignored data from %u.%u.%u.%u",
 	      IPAS4BYTES(sourceaddr));
-    } else { 
+	return 0;
+    } else {
+	/* check crc */
+	crc = ntohl(packet->header.crc);
+	packet->header.crc = 0;
+	crc ^= crc32(packet, received);
+	if ( crc != 0 ) {
+	    warning("ignored packet with bad crc from %u.%u.%u.%u",
+		    IPAS4BYTES(sourceaddr));
+	    return 0;
+	}
 	/* check packet version */
 	if (packet->header.mon_version != MON_PACKET_VER) {
 	    warning("ignored packet with illegal type %d", 
 		    packet->header.mon_version);
+	    return 0;
 	} else {
 	    /* rewrite structs to host order */
 	    packet->header.length = ntohs(packet->header.length);
 	    packet->header.crc = ntohs(packet->header.crc);
 	    packet->header.timestamp = ntohq(packet->header.timestamp);
 		
-	    /* check crc */
-	    if (!check_crc_packet(packet)) {
-		warning("crc failure for packet from %u.%u.%u.%u",
-			IPAS4BYTES(lookup_ip));
-	    } else {
-		if (flag_debug) 
-		    debug("good data received from %u.%u.%u.%u",
-			  IPAS4BYTES(sourceaddr));
-		return 1;  /* good packet received */
-	    }
+	    if (flag_debug) 
+		debug("good data received from %u.%u.%u.%u",
+		      IPAS4BYTES(sourceaddr));
+	    return 1;  /* good packet received */
 	} 
     }
-    return 0;
 }
 int 
 acceptconnection(int sock)
@@ -222,9 +227,3 @@ acceptconnection(int sock)
 
     return clientsock;
 }   
-int 
-check_crc_packet(struct monpacket *packet)
-{
-    /* TODO: sane and efficient crc check */
-    return 1;
-}

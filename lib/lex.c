@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.9 2002/04/04 20:49:58 dijkstra Exp $ */
+/* $Id: lex.c,v 1.10 2002/07/25 09:51:42 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -324,7 +324,7 @@ close_lex(struct lex *l)
 void
 parse_error(struct lex *l, const char *s)
 {
-    warning("%s:%d: expected %s (found '%.5s')", 
+    warning("%s:%d: expected %s (found '%.8s')", 
 	    l->filename, l->cline, s, l->token);
 }
 

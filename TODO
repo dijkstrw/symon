@@ -2,11 +2,9 @@ Project Overview:
 
 == current problems / short term
 
-- rewrite stringptr functions in monmux to snprintf ones
 - ensure that functions have names to look alike
 - ensure same coding style troughout the source
 - build a website
-- package it for openbsd
 - write a paper for daemonnews
 
 - add a fast crc algorithm in netmon and netmux
@@ -29,6 +27,9 @@ Project Overview:
 - port to linux
 
 == log 
+25/07/2002 - rewrite stringptr functions in monmux to snprintf ones
+           - package it for openbsd
+
 22/06/2002 - added shared code, upgraded networking code
 
 04/04/2002 - changed mon/monmux.conf format

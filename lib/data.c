@@ -1,9 +1,12 @@
-/* $Id: data.c,v 1.11 2002/07/20 14:28:29 dijkstra Exp $ */
+/* $Id: data.c,v 1.12 2002/07/25 09:51:42 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
  * All rights reserved.
  *
+ * The crc routine is from Rob Warnock <rpw3@sgi.com>, from the
+ * comp.compression FAQ.
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -27,12 +30,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- *
- */
+ * */
 
-/* A host carrying a 'mon' is considered a 'source' of information. A single
+/* Terminology: 
+ * 
+ * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
- * source can provide multiple 'streams' simultaniously.A source spools
+ * source can provide multiple 'streams' simultaniously. A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
  * representation is called a 'packedstream'.
  */
@@ -101,6 +105,10 @@ struct {
     {MT_IF,  LXT_IF},
     {MT_EOT, LXT_BADTOKEN}
 };
+/* parallel crc32 table */
+u_int32_t 
+crc32_table[256];
+
 
 /* Convert lexical entities to stream entities */
 const int 
@@ -715,4 +723,30 @@ calculate_churnbuffer(struct sourcelist *sol) {
     }
     return maxlen;
 }
+/* Big endian CRC32 */
+u_int32_t
+crc32(const void *buf, unsigned int len)
+{
+    u_int8_t  *p;
+    u_int32_t crc;
     
+    crc = 0xffffffff;
+    for (p = (u_int8_t *) buf; len > 0; ++p, --len)
+	crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
+
+    return ~crc;
+}
+/* Init table for CRC32 */
+void
+init_crc32()
+{
+    unsigned int i, j;
+    u_int32_t c;
+
+    for (i = 0; i < 256; ++i) {
+	c = i << 24;
+	for (j = 8; j > 0; --j)
+	    c = c & 0x80000000 ? (c << 1) ^ MON_CRCPOLY : (c << 1);
+	crc32_table[i] = c;
+    }
+}

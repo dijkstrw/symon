@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.15 2002/07/11 15:27:33 dijkstra Exp $ */
+/* $Id: symux.c,v 1.16 2002/07/25 09:51:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -71,7 +71,7 @@ exithandler(int s) {
 }
 void
 huphandler(int s) {
-    info("hup (%d) received", s);
+    info("sighup (%d) received", s);
     flag_hup = 1;
 }
 /* 
@@ -156,7 +156,7 @@ main(int argc, char *argv[])
     mux = SLIST_FIRST(&mul);
 
     churnbuflen = calculate_churnbuffer(&sol);
-    debug("Size of churnbuffer = %d", churnbuflen);
+    debug("size of churnbuffer = %d", churnbuflen);
     initshare(churnbuflen);
 
     /* catch signals */
@@ -166,10 +166,11 @@ main(int argc, char *argv[])
     signal(SIGTERM, exithandler);
     signal(SIGTERM, exithandler); 
 
+    /* Prepare crc32 */
+    init_crc32();
+
     getmonsocket(mux);
     getclientsocket(mux);
-
-    /* TODO    atexit(close_listensock); */
 
     for (;;) {
 	waitfortraffic(mux, &sol, &source, &packet);

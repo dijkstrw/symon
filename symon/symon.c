@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.16 2002/04/04 20:48:56 dijkstra Exp $ */
+/* $Id: symon.c,v 1.17 2002/07/25 09:51:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -192,6 +192,9 @@ main(int argc, char *argv[])
     signal(SIGINT, exithandler); 
     signal(SIGQUIT, exithandler); 
     signal(SIGTERM, exithandler); 
+
+    /* Prepare crc32 */
+    init_crc32();
 
     /* init modules */
     SLIST_FOREACH(mux, &mul, muxes) {
