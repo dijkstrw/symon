@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.14 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: data.c,v 1.15 2002/09/02 06:15:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -68,7 +68,9 @@ __END_DECLS
  *
  * L = u_int64 
  * l = u_int32
+ * s = u_int16
  * c = 3.2f <= u_int14 <= u_int16  (used in percentages)
+ * b = u_int8
  */
 struct {
     char type;
@@ -78,9 +80,11 @@ struct {
     int  bytelen;
     u_int64_t max;
 } streamvar[] = {
-    {'L', ":%qu",    " %20qu",   22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
+    {'L', ":%llu",  " %20llu",   22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
     {'l', ":%lu",    " %10lu",   12, sizeof(u_int32_t), (u_int64_t) 0xffffffff},
-    {'c', ":%3.2f", "  %3.2f",    7, sizeof(u_int16_t), (u_int64_t) 100},
+    {'s', ":%u",       " %5u",    7, sizeof(u_int16_t), (u_int64_t) 0xffff},
+    {'c', ":%3.2f",  " %3.2f",    8, sizeof(u_int16_t), (u_int64_t) 100},
+    {'b', ":%3u",      " %3u",    5, sizeof(u_int8_t),  (u_int64_t) 255},
     {'\0', NULL,         NULL,    0,                 0,             0}
 };
 /* streams of <type> have the packedstream <form> */
@@ -231,6 +235,44 @@ checklen(int maxlen, int current, int extra)
 	return 1;
     }
 }
+int 
+setheader(char *buf, struct monpacketheader *hph) 
+{
+    struct monpacketheader nph;
+    char *p;
+
+    nph.timestamp = htonq(hph->timestamp);
+    nph.crc = htonl(hph->crc);
+    nph.length = htons(hph->length);
+    nph.mon_version = hph->mon_version;
+
+    p = buf;
+
+    bcopy(&nph.crc, p, sizeof(u_int32_t)); p += sizeof(u_int32_t);
+    bcopy(&nph.timestamp, p, sizeof(u_int64_t)); p += sizeof(u_int64_t);
+    bcopy(&nph.length, p, sizeof(u_int16_t)); p += sizeof(u_int16_t);
+    bcopy(&nph.mon_version, p, sizeof(u_int8_t)); p += sizeof(u_int8_t);
+
+    return (p - buf);
+}
+int
+getheader(char *buf, struct monpacketheader *hph)
+{
+    char *p;
+
+    p = buf;
+
+    bcopy(p, &hph->crc, sizeof(u_int32_t)); p += sizeof(u_int32_t);
+    bcopy(p, &hph->timestamp, sizeof(u_int64_t)); p += sizeof(u_int64_t);
+    bcopy(p, &hph->length, sizeof(u_int16_t)); p += sizeof(u_int16_t);
+    bcopy(p, &hph->mon_version, sizeof(u_int8_t)); p += sizeof(u_int8_t);
+
+    hph->timestamp = ntohq(hph->timestamp);
+    hph->crc = ntohl(hph->crc);
+    hph->length = ntohs(hph->length);
+    
+    return (p - buf);
+}
 /* 
  * Pack multiple arguments of a MT_TYPE into a network order bytestream.
  * snpack returns the number of bytes actually stored.  
@@ -239,6 +281,8 @@ int
 snpack(char *buf, int maxlen, char *id, int type, ...)
 {
     va_list ap;
+    u_int16_t b;
+    u_int16_t s;
     u_int16_t c;
     u_int32_t l;
     u_int64_t q;
@@ -271,15 +315,28 @@ snpack(char *buf, int maxlen, char *id, int type, ...)
 	/* check for buffer overflow */
 	if (checklen(maxlen, offset, bytelenvar(streamform[type].form[i])))
 	    return offset;
-		     
+	
+	/* all values smaller than 32 bytes are transferred using ints on the
+           stack. This is to ensure that we get the correct value, if the
+           compiler decided to upgrade our short to a 32bit int. -- cheers
+           dhartmei@ */
 	switch (streamform[type].form[i]) {
+	case 'b':
+	    b = va_arg(ap, int);
+	    buf[offset++] = b;
+	    break;
+
 	case 'c':
-	    c = va_arg(ap, int); /* int instead of u_int16_t to avoid just
-                                    getting the first 2 bytes if the compiler
-                                    generated an int on the stack -- cheers
-                                    dhartmei@ */
+	    c = va_arg(ap, int);
 	    c = htons(c);
 	    bcopy(&c, buf + offset, sizeof(u_int16_t));
+	    offset += sizeof(u_int16_t);
+	    break;
+
+	case 's':
+	    s = va_arg(ap, int);
+	    s = htons(c);
+	    bcopy(&s, buf + offset, sizeof(u_int16_t));
 	    offset += sizeof(u_int16_t);
 	    break;
 
@@ -321,6 +378,7 @@ sunpack(char *buf, struct packedstream *ps)
     char *in, *out;
     int i=0;
     int type;
+    u_int16_t s;
     u_int16_t c;
     u_int32_t l;
     u_int64_t q;
@@ -350,10 +408,24 @@ sunpack(char *buf, struct packedstream *ps)
 
     while (streamform[type].form[i] != '\0') {
 	switch (streamform[type].form[i]) {
+	case 'b':
+	    bcopy((void *)in, (void *)out, sizeof(u_int8_t));
+	    in++;
+	    out++;
+	    break;
+
 	case 'c':
 	    bcopy((void *)in, &c, sizeof(u_int16_t));
 	    c = ntohs(c);
 	    bcopy(&c, (void *)out, sizeof(u_int16_t));
+	    in  += sizeof(u_int16_t);
+	    out += sizeof(u_int16_t);
+	    break;
+
+	case 's':
+	    bcopy((void *)in, &s, sizeof(u_int16_t));
+	    s = ntohs(s);
+	    bcopy(&s, (void *)out, sizeof(u_int16_t));
 	    in  += sizeof(u_int16_t);
 	    out += sizeof(u_int16_t);
 	    break;
@@ -387,6 +459,8 @@ int
 ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 {
     float f;
+    u_int16_t b;
+    u_int16_t s;
     u_int16_t c;
     u_int64_t q;
     u_int32_t l;
@@ -416,10 +490,22 @@ ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 	}
 
 	switch (vartype) {
+	case 'b':
+	    bcopy(in, &b, sizeof(u_int8_t));
+	    snprintf(out, strlenvar(vartype), formatstr, b); 
+	    in++;
+	    break; 
+
 	case 'c':
 	    bcopy(in, &c, sizeof(u_int16_t));
 	    f = (float)c / 10.0;
 	    snprintf(out, strlenvar(vartype), formatstr, f); 
+	    in  += sizeof(u_int16_t);
+	    break;
+
+	case 's':
+	    bcopy(in, &s, sizeof(u_int16_t));
+	    snprintf(out, strlenvar(vartype), formatstr, s); 
 	    in  += sizeof(u_int16_t);
 	    break;
 

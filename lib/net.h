@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.5 2002/04/04 20:49:58 dijkstra Exp $ */
+/* $Id: net.h,v 1.6 2002/09/02 06:15:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -36,6 +36,10 @@
 #include <sys/types.h>
 
 #define MONMUX_PORT  2100                     /* default monmux port */
+
+/* Rewrite an ipadress uint32_t as 4 comma seperated bytes */
+#define IPAS4BYTES(x) \
+        ((x) >> 24), ((x) >> 16) & 0xff, ((x) >> 8) & 0xff, (x) & 0xff
 
 extern char lookup_hostname[];
 extern char lookup_address[];

@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.14 2002/08/31 16:09:55 dijkstra Exp $ */
+/* $Id: data.h,v 1.15 2002/09/02 06:15:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -76,14 +76,22 @@ ntohq (u_int64_t v)
  * so that works out to about 38 packedstreams in a single mon packet.  
  */
 #define MON_PACKET_VER  1
-struct monpacket {
-    struct {
+
+/* Sending structures over the network is dangerous as the compiler might have
+ * added extra padding between items. monpacketheader below is therefore also
+ * marshalled and demarshalled via snpack and sunpack. The actual values are
+ * copied out of memory into this structure one by one. 
+ */
+struct monpacketheader {
 	u_int64_t timestamp;
 	u_int32_t crc;
 	u_int16_t length;
 	u_int8_t mon_version;
 	u_int8_t reserved;
-    } header;
+};
+
+struct monpacket {
+    struct monpacketheader header;
     char data[_POSIX2_LINE_MAX];
 };  
   
@@ -151,6 +159,7 @@ struct packedstream {
     int padding;
     char args[MON_PS_ARGLEN];
     union {
+	struct monpacketheader header;
 	struct { 
 	    u_int64_t mtotal_transfers;
 	    u_int64_t mtotal_seeks;
@@ -214,7 +223,9 @@ __BEGIN_DECLS
 const char    *type2str(const int);
 const int      token2type(const int);
 int            calculate_churnbuffer(struct sourcelist *);
+int            getheader(char *, struct monpacketheader *);
 int            ps2strn(struct packedstream *, char *, int, int);
+int            setheader(char *, struct monpacketheader *);
 int            snpack(char *, int, char*, int, ...);
 int            strlentype(int);
 int            sunpack(char *, struct packedstream *);
