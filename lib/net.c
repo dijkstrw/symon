@@ -1,7 +1,7 @@
 /*
- * $Id: net.c,v 1.3 2002/03/09 16:18:18 dijkstra Exp $
+ * $Id: net.c,v 1.4 2002/03/22 16:38:59 dijkstra Exp $
  *
- * Holds all network functions for monmux
+ * Holds all network functions for mon / monmux and derivatives
  */
 #include <sys/types.h>
 #include <netdb.h>
@@ -78,7 +78,7 @@ int lookup(name)
 
 	if (*host->h_addr_list) {
 	    lookup_ip = ntohl(*(unsigned long *) *(char **) host->h_addr_list);
-	    
+
 	    sprintf(lookup_address, "%u.%u.%u.%u", 
 		    (lookup_ip >> 24), (lookup_ip >> 16) & 0xff,
 		    (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
