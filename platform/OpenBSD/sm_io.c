@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.4 2002/08/09 08:21:31 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.5 2002/08/31 15:00:25 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -71,11 +71,8 @@ init_io(char *s)
 int 
 get_io(char *mon_buf, int maxlen, char *disk) 
 {
+#ifdef MON_KVM
     u_long diskptr;
-
-    diskptr = mon_nl[MON_DL].n_value;
-    if (diskptr == 0)
-	fatal("%s:%d: dl = symbol not defined", __FILE__, __LINE__);
 
     /* obtain first disk structure in kernel memory */
     if (kread(mon_nl[MON_DL].n_value, (char *) &io_dihead, io_size_dihead)) {
@@ -102,5 +99,9 @@ get_io(char *mon_buf, int maxlen, char *disk)
     }
 
     return 0;
+#else
+    warning("io(%s) requires kvm support which was disabled at compile time", disk);
+    return 0;
+#endif
 }
 

@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.20 2002/08/29 19:38:53 dijkstra Exp $ */
+/* $Id: symon.c,v 1.21 2002/08/31 15:00:25 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -57,14 +57,13 @@ __END_DECLS
 
 int flag_hup = 0;
 
-#ifdef MON_KVM
 kvm_t *kvmd;
 struct nlist mon_nl[] = {
-    {"_ifnet"},      /* MON_IFNET = 0  (mon.h)*/
-    {"_disklist"},   /* MON_DL    = 1  (mon.h)*/
+    {"_disklist"},   /* MON_DL    = 0  (mon.h)*/
     {""},
 };
 /* Read kernel memory */
+#ifdef MON_KVM
 int 
 kread(u_long addr, char *buf, int size)
 {
@@ -73,10 +72,17 @@ kread(u_long addr, char *buf, int size)
 	return 1;
     }
 
-    return (0);
+    return 0;
 }
-#endif /* MON_KVM */
+#else /* MON_KVM */
+int 
+kread(u_long addr, char *buf, int size)
+{
+    warning("kvm_read not compiled in, calling probe will signal failure");
 
+    return 0;
+}
+#endif
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
     {MT_IO,  init_io,  get_io},
@@ -125,9 +131,9 @@ main(int argc, char *argv[])
     struct itimerval alarminterval;
     struct stream *stream;
     struct mux *mux;
-    char mon_buf[_POSIX2_LINE_MAX];
     FILE *f;
 #ifdef MON_KVM
+    char mon_buf[_POSIX2_LINE_MAX];
     char *nlistf = NULL, *memf = NULL;
 #endif
     int ch;

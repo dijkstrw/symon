@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.15 2002/08/29 19:38:53 dijkstra Exp $ */
+/* $Id: symon.h,v 1.16 2002/08/31 15:00:25 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,15 +35,17 @@
 
 #include <sys/queue.h>
 
+#ifdef MON_KVM
 #include <kvm.h>
 #include <nlist.h>
+#endif
 
 #include "lex.h"
 #include "data.h"
 
 #define MON_CONFIG_FILE "/etc/mon.conf"
 #define MON_PID_FILE    "/var/run/mon.pid"
-#define MON_VERSION     "2.0"
+#define MON_VERSION     "2.3"
 #define MON_INTERVAL 5                           /* measurement interval */
 #define MON_WARN_SENDERR 50                      /* warn every x errors */
 
@@ -51,8 +53,7 @@
 #ifdef MON_KVM
 extern kvm_t *kvmd;
 extern struct nlist mon_nl[];
-#define MON_IFNET 0
-#define MON_DL    1
+#define MON_DL    0
 #endif /* MON_KVM */
 
 struct funcmap {
@@ -67,7 +68,12 @@ extern struct funcmap streamfunc[];
 __BEGIN_DECLS
 #ifdef MON_KVM
 extern int kread(u_long, char *, int);
-#endif 
+#else
+extern int kread(u_long, char *, int); /* This is a stub that reports an error
+					  when called. I included it so as not
+					  to miss any stuff when the time has
+					  come to rip all MON_KVM stuff out */
+#endif
 
 /* cpu.c */
 extern void init_cpu(char *);
