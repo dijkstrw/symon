@@ -2,10 +2,14 @@
 
 PROG=	mon
 SRCS=	mon.c
-# ?.PATH:	${.CURDIR}/../../sys/netiso
 BINGRP=	kmem
 BINMODE=2555
-LDADD=	-lkvm
+LDADD= -lkvm
 DPADD=	${LIBKVM}
+
+INET6?= yes
+.if (${INET6} != "no")
+CPPFLAGS+=      -DINET6
+.endif
 
 .include <bsd.prog.mk>
