@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.18 2002/12/15 14:27:43 dijkstra Exp $ */
+/* $Id: data.h,v 1.19 2003/01/08 16:04:12 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -55,6 +55,7 @@
 #define htonq(n) (n)
 #define ntohq(n) (n)
 #else
+#ifndef ntohq
 static inline u_int64_t
        htonq(u_int64_t v)
 {
@@ -65,7 +66,8 @@ static inline u_int64_t
 {
     return (u_int64_t) ntohl(v) << 32 | ntohl(v >> 32);
 }
-#endif
+#endif /* ntohq */
+#endif /* BYTE_ORDER */
 
 /* Symon packet version
  * version 1:
