@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.8 2002/04/01 20:15:55 dijkstra Exp $ */
+/* $Id: lex.c,v 1.9 2002/04/04 20:49:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -62,23 +62,25 @@ static struct {
     const char *name;
     int opcode;
 } keywords[] = {
-    { "source", LXT_SOURCE },
-    { "hub", LXT_HUB },
-    { "port", LXT_PORT },
-    { "stream", LXT_STREAM },
-    { "accept", LXT_ACCEPT },
-    { "write", LXT_WRITE },
-    { "in", LXT_IN },
-    { "cpu", LXT_CPU },
-    { "mem", LXT_MEM },
-    { "if", LXT_IF },
-    { "io", LXT_IO },
     { "{", LXT_BEGIN },
     { "}", LXT_END },
-    { ",", LXT_COMMA },
     { "(", LXT_OPEN },
     { ")", LXT_CLOSE },
+    { ",", LXT_COMMA },
     { ":", LXT_COLON },
+    { "accept", LXT_ACCEPT },
+    { "cpu", LXT_CPU },
+    { "if", LXT_IF },
+    { "in", LXT_IN },
+    { "io", LXT_IO },
+    { "mem", LXT_MEM },
+    { "monitor", LXT_MONITOR },
+    { "mux", LXT_MUX },
+    { "port", LXT_PORT },
+    { "source", LXT_SOURCE },
+    { "stream", LXT_STREAM },
+    { "to", LXT_TO },
+    { "write", LXT_WRITE },
     { NULL, 0 }
 };
 #define KW_OPS "{},():"

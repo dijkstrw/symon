@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: net.h,v 1.5 2002/04/04 20:49:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,6 +34,8 @@
 #define _MON_LIB_NET_H
 
 #include <sys/types.h>
+
+#define MONMUX_PORT  2100                     /* default monmux port */
 
 extern char lookup_hostname[];
 extern char lookup_address[];

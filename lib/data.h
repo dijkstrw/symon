@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.6 2002/04/01 20:15:55 dijkstra Exp $ */
+/* $Id: data.h,v 1.7 2002/04/04 20:49:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -213,7 +213,8 @@ __BEGIN_DECLS
 int            ps2strn(struct packedstream *, char *, int, int);
 int            snpack(char *, int, char*, int, ...);
 int            sunpack(char *, struct packedstream *);
-int            token2type(int);
+const int      token2type(const int);
+const char    *type2str(const int);
 struct mux    *add_mux(struct muxlist *, char *);
 struct mux    *find_mux(struct muxlist *, char *);
 struct source *add_source(struct sourcelist *, char *);
@@ -226,5 +227,6 @@ struct stream *find_source_stream(struct source *, int, char *);
 void           free_muxlist(struct muxlist *);
 void           free_sourcelist(struct sourcelist *);
 void           free_streamlist(struct streamlist *);
+struct mux *   rename_mux(struct muxlist *, struct mux *, char *);
 __END_DECLS
 #endif /*_MON_LIB_DATA_H*/

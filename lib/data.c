@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.7 2002/04/01 20:15:55 dijkstra Exp $ */
+/* $Id: data.c,v 1.8 2002/04/04 20:49:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -103,8 +103,8 @@ struct {
 };
 
 /* Convert lexical entities to stream entities */
-int 
-token2type(int token)
+const int 
+token2type(const int token)
 {
     int i;
 
@@ -114,6 +114,22 @@ token2type(int token)
 
     fatal("%s:%d: internal error: token (%d) could not be translated into a stream type", 
 	  __FILE__, __LINE__, token);
+
+    /* NOT REACHED */
+    return 0;
+}
+/* Convert stream entities to their ascii representation */
+const char *
+type2str(const int streamtype)
+{
+    int i;
+
+    for (i=0; streamtoken[i].type < MT_EOT; i++) 
+	if (streamtoken[i].type == streamtype) 
+	    return parse_opcode(streamtoken[i].token);
+
+    fatal("%s:%d: internal error: type (%d) could not be translated into ascii representation", 
+	  __FILE__, __LINE__, streamtype);
 
     /* NOT REACHED */
     return 0;
@@ -577,6 +593,23 @@ add_mux(struct muxlist *mul, char *name)
     SLIST_INSERT_HEAD(mul, p, muxes);
 
     return p;
+}
+/* Rename a mux */
+struct mux *
+rename_mux(struct muxlist *mul, struct mux *mux, char *name)
+{
+    if (mul == NULL || mux == NULL)
+	return NULL;
+
+    if (find_mux(mul, name) != NULL)
+	return NULL;
+
+    if (mux->name != NULL)
+	xfree(mux->name);
+
+    mux->name = xstrdup(name);
+
+    return mux;
 }
 void 
 free_muxlist(struct muxlist *mul) 
