@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.2 2005/01/14 16:14:00 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.3 2005/01/15 17:31:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004 Matthew Gream
@@ -155,12 +155,18 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 #endif
     stats[10] = totmem;
     stats[11] = totpct;
-#if (__FreeBSD_version < 503000)
+
+#ifdef HAS_MBUF_SFALLOCFAIL
+    stats[12] = mbstat.sf_allocfail;
+    stats[13] = mbstat.sf_allocwait;
+#else
+#ifdef HAS_MBUF_MDROPS
     stats[12] = mbstat.m_drops;
     stats[13] = mbstat.m_wait;
 #else
-    stats[12] = mbstat.sf_allocfail;
-    stats[13] = mbstat.sf_allocwait;
+    stats[12] = 0;
+    stats[13] = 0;
+#endif
 #endif
     stats[14] = mbstat.m_drain;
 

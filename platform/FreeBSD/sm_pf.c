@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.1 2005/01/14 16:12:55 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.2 2005/01/15 17:31:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -43,13 +43,15 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 
 #include <netinet/in.h>
 #include <net/if.h>
-#ifndef SM_PF_UNSUPPORTED
+#ifdef HAS_PFVAR_H
 #include <net/pfvar.h>
 #endif
 #include <errno.h>
@@ -59,8 +61,7 @@
 #include "error.h"
 #include "symon.h"
 
-#ifdef SM_PF_UNSUPPORTED
-
+#ifndef HAS_PFVAR_H
 void
 privinit_pf()
 {

@@ -1,7 +1,7 @@
-/* $Id: symon.h,v 1.31 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: symon.h,v 1.32 2005/01/15 17:31:11 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 #define SYMON_PID_FILE "/var/run/symon.pid"
 #define SYMON_DEFAULT_INTERVAL 5	/* measurement interval */
 #define SYMON_WARN_SENDERR 50	        /* warn every x errors */
-#define SYMON_MAX_DOBJECTS 2000	        /* max dynamic allocation; local limit per
+#define SYMON_MAX_DOBJECTS 10000	/* max dynamic allocation; local limit per
 					 * measurement module */
 #define SYMON_MAX_OBJSIZE (_POSIX2_LINE_MAX)
 #define SYMON_SENSORMASK 0xFF           /* sensors 0-255 are allowed */
