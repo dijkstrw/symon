@@ -1,5 +1,5 @@
 /*
- * $Id: lex.h,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: lex.h,v 1.4 2001/09/30 14:42:29 dijkstra Exp $
  *
  * Simple lexical analyser.
  * Configuration of keywords and operators should be done here.
@@ -17,7 +17,7 @@ typedef enum {
     oPort, 
     oAccept, oWrite, oIn,
     oCpu, oMem, oIf, oIo,
-    oBegin, oEnd, oComma, oOpen, oClose
+    oBegin, oEnd, oComma, oOpen, oClose, oColon
 } OpCodes;
 
 /* Lex structure */

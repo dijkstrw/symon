@@ -1,5 +1,5 @@
 /*
- * $Id: readconf.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: readconf.c,v 1.4 2001/09/30 14:42:29 dijkstra Exp $
  *
  * Parse monmux.conf style configuration files 
  * 
@@ -105,7 +105,7 @@ struct stream *add_stream(s, t, a)
     } while(0);
 
 /*
- * hub <host> { port <number> } 
+ * hub <host> (port|:|,| ) <number> } 
  */
 void read_hub(l)
     struct lex *l;
@@ -124,16 +124,14 @@ void read_hub(l)
     hub->name = xstrdup(lookup_address);
     hub->ip = lookup_ip;
 
-    expect(oBegin);
-    expect(oPort);
-
     lex_nexttoken(l);
+    if (l->op == oPort || l->op == oColon || l->op == oComma )
+	lex_nexttoken(l);
+
     if (l->type != tNumber)
 	parse_error(l, "<number>");
     
     hub->port = l->value;
-
-    expect(oEnd);
 }
 /*
  * source <host> { accept ... | write ... }

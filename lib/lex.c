@@ -1,5 +1,5 @@
 /*
- * $Id: lex.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: lex.c,v 1.4 2001/09/30 14:42:29 dijkstra Exp $
  *
  * Simple lexical analyser:
  *
@@ -48,9 +48,10 @@ static struct {
     { ",", oComma },
     { "(", oOpen },
     { ")", oClose },
+    { ":", oColon },
     { NULL, 0 }
 };
-#define KW_OPS "{},()"
+#define KW_OPS "{},():"
 
 /*
  * Returns the number of the token pointed to by cp or oBadToken
@@ -162,8 +163,6 @@ void lex_ungettoken(l)
 int lex_nexttoken(l)
     struct lex *l;
 {
-    char *e;
-
     /* return same token as last time if it has been pushed back */
     if (l->unget) {
 	l->unget = 0;
@@ -191,18 +190,6 @@ int lex_nexttoken(l)
 		return 0;
     }
     
-    /* number */
-    if (l->buffer[l->curpos] >= '0' 
-	&& l->buffer[l->curpos] <= '9') { 
-	l->value = strtol(&l->buffer[l->curpos], &e, 10);
-	snprintf(l->token, _POSIX2_LINE_MAX, "%ld", l->value);
-	l->tokpos = strlen(l->token);
-	l->type = tNumber;
-	l->curpos = e - l->buffer;
-	lex_termtoken(l);
-	return 1;
-    } 
-
     l->type = tString;
 
     /* delimited string */
@@ -262,18 +249,16 @@ int lex_nexttoken(l)
 	if (!lex_nextchar(l))
 	    break;
     }
-    
-    /* flush rest of line if comment */
-    if (l->buffer[l->curpos] == '#') {
-	lex_termtoken(l);
-	while (l->buffer[l->curpos] != '\n') 
-	    if (!lex_nextchar(l))
-		break;
-    } else {
-	lex_termtoken(l);
-    }
-
+    lex_termtoken(l);
     l->op = parse_token(l->token);
+
+    /* number */
+    if (l->token[0] >= '0' && l->token[0] <= '9' ) {
+	if (strlen(l->token) == strspn(l->token, "0123456789")) {
+	    l->type = tNumber;
+	    l->value = strtol(l->token, NULL , 10);
+	}
+    }
     return 1;
 }    
 /*
