@@ -61,7 +61,11 @@ connected listeners. Listeners can connect to
 on a tcp port and receive incoming 
 .Xr mon 8
 transmissions decoded into ascii.
-
+.Lp
+.Nm
+needs no specific priviledges besides being able to open it's ports and the rrd files. It should be run as
+.Ar "nobody" .
+.Lp
 The options:
 .Bl -tag -width Ds
 .It Fl a
@@ -82,22 +86,27 @@ every host that is to be monitored. The source section defines what data to
 accept and where to write that data to. Whitespace, newlines and text behind '#' are ignored. The format in BNF:
 .Pp
 .nf
-statement         = mux-statement | source-statement
-mux-statement     = "mux" host [ port ]
-host              = ip4addr | hostname
-port              = [ "port" | ":" | "," ] portnumber
-source-statement  = "source" host "{" action-list "}"
-action-list       = accept-statement | write-statement
-accept-statement  = "accept" "{" resources "}"
-resources         = resource ["(" argument ")"] [ ","|" " resources ]
-resource          = "cpu" | "mem" | "if" | "io"
-argument          = number | interfacename | diskname
-write-statement   = "write" resource "in" filename
+stmt         = mux-stmt | source-stmt
+mux-stmt     = "mux" host [ port ]
+host         = ip4addr | hostname
+port         = [ "port" | ":" | "," ] portnumber
+source-stmt  = "source" host "{" accept-stmts write-stmts "}"
+accept-stmts = accept-stmt [accept-stmts]
+accept-stmt  = "accept" "{" resources "}"
+resources    = resource ["(" argument ")"] [ ","|" " resources ]
+resource     = "cpu" | "mem" | "if" | "io"
+argument     = number | interfacename | diskname
+write-stmts  = write-stmt [write-stmts]
+write-stmt   = "write" resource "in" filename
 .fi
 .Pp
-Note that the port specifies both a udp port for incoming 
+Note that 
+.Va port 
+in the 
+.Va mux-stmt
+specifies the port-number for both the udp port (incoming 
 .Xr mon 8
-traffic and a tcp port for incoming listeners.
+traffic) and the tcp port for incoming listeners.
 
 .Sh EXAMPLE
 Here is an example 
@@ -112,25 +121,27 @@ will also listen on tcp port 2100 for incoming listeners.
 .nf
 mux 127.0.0.1:2100
 source 127.0.0.1 {
-	accept { cpu(0), mem, if(xl0), if(de0),
-	         if(lo0), if(wi0), io(wd0), io(wd1), io(wd2), 
-                 io(wd3), io(cd0), io(cd1) }
+    accept { cpu(0), mem, 
+             if(xl0), if(de0),
+             if(lo0), if(wi0), 
+             io(wd0), io(wd1), io(wd2), 
+             io(wd3), io(cd0), io(cd1) }
 
-	write cpu(0)   in "/export/mon/localhost/cpu0.rrd"
-	write mem      in "/export/mon/localhost/mem.rrd"
+    write cpu(0)   in "/export/mon/localhost/cpu0.rrd"
+    write mem      in "/export/mon/localhost/mem.rrd"
 
-	write if(xl0)  in "/export/mon/localhost/if_xl0.rrd"
-	write if(de0)  in "/export/mon/localhost/if_de0.rrd"
-	write if(lo0)  in "/export/mon/localhost/if_lo0.rrd"
-	write if(wi0)  in "/export/mon/localhost/if_wi0.rrd"
-	
-	write io(wd0)  in "/export/mon/localhost/io_wd0.rrd"
-	write io(wd1)  in "/export/mon/localhost/io_wd1.rrd"
-	write io(wd2)  in "/export/mon/localhost/io_wd2.rrd"
-	write io(wd3)  in "/export/mon/localhost/io_wd3.rrd"
+    write if(xl0)  in "/export/mon/localhost/if_xl0.rrd"
+    write if(de0)  in "/export/mon/localhost/if_de0.rrd"
+    write if(lo0)  in "/export/mon/localhost/if_lo0.rrd"
+    write if(wi0)  in "/export/mon/localhost/if_wi0.rrd"
 
-	write io(cd0)  in "/export/mon/localhost/io_cd0.rrd"
-	write io(cd1)  in "/export/mon/localhost/io_cd1.rrd"
+    write io(wd0)  in "/export/mon/localhost/io_wd0.rrd"
+    write io(wd1)  in "/export/mon/localhost/io_wd1.rrd"
+    write io(wd2)  in "/export/mon/localhost/io_wd2.rrd"
+    write io(wd3)  in "/export/mon/localhost/io_wd3.rrd"
+
+    write io(cd0)  in "/export/mon/localhost/io_cd0.rrd"
+    write io(cd1)  in "/export/mon/localhost/io_cd1.rrd"
 }
 .fi
 .Sh LISTENERS
@@ -160,6 +171,37 @@ Escape character is '^]'.
 telnet> close
 Connection closed.
 .fi
+.Lp
+The format is 
+.Va mon-version
+:
+.Va mon-host-ip
+:
+.Va io|if|cpu|mem
+:
+.Va stream-argument
+:
+.Va timestamp
+:
+.Va data
+.Lp
+Data formats:
+.Bl -tag -width Ds
+.It cpu
+Time spent in (user, nice, system, interrupt, idle). Total time is 100, data is
+offered with precision 2.
+.It mem
+Memory in (real active, real total, free, swap used, swap total). All values
+are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers
+internally.
+.It if
+Interface counters (packets in, packets out, bytes in, bytes out, multicasts
+in, multicasts out, errors in, errors out, collisions, drops). Values are 32
+bit unsigned integers internally.
+.It io
+Io/disk counters (total transfers, total seeks, total bytes). Values are 64 bit
+unsigned integers internally.
+.El
 .Sh SIGNALS
 .Bl -tag -width Ds
 .It SIGHUP
@@ -168,7 +210,19 @@ Causes
 to read 
 .Ar /etc/monmux.conf .
 .Nm
-will keep the old configuration if errors occured during parsing of the configuration file.
+will keep the old configuration if errors occured during parsing of the
+configuration file.
+.El
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa /var/run/monmux.pid
+Contains the program id of the
+.Nm
+daemon.
+.It Pa /etc/monmux.conf
+.Nm
+system wide configuration file. 
+.El
 .Sh BUGS
 .Nm 
 writes incoming data to rrd files first. This causes 
@@ -177,7 +231,9 @@ to lockup while rrdupdate is updating the rrd file.
 .Nm
 will be unresponsive during this process. 
 .Pp
-The listener format should be documented in the man page.
+Only one 
+.Nm
+instance can be run concurrently.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>
 .Sh SEE ALSO
