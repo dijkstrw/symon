@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.23 2004/03/01 07:34:50 dijkstra Exp $ */
+/* $Id: lex.c,v 1.24 2004/08/07 14:47:44 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -126,6 +126,9 @@ lex_readline(struct lex *l)
 {
     char *bp;
 
+    if (l == NULL)
+	return 0;
+
     bp = l->buffer;
 
     if (l->buffer) {
@@ -145,6 +148,9 @@ lex_readline(struct lex *l)
 void
 lex_copychar(struct lex *l)
 {
+    if (l == NULL)
+	return;
+
     l->token[l->tokpos] = l->buffer[l->curpos];
 
     if (++l->tokpos >= _POSIX2_LINE_MAX) {
@@ -157,6 +163,9 @@ lex_copychar(struct lex *l)
 int
 lex_nextchar(struct lex *l)
 {
+    if (l == NULL)
+	return 0;
+
     l->curpos++;
 
     if (l->curpos >= l->endpos)
@@ -172,6 +181,9 @@ lex_nextchar(struct lex *l)
 void
 lex_termtoken(struct lex *l)
 {
+    if (l == NULL)
+	return;
+
     l->token[l->tokpos] = l->token[_POSIX2_LINE_MAX - 1] = '\0';
     l->tokpos = 0;
 }
@@ -179,12 +191,18 @@ lex_termtoken(struct lex *l)
 void
 lex_ungettoken(struct lex *l)
 {
+    if (l == NULL)
+	return;
+
     l->unget = 1;
 }
 /* Get the next token in lex->token. return 0 if no more tokens found. */
 int
 lex_nexttoken(struct lex *l)
 {
+    if (l == NULL)
+	return 0;
+
     /* return same token as last time if it has been pushed back */
     if (l->unget) {
 	l->unget = 0;
@@ -295,7 +313,7 @@ open_lex(const char *filename)
     l->token = xmalloc(_POSIX2_LINE_MAX);
 
     if ((l->fh = open(l->filename, O_RDONLY)) < 0) {
-	warning("could not open file '%.200s':%.200s",
+	warning("could not open file \"%.200s\":%.200s",
 		l->filename, strerror(errno));
 	close_lex(l);
 	return NULL;
@@ -310,6 +328,9 @@ rewind_lex(struct lex *l)
 {
     off_t filepos;
 
+    if (l == NULL)
+	return;
+
     reset_lex(l);
 
     if ((filepos = lseek(l->fh, (off_t)0, SEEK_SET)) == -1) {
@@ -321,6 +342,9 @@ rewind_lex(struct lex *l)
 void
 reset_lex(struct lex *l)
 {
+    if (l == NULL)
+	return;
+
     l->cline = 1;
     l->curpos = 0;
     l->endpos = 0;
@@ -336,6 +360,7 @@ close_lex(struct lex *l)
 {
     if (l == NULL)
 	return;
+
     if (l->fh)
 	close(l->fh);
     if (l->buffer)
