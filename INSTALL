@@ -89,6 +89,19 @@ Less quick, but more verbose
           'big'    =  600 x 450, 
           'huge'   = 1024 x 640.
 
+Getting measurements without the web
+====================================
+
+The client directory contains a perl module 'SymuxClient.pm' that can be used
+to read measurements as they come in at the symux host. A sample Perl program
+called 'getsymonitem.pl' shows how to use the module. 
+
+Example:
+
+hoard$ getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
+93.40
+
+
 Portability
 ===========
 
@@ -98,5 +111,5 @@ symon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.7 2002/10/18 12:29:09 dijkstra Exp $
+$Id: INSTALL,v 1.8 2002/11/08 15:40:17 dijkstra Exp $
 

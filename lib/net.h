@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.7 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: net.h,v 1.8 2002/11/08 15:37:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -36,6 +36,8 @@
 #include <sys/types.h>
 
 #define SYMUX_PORT  2100                     /* default symux port */
+#define SYMUX_MAXIPNAMESIZE   17             /* maximum size of ascii 
+						rep of a dotted quad */
 
 /* Rewrite an ipadress uint32_t as 4 comma seperated bytes */
 #define IPAS4BYTES(x) \

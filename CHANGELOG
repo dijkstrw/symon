@@ -1,17 +1,34 @@
+08/11/2002 - 2.54
+
+   Added a perl module that allows ppl to connect to symux and do something
+   with the measurements as they come in. (I plan to drive an LCD using this,
+   but it could also be used to get, say, daily bandwidth usage)
+ 
+25/10/2002 - 2.53
+
+   Henning Brauer suggested a datadir statement for symux configuration -
+   added.
+
+   Henning also reported that c_smrrds.sh cannot create vlan10 and
+   up. c_smrrds.sh now has a special case for pseudo-interfaces (bridge, enc,
+   faith, gif, ppp, sppp, strip, tun, vlan)
+
+   Nick Nauwelaerts helped improve dependency definitions in the port Makefile.
+
 18/10/2002 - 2.52
 
    Julien Touche reported that symon/symux do not report initial cfg errors on
    the commandline - fixed.
 
-   Reinhard Sammer, Julien and Henning Brouwer all noticed that the php
-   code needed globals - fixed. Passing by reference at call time resulted in
-   php warnings - fixed.
+   Reinhard Sammer, Julien and Henning Brauer all noticed that the php code
+   needed globals - fixed. Passing by reference at call time resulted in php
+   warnings - fixed.
 
    Henning thought it was nice to see a single machine at a time. Julien wanted
    clickable magnification for individual graphs. Both options can now be
    configured in datasources.inc.
 
-   Resolved a bug reported by Vincent Keﬂler (who also provided the fix -
+   Resolved a bug reported by Vincent Kessler (who also provided the fix -
    cheers mate) in the rrdupdate call in symux - optind needs to be cleared
    ahead of the getopt call in rrdupdate.
 
@@ -20,7 +37,7 @@
    system. (Thanks to Nick Nauwelaerts for pointing this out)
 
    Installation of symon now also generates a default symon.conf file if the
-   system does not already have one. (Again, thanks Nick)
+   system does not already have one. 
    
    Someone at www.deadly.org pointed out that symon is no longer compatible
    with OpenBSD 3.0 - removed claim from the website.
@@ -185,4 +202,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.8 2002/10/18 12:29:09 dijkstra Exp $
+$Id: CHANGELOG,v 1.9 2002/11/08 15:40:17 dijkstra Exp $
