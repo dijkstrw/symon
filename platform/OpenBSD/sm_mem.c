@@ -1,5 +1,5 @@
 /*
- * $Id: sm_mem.c,v 1.4 2001/04/30 14:27:09 dijkstra Exp $
+ * $Id: sm_mem.c,v 1.5 2001/05/02 21:38:38 dijkstra Exp $
  *
  * Get current memory statistics in bytes; reports them back in mon_buf as
  *
@@ -68,7 +68,7 @@ char *get_mem(s)
   int i,rnswap;
 
   if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
-    syslog(LOG_WARNING,"mon/mem: sysctl failed");
+    syslog(LOG_WARNING,"mem.c:%d: sysctl failed",__LINE__);
     bzero(&me_vmtotal, sizeof(me_vmtotal));
   }
   /* convert memory stats to Kbytes */
@@ -98,7 +98,7 @@ char *get_mem(s)
 
 #ifndef MEM_SWAP
   /* real act/tot, free */
-  snprintf(&mon_buf[0], _POSIX2_LINE_MAX, "%lu:%lu:%lu", 
+  snprintf(&mon_buf[0], _POSIX2_LINE_MAX, "N:%lu:%lu:%lu", 
 	   me_stats[0], me_stats[1], me_stats[2]);
 #else
   /* real active, real total, free, swap used, swap total */

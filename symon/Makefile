@@ -5,8 +5,8 @@ SRCS=	mon.c cpu.c mem.c ifstat.c
 NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
-LDADD= -lkvm -L/usr/local/lib -lrrd -g
+LDADD= -lkvm -L/usr/local/lib -lrrd 
 DPADD=	${LIBKVM}
-CPPFLAGS+=-DMON_KVM -DMEM_SWAP -DNET_INET6 -Wall -I/usr/local/include -g
+CPPFLAGS+=-DMON_KVM -DMEM_SWAP -DNET_INET6 -Wall -I/usr/local/include  
 
 .include <bsd.prog.mk>

@@ -1,5 +1,5 @@
 /*
- * $Id: sm_cpu.c,v 1.4 2001/04/30 14:27:09 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.5 2001/05/02 21:38:38 dijkstra Exp $
  *
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
@@ -93,7 +93,7 @@ char *get_cpu(s)
 {
   int total;
   if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-    syslog(LOG_WARNING,"mon/cpu: sysctl kern.cp_time failed");
+    syslog(LOG_WARNING,"cpu.c:%d: sysctl kern.cp_time failed",__LINE__);
     total = 0;
   }
 

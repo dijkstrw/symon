@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.3 2001/04/30 14:27:09 dijkstra Exp $
+ * $Id: symon.h,v 1.4 2001/05/02 21:38:38 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -10,7 +10,6 @@
 
 /* Log base 2 of 1024 is 10 (2^10=1024) */
 #define LOG1024		10
-
 /* Buffer used for reporting status from subsystems */
 extern char mon_buf[];
 
