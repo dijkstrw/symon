@@ -1,11 +1,9 @@
-/* $Id: sm_cpu.c,v 1.10 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.11 2002/05/09 12:39:50 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  * 
- * Part of this code is based on code by Thorsten Lockert
- * <tholo@sigmasoft.com>, Christos Zoulas <christos@ee.cornell.edu> and Tobias
- * Weingartner <weingart@openbsd.org>. 
- * (The function percentages from OpenBSD/usr/src/usr.bin/top/utils.c)
+ * The percentages function was written by William LeFebvre and is part of the
+ * 'top' utility. His copyright statement is below.
  *
  * Copyright (c) 2001-2002 Willem Dijkstra
  * All rights reserved.
@@ -33,7 +31,17 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
- * 
+ *  */
+
+/*
+ *  Top users/processes display for Unix
+ *  Version 3
+ *
+ *  This program may be freely redistributed,
+ *  but this entire comment MUST remain intact.
+ *
+ *  Copyright (c) 1984, 1989, William LeFebvre, Rice University
+ *  Copyright (c) 1989, 1990, 1992, William LeFebvre, Northwestern University
  */
 
 /*

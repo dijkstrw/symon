@@ -3,18 +3,15 @@ Project Overview:
 == current problems / short term
 - add a fast crc algorithm in netmon and netmux
 - allow other programs to connect to monmux for stream updates
+  > add new rules to the language (filter {sources:types})
+  > listen to a tcp socket for incoming clients
+  > use SYSVSHM to communicate between master and client handlers
 - change rrd to accommodate batch updates
 - mon2web should have graph objects/modules
   (ask a module what graphing options it supports and show these,
    the same module should also draw the picture, maybe php oo?)
 - weird: rrd_update fails for monmux when not in daemon mode?
 - look at lib/net.c/lookup, give joe credits for his work.
-- look at mon/cpu.c/percentages, give appropriate people credits.
-- write manual pages
-- change configuration:
-  mon: stream monitor data cpu(0), mem to dikkeaap:port
-  monmux: accept data from dikkeaap cpu(0) 
-	    store in "file"
 
 
 == longer term
@@ -24,6 +21,10 @@ Project Overview:
 - port to linux
 
 == log 
+04/04/2002 - changed mon/monmux.conf format
+	     written manual pages
+             look at mon/cpu.c/percentages, give appropriate people credits.
+
 01/04/2002 - changed all memsets into bzero
              all output messages have the same format now
              write pids in /var/run 

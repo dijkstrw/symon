@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.9 2002/04/04 17:47:00 dijkstra Exp $ */
+/* $Id: symux.c,v 1.10 2002/05/09 12:39:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -103,7 +103,7 @@ main(int argc, char *argv[])
     char stringbuf[_POSIX2_LINE_MAX];
     struct muxlist mul, newmul;
     struct sourcelist sol, newsol;
-    char *arg_ra[3];
+    char *arg_ra[4];
     struct stream *stream;
     struct source *source;
     struct mux *mux;
@@ -200,8 +200,9 @@ main(int argc, char *argv[])
 	    if (stream != NULL) {
 		if (stream->file != NULL) {
 		    /* save if file specified */
-		    arg_ra[0] = "rrd_update";
-		    arg_ra[1] = stream->file;
+		    arg_ra[0] = "rrdupdate";
+		    arg_ra[1] = "--";
+		    arg_ra[2] = stream->file;
 
 		    t = (time_t) packet.header.timestamp;
 		    sprintf(stringbuf, "%u", t);
@@ -209,15 +210,18 @@ main(int argc, char *argv[])
 				sizeof(stringbuf) - strlen(stringbuf), 
 				PS2STR_RRD);
 
-		    arg_ra[2] = stringbuf;
-
-		    rrd_update(3,arg_ra);
+		    arg_ra[3] = stringbuf;
+		    rrd_update(4, arg_ra);
 
 		    if (rrd_test_error()) {
 			warning("rrd_update:%s",rrd_get_error());
-			debug("%s %s %s", arg_ra[0], arg_ra[1], arg_ra[2]);
+			warning("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
 			rrd_clear_error();                                                            
+		    } else {
+			if (flag_debug == 1) 
+			    debug("%s %s %s %s", arg_ra[0], arg_ra[1], arg_ra[2], arg_ra[3]);
 		    }
+
 		}
 	    }
 	}

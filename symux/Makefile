@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.7 2002/04/01 20:16:04 dijkstra Exp $
+# $Id: Makefile,v 1.8 2002/05/09 12:39:53 dijkstra Exp $
 
 PROG=	monmux
 SRCS=	monmux.c readconf.c muxnet.c
-NOMAN=	No man page yet.
+MAN= 	monmux.8
 BINGRP=	kmem
 BINMODE=2555
 LDADD=  -g -L../lib -L/usr/local/lib -lrrd -lmon

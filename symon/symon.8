@@ -62,7 +62,7 @@ from becoming a daemon and show debug information on stdout.
 .Sh CONFIGURATION
 .Nm
 obtains configuration data from 
-.Pq Pa /etc/mon.conf .
+.Ar /etc/mon.conf .
 The configuration file contains monitor stanzas that define what resources should be monitored and to which 
 .Xr monmux 8
 the information should be streamed to.
@@ -101,6 +101,11 @@ will keep the old configuration if errors occured during parsing of the configur
 Every monitored resource mentioned 
 .Ar /etc/mon.conf 
 gets queried. Mentioning, for example, cpu(0) twice for different muxes will result in two distinct cpu(0) measurement actions. 
+.Pp
+.Nm 
+does not check whether resources mentioned in 
+.Ar /etc/mon.conf
+exist. 
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>
 .Sh SEE ALSO
