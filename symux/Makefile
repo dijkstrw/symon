@@ -1,12 +1,12 @@
-# $Id: Makefile,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+# $Id: Makefile,v 1.4 2001/09/30 15:10:20 dijkstra Exp $
 
 PROG=	monmux
-SRCS=	monmux.c readconf.c xmalloc.c lex.c error.c net.c
+SRCS=	monmux.c readconf.c
 NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
-LDADD=  -g -L/usr/local/lib -lrrd
+LDADD=  -g -L../lib -L/usr/local/lib -lrrd -lmon
 DPADD=	${LIBKVM}
-CPPFLAGS+=-g -I/usr/local/include -Wall
+CPPFLAGS+=-g -I../lib -I/usr/local/include -Wall
 DEBUG=-g
 .include <bsd.prog.mk>

@@ -1,13 +1,12 @@
 /*
- * $Id: symon.c,v 1.7 2001/07/01 12:50:24 dijkstra Exp $
+ * $Id: symon.c,v 1.8 2001/09/30 15:10:17 dijkstra Exp $
  *
  * All configuration is done in the source. The main program
  * does not take any arguments (yet)
  *
  * This program wakes up every MON_INTERVAL to measure cpu, memory and
- * interface statistics. This code takes care of waking up every so ofte, while
- * the actual measurement tasks are handled elsewhere.
- * 
+ * interface statistics. This code takes care of waking up every so often,
+ * while the actual measurement tasks are handled elsewhere.
  */
 #include <err.h>
 #include <errno.h>
@@ -103,7 +102,7 @@ int main(argc, argv)
 #endif
 
     /* Init modules */
-    syslog(LOG_INFO,"system monitor $Revision: 1.7 $ started");
+    syslog(LOG_INFO,"system monitor $Revision: 1.8 $ started");
 
     i=-1;
     while (monm[++i].type) {
