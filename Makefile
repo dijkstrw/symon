@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2002/11/08 15:40:11 dijkstra Exp $
+# $Id: Makefile,v 1.11 2003/01/18 09:55:31 dijkstra Exp $
 
 SUBDIR=	lib symon symux symon2web client
 
@@ -25,6 +25,7 @@ dist: clean
 	cp /tmp/symon-${V}.tar.gz /usr/ports/distfiles/; \
 	cd $${workdir}/ports/symon; \
 	${MAKE} makesum; \
+	chown dijkstra.dijkstra distinfo; \
 	cd ..; \
 	find symon -type f -print | egrep -v 'CVS' | \
 		tar -czvf /tmp/ports-symon-${V}.tar.gz -I -; \

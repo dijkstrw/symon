@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.17 2002/12/15 14:28:10 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.18 2003/01/18 09:55:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -372,7 +372,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		}
 		break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG/PROC */
 	    default:
-		parse_error(l, "{cpu|mem|if|io|debug}");
+		parse_error(l, "{cpu|mem|if|io|debug|proc}");
 		return 0;
 		break;
 	    }
