@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.25 2004/02/24 22:13:20 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.26 2004/02/26 22:48:08 dijkstra Exp $
 
 #
-# Copyright (c) 2001-2003 Willem Dijkstra
+# Copyright (c) 2001-2004 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,28 @@
 # --- user configuration starts here
 INTERVAL=${INTERVAL:-5}
 # --- user configuration ends here
+
+# addsuffix adds a suffix to each entry of a list (item|item|...)
+addsuffix() {
+    list=$1'|'
+    suffix=$2
+    while [ `echo $list | grep '|'` ]; do
+	newlist=$newlist'|'`echo $list | cut -f1 -d\|`$suffix
+	list=`echo $list | cut -f2- -d\|`
+    done
+    echo $newlist | cut -b2-
+}
+
+create_rrd() {
+    file=$1
+    shift
+    rrdtool create $file $RRD_ARGS $* $RRA_SETUP
+    if [ "$?" = "0" -a -f $file ]; then
+	echo "$file created"
+    else
+	echo "could not create $file"
+    fi
+}
 
 # get arguments
 select_interval=""
@@ -88,19 +110,8 @@ fi
 
 # All interfaces and disks
 INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
-VIRTUALINTERFACES="bridge|enc|faith|gif|ppp|sppp|strip|tun|vlan";
+VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
-
-# addsuffix adds a suffix to each entry of a list (item|item|...)
-addsuffix() {
-    list=$1'|'
-    suffix=$2
-    while [ `echo $list | grep '|'` ]; do
-	newlist=$newlist'|'`echo $list | cut -f1 -d\|`$suffix
-	list=`echo $list | cut -f2- -d\|`
-    done
-    echo $newlist | cut -b2-
-}
 
 DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
@@ -153,7 +164,7 @@ if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$)"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -185,51 +196,43 @@ io|disks)
 
 cpu[0-9].rrd)
     # Build cpu file
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:user:GAUGE:$INTERVAL:0:100 \
 	DS:nice:GAUGE:$INTERVAL:0:100 \
 	DS:system:GAUGE:$INTERVAL:0:100 \
 	DS:interrupt:GAUGE:$INTERVAL:0:100 \
-	DS:idle:GAUGE:$INTERVAL:0:100 \
-	$RRA_SETUP
-    echo "$i created"
+	DS:idle:GAUGE:$INTERVAL:0:100
     ;;
 
 sensor*.rrd)
     # Build sensor file
-    rrdtool create $i $RRD_ARGS \
-	DS:value:GAUGE:$INTERVAL:-U:U \
-	$RRA_SETUP
-    echo "$i created"
+    create_rrd $i \
+	DS:value:GAUGE:$INTERVAL:-U:U
     ;;
 
 mem.rrd)
     # Build memory file
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:real_active:GAUGE:$INTERVAL:0:U \
 	DS:real_total:GAUGE:$INTERVAL:0:U \
 	DS:free:GAUGE:$INTERVAL:0:U \
 	DS:swap_used:GAUGE:$INTERVAL:0:U \
-	DS:swap_total:GAUGE:$INTERVAL:0:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:swap_total:GAUGE:$INTERVAL:0:U
     ;;
 
 if_*.rrd)
     # Build interface files
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:ipackets:COUNTER:$INTERVAL:U:U DS:opackets:COUNTER:$INTERVAL:U:U \
 	DS:ibytes:COUNTER:$INTERVAL:U:U DS:obytes:COUNTER:$INTERVAL:U:U \
 	DS:imcasts:COUNTER:$INTERVAL:U:U DS:omcasts:COUNTER:$INTERVAL:U:U \
 	DS:ierrors:COUNTER:$INTERVAL:U:U DS:oerrors:COUNTER:$INTERVAL:U:U \
-	DS:collisions:COUNTER:$INTERVAL:U:U DS:drops:COUNTER:$INTERVAL:U:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:collisions:COUNTER:$INTERVAL:U:U DS:drops:COUNTER:$INTERVAL:U:U
     ;;
 
 debug.rrd)
     # Build debug file
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:debug0:GAUGE:$INTERVAL:U:U DS:debug1:GAUGE:$INTERVAL:U:U \
 	DS:debug2:GAUGE:$INTERVAL:U:U DS:debug3:GAUGE:$INTERVAL:U:U \
 	DS:debug4:GAUGE:$INTERVAL:U:U DS:debug5:GAUGE:$INTERVAL:U:U \
@@ -239,24 +242,20 @@ debug.rrd)
 	DS:debug12:GAUGE:$INTERVAL:U:U DS:debug13:GAUGE:$INTERVAL:U:U \
 	DS:debug14:GAUGE:$INTERVAL:U:U DS:debug15:GAUGE:$INTERVAL:U:U \
 	DS:debug16:GAUGE:$INTERVAL:U:U DS:debug17:GAUGE:$INTERVAL:U:U \
-	DS:debug18:GAUGE:$INTERVAL:U:U DS:debug19:GAUGE:$INTERVAL:U:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:debug18:GAUGE:$INTERVAL:U:U DS:debug19:GAUGE:$INTERVAL:U:U
     ;;
 proc_*.rrd)
     # Build proc file
-    rrdtool create $i $RRD_ARGS \
-	DS:number:GAUGE:$INTERVAL:0:U DS:uticks:GAUGE:$INTERVAL:0:U \
-	DS:sticks:GAUGE:$INTERVAL:0:U DS:iticks:GAUGE:$INTERVAL:0:U \
+    create_rrd $i \
+	DS:number:GAUGE:$INTERVAL:0:U DS:uticks:COUNTER:$INTERVAL:0:U \
+	DS:sticks:COUNTER:$INTERVAL:0:U DS:iticks:COUNTER:$INTERVAL:0:U \
 	DS:cpusec:GAUGE:$INTERVAL:0:U DS:cpupct:GAUGE:$INTERVAL:0:100 \
-	DS:procsz:GAUGE:$INTERVAL:0:U DS:rsssz:GAUGE:$INTERVAL:0:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:procsz:GAUGE:$INTERVAL:0:U DS:rsssz:GAUGE:$INTERVAL:0:U
     ;;
 
 pf.rrd)
     # Build pf file
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:bytes_v4_in:DERIVE:$INTERVAL:0:U DS:bytes_v4_out:DERIVE:$INTERVAL:0:U \
 	DS:bytes_v6_in:DERIVE:$INTERVAL:0:U DS:bytes_v6_out:DERIVE:$INTERVAL:0:U \
 	DS:packets_v4_in_pass:DERIVE:$INTERVAL:0:U DS:packets_v4_in_drop:DERIVE:$INTERVAL:0:U \
@@ -272,14 +271,12 @@ pf.rrd)
 	DS:counters_fragment:DERIVE:$INTERVAL:0:U \
 	DS:counters_short:DERIVE:$INTERVAL:0:U \
 	DS:counters_normalize:DERIVE:$INTERVAL:0:U \
-	DS:counters_memory:DERIVE:$INTERVAL:0:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:counters_memory:DERIVE:$INTERVAL:0:U
     ;;
 
 mbuf.rrd)
     # Build mbuf file
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:totmbufs:GAUGE:$INTERVAL:0:U DS:mt_data:GAUGE:$INTERVAL:0:U \
 	DS:mt_oobdata:GAUGE:$INTERVAL:0:U DS:mt_control:GAUGE:$INTERVAL:0:U \
 	DS:mt_header:GAUGE:$INTERVAL:0:U DS:mt_ftable:GAUGE:$INTERVAL:0:U \
@@ -287,31 +284,25 @@ mbuf.rrd)
 	DS:pgused:GAUGE:$INTERVAL:0:U DS:pgtotal:GAUGE:$INTERVAL:0:U \
 	DS:totmem:GAUGE:$INTERVAL:0:U DS:totpct:GAUGE:$INTERVAL:0:100 \
 	DS:m_drops:COUNTER:$INTERVAL:0:U DS:m_wait:COUNTER:$INTERVAL:0:U \
-	DS:m_drain:COUNTER:$INTERVAL:0:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:m_drain:COUNTER:$INTERVAL:0:U
     ;;
 
 io_*.rrd)
     # Build disk files
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:rxfer:COUNTER:$INTERVAL:U:U \
 	DS:wxfer:COUNTER:$INTERVAL:U:U \
 	DS:seeks:COUNTER:$INTERVAL:U:U \
 	DS:rbytes:COUNTER:$INTERVAL:U:U \
-	DS:wbytes:COUNTER:$INTERVAL:U:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:wbytes:COUNTER:$INTERVAL:U:U
     ;;
 
 io1_*.rrd)
     # Build disk files
-    rrdtool create $i $RRD_ARGS \
+    create_rrd $i \
 	DS:transfers:COUNTER:$INTERVAL:U:U \
 	DS:seeks:COUNTER:$INTERVAL:U:U \
-	DS:bytes:COUNTER:$INTERVAL:U:U \
-	$RRA_SETUP
-    echo "$i created"
+	DS:bytes:COUNTER:$INTERVAL:U:U
     ;;
 
 "done")

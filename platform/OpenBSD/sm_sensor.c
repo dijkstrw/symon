@@ -1,7 +1,7 @@
-/* $Id: sm_sensor.c,v 1.3 2003/12/21 13:01:05 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.4 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,8 @@
  *
  * num : value
  *
- * This code is not re-entrant. It uses sysctl and can be run as any user.
+ * This code is not re-entrant. It uses sysctl and can be run as any
+ * user.
  */
 #include <conf.h>
 

@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2003 Willem Dijkstra
+.\" Copyright (c) 2001-2004 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -103,11 +103,11 @@ newlines and text behind '#' are ignored. The format in BNF:
 .Pp
 .nf
 monitor-rule = "monitor" "{" resources "}" [every]
-	       "stream" ["to"] host [ port ]
+               "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
 argument     = number | interfacename | diskname
 resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
-	       "proc" | "mbuf" | "sensor"
+               "proc" | "mbuf" | "sensor"
 every        = "every" time
 time         = "second" | number "seconds"
 host         = ip4addr | ip6addr | hostname
@@ -117,6 +117,10 @@ port         = [ "port" | "," ] portnumber
 Note that symux(8) data files default to receiving data every 5
 seconds. Adjusting the monitoring interval will also require adjusting every
 symux(8) datafile.
+.Pp
+The pf probe will return data that is collected for the
+.Pa loginterface
+set in /etc/pf.conf(5).
 .Sh EXAMPLE
 Here is an example
 .Ar symon.conf

@@ -1,7 +1,7 @@
-/* $Id: symon.c,v 1.33 2004/02/24 22:13:20 dijkstra Exp $ */
+/* $Id: symon.c,v 1.34 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -262,22 +262,26 @@ main(int argc, char *argv[])
 
 	    SLIST_INIT(&newmul);
 
-	    if (!read_config_file(&newmul, cfgpath)) {
-		info("new configuration contains errors; keeping old configuration");
-		free_muxlist(&newmul);
-	    } else {
-		free_muxlist(&mul);
-		mul = newmul;
-		info("read configuration file '%.200s' successfully", cfgpath);
+	    if (flag_unsecure) {
+		if (!read_config_file(&newmul, cfgpath)) {
+		    info("new configuration contains errors; keeping old configuration");
+		    free_muxlist(&newmul);
+		} else {
+		    free_muxlist(&mul);
+		    mul = newmul;
+		    info("read configuration file '%.200s' successfully", cfgpath);
 
-		/* init modules */
-		SLIST_FOREACH(mux, &mul, muxes) {
-		    connect2mux(mux);
-		    SLIST_FOREACH(stream, &mux->sl, streams) {
-			(streamfunc[stream->type].init) (stream->args);
+		    /* init modules */
+		    SLIST_FOREACH(mux, &mul, muxes) {
+			connect2mux(mux);
+			SLIST_FOREACH(stream, &mux->sl, streams) {
+			    (streamfunc[stream->type].init) (stream->args);
+			}
 		    }
+		    set_stream_use(&mul);
 		}
-		set_stream_use(&mul);
+	    } else {
+		info("configuration unreachable because of privsep; keeping old configuration");
 	    }
 	} else {
 	    /* populate for modules that get all their measurements in one go */

@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.22 2004/02/24 22:13:20 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.23 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -1,10 +1,10 @@
-/* $Id: data.c,v 1.23 2004/02/24 22:13:20 dijkstra Exp $ */
+/* $Id: data.c,v 1.24 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
- * The crc routine is from Rob Warnock <rpw3@sgi.com>, from the
+ * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the
  * comp.compression FAQ.
  *
  * Redistribution and use in source and binary forms, with or without

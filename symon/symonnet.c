@@ -1,7 +1,7 @@
-/* $Id: symonnet.c,v 1.12 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.13 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -1,7 +1,7 @@
-/* $Id: net.h,v 1.11 2003/12/21 13:01:05 dijkstra Exp $ */
+/* $Id: net.h,v 1.12 2004/02/26 22:48:08 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2003 Willem Dijkstra
+ * Copyright (c) 2001-2004 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
