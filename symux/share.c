@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.7 2002/08/29 05:38:39 dijkstra Exp $ */
+/* $Id: share.c,v 1.8 2002/08/31 16:09:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -271,7 +271,7 @@ initshare(int bufsize)
     
     shmstat = SIPC_KEYED;
 
-    if ((int)(shm = (struct sharedregion *)shmat(shmid, 0, 0)) < 0)
+    if ((shm = (struct sharedregion *)shmat(shmid, 0, 0)) == (void *)(-1))
 	fatal("Could not attach shared memory");
 
     shmstat = SIPC_ATTACHED;

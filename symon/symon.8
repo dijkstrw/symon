@@ -54,9 +54,17 @@ should live on a different system and collect data from several
 instances in a LAN. 
 .Lp
 .Nm
-needs
+priviledge needs depend on the probes used. The cpu, mem and interface probes will work even when mon runs as 
+.Ar "nobody" . 
+For pf, read and write access to 
+.Pa /dev/pf
+is needed, so 
+.Nm 
+will have to run as
+.Ar "root".
+Only the io probe requires 
 .Ar kmem
-priviledges in order to obtain it's data.
+priviledges. All other probes use ioctls and sysctls to obtain their data.
 .Lp
 The options:
 .Bl -tag -width Ds
@@ -80,7 +88,7 @@ Multiple monitor statements to different muxes are allowed. Whitespace, newlines
 .nf
 monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io"
+resource     = "cpu" | "mem" | "if" | "io" | "pf"
 host         = ip4addr | hostname
 port         = [ "port" | ":" | "," ] portnumber
 argument     = number | interfacename | diskname
@@ -88,11 +96,11 @@ argument     = number | interfacename | diskname
 .Sh EXAMPLE
 Here is an example 
 .Ar mon.conf
-that monitors cpu, memory, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1]
+that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1]
 and streams that information to localhost on port 2100.
 .Pp
 .nf
-monitor { cpu(0),  mem,     if(xl0), if(de0),
+monitor { cpu(0),  mem, pf, if(xl0), if(de0),
           if(lo0), if(wi0), io(wd0), io(wd1), 
           io(wd2), io(wd3), io(cd0), io(cd1), 
           io(ccd0)} stream to 127.0.0.1 2100
@@ -126,7 +134,8 @@ does not check whether resources mentioned in
 .Pa /etc/mon.conf
 exist. 
 .Sh AUTHOR
-Willem Dijkstra <wpd@xs4all.nl>
+Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
+contributed the pf probe and helped to port to big-endian architectures.
 .Sh SEE ALSO
 .Xr monmux 8 
  

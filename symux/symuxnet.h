@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.3 2002/06/21 12:24:21 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.4 2002/08/31 16:09:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,6 +35,7 @@
 
 #include "data.h"
 
+/* Rewrite an ipadress uint32_t as 4 comma seperated bytes */
 #define IPAS4BYTES(x) \
         ((x) >> 24), ((x) >> 16) & 0xff, ((x) >> 8) & 0xff, (x) & 0xff
 

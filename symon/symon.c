@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.21 2002/08/31 15:00:25 dijkstra Exp $ */
+/* $Id: symon.c,v 1.22 2002/08/31 16:09:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -57,13 +57,13 @@ __END_DECLS
 
 int flag_hup = 0;
 
+#ifdef MON_KVM
 kvm_t *kvmd;
 struct nlist mon_nl[] = {
     {"_disklist"},   /* MON_DL    = 0  (mon.h)*/
     {""},
 };
 /* Read kernel memory */
-#ifdef MON_KVM
 int 
 kread(u_long addr, char *buf, int size)
 {

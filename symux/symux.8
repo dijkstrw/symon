@@ -99,7 +99,7 @@ source-stmt  = "source" host "{" accept-stmts write-stmts "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io"
+resource     = "cpu" | "mem" | "if" | "io" | "pf"
 argument     = number | interfacename | diskname
 write-stmts  = write-stmt [write-stmts]
 write-stmt   = "write" resource "in" filename
@@ -116,7 +116,7 @@ traffic) and the tcp port for incoming listeners.
 .Sh EXAMPLE
 Here is an example 
 .Ar monmux.conf
-that listens to udp port 2100 on lo0, and accepts cpu, memory, interfaces
+that listens to udp port 2100 on lo0, and accepts cpu, memory, pf, interfaces
 xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] streams from a
 .Xr mon 8
 on localhost. 
@@ -126,7 +126,7 @@ will also listen on tcp port 2100 for incoming listeners.
 .nf
 mux 127.0.0.1:2100
 source 127.0.0.1 {
-    accept { cpu(0), mem, 
+    accept { cpu(0), mem, pf,
              if(xl0), if(de0),
              if(lo0), if(wi0), 
              io(wd0), io(wd1), io(wd2), 
@@ -134,6 +134,7 @@ source 127.0.0.1 {
 
     write cpu(0)   in "/export/mon/localhost/cpu0.rrd"
     write mem      in "/export/mon/localhost/mem.rrd"
+    write pf       in "/export/mon/localhost/pf.rrd"
 
     write if(xl0)  in "/export/mon/localhost/if_xl0.rrd"
     write if(de0)  in "/export/mon/localhost/if_de0.rrd"
@@ -182,7 +183,7 @@ The format is
 :
 .Va mon-host-ip
 :
-.Va io|if|cpu|mem
+.Va io|if|cpu|mem|pf
 :
 .Va stream-argument
 :
@@ -206,6 +207,14 @@ bit unsigned integers internally.
 .It io
 Io/disk counters (total transfers, total seeks, total bytes). Values are 64 bit
 unsigned integers internally.
+.It pf
+Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
+bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
+packets_v4_out_drop : packets_v6_in_pass : packets_v6_in_drop :
+packets_v6_out_pass : packets_v6_out_drop : states_entries : states_searches :
+states_inserts : states_removals : counters_match : counters_badoffset :
+counters_fragment : counters_short : counters_normalize : counters_memory
+). Values are 64 bit unsigned integers internally.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds
@@ -241,7 +250,7 @@ to lockup while rrdupdate is updating the rrd file.
 .Nm
 will be unresponsive during this process. 
 .Sh AUTHOR
-Willem Dijkstra <wpd@xs4all.nl>
+Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
+contributed the pf probe and helped to port to big-endian architectures.
 .Sh SEE ALSO
 .Xr mon 8 
- 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.9 2002/08/29 19:38:56 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.10 2002/08/31 16:09:55 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -191,7 +191,7 @@ io_*.rrd)
     # Default match
     cat <<EOF
 Usage: $0 all
-       $0 cpu0|mem|<if>|<io>
+       $0 cpu0|mem|pf|<if>|<io>
 
 Where:
 if=	`echo $INTERFACES|

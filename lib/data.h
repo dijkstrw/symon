@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.13 2002/08/29 19:38:52 dijkstra Exp $ */
+/* $Id: data.h,v 1.14 2002/08/31 16:09:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -52,8 +52,8 @@
 #define MON_CRCPOLY  0x04c11db7
 
 #if BYTE_ORDER == BIG_ENDIAN
-#define htonq(n) n
-#define ntohq(n) n
+#define htonq(n) (n)
+#define ntohq(n) (n)
 #else
 static inline u_int64_t
 htonq (u_int64_t v)
