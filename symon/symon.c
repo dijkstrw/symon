@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.37 2004/08/08 12:11:48 dijkstra Exp $ */
+/* $Id: symon.c,v 1.38 2004/08/08 12:16:33 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -259,10 +259,10 @@ main(int argc, char *argv[])
 	fatal("alarm setup failed: %.200s", strerror(errno));
     }
 
-    last_update = time();
+    last_update = time(NULL);
     for (;;) {			/* FOREVER */
 	sleep(symon_interval);	/* alarm will interrupt sleep */
-	now = time();
+	now = time(NULL);
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
@@ -291,9 +291,15 @@ main(int argc, char *argv[])
 		info("configuration unreachable because of privsep; keeping old configuration");
 	    }
 	} else {
+	    /* check timing to catch ntp drifts */
 	    if (now < (last_update + symon_interval)) {
-		debug("did not sleep %d seconds - skipping a measurement", symon_interval);
-		continue;
+		if (now < (last_update + symon_interval + symon_interval)) {
+		    debug("last update is very long ago - assuming that system time changed");
+		    last_update = now;
+		} else {
+		    debug("did not sleep %d seconds - skipping a measurement", symon_interval);
+		    continue;
+		}
 	    } else {
 		last_update = now;
 	    }
