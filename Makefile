@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.8 2002/09/10 18:32:44 dijkstra Exp $
+# $Id: Makefile,v 1.9 2002/09/14 15:58:45 dijkstra Exp $
 
-SUBDIR=	lib mon monmux mon2web
+SUBDIR=	lib symon symux symon2web
 
 .if make(clean)
-SUBDIR+= ports/mon
+SUBDIR+= ports/symon
 .endif
 
 .include "Makefile.inc"
@@ -15,19 +15,19 @@ install: _SUBDIRUSE
 # Not all the stuff that I'm working on is ready for release
 dist: clean
 	@workdir=`basename ${.CURDIR}`; \
-	cd ports/mon; \
+	cd ports/symon; \
 	rm -f distinfo; \
 	${MAKE} clean; \
 	cd ../../..; \
-	echo Exporting mon-${V}.tar.gz; \
+	echo Exporting symon-${V}.tar.gz; \
 	find $${workdir} -type f -print | egrep -v 'CVS|doc|clients|README|regress|#'| \
-		tar -czvf /tmp/mon-${V}.tar.gz -I -; \
-	cp /tmp/mon-${V}.tar.gz /usr/ports/distfiles/; \
-	cd $${workdir}/ports/mon; \
+		tar -czvf /tmp/symon-${V}.tar.gz -I -; \
+	cp /tmp/symon-${V}.tar.gz /usr/ports/distfiles/; \
+	cd $${workdir}/ports/symon; \
 	${MAKE} makesum; \
 	cd ..; \
-	find mon -type f -print | egrep -v 'CVS' | \
-		tar -czvf /tmp/ports-mon-${V}.tar.gz -I -; \
+	find symon -type f -print | egrep -v 'CVS' | \
+		tar -czvf /tmp/ports-symon-${V}.tar.gz -I -; \
 	cd ../..
 
 _SUBDIRUSE: .USE

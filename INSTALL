@@ -3,37 +3,39 @@ Installation notes
 
 Priviledges
 ===========
-monmux needs read and write access to it's rrdfiles.
+symux needs read and write access to it's rrdfiles.
 
 monitoring needs:
-cpu, if, mem    - mon can run as nobody
-pf              - mon needs r/w on /dev/pf
-io              - probe is kvm, mon needs kmem. Note that this probe is 
-                  disabled in the standard build.
+cpu, if, mem, io - symon can run as nobody
+pf               - symon needs r/w on /dev/pf
 
-mon2web is a php4 application and needs access to the rrdfiles. Note that
-mon2web interprets the url for graphing parameters. It should never be exposed
-to untrusted users.
+symon2web is a php4 application and needs access to the rrdfiles. Note that
+symon2web interprets the url for graphing parameters. It should never be exposed
+to untrusted users | the outside world.
 
 Real quick 
 ==========
-make && make install && vi /etc/monmux.conf /etc/mon.conf && 
-	~mon/monmux/c_monrrds.sh all && 
-	/usr/local/libexec/monmux && 
-	/usr/local/libexec/mon
+make && make install && vi /etc/symux.conf /etc/symon.conf && 
+	~symon/symux/c_smrrds.sh all && 
+	/usr/local/libexec/symux && 
+	/usr/local/libexec/symon
 
 or grab the port and do
 make package
-pkg_add mon-monitor-version.tgz on all monitored hosts
-pkg_add mon-mux-version.tgz on the loghost
-pkg_add mon-web-version.tgz on the loghost
+pkg_add symon-mon-version.tgz on all monitored hosts
+pkg_add symon-mux-version.tgz on the loghost
+pkg_add symon-web-version.tgz on the loghost
 
 Less quick, but more verbose
 ============================
-- Install rrdtool. cd /usr/ports/net/rrdtool && make install should do the
-  trick.
+- Install rrdtool where you want to run the gatherer. 
+	cd /usr/ports/net/rrdtool && make install
 
-- Check Makefile.inc for settings. Things to watch out for are
+- Install php4 where you want to run the web frontend. 
+	cd /usr/ports/www/php4 && make install
+
+- Building by hand: Check Makefile.inc for settings. Things to watch out for
+  are:
 
      + PREFIX = Where does the installation tree start. Defaults to
                 '/usr/local'.
@@ -45,52 +47,43 @@ Less quick, but more verbose
                 $PREFIX. Defaults to 'man'.
 
      + SHRDIR = Where are the example configurations to be installed. Defaults
-                to 'share/mon'.
+                to 'share/symon'.
 
-- Decide if you want to monitor disk usage. Define KVM as an environment
-  variable before you run make if you do. Note: the monitor will be built with
-  kmem priviledges. This is a bad thing.
+   Run make && make install
 
-- Run make && make install
+- Building from the port: 
+	cd ~symon/ports/symon or cd /usr/ports/sysutils/symon
+	make package
 
-- Create an '/etc/mon.conf'. Note that there is an example configuration in
+	cd /usr/ports/packages/$ARCH/All/
+	pkg_add symon-mon-version.tgz               on monitored hosts
+	pkg_add symon-mux-version.tgz               on the loghost | gatherer
+	pkg_add symon-web-version.tgz               on the loghost | webfrontend
+
+- Create an '/etc/symon.conf'. Note that there is an example configuration in
   $PREFIX/$SHRDIR. 
 
-- Create a monmux.conf on the gatherer host. You can specify alternative
-  locations than '/etc/monmux.conf' using 'monmux -f <monmux.conf>'.
+- Create a symux.conf on the gatherer host. You can specify alternative
+  locations than '/etc/symux.conf' using 'symux -f <symux.conf>'.
 
-- Create the rrd files where the incoming mon data is to be
-  stored. $PREFIX/$SHRDIR/c_monrrds.sh is your friend. Note that 'mon2web'
+- Create the rrd files where the incoming symon data is to be
+  stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that 'symon2web'
   expects an '.../machine/*.rrd' style directory structure.
 
-- Fire up mon, monmux. Check system logs for any failures.
+- Fire up symon, symux. Check system logs for any failures.
 
-- Only if you need the webinterface: mon2web is installed in
+- Only if you need the webinterface: symon2web is installed in
   $PREFIX/$SHRDIR/. Copy the files to a convenient apache directory and modify
-  the mon2web/datasources.inc to reflect your filelocations. Note that it uses
-  php, so you may need to (cd /usr/ports/www/php4; make install).
+  the symon2web/datasources.inc to reflect your filelocations.
 
-Installing mon on many machines
-===============================
+Portability
+===========
 
-- Grab the port files, these are also included in the full source package under
-  ~mon/ports/mon.
-
-- cd ~mon/ports/mon
-  make package
-
-- The binary packages can be found at 
-  /usr/ports/packages/<arch>/All/mon-{monitor|mux|web}-version.tgz
-
-- It makes sense to transfer the mon-monitor-version.tgz to other machines and
-  install by pkg_add it. The other 2 packages (mux and web) are the gatherer and
-  web frontend. Chances are you want these on your loghost only.
-
-This package is an OpenBSD application. You might be able to make monmux and
-mon2web run on POSIX compliant unixes, but the monitoring application itself
-(mon) is OpenBSD specific.
+This package is an OpenBSD application. You might be able to make symux and
+symon2web run on POSIX compliant unixes, but the monitoring application itself
+(symon) is OpenBSD specific.
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.5 2002/09/13 07:42:50 dijkstra Exp $
+$Id: INSTALL,v 1.6 2002/09/14 15:58:45 dijkstra Exp $
 
