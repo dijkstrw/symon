@@ -1,15 +1,18 @@
 /*
- * $Id: symon.c,v 1.2 2001/04/29 13:08:48 dijkstra Exp $
+ * $Id: symon.c,v 1.3 2001/04/30 14:27:09 dijkstra Exp $
  *
  * All configuration is done in the source. The main program
  * does not take any arguments (yet)
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <err.h>
 #include <rrd.h>
+#include <syslog.h>
+#include <varargs.h>
 #include "mon.h"
 
 #ifdef MON_KVM
@@ -22,11 +25,11 @@ struct nlist mon_nl[] = {
 char mon_buf[_POSIX2_LINE_MAX];
 
 struct monm monm[] = {
-  { "cpu", NULL, "cpu.rrd", init_cpu, get_cpu, 5, 0},
-  { "mem", NULL, "mem.rrd", init_mem, get_mem, 5, 0},
+  { "cpu", "0", "/home/dijkstra/project/mon/cpu.rrd", init_cpu, get_cpu, 5, 0},  /* arg 0 is not used */
+  { "mem", "all", "/home/dijkstra/project/mon/mem.rrd", init_mem, get_mem, 5, 0}, /* arg all is not used */
 #ifdef MON_KVM
-  { "ns",  "xl0", "if_de0.rrd", init_netstat,  get_netstat,  5, 0},
-  { "ns",  "de0", "if_de0.rrd", init_netstat,  get_netstat,  5, 0},
+  { "ifstat",  "xl0", "/home/dijkstra/project/mon/if_xl0.rrd", init_ifstat,  get_ifstat,  5, 0},
+  { "ifstat",  "de0", "/home/dijkstra/project/mon/if_de0.rrd", init_ifstat,  get_ifstat,  5, 0},
 #endif
   { NULL, NULL, NULL, NULL, NULL, 0, 0}
 };
@@ -50,6 +53,7 @@ int main(argc, argv)
      char *argv[];
 {
   int i;
+  int errs=0;
   char *arg_ra[2];
 
 #ifdef MON_KVM
@@ -60,9 +64,6 @@ int main(argc, argv)
     errx(1,"kvm_open: %s", mon_buf);
     exit(1);
   }
-  /* Release priviledges */
-  setegid(getgid());
-  setgid(getgid());
   /* Lookup in kernel namelist */
   if (kvm_nlist(kvmd, mon_nl) < 0 || mon_nl[0].n_type == 0) {
     if (nlistf)
@@ -72,22 +73,44 @@ int main(argc, argv)
     exit(1);
   }
 #endif
+  /* Release privs */
+  setegid(getgid());
+  setgid(getgid());
 
+  if ( daemon(0,0) != 0 ) {
+    syslog(LOG_ALERT,"daemonize failed -- exiting");
+    errx(1, "daemonize failed");
+  }
+  /* Init modules */
+  syslog(LOG_INFO,"system monitor $Revision: 1.3 $ started");
   i=-1;
   while (monm[++i].type) {
+    syslog(LOG_INFO,"starting module %s(%s)", monm[i].type, monm[i].arg);
     (monm[i].init)(monm[i].arg);
   }
-  for (;;) {  /* Forever */
+  /* Loop forever */
+  for (;;) {  
     sleep(1);
     i=-1;
     while (monm[++i].type)
       if (++monm[i].sleep == monm[i].interval) 
 	{
 	  monm[i].sleep=0;
-	  arg_ra[0]=monm[i].file;
+	  arg_ra[0]=monm[i].file; /* should be rrd_update */
 	  arg_ra[1]=monm[i].file;
 	  arg_ra[2]=monm[i].get(monm[i].arg);
-	  printf( "%d:%s", rrd_update(3,arg_ra), rrd_get_error());
+	  rrd_update(3,arg_ra);
+	  if (rrd_test_error()) {
+	    syslog(LOG_INFO,"rrd_update:%s",rrd_get_error());
+	    rrd_clear_error();                                                            
+	    errs++;
+	  }
 	}
-  }
+
+    if (errs>10) {
+      syslog(LOG_ALERT,"counted too many errors (%d) -- quitting.",errs);
+      exit(1);
+    }
+  } 
+  /* NOTREACHED */
 }

@@ -1,27 +1,27 @@
 /*
- * $Id: sm_mem.c,v 1.3 2001/04/29 13:08:48 dijkstra Exp $
+ * $Id: sm_mem.c,v 1.4 2001/04/30 14:27:09 dijkstra Exp $
  *
- * Get current memory statistics in kilobytes; reports them back in mon_buf as
+ * Get current memory statistics in bytes; reports them back in mon_buf as
  *
  * real active : real total : free : [swap used : swap total]
  * 
- * -DMEM_SWAP controls whether the swap statistics are generated.
- */
+ * -DMEM_SWAP controls whether the swap statistics are generated.  */
 
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <err.h>
 #include <string.h>
 #include <limits.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
+#include <syslog.h>
+#include <varargs.h>
 #include "mon.h"
 
 #ifdef MEM_SWAP
 #include <sys/swap.h>
 #endif
-#define pagetok(size) ((size) << me_pageshift)
+#define pagetob(size) ((size) << me_pageshift)
 
 /*
  * globals for this module all start with me_
@@ -48,7 +48,7 @@ void init_mem(s)
   }
 
   /* we only need the amount of log(2)1024 for our conversion */
-  me_pageshift -= LOG1024;
+  /*  me_pageshift -= LOG1024;*/
 
   /* get total -- systemwide main memory usage structure */
   me_vmsize = sizeof(me_vmtotal);
@@ -68,13 +68,13 @@ char *get_mem(s)
   int i,rnswap;
 
   if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
-    warn("sysctl failed");
+    syslog(LOG_WARNING,"mon/mem: sysctl failed");
     bzero(&me_vmtotal, sizeof(me_vmtotal));
   }
   /* convert memory stats to Kbytes */
-  me_stats[0] = pagetok(me_vmtotal.t_arm);
-  me_stats[1] = pagetok(me_vmtotal.t_rm);
-  me_stats[2] = pagetok(me_vmtotal.t_free);
+  me_stats[0] = pagetob(me_vmtotal.t_arm);
+  me_stats[1] = pagetob(me_vmtotal.t_rm);
+  me_stats[2] = pagetob(me_vmtotal.t_free);
 
 #ifdef MEM_SWAP
   rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
@@ -89,8 +89,8 @@ char *get_mem(s)
   /* Total things up */
     for (i = 0; i < me_nswap; i++) {
       if (me_swdev[i].se_flags & SWF_ENABLE) {
-	me_stats[3] += (me_swdev[i].se_inuse / (1024 / DEV_BSIZE));
-	me_stats[4] += (me_swdev[i].se_nblks / (1024 / DEV_BSIZE));
+	me_stats[3] += (me_swdev[i].se_inuse * DEV_BSIZE);
+	me_stats[4] += (me_swdev[i].se_nblks * DEV_BSIZE);
       }
     }
   }

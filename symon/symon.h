@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.2 2001/04/29 13:08:48 dijkstra Exp $
+ * $Id: symon.h,v 1.3 2001/04/30 14:27:09 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -41,7 +41,7 @@ extern char *get_cpu(char *);
 extern void init_mem(char *);
 extern char *get_mem(char *);
 
-/* netstat.c */
-extern void init_netstat(char *);
-extern char *get_netstat(char *);
+/* ifstat.c */
+extern void init_ifstat(char *);
+extern char *get_ifstat(char *);
 

@@ -1,7 +1,7 @@
 /*
- * $Id: sm_cpu.c,v 1.3 2001/04/29 13:08:48 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.4 2001/04/30 14:27:09 dijkstra Exp $
  *
- * Get current cpu statistics in percentages*10 (total of all counts = 1000)
+ * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
  *
  * user : nice : system : interrupt : idle
@@ -13,7 +13,8 @@
 #include <sys/sysctl.h>
 #include <limits.h>
 #include <stdio.h>
-#include <err.h>
+#include <syslog.h>
+#include <varargs.h>
 #include "mon.h"
 
 /*
@@ -24,7 +25,7 @@ static size_t cp_size;
 static long cp_time[CPUSTATES];
 static long cp_old[CPUSTATES];
 static long cp_diff[CPUSTATES];
-static int cp_states[CPUSTATES];
+static float cp_states[CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -35,7 +36,7 @@ static int cp_states[CPUSTATES];
  */
 int percentages(cnt, out, new, old, diffs)
      int cnt;
-     int *out;
+     float *out;
      register long *new;
      register long *old;
      long *diffs;
@@ -92,7 +93,7 @@ char *get_cpu(s)
 {
   int total;
   if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-    warn("sysctl kern.cp_time failed");
+    syslog(LOG_WARNING,"mon/cpu: sysctl kern.cp_time failed");
     total = 0;
   }
 
@@ -100,8 +101,8 @@ char *get_cpu(s)
   total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
   snprintf( &mon_buf[0], _POSIX2_LINE_MAX, 
-	    "N:%d:%d:%d:%d:%d", 
-	    cp_states[CP_USER], cp_states[CP_NICE], cp_states[CP_SYS], 
-	    cp_states[CP_INTR], cp_states[CP_IDLE]);
+	    "N:%3.2f:%3.2f:%3.2f:%3.2f:%3.2f", 
+	    cp_states[CP_USER]/10, cp_states[CP_NICE]/10, cp_states[CP_SYS]/10, 
+	    cp_states[CP_INTR]/10, cp_states[CP_IDLE]/10);
   return &mon_buf[0];
 }
