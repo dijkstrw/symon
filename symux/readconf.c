@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.8 2002/04/01 20:16:04 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.9 2002/04/04 20:49:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -47,18 +47,18 @@
 #include "data.h"
 
 __BEGIN_DECLS
-int read_hub(struct muxlist *mul, struct lex *);
+int read_mux(struct muxlist *mul, struct lex *);
 int read_source(struct sourcelist *sol, struct lex *);
 __END_DECLS
 
-/* hub <host> (port|:|,| ) <number> */
+/* mux <host> (port|:|,| ) <number> */
 int 
-read_hub(struct muxlist *mul, struct lex *l)
+read_mux(struct muxlist *mul, struct lex *l)
 {
     struct mux *m;
 
     if (! SLIST_EMPTY(mul)) {
-	warning("%s:%d: only one hub statement allowed", 
+	warning("%s:%d: only one mux statement allowed", 
 		l->filename, l->cline);
 	return 0;
     }
@@ -73,9 +73,17 @@ read_hub(struct muxlist *mul, struct lex *l)
     m = add_mux(mul, lookup_address);
     m->ip = lookup_ip;
 
+    /* check for port statement */
     lex_nexttoken(l);
-    if (l->op == LXT_PORT || l->op == LXT_COLON || l->op == LXT_COMMA )
+    if (l->op == LXT_PORT || l->op == LXT_COLON || l->op == LXT_COMMA)
 	lex_nexttoken(l);
+    else {
+	if (l->type != LXY_NUMBER) {
+	    lex_ungettoken(l);
+	    m->port = MONMUX_PORT;
+	    return 1;
+	}
+    }
 
     if (l->type != LXY_NUMBER) {
 	parse_error(l, "<number>");
@@ -244,6 +252,8 @@ read_config_file(struct muxlist *mul,
 		 const char *filename)
 {
     struct lex *l;
+    struct source *source;
+    struct stream *stream;
 
     SLIST_INIT(mul);
     SLIST_INIT(sol);
@@ -254,8 +264,8 @@ read_config_file(struct muxlist *mul,
     while (lex_nexttoken(l)) {
     /* expecting keyword now */
 	switch (l->op) {
-	case LXT_HUB:
-	    if (!read_hub(mul, l))
+	case LXT_MUX:
+	    if (!read_mux(mul, l))
 		return 0;
 	    break;
 	case LXT_SOURCE:
@@ -263,14 +273,15 @@ read_config_file(struct muxlist *mul,
 		return 0;
 	    break;
 	default:
-	    parse_error(l, "source|hub" );
+	    parse_error(l, "mux|source" );
+	    return 0;
 	    break;
 	}
     }
     
     /* sanity checks */
     if (SLIST_EMPTY(mul)) {
-	warning("%s: no hub section seen",
+	warning("%s: no mux statement seen",
 		l->filename);
 	return 0;
     }
@@ -279,12 +290,23 @@ read_config_file(struct muxlist *mul,
 	warning("%s: no source section seen", 
 		l->filename);
 	return 0;
-    } else
-	if (SLIST_EMPTY(&(SLIST_FIRST(sol))->sl)) {
-	    warning("%s: no streams accepted", 
-		    l->filename);
-	    return 0;
+    } else {
+	SLIST_FOREACH(source, sol, sources) {
+	    if (SLIST_EMPTY(&source->sl)) {
+		warning("%s: no streams accepted for source '%s'", 
+			l->filename, source->name);
+		return 0;
+	    } else {
+		SLIST_FOREACH(stream, &source->sl, streams) {
+		    if (stream->file == NULL) {
+			warning("%s: no filename specified for stream '%s(%s)' in source '%s'",
+				l->filename, type2str(stream->type), stream->args, source->name);
+			return 0;
+		    }
+		}
+	    }
 	}
+    }
     
     close_lex(l);
     
