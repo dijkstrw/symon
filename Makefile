@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2002/07/25 14:23:00 dijkstra Exp $
+# $Id: Makefile,v 1.4 2002/08/16 13:55:42 dijkstra Exp $
 
 SUBDIR=	lib mon monmux 
 V=2.0
@@ -14,7 +14,7 @@ dist: clean
 	@workdir=`basename ${.CURDIR}`; \
 	cd ..; \
 	echo Exporting mon-${V}.tar.gz; \
-	find $${workdir} -type f -print | egrep -v 'CVS|doc|clients|README|TODO|regress|mon2web|#'| \
+	find $${workdir} -type f -print | egrep -v 'CVS|doc|clients|README|TODO|regress|#'| \
 		tar -czvf mon-${V}.tar.gz -I -
 
 
