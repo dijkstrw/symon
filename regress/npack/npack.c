@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.3 2003/12/20 16:30:44 dijkstra Exp $ */
+/* $Id: npack.c,v 1.4 2004/03/20 15:46:27 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -11,6 +11,27 @@
 #include "xmalloc.h"
 #include "data.h"
 
+void hexline(char *buf, int size, int width) {
+    int i = 0;
+    int offset = 0;
+
+    while (offset < size) {
+	printf("%06x ", offset);
+
+	for (i=0; i < width; i++) {
+	    printf("%02x ", (buf[offset+i] & 0xff));
+	}
+
+	for (i=0; i < width; i++) {
+	    printf("%c ", ((buf[offset+i] > 32)?buf[offset+i]:'.'));
+	}
+
+	printf("\n");
+
+	offset += width;
+    }
+}
+
 int main(int argc, char **argv)
 {
     char *buffer;
@@ -22,7 +43,7 @@ int main(int argc, char **argv)
     str = xmalloc(_POSIX2_LINE_MAX);
     ps = xmalloc(sizeof(struct packedstream));
 
-    ilen = snpack(buffer, _POSIX2_LINE_MAX, "test pack", MT_TEST,
+    ilen = snpack(buffer, _POSIX2_LINE_MAX, "123456789012345678901234567890", MT_TEST,
 		  /* test L, u_int64_t */
 		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff,
 		  /* test D, double */
@@ -37,11 +58,18 @@ int main(int argc, char **argv)
 		  (int) 0, (int) 0xff, (int) 0, (int) 0x12);
     olen = sunpack(buffer, ps);
 
-/*    ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
-      printf(str); */
+    if (argc > 1) {
+	printf("buffer=\n");
+	hexline(buffer, ilen, 16);
+	printf("ps=\n");
+	hexline((char *)ps, olen, 16);
+	printf("ps-pretty=\n");
+	ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
+	printf("test(%s) = '%s'\n", ps->args, str);
+    }
 
     assert(ilen == olen);
-    assert(strcmp("test pack", ps->args) == 0);
+    assert(strcmp("123456789012345", ps->args) == 0);
     assert(ps->data.ps_test.L[0] == 0);
     assert(ps->data.ps_test.L[1] == 0xffffffffffffffff);
     assert(ps->data.ps_test.L[2] == 0);

@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.24 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: data.c,v 1.25 2004/03/20 15:46:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,11 +35,12 @@
 /* Terminology:
  *
  * A host carrying a 'symon' is considered a 'source' of information. A single
- * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
- * source can provide multiple 'streams' simultaniously. A source spools
+ * data 'stream' of information has a particular type: cpu, mem, etc. A
+ * source can provide multiple 'streams' simultaneously. A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
  * representation is called a 'packedstream'.
  */
+#include <sys/param.h>
 #include <assert.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -311,6 +312,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
     double D;
     int i = 0;
     int offset = 0;
+    int arglen = 0;
 
     if (type > MT_EOT) {
 	warning("stream type (%d) out of range", type);
@@ -324,18 +326,21 @@ snpack(char *buf, int maxlen, char *id, int type,...)
     }
 
     if (id) {
-	if ((strlen(id) + 1) >= maxlen) {
-	    return 0;
-	} else {
-	    strncpy(&buf[offset], id, maxlen - 1);
-	    offset += strlen(id);
-	}
+	arglen = MIN(strlen(id), SYMON_PS_ARGLEN - 1);
+    } else {
+	id = "\0";
+	arglen = 1;
     }
-    buf[offset++] = '\0';
+
+    if (checklen(maxlen, offset, arglen)) {
+	return offset;
+    } else {
+	strncpy(&buf[offset], id, arglen);
+	offset += arglen + 1;
+    }
 
     va_start(ap, type);
     while (streamform[type].form[i] != '\0') {
-	/* check for buffer overflow */
 	if (checklen(maxlen, offset, bytelenvar(streamform[type].form[i])))
 	    return offset;
 
@@ -343,7 +348,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	 * all values smaller than 32 bytes are transferred using ints on the
 	 * stack. This is to ensure that we get the correct value, if the
 	 * compiler decided to upgrade our short to a 32bit int. -- cheers
-	 * dhartmei@
+	 * dhartmei@openbsd.org
 	 */
 	switch (streamform[type].form[i]) {
 	case 'b':
@@ -434,12 +439,11 @@ sunpack(char *buf, struct packedstream * ps)
     if ((*in) != '\0') {
 	strncpy(ps->args, in, sizeof(ps->args));
 	ps->args[sizeof(ps->args) - 1] = '\0';
-	in += strlen(ps->args);
+	in += strlen(ps->args) + 1;
     } else {
 	ps->args[0] = '\0';
+	in++;
     }
-
-    in++;
 
     out = (char *) (&ps->data);
 

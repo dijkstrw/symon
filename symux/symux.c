@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.30 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symux.c,v 1.31 2004/03/20 15:46:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -252,13 +252,8 @@ main(int argc, char *argv[])
 		stream = find_source_stream(source, ps.type, ps.args);
 
 		if (stream != NULL) {
-		    /* put type in and hide from rrd */
-		    snprintf(stringptr, maxstringlen, "%s:", type2str(ps.type));
-		    maxstringlen -= strlen(stringptr);
-		    stringptr += strlen(stringptr);
-		    /* put arguments in and hide from rrd */
-		    snprintf(stringptr, maxstringlen, "%s:",
-			     ((ps.args == NULL) ? "0" : ps.args));
+		    /* put type and args in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.args);
 		    maxstringlen -= strlen(stringptr);
 		    stringptr += strlen(stringptr);
 		    /* put timestamp in and show to rrd */

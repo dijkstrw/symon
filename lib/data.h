@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.24 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: data.h,v 1.25 2004/03/20 15:46:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -157,12 +157,11 @@ SLIST_HEAD(muxlist, mux);
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
  * structure defines the maximum amount of data that can be contained in a
- * single network representation of a stream. It is used internally for sizing
- * only and regression testing only. Although the union members are here, they
- * could also read u_int64_t[4] with io, for instance.
+ * single network representation of a stream.
  */
 #define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
-#define SYMON_PS_ARGLEN    16	/* maximum argument length */
+#define SYMON_PS_ARGLEN        16	/* maximum argument length */
+#define SYMON_PS_ARGLENSTR    "15"	/* maximum number of chars in an argument, as str */
 struct packedstream {
     int type;
     int padding;

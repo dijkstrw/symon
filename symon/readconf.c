@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.19 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.20 2004/03/20 15:46:27 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -129,6 +129,12 @@ read_symon_args(struct mux * mux, struct lex * l)
 	    } else {
 		lex_ungettoken(l);
 		sa[0] = '\0';
+	    }
+
+	    if (strlen(sa) > (SYMON_PS_ARGLEN - 1)) {
+		warning("%.200s:%d: argument '%.200s' too long for network format, "
+			"will send leading " SYMON_PS_ARGLENSTR " chars only",
+			l->filename, l->cline, sa);
 	    }
 
 	    if ((add_mux_stream(mux, st, sa)) == NULL) {
