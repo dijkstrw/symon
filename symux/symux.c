@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.22 2002/09/14 15:54:56 dijkstra Exp $ */
+/* $Id: symux.c,v 1.23 2002/09/20 09:38:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -117,16 +117,16 @@ main(int argc, char *argv[])
 	
     /* reset flags */
     flag_debug = 0;
-    flag_daemon = 0;
-    
+    flag_daemon = 0;    
     cfgfile = SYMUX_CONFIG_FILE;
+
     while ((ch = getopt(argc, argv, "dvf:")) != -1) {
 	switch (ch) {
 	case 'd':
 	    flag_debug = 1;
 	    break;
 	case 'f':
-	    if (optarg && optarg[1] != '/') {
+	    if (optarg && optarg[0] != '/') {
 		/* cfg path needs to be absolute, we will be a daemon soon */
 		if ((cfgpath = getwd(NULL)) == NULL)
 		    fatal("could not get working directory");
