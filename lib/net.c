@@ -1,5 +1,5 @@
 /*
- * $Id: net.c,v 1.1 2001/09/02 18:59:24 dijkstra Exp $
+ * $Id: net.c,v 1.2 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Holds all network functions for monmux
  */
@@ -20,6 +20,7 @@
  */
 char lookup_hostname[_POSIX2_LINE_MAX];
 char lookup_address[_POSIX2_LINE_MAX];
+u_int32_t lookup_ip;
 
 int lookup(name)
     char *name;
@@ -73,15 +74,14 @@ int lookup(name)
 	if (chostname) {
 	    snprintf(lookup_hostname, _POSIX2_LINE_MAX-1, "%s", chostname);
 	}
+
 	if (*host->h_addr_list) {
-	    unsigned long   horder;
+	    lookup_ip = ntohl(*(unsigned long *) *(char **) host->h_addr_list);
 	    
-	    horder = ntohl(*(unsigned long *) *(char **) host->h_addr_list);
-	    sprintf(lookup_address, "%lu.%lu.%lu.%lu", 
-		    (horder >> 24), (horder >> 16) & 0xff,
-		    (horder >> 8) & 0xff, horder & 0xff);
+	    sprintf(lookup_address, "%u.%u.%u.%u", 
+		    (lookup_ip >> 24), (lookup_ip >> 16) & 0xff,
+		    (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
 	}
     }
-
     return 1;
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: symux.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: symux.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Daemon that multiplexes incoming mon traffic to subscribed clients
  * and archives it periodically in rrd files.
@@ -10,14 +10,15 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
-#include <err.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "error.h"
 #include "monmux.h"
 #include "readconf.h"
 #include "limits.h"
 
+struct hub *hub;
 struct source *sources;
 
 int listen_sock;
@@ -40,14 +41,14 @@ int main(argc, argv)
     int argc;
     char *argv[];
 {
-    struct sockaddr_in servaddr;
-    int ret;
+    struct sockaddr_in sins, sind;
+    struct hostent *hp;
+    char cbuf[_POSIX2_LINE_MAX];
+    int error;
+    socklen_t sl;
 
-    /* Clean globals */
-
-    sources = NULL;
     /* parse configuration file */
-    read_config_file("/home/dijkstra/project/monmux/monmux.conf");
+    read_config_file("monmux.conf");
 
     /* catch signals */
 //    signal(SIGALRM, alarmhandler);
@@ -59,46 +60,38 @@ int main(argc, argv)
     signal(SIGUSR1, signalhandler);
     signal(SIGUSR2, signalhandler);
 
-    /* setup listener */
-    listen_sock = socket(AF_INET, SOCK_STREAM, 0);
+    memset(&sins, 0, sizeof(sins));
+    sins.sin_family = AF_INET;
+    sins.sin_port = htons(hub->port);
+    hp = gethostbyname(hub->name);
+    if (hp == NULL) {
+	herror(hub->name);
+	return (-1);
+    }
+    memcpy(&(sins.sin_addr.s_addr), hp->h_addr, hp->h_length);
+    
+    listen_sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (listen_sock < 0) {
-	errx(1, "socket: %.200s", strerror(errno));
+	fatal("socket: %.200s", strerror(errno));
     } else {
 	atexit( close_listensock );
     }
-    memset((void *)&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(4000);
-    if (bind(listen_sock, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-	errx(1,"Bind failed: %.200s.", strerror(errno));
-    }
-    if (listen(listen_sock,5)) {
-	errx(1,"Listen failed: %.200s.", strerror(errno));
-    }
-    FD_ZERO (&fdset);
-    FD_SET (listen_sock, &fdset);
-    maxfd = 1;
 
-    /*
-     * Stay listening for connections until the daemon is killed with a signal 
-     */
+    if (bind(listen_sock, (struct sockaddr *)&sins, sizeof(sins)) < 0) {
+	fatal("Bind failed: %.200s.", strerror(errno));
+    }
+
     for (;;) {
-	ret = select(maxfd, &fdset, NULL, NULL, NULL);
-	
-	if (ret == -1) {
-	    if (errno == EINTR) {
-		/* Got an interrupt, bail out now :) */
-	    }
+	sl = sizeof(sind);
+	error = recvfrom(listen_sock, cbuf, sizeof(cbuf), 0, (struct sockaddr *)&sind, &sl);
+	if ( error < 0 ) {
+	    /* do sth */
+	} else {
+	    cbuf[error] = '\0';
+//	    process(ntohl(sind.sin_addr.s_addr), cbuf);
 	}
-
-	if (ret == 0) {
-	    /* Timer expired */
-	}
-
-//	if (ret == number) {
-	/* Data on a number of fds *///	}
     }
+    /* NOT REACHED */
 }
 
 

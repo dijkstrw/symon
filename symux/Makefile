@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+# $Id: Makefile,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
 
-PROG=	mon
+PROG=	monmux
 SRCS=	monmux.c readconf.c xmalloc.c lex.c error.c net.c
 NOMAN=	No man page yet.
 BINGRP=	kmem

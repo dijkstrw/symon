@@ -1,5 +1,5 @@
 /* 
- * $Id: error.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: error.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Routines that show errors
  */
@@ -11,7 +11,7 @@ void fatal(char *str, ...)
 {
     va_list ap;
     
-    fprintf(stderr, "%s:", __progname);
+/*    fprintf(stderr, "%s:", __progname); */
     va_start(ap, str);
     vfprintf(stderr, str, ap);
     va_end(ap);
@@ -22,7 +22,7 @@ void warning(char *str, ...)
 {
     va_list ap;
     
-    fprintf(stderr, "%s:", __progname);
+/*    fprintf(stderr, "%s:", __progname); */
     va_start(ap, str);
     vfprintf(stderr, str, ap);
     va_end(ap);

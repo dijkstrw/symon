@@ -1,5 +1,5 @@
 /*
- * $Id: lex.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: lex.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Simple lexical analyser:
  *
@@ -34,6 +34,8 @@ static struct {
     OpCodes opcode;
 } keywords[] = {
     { "source", oSource },
+    { "hub", oHub },
+    { "port", oPort },
     { "accept", oAccept },
     { "write", oWrite },
     { "in", oIn },
@@ -169,6 +171,8 @@ int lex_nexttoken(l)
     }
 	
     l->op = oBadToken;
+    l->value = 0;
+    l->type = tUnknown;
 
     /* find first non whitespace */
     while (l->buffer[l->curpos] == ' ' || 

@@ -1,5 +1,5 @@
 /*
- * $Id: readconf.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: readconf.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Parse monmux.conf style configuration files 
  * 
@@ -21,22 +21,7 @@ void parse_error(l, s)
     struct lex *l;
     const char *s;
 {
-    fatal("%s:%d:Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
-}
-
-int expect_token(l, op)
-    struct lex *l;
-    OpCodes op;
-{
-    const char *s;
-
-    lex_nexttoken(l);
-    if (l->op != op) {
-	s = parse_opcode(op);
-	parse_error(l, s);
-	return 0;
-    } else 
-	return 1;
+    fatal("%s:%d: Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
 }
 
 struct source *add_source(s)
@@ -55,7 +40,7 @@ struct source *add_source(s)
 	p->next = xmalloc(sizeof(struct source));
 	p = p->next;
     }
-    bzero(p, sizeof(struct source));
+    memset(p, 0, sizeof(struct source));
     p->name = xstrdup(s);
 
     return p;
@@ -100,7 +85,7 @@ struct stream *add_stream(s, t, a)
 	p->next = xmalloc(sizeof(struct stream));
 	p = p->next;
     }
-    bzero(p, sizeof(struct stream));
+    memset(p, 0, sizeof(struct stream));
     p->type = t;
     if (a != NULL) {
 	p->args = xstrdup(a);
@@ -109,12 +94,52 @@ struct stream *add_stream(s, t, a)
     return p;
 }
 /*
+ * expect(x) = next token must be x or return. 
+ */
+#define expect(x)    do {                         \
+	lex_nexttoken(l);                         \
+	if (l->op != (x)) {                       \
+	    parse_error(l, parse_opcode((x)));    \
+	    return;                               \
+	}                                         \
+    } while(0);
+
+/*
+ * hub <host> { port <number> } 
+ */
+void read_hub(l)
+    struct lex *l;
+{
+    if (hub != NULL) 
+	fatal("%s:%d: Another hub statement found. \"There can be only one\"\n", 
+	      l->filename, l->cline);
+    
+    hub = xmalloc(sizeof(struct hub));
+    memset(hub, 0, sizeof(struct hub));
+
+    lex_nexttoken(l);
+    if (!lookup(l->token))
+	return;
+
+    hub->name = xstrdup(lookup_address);
+    hub->ip = lookup_ip;
+
+    expect(oBegin);
+    expect(oPort);
+
+    lex_nexttoken(l);
+    if (l->type != tNumber)
+	parse_error(l, "<number>");
+    
+    hub->port = l->value;
+
+    expect(oEnd);
+}
+/*
  * source <host> { accept ... | write ... }
  */
-
-#define expect(x)    do {if (!expect_token(l,x)) return;} while(0);
-
-void read_source(struct lex *l)
+void read_source(l)
+    struct lex *l;
 {
     struct source *source;
     struct stream *stream;
@@ -157,7 +182,7 @@ void read_source(struct lex *l)
 		    }
 
 		    if ((stream = add_stream(source, st, sa)) == NULL) {
-			fatal("%s:%d:stream %s(%s) redefined.\n", 
+			fatal("%s:%d: stream %s(%s) redefined.\n", 
 			      l->filename, l->cline, sn, sa);
 		    }
 
@@ -200,16 +225,16 @@ void read_source(struct lex *l)
 		
 		if ((stream = find_stream(source, st, sa)) == NULL) {
 		    if ( strlen(sa) )
-			fatal("%s:%d:stream %s(%s) is not accepted for %s.\n", 
+			fatal("%s:%d: stream %s(%s) is not accepted for %s.\n", 
 			      l->filename, l->cline, sn, sa, source->name);
 		    else
-			fatal("%s:%d:stream %s is not accepted for %s.\n", 
+			fatal("%s:%d: stream %s is not accepted for %s.\n", 
 			      l->filename, l->cline, sn, source->name);
 		} else {
 		    int fd;
 		    /* try filename */
 		    if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			fatal("%s:%d:file '%s' cannot be opened.\n", 
+			fatal("%s:%d: file '%s' cannot be opened.\n", 
 			      l->filename, l->cline, l->token);
 		    } else {
 			close( fd );
@@ -234,20 +259,38 @@ void read_config_file(const char *filename)
 {
     struct lex *l;
 
+    sources = NULL;
+    hub = NULL;
+
     l = open_lex(filename);
     
     while (lex_nexttoken(l)) {
     /* expecting keyword now */
 	    switch (l->op) {
+	    case oHub:
+		read_hub(l);
+		break;
 	    case oSource:
-	    read_source(l);
-	    break;
-	default:
-	    parse_error(l, "source" );
-	    break;
-	}
+		read_source(l);
+		break;
+	    default:
+		parse_error(l, "source|hub" );
+		break;
+	    }
     }
+
+    /* sanity checks */
+    if (sources == NULL)
+	fatal("%s: No source section seen",
+	      l->filename);
+
+    if (sources->streams == NULL)
+	fatal("%s: No streams defined",
+	      l->filename);
+
+    if (hub == NULL)
+	fatal("%s: No hub section seen",
+	      l->filename);
     
     close_lex(l);
-    exit(1);
 }

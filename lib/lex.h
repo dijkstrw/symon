@@ -1,5 +1,5 @@
 /*
- * $Id: lex.h,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: lex.h,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
  *
  * Simple lexical analyser.
  * Configuration of keywords and operators should be done here.
@@ -13,7 +13,8 @@
 /* Tokens known to lex */
 typedef enum {
     oBadToken,
-    oSource, 
+    oSource, oHub, 
+    oPort, 
     oAccept, oWrite, oIn,
     oCpu, oMem, oIf, oIo,
     oBegin, oEnd, oComma, oOpen, oClose
@@ -35,7 +36,7 @@ struct lex {
     char *token;           /* last token seen */
     long value;            /* value of last token seen, if num */
     OpCodes op;            /* opcode of token, if string */
-    enum { tString, tNumber } type; 
+    enum { tString, tNumber, tUnknown } type; 
 };
 
 /* prototypes */
