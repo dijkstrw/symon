@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.22 2004/02/29 21:23:19 dijkstra Exp $ */
+/* $Id: lex.c,v 1.23 2004/03/01 07:34:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -125,7 +125,6 @@ int
 lex_readline(struct lex *l)
 {
     char *bp;
-    int bytes_read;
 
     bp = l->buffer;
 
@@ -138,14 +137,9 @@ lex_readline(struct lex *l)
 	bp = l->buffer;
     }
 
-    bytes_read = read(l->fh, bp, (l->buffer + l->bsize) - bp);
+    l->endpos = read(l->fh, bp, (l->buffer + l->bsize) - bp);
 
-    if (bytes_read == 0)
-	return 0;
-    else {
-	l->endpos = bytes_read;
-	return 1;
-    }
+    return (l->endpos > 0);
 }
 /* Copy char out of input stream */
 void
