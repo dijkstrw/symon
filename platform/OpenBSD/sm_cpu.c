@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.9 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.10 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  * 
  * Part of this code is based on code by Thorsten Lockert
  * <tholo@sigmasoft.com>, Christos Zoulas <christos@ee.cornell.edu> and Tobias
  * Weingartner <weingart@openbsd.org>. 
- * (The function percentages from OpenBSD/usr/src/usr.bin/top/machine.c)
+ * (The function percentages from OpenBSD/usr/src/usr.bin/top/utils.c)
  *
  * Copyright (c) 2001-2002 Willem Dijkstra
  * All rights reserved.
@@ -116,6 +116,8 @@ init_cpu(char *s)
     cp_size = sizeof(cp_time);
     /* Call get_cpu once to fill the cp_old structure */
     get_cpu(buf, sizeof(buf), NULL);
+
+    info("started module cpu(%s)", s);
 }
 /* Get new cpu measurements */
 int 
@@ -124,7 +126,7 @@ get_cpu(char *mon_buf, int maxlen, char *s)
     int total;
 
     if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-	warning("cpu.c:%d: sysctl kern.cp_time failed", __LINE__);
+	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
 	return 0;
     }
 

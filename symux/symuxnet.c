@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.2 2002/03/31 14:27:50 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.3 2002/04/01 20:16:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -41,6 +41,7 @@
 #include "error.h"
 #include "muxnet.h"
 #include "net.h"
+#include "xmalloc.h"
 
 /* Obtain a mux socket for listening */
 int 
@@ -48,17 +49,18 @@ getmuxsocket(struct mux *mux)
 {
     struct sockaddr_in sockaddr;
     int sock;
-
-    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
-	fatal("Could not obtain socket: %.200s", strerror(errno));
+    
+    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	fatal("could not obtain socket: %.200s", strerror(errno));
 
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_port = htons(mux->port);
     sockaddr.sin_addr.s_addr = htonl(mux->ip);
     bzero(&sockaddr.sin_zero, 8);
 
-    if (bind(sock, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) == -1)
-	fatal("Could not bind socket: %.200s", strerror(errno));
+    if (bind(sock, (struct sockaddr *) &sockaddr, 
+	     sizeof(struct sockaddr)) == -1)
+	fatal("could not bind socket: %.200s", strerror(errno));
 
     return sock;
 }
@@ -89,7 +91,7 @@ wait_for_packet(int listen_sock, struct sourcelist *sourcelist,
 	    *source = find_source_ip(sourcelist, sourceaddr);
 	    
 	    if (*source == NULL) {
-		warning("ignored data from %u.%u.%u.%u",
+		debug("ignored data from %u.%u.%u.%u",
 		       (sourceaddr >> 24), (sourceaddr >> 16) & 0xff, 
 		       (sourceaddr >> 8) & 0xff, sourceaddr & 0xff);
 	    } else { 
@@ -108,9 +110,13 @@ wait_for_packet(int listen_sock, struct sourcelist *sourcelist,
 			warning("crc failure for packet from %u.%u.%u.%u",
 			       (lookup_ip >> 24), (lookup_ip >> 16) & 0xff, 
 			       (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
-		    } else
+		    } else {
+			if (flag_debug) 
+			    debug("good data received from %u.%u.%u.%u",
+				  (sourceaddr >> 24), (sourceaddr >> 16) & 0xff, 
+				  (sourceaddr >> 8) & 0xff, sourceaddr & 0xff);
 			return;  /* good packet received */
-		      
+		    }
 		} 
 	    }
 	}

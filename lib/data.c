@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.6 2002/04/01 14:43:00 dijkstra Exp $ */
+/* $Id: data.c,v 1.7 2002/04/01 20:15:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,7 +40,9 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "data.h"
 #include "error.h"
@@ -576,7 +578,65 @@ add_mux(struct muxlist *mul, char *name)
 
     return p;
 }
+void 
+free_muxlist(struct muxlist *mul) 
+{
+    struct mux *p, *np;
 
+    if (mul == NULL || SLIST_EMPTY(mul))
+	return;
 
+    p = SLIST_FIRST(mul);
 
+    while ( p ) {
+	np = SLIST_NEXT(p, muxes);
 
+	if (p->name != NULL) xfree(p->name);
+	close(p->socket);
+	free_streamlist(&p->sl);
+	xfree(p);
+
+	p = np;
+    }
+}
+void 
+free_streamlist(struct streamlist *sl) 
+{
+    struct stream *p, *np;
+
+    if (sl == NULL || SLIST_EMPTY(sl))
+	return;
+    
+    p = SLIST_FIRST(sl);
+
+    while ( p ) {
+	np = SLIST_NEXT(p, streams);
+
+	if (p->args != NULL) xfree(p->args);
+	if (p->file != NULL) xfree(p->file);
+	xfree(p);
+
+	p = np;
+    }
+}
+void 
+free_sourcelist(struct sourcelist *sol) 
+{
+    struct source *p, *np;
+
+    if (sol == NULL || SLIST_EMPTY(sol))
+	return;
+    
+    p = SLIST_FIRST(sol);
+
+    while ( p ) {
+	np = SLIST_NEXT(p, sources);
+
+	if (p->name != NULL) xfree(p->name);
+	free_streamlist(&p->sl);
+	xfree(p);
+
+	p = np;
+    }
+}
+    

@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.9 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.10 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -87,6 +87,8 @@ init_mem(char *s)
 
     if (me_swdev == NULL && me_nswap != 0) 
 	me_nswap=0; 
+
+    info("started module mem(%s)", s);
 }
 /* Get memory statistics */
 int 
@@ -94,7 +96,7 @@ get_mem(char *mon_buf, int maxlen, char *s)
 {
     int i,rnswap;
 
-    if (sysctl(me_vm_mib, sizeof(me_vm_mib), &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
+    if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
 	warning("%s:%d: sysctl failed", __FILE__, __LINE__);
 	bzero(&me_vmtotal, sizeof(me_vmtotal));
     }

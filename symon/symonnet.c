@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.4 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.5 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -49,16 +49,17 @@ connect2mux(struct mux *mux)
 {
     struct sockaddr_in sockaddr;
 
-    if ((mux->socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
-	fatal("Could not obtain socket: %.200s", strerror(errno));
+    if ((mux->socket = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+	fatal("could not obtain socket: %.200s", strerror(errno));
 
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_port = 0;
     sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     bzero(&sockaddr.sin_zero, 8);
 
-    if (bind(mux->socket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) == -1)
-	fatal("Could not bind socket: %.200s", strerror(errno));
+    if (bind(mux->socket, (struct sockaddr *) &sockaddr, 
+	     sizeof(struct sockaddr)) == -1)
+	fatal("could not bind socket: %.200s", strerror(errno));
 
     mux->sockaddr.sin_family = AF_INET;
     mux->sockaddr.sin_port = htons(mux->port);
@@ -88,7 +89,7 @@ prepare_packet(struct mux *mux)
 {
     time_t t = time(NULL);
 
-    memset(&mux->packet, 0, sizeof(mux->packet));
+    bzero(&mux->packet, sizeof(mux->packet));
     mux->offset = 0;
 
     mux->packet.header.mon_version = MON_PACKET_VER;

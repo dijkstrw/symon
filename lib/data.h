@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: data.h,v 1.6 2002/04/01 20:15:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -210,18 +210,21 @@ struct packedstream {
 
 /* prototypes */
 __BEGIN_DECLS
-int            token2type(int);
+int            ps2strn(struct packedstream *, char *, int, int);
 int            snpack(char *, int, char*, int, ...);
 int            sunpack(char *, struct packedstream *);
-int            ps2strn(struct packedstream *, char *, int, int);
-struct stream *find_source_stream(struct source *, int, char *);
-struct stream *add_source_stream(struct source *, int, char *); 
-struct stream *find_mux_stream(struct mux *,  int, char *);
-struct stream *add_mux_stream(struct mux *, int, char *);
+int            token2type(int);
+struct mux    *add_mux(struct muxlist *, char *);
+struct mux    *find_mux(struct muxlist *, char *);
+struct source *add_source(struct sourcelist *, char *);
 struct source *find_source(struct sourcelist *, char *);
 struct source *find_source_ip(struct sourcelist *, u_int32_t);
-struct source *add_source(struct sourcelist *, char *);
-struct mux    *find_mux(struct muxlist *, char *);
-struct mux    *add_mux(struct muxlist *, char *);
+struct stream *add_mux_stream(struct mux *, int, char *);
+struct stream *add_source_stream(struct source *, int, char *); 
+struct stream *find_mux_stream(struct mux *,  int, char *);
+struct stream *find_source_stream(struct source *, int, char *);
+void           free_muxlist(struct muxlist *);
+void           free_sourcelist(struct sourcelist *);
+void           free_streamlist(struct streamlist *);
 __END_DECLS
 #endif /*_MON_LIB_DATA_H*/

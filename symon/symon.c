@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.13 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: symon.c,v 1.14 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -41,18 +41,21 @@
 #include <syslog.h>
 #include <unistd.h>
 
-#include "mon.h"
-#include "net.h"
-#include "monnet.h"
-#include "readconf.h"
 #include "data.h"
 #include "error.h"
+#include "mon.h"
+#include "monnet.h"
+#include "net.h"
+#include "readconf.h"
+#include "xmalloc.h"
 
 __BEGIN_DECLS
 void alarmhandler(int);
+void exithandler(int);
+void huphandler(int);
 __END_DECLS
 
-struct muxlist muxlist = SLIST_HEAD_INITIALIZER(muxlist);
+int flag_hup = 0;
 
 #ifdef MON_KVM
 kvm_t *kvmd;
@@ -86,7 +89,16 @@ void
 alarmhandler(int s) {
     /* EMPTY */
 }
-
+void
+exithandler(int s) {
+    info("received signal %d - quitting", s);
+    exit(1);
+}
+void
+huphandler(int s) {
+    info("hup received");
+    flag_hup = 1;
+}
 /* 
  * Mon is a system measurement utility. 
  *
@@ -106,15 +118,47 @@ alarmhandler(int s) {
 int 
 main(int argc, char *argv[])
 {
+    struct muxlist mul, newmul;
     struct itimerval alarminterval;
     struct stream *stream;
     struct mux *mux;
     char mon_buf[_POSIX2_LINE_MAX];
-    int offset;
-
+    FILE *f;
+    char *p;
 #ifdef MON_KVM
     char *nlistf = NULL, *memf = NULL;
+#endif
+    char *version;
+    int ch;
 
+    SLIST_INIT(&mul);
+
+    /* prepare version number */
+    version = xstrdup("$Revision: 1.14 $");
+    version = strchr(version, ' ') + 1;
+    p = strchr(version, '$');
+    *--p = '\0';
+
+    info("mon version %s", version);
+
+    /* reset flags */
+    flag_debug = 0;
+    flag_daemon = 0;
+
+    while ((ch = getopt(argc, argv, "dv")) != -1) {
+	switch (ch) {
+	case 'd':
+	    flag_debug = 1;
+	    break;
+	case 'v':
+	    info("mon version %s", version);
+	default:
+	    info("usage: %s [-d] [-v]", __progname);
+	    exit(1);
+	}
+    }
+
+#ifdef MON_KVM
     /* Populate our kernel name list */
     if ((kvmd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, mon_buf)) == NULL)
 	fatal("kvm_open: %s", mon_buf);
@@ -130,29 +174,39 @@ main(int argc, char *argv[])
     setegid(getgid());
     setgid(getgid());
 
-    read_config_file("mon.conf");
+    if (!read_config_file(&mul, MON_CONFIG_FILE))
+	fatal("configuration contained errors; quitting");
 
-#ifndef DEBUG
-    if (daemon(0,0) != 0)
-	fatal("daemonize failed");
-#endif
+    if (flag_debug != 1) {
+	if (daemon(0,0) != 0)
+	    fatal("daemonize failed");
+	
+	flag_daemon = 1;
 
-    /* Init modules */
-    inform("mon $Revision: 1.13 $ started");
+	/* record pid */
+	f = fopen(MON_PID_FILE, "w");
+	if (f) {
+	    fprintf(f, "%u\n", (u_int) getpid());
+	    fclose(f);
+	}
+    } else {
+	info("program id=%d", (u_int) getpid());
+    }
 
-    offset = 0;
-    SLIST_FOREACH(mux, &muxlist, muxes) {
+    /* Setup signal handlers */
+    signal(SIGALRM, alarmhandler);
+    signal(SIGHUP, huphandler);
+    signal(SIGINT, exithandler); 
+    signal(SIGQUIT, exithandler); 
+    signal(SIGTERM, exithandler); 
+
+    /* init modules */
+    SLIST_FOREACH(mux, &mul, muxes) {
 	connect2mux(mux);
 	SLIST_FOREACH(stream, &mux->sl, streams) {
 	    (streamfunc[stream->type].init)(stream->args);
 	}
     }
-
-    /* Setup signal handlers */
-    signal(SIGALRM, alarmhandler);
-    signal(SIGINT, exit); 
-    signal(SIGQUIT, exit); 
-    signal(SIGTERM, exit); 
 
     /* Setup alarm */
     timerclear(&alarminterval.it_interval);
@@ -161,16 +215,38 @@ main(int argc, char *argv[])
 	alarminterval.it_value.tv_sec=MON_INTERVAL;
 
     if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
-	syslog(LOG_INFO,"alarm setup failed -- %s", strerror(errno));
-	exit(1);
+	fatal("alarm setup failed -- %s", strerror(errno));
     }
 
-    for (;;) {  /* forever */
+    for (;;) {  /* FOREVER */
 	sleep(MON_INTERVAL*2);    /* alarm will always interrupt sleep */
 
-	SLIST_FOREACH(mux, &muxlist, muxes) {
-	    prepare_packet(mux);
+	if (flag_hup == 1) {
+	    flag_hup = 0;
 
+	    SLIST_INIT(&newmul);
+
+	    if (!read_config_file(&newmul, MON_CONFIG_FILE)) {
+		info("new configuration contains errors; keeping old configuration");
+		free_muxlist(&newmul);
+	    } else {
+		free_muxlist(&mul);
+		mul = newmul;
+		info("read configuration file succesfully");
+
+		/* init modules */
+		SLIST_FOREACH(mux, &mul, muxes) {
+		    connect2mux(mux);
+		    SLIST_FOREACH(stream, &mux->sl, streams) {
+			(streamfunc[stream->type].init)(stream->args);
+		    }
+		}
+	    }
+	}
+
+	SLIST_FOREACH(mux, &mul, muxes) {
+	    prepare_packet(mux);
+	    
 	    SLIST_FOREACH(stream, &mux->sl, streams)
 		stream_in_packet(stream, mux);
 

@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.2 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -87,6 +87,8 @@ init_if(char *s)
     if_size_ifnet = sizeof if_ifnet;
     if_size_ifhead = sizeof if_ifhead;
     if_size_ifaddr = sizeof if_ifaddr;
+
+    info("started module if(%s)", s);
 }
 /* Get interface statistics */
 int 

@@ -1,4 +1,4 @@
-/* $Id: readconf.h,v 1.3 2002/03/31 14:27:50 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.4 2002/04/01 20:16:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,8 +34,10 @@
 #ifndef _MONMUX_READCONF_H
 #define _MONMUX_READCONF_H
 
+#include "data.h"
+
 __BEGIN_DECLS
-void read_config_file(const char *);
+int read_config_file(struct muxlist *, struct sourcelist *, const char *);
 __END_DECLS
 
 #endif /*_MONMUX_READCONF_H*/

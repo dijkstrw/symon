@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.7 2002/04/01 14:43:40 dijkstra Exp $ */
+/* $Id: lex.c,v 1.8 2002/04/01 20:15:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -299,8 +299,10 @@ open_lex(const char *filename)
     l->value = 0;
 
     if ((l->fh = fopen(l->filename, "r")) == NULL) {
-	fatal("could not open file '%s':%s", 
-	     l->filename, strerror(errno));
+	warning("could not open file '%s':%s", 
+		l->filename, strerror(errno));
+	xfree(l);
+	return NULL;
     }
 
     lex_nextchar(l);
@@ -320,6 +322,7 @@ close_lex(struct lex *l)
 void
 parse_error(struct lex *l, const char *s)
 {
-    fatal("%s:%d: expected %s (found '%.5s')", l->filename, l->cline, s, l->token);
+    warning("%s:%d: expected %s (found '%.5s')", 
+	    l->filename, l->cline, s, l->token);
 }
 

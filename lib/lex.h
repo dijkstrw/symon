@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.7 2002/04/01 14:43:49 dijkstra Exp $ */
+/* $Id: lex.h,v 1.8 2002/04/01 20:15:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -94,7 +94,7 @@ __END_DECLS
 	lex_nexttoken(l);                         \
 	if (l->op != (x)) {                       \
 	    parse_error(l, parse_opcode((x)));    \
-	    return;                               \
+	    return 0;                             \
 	}                                         \
     } while (0);
 

@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.7 2002/03/31 14:27:50 dijkstra Exp $ */
+/* $Id: symux.c,v 1.8 2002/04/01 20:16:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -50,32 +50,35 @@
 #include "muxnet.h"
 #include "net.h"
 #include "readconf.h"
+#include "xmalloc.h"
 
 __BEGIN_DECLS
-void signalhandler(int);
+void exithandler();
 void close_listensock();
+void huphandler(int);
+void signalhandler(int);
 __END_DECLS
 
-struct muxlist muxlist = SLIST_HEAD_INITIALIZER(muxlist);
-struct sourcelist sourcelist = SLIST_HEAD_INITIALIZER(sourcelist);
-
+int flag_hup = 0;
 int listen_sock;
 fd_set fdset;
 int maxfd;
-int signal_seen;
 
-void 
-signalhandler(int s) 
-{
-    signal_seen = s;
+void
+exithandler(int s) {
+    info("received signal - quitting");
+    exit(1);
 }
-
 void 
 close_listensock() 
 {
     close(listen_sock);
 }
-
+void
+huphandler(int s) {
+    info("hup received");
+    flag_hup = 1;
+}
 /* 
  * Monmux is the receiver of mon performance measurements.
  *
@@ -95,38 +98,104 @@ close_listensock()
 int 
 main(int argc, char *argv[])
 {
-    struct mux *mux;
     struct monpacket packet;
     struct packedstream ps;
-    struct source *source;
-    struct stream *stream;
-
     char stringbuf[_POSIX2_LINE_MAX];
-    int offset;
+    struct muxlist mul, newmul;
+    struct sourcelist sol, newsol;
     char *arg_ra[3];
+    struct stream *stream;
+    struct source *source;
+    struct mux *mux;
+    FILE *f;
+    char *p;
+    char *version;
+    int ch;
+    int offset;
     time_t t;
+    
+    SLIST_INIT(&mul);
+    SLIST_INIT(&sol);
 	
+    /* prepare version number */
+    version = xstrdup("$Revision: 1.8 $");
+    version = strchr(version, ' ') + 1;
+    p = strchr(version, '$');
+    *--p = '\0';
+
+    info("monmux version %s", version);
+
+    /* reset flags */
+    flag_debug = 0;
+    flag_daemon = 0;
+
+    while ((ch = getopt(argc, argv, "dv")) != -1) {
+	switch (ch) {
+	case 'd':
+	    flag_debug = 1;
+	    break;
+	case 'v':
+	    info("monmux version %s", version);
+	default:
+	    info("usage: %s [-d] [-v]", __progname);
+	    exit(1);
+	}
+    }
+
     /* parse configuration file */
-    read_config_file(config_file);
+    if (!read_config_file(&mul, &sol, MONMUX_CONFIG_FILE))
+	fatal("configuration contained errors; quitting");
 
-#ifndef DEBUG
-    if (daemon(0,0) != 0)
-	fatal("daemonize failed");
-#endif
+    if (flag_debug != 1) {
+	if (daemon(0,0) != 0)
+	    fatal("daemonize failed");
+	
+	flag_daemon = 1;
 
-    inform("monmux $Revision: 1.7 $ started");
+	/* record pid */
+	f = fopen(MONMUX_PID_FILE, "w");
+	if (f) {
+	    fprintf(f, "%u\n", (u_int) getpid());
+	    fclose(f);
+	}
+    } else {
+	info("program id=%d", (u_int) getpid());
+    }
 
-    mux = SLIST_FIRST(&muxlist);
+    mux = SLIST_FIRST(&mul);
 
     /* catch signals */
-    signal(SIGTERM, signalhandler);
+    signal(SIGHUP, huphandler);
+    signal(SIGINT, exithandler); 
+    signal(SIGQUIT, exithandler); 
+    signal(SIGTERM, exithandler);
+    signal(SIGTERM, exithandler); 
 
     listen_sock = getmuxsocket(mux);
 
     atexit(close_listensock);
 
     for (;;) {
-	wait_for_packet(listen_sock, &sourcelist, &source, &packet);
+	wait_for_packet(listen_sock, &sol, &source, &packet);
+
+	if (flag_hup == 1) {
+	    flag_hup = 0;
+
+	    SLIST_INIT(&newmul);
+	    SLIST_INIT(&newsol);
+
+	    if (!read_config_file(&newmul, &newsol, MONMUX_CONFIG_FILE)) {
+		info("new configuration contains errors; keeping old configuration");
+		free_muxlist(&newmul);
+		free_sourcelist(&newsol);
+	    } else {
+		free_muxlist(&mul);
+		free_sourcelist(&sol);
+		mul = newmul;
+		sol = newsol;
+		info("read configuration file succesfully");
+	    }
+	}
 
 	offset = 0;
 	while (offset < packet.header.length) {
@@ -134,6 +203,7 @@ main(int argc, char *argv[])
 
 	    /* find stream in source */
 	    stream = find_source_stream(source, ps.type, ps.args);
+
 	    if (stream != NULL) {
 		if (stream->file != NULL) {
 		    /* save if file specified */
@@ -148,16 +218,13 @@ main(int argc, char *argv[])
 
 		    arg_ra[2] = stringbuf;
 
-#ifdef DEBUG
-		    inform("%d(%s)='%s'",ps.type,ps.args,stringbuf);
-#else
 		    rrd_update(3,arg_ra);
 
 		    if (rrd_test_error()) {
 			warning("rrd_update:%s",rrd_get_error());
+			debug("%s %s %s", arg_ra[0], arg_ra[1], arg_ra[2]);
 			rrd_clear_error();                                                            
 		    }
-#endif
 		}
 	    }
 	}

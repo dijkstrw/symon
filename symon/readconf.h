@@ -1,4 +1,4 @@
-/* $Id: readconf.h,v 1.2 2002/03/31 14:27:48 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,6 +35,7 @@
 
 #include <sys/cdefs.h>
 
+#include "data.h"
 #include "lex.h"
 
 /* Monitor subsystem structure */
@@ -45,7 +46,7 @@ struct monm {
 };
 
 __BEGIN_DECLS
-void read_config_file(const char *);
+int read_config_file(struct muxlist *, const char *);
 __END_DECLS
 #endif /*_MON_READCONF_H*/
 

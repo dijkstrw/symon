@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.2 2002/03/31 14:27:47 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.3 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -64,6 +64,8 @@ init_io(char *s)
 {
     io_size_disk = sizeof io_disk;
     io_size_dihead = sizeof io_dihead;
+
+    info("started module io(%s)", s);
 }
 /* Get new io statistics */
 int 

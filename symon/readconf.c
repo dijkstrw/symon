@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.3 2002/04/01 14:44:39 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.4 2002/04/01 20:15:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,52 +40,58 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "readconf.h"
-#include "mon.h"
-#include "xmalloc.h"
-#include "lex.h"
-#include "error.h"
-#include "net.h"
 #include "data.h"
+#include "error.h"
+#include "lex.h"
+#include "mon.h"
+#include "net.h"
+#include "readconf.h"
+#include "xmalloc.h"
 
 __BEGIN_DECLS
-void read_hub(struct lex *);
-void read_stream(struct lex *);
+int read_hub(struct muxlist *, struct lex *);
+int read_stream(struct muxlist *,struct lex *);
 __END_DECLS
-
-extern struct muxlist muxlist;
 
 /*
  * hub <host> (port|:|,| ) <number> } 
  */
-void 
-read_hub(struct lex *l)
+int
+read_hub(struct muxlist *muxlist, struct lex *l)
 {
     struct mux *m;
 
-    if (! SLIST_EMPTY(&muxlist))
-	fatal("%s:%d: only one hub statement allowed", 
-	      l->filename, l->cline);
-    
-    lex_nexttoken(l);
-    if (!lookup(l->token)) 
-	fatal("%s:%d: could not resolve '%s'",
-	      l->filename, l->cline, l->token );
+    if (! SLIST_EMPTY(muxlist)) {
+	warning("%s:%d: only one hub statement allowed", 
+		l->filename, l->cline);
+	return 0;
+    }
 
-    m = add_mux(&muxlist, lookup_address);
+    lex_nexttoken(l);
+    if (!lookup(l->token)) {
+	warning("%s:%d: could not resolve '%s'",
+		l->filename, l->cline, l->token );
+	return 0;
+    }
+
+    m = add_mux(muxlist, lookup_address);
     m->ip = lookup_ip;
 
     lex_nexttoken(l);
     if (l->op == LXT_PORT || l->op == LXT_COLON || l->op == LXT_COMMA )
 	lex_nexttoken(l);
 
-    if (l->type != LXY_NUMBER)
+    if (l->type != LXY_NUMBER) {
 	parse_error(l, "<number>");
-    
+	return 0;
+    }
+
     m->port = l->value;
+    return 1;
 }
 /* stream { cpu() | mem | io() | if() } */
-void read_stream(struct lex *l)
+int
+read_stream(struct muxlist *muxlist, struct lex *l)
 {
     struct stream *stream;
     struct mux *mux;
@@ -95,10 +101,13 @@ void read_stream(struct lex *l)
     int  st;
 
     /* Need a hub statement before we can add streams */
-    if (SLIST_EMPTY(&muxlist))
-	fatal("%s:%d: stream seen before hub was specified",
-	      l->filename, l->cline);
-    mux = SLIST_FIRST(&muxlist);
+    if (SLIST_EMPTY(muxlist)) {
+	warning("%s:%d: stream seen before hub was specified",
+		l->filename, l->cline);
+	return 0;
+    }
+
+    mux = SLIST_FIRST(muxlist);
 
     EXPECT(LXT_BEGIN);
     while (lex_nexttoken(l) && l->op != LXT_END) {
@@ -114,61 +123,82 @@ void read_stream(struct lex *l)
 	    lex_nexttoken(l);
 	    if (l->op == LXT_OPEN) {
 		lex_nexttoken(l);
-		if (l->op == LXT_CLOSE) parse_error(l, "<stream argument>");
+		if (l->op == LXT_CLOSE){
+		    parse_error(l, "<stream argument>");
+		    return 0;
+		}
 		strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
 		lex_nexttoken(l);
-		if (l->op != LXT_CLOSE) parse_error(l, ")");
+		if (l->op != LXT_CLOSE){
+		    parse_error(l, ")");
+		    return 0;
+		}
 	    } else {
 		lex_ungettoken(l);
 		sa[0]='\0';
 	    }
 
-	    if ((stream = add_mux_stream(mux, st, sa)) == NULL) 
-		fatal("%s:%d: stream %s(%s) redefined",
-		      l->filename, l->cline, sn, sa);
+	    if ((stream = add_mux_stream(mux, st, sa)) == NULL) {
+		warning("%s:%d: stream %s(%s) redefined",
+			l->filename, l->cline, sn, sa);
+		return 0;
+	    }
 	    
 	    break; /* LXT_CPU/IF/IO/MEM */
 	case LXT_COMMA:
 	    break;
 	default:
 	    parse_error(l, "{cpu|mem|if|io}");
+	    return 0;
 	    break;
 	}
     }
+
+    return 1;
 }
 /* Read mon.conf */
-void 
-read_config_file(const char *filename)
+int
+read_config_file(struct muxlist *muxlist, const char *filename)
 {
     struct lex *l;
 
-    SLIST_INIT(&muxlist);
+    SLIST_INIT(muxlist);
 
-    l = open_lex(filename);
+    if ((l = open_lex(filename)) == NULL)
+	return 0;
     
     while (lex_nexttoken(l)) {
     /* expecting keyword now */
 	    switch (l->op) {
 	    case LXT_HUB:
-		read_hub(l);
+		if (!read_hub(muxlist, l)) 
+		    return 0;
 		break;
 	    case LXT_STREAM:
-		read_stream(l);
+		if (!read_stream(muxlist, l))
+		    return 0;
 		break;
 	    default:
 		parse_error(l, "source|hub" );
+		return 0;
 		break;
 	    }
     }
 
     /* sanity checks */
-    if (SLIST_EMPTY(&muxlist))
-	fatal("%s: no hub section seen",
-	      l->filename);
+    if (SLIST_EMPTY(muxlist)) {
+	warning("%s: no hub section seen",
+		l->filename);
+	return 0;
+    }
     else
-	if (SLIST_EMPTY(&(SLIST_FIRST(&muxlist))->sl))
-	    fatal("%s: no stream section seen",
-		  l->filename);
+	if (SLIST_EMPTY(&(SLIST_FIRST(muxlist))->sl)) {
+	    warning("%s: no stream section seen",
+		    l->filename);
+	    return 0;
+	}
 
     close_lex(l);
+
+    return 1;
 }
