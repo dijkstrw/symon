@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.13 2002/10/25 15:24:55 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.14 2002/11/29 10:49:20 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -91,8 +91,8 @@ if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
 if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
-# add .rrd if it is a cpu, mem, or pf
-if [ `echo $i | egrep -e "^(cpu[0-9]|mem|pf)$"` ]; then i=$i.rrd; fi
+# add .rrd if it is a cpu, etc.
+if [ `echo $i | egrep -e "^(cpu[0-9]|mem|pf|debug)$"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -155,6 +155,23 @@ if_*.rrd)
     echo "$i created"
     ;;
 
+debug.rrd)
+    # Build debug file
+    rrdtool create $i $RRD_ARGS \
+	DS:debug0:COUNTER:5:U:U DS:debug1:COUNTER:5:U:U \
+	DS:debug2:COUNTER:5:U:U DS:debug3:COUNTER:5:U:U \
+	DS:debug4:COUNTER:5:U:U DS:debug5:COUNTER:5:U:U \
+	DS:debug6:COUNTER:5:U:U DS:debug7:COUNTER:5:U:U \
+	DS:debug8:COUNTER:5:U:U DS:debug9:COUNTER:5:U:U \
+	DS:debug10:COUNTER:5:U:U DS:debug11:COUNTER:5:U:U \
+	DS:debug12:COUNTER:5:U:U DS:debug13:COUNTER:5:U:U \
+	DS:debug14:COUNTER:5:U:U DS:debug15:COUNTER:5:U:U \
+	DS:debug16:COUNTER:5:U:U DS:debug17:COUNTER:5:U:U \
+	DS:debug18:COUNTER:5:U:U DS:debug19:COUNTER:5:U:U \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+    
 pf.rrd)
     # Build pf file
     rrdtool create $i $RRD_ARGS \
@@ -195,7 +212,7 @@ io_*.rrd)
     # Default match
     cat <<EOF
 Usage: $0 all
-       $0 cpu0|mem|pf|<if>|<io>
+       $0 cpu0|mem|pf|debug|<if>|<io>
 
 Where:
 if=	`echo $INTERFACES|
