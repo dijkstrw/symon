@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.20 2003/06/20 08:41:07 dijkstra Exp $ */
+/* $Id: data.c,v 1.21 2003/10/10 15:19:49 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -68,6 +68,7 @@ __END_DECLS
  * Format specifications are strings of characters:
  *
  * L = u_int64
+ * D = 7.6f <= int64
  * l = u_int32
  * s = u_int16
  * c = 3.2f <= u_int14 <= u_int16  (used in percentages)
@@ -82,6 +83,7 @@ struct {
     u_int64_t max;
 }      streamvar[] = {
     { 'L', ":%llu", " %20llu", 22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff },
+    { 'D', ":%7.6f", " %7.6f", 23, sizeof(int64_t), (u_int64_t) 0xffffffffffffffff },
     { 'l', ":%lu", " %10lu", 12, sizeof(u_int32_t), (u_int64_t) 0xffffffff },
     { 's', ":%u", " %5u", 7, sizeof(u_int16_t), (u_int64_t) 0xffff },
     { 'c', ":%3.2f", " %3.2f", 8, sizeof(u_int16_t), (u_int64_t) 100 },
@@ -101,6 +103,8 @@ struct {
     { MT_DEBUG, "llllllllllllllllllll" },
     { MT_PROC, "lLLLlcll" },
     { MT_MBUF, "lllllllllllllll" },
+    { MT_SENSOR, "D" },
+    { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
 
@@ -116,6 +120,7 @@ struct {
     { MT_DEBUG, LXT_DEBUG },
     { MT_PROC, LXT_PROC },
     { MT_MBUF, LXT_MBUF },
+    { MT_SENSOR, LXT_SENSOR },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */
@@ -301,6 +306,8 @@ snpack(char *buf, int maxlen, char *id, int type,...)
     u_int16_t c;
     u_int32_t l;
     u_int64_t q;
+    int64_t d;
+    double D;
     int i = 0;
     int offset = 0;
 
@@ -346,7 +353,8 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	    break;
 
 	case 'c':
-	    c = va_arg(ap, int);
+	    D = va_arg(ap, double);
+	    c = (u_int16_t) (D * 100.0);
 	    c = htons(c);
 	    bcopy(&c, buf + offset, sizeof(u_int16_t));
 	    offset += sizeof(u_int16_t);
@@ -354,7 +362,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 
 	case 's':
 	    s = va_arg(ap, int);
-	    s = htons(c);
+	    s = htons(s);
 	    bcopy(&s, buf + offset, sizeof(u_int16_t));
 	    offset += sizeof(u_int16_t);
 	    break;
@@ -372,7 +380,15 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	    bcopy(&q, buf + offset, sizeof(u_int64_t));
 	    offset += sizeof(u_int64_t);
 	    break;
-
+	    
+	case 'D':
+	    D = va_arg(ap, double);
+	    d = (int64_t) (D * 1000 * 1000);
+	    d = htonq(d);
+	    bcopy(&d, buf + offset, sizeof(int64_t));
+	    offset += sizeof(int64_t);
+	    break;
+	    
 	default:
 	    warning("unknown stream format identifier");
 	    return 0;
@@ -401,6 +417,7 @@ sunpack(char *buf, struct packedstream * ps)
     u_int16_t c;
     u_int32_t l;
     u_int64_t q;
+    int64_t d;
 
     bzero(ps, sizeof(struct packedstream));
 
@@ -466,6 +483,14 @@ sunpack(char *buf, struct packedstream * ps)
 	    out += sizeof(u_int64_t);
 	    break;
 
+	case 'D':
+	    bcopy((void *) in, &d, sizeof(int64_t));
+	    d = ntohq(d);
+	    bcopy(&d, (void *) out, sizeof(int64_t));
+	    in += sizeof(int64_t);
+	    out += sizeof(int64_t);
+	    break;
+
 	default:
 	    warning("unknown stream format identifier");
 	    return 0;
@@ -478,12 +503,13 @@ sunpack(char *buf, struct packedstream * ps)
 int 
 ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
 {
-    float f;
     u_int16_t b;
     u_int16_t s;
     u_int16_t c;
     u_int64_t q;
     u_int32_t l;
+    int64_t d;
+    double D;
     int i = 0;
     char *formatstr;
     char *in, *out;
@@ -518,8 +544,8 @@ ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
 
 	case 'c':
 	    bcopy(in, &c, sizeof(u_int16_t));
-	    f = (float) c / 10.0;
-	    snprintf(out, strlenvar(vartype), formatstr, f);
+	    D = (double) c / 100.0;
+	    snprintf(out, strlenvar(vartype), formatstr, D);
 	    in += sizeof(u_int16_t);
 	    break;
 
@@ -541,6 +567,14 @@ ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
 	    in += sizeof(u_int64_t);
 	    break;
 
+	case 'D':
+	    bcopy(in, &d, sizeof(int64_t));
+	    D = (double) (d / 1000.0 / 1000.0);
+	    snprintf(out, strlenvar(vartype), formatstr, D);
+	    in += sizeof(int64_t);
+	    break;
+
+	    
 	default:
 	    warning("Unknown stream format identifier");
 	    return 0;
@@ -828,26 +862,25 @@ free_sourcelist(struct sourcelist * sol)
 int 
 calculate_churnbuffer(struct sourcelist * sol)
 {
+    char buf[_POSIX2_LINE_MAX];
     struct source *source;
     struct stream *stream;
-    int prefixlen;
     int maxlen;
     int len;
     int n;
-
-    /* determine length of a timestamp + ip as strings */
-    prefixlen = (sizeof(time_t) * 3) + strlen(":") + 15 + strlen(":");
 
     len = n = 0;
     source = NULL;
     stream = NULL;
     maxlen = 0;
+
     /* determine maximum string size for a single source */
     SLIST_FOREACH(source, sol, sources) {
-	len = prefixlen;
+	len = snprintf(&buf[0], _POSIX2_LINE_MAX, "%s;", source->addr);
 	SLIST_FOREACH(stream, &source->sl, streams) {
 	    len += strlen(type2str(stream->type)) + strlen(":");
 	    len += strlen(stream->args) + strlen(":");
+	    len += (sizeof(time_t) * 3) + strlen(":"); /* 3 =~ ln(255) / ln(10) */
 	    len += strlentype(stream->type);
 	    n++;
 	}

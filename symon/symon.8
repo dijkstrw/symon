@@ -97,7 +97,8 @@ newlines and text behind '#' are ignored. The format in BNF:
 .nf
 monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | "proc" | "mbuf"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" | 
+               "proc" | "mbuf" | "sensor"
 host         = ip4addr | ip6addr | hostname
 port         = [ "port" | "," ] portnumber
 argument     = number | interfacename | diskname

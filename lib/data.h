@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.20 2003/06/20 08:41:07 dijkstra Exp $ */
+/* $Id: data.h,v 1.21 2003/10/10 15:19:49 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -149,14 +149,16 @@ SLIST_HEAD(muxlist, mux);
 #define MT_DEBUG  5
 #define MT_PROC   6
 #define MT_MBUF   7
-#define MT_EOT    8
+#define MT_SENSOR 8
+#define MT_TEST   9
+#define MT_EOT    10
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
  * structure defines the maximum amount of data that can be contained in a
  * single network representation of a stream. It is used internally for sizing
- * only. Although the union members are here, they could also read u_int64_t[4]
- * with io, for instance.
+ * only and regression testing only. Although the union members are here, they
+ * could also read u_int64_t[4] with io, for instance.
  */
 #define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
 #define SYMON_PS_ARGLEN    16	/* maximum argument length */
@@ -260,6 +262,17 @@ struct packedstream {
 	    u_int32_t m_wait;
 	    u_int32_t m_drain;
 	}      ps_mbuf;
+	struct {
+	    int64_t value;
+	}      ps_sensor;
+	struct {
+	    u_int64_t L[4];
+	    int64_t D[4];
+	    u_int32_t l[4];
+	    u_int16_t s[4];
+	    u_int16_t c[4];
+	    u_int8_t b[4];
+	}      ps_test;
     }     data;
 };
 

@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.24 2003/06/20 08:41:19 dijkstra Exp $ */
+/* $Id: symon.h,v 1.25 2003/10/10 15:20:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,14 +40,17 @@
 #include "conf.h"
 
 #define SYMON_PID_FILE    "/var/run/symon.pid"
-#define SYMON_INTERVAL 5	/* measurement interval */
-#define SYMON_WARN_SENDERR 50	/* warn every x errors */
-#define SYMON_MAX_DOBJECTS  200	/* max dynamic allocation; local limit per
-				 * measurement module */
+#define SYMON_INTERVAL 5	        /* measurement interval */
+#define SYMON_WARN_SENDERR 50	        /* warn every x errors */
+#define SYMON_MAX_DOBJECTS  2000	/* max dynamic allocation; local limit per
+				         * measurement module */
 #define SYMON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)	/* max allocation unit =
 						 * _POSIX2_LINE_MAX */
+#define SYMON_SENSORMASK   0xFF         /* sensors 0-255 are allowed */
+
 struct funcmap {
     int type;
+    int used;
     void (*init) (char *);
     void (*gets) ();
     int (*get) (char *, int, char *);
@@ -89,6 +92,10 @@ extern int get_debug(char *, int, char *);
 extern void init_proc(char *);
 extern void gets_proc();
 extern int get_proc(char *, int, char *);
+
+/* sm_sensor.c */
+extern void init_sensor(char *);
+extern int get_sensor(char *, int, char *);
 __END_DECLS
 
 #endif				/* _SYMON_SYMON_H */

@@ -1,23 +1,13 @@
 TODO:
 
 == current problems / short term
-- check that cpupct from proc is not broken. (got the feeling that %c handling
-  might not be correct)
 - rewrite sm_proc.c, don't count shared pages twice
-- rewrite index.php, allow rrds in same dir as phps
-- rewrite symon2web to allow use on internet websites
-- allow editing of graphing parameters in symon2web
-- add symon2web manual page / readme, explain weird format
 - remove mon packet limit
-- add mbuf usage, don't forget to add to PLISTs
 - check shared memory for hackable bugs. (master should only write, clients
   should only read. clients should check incoming data for sanity.)
-- symuxnet.c:get_symon_sockets looks weird. Check it out.
-- churnbuffer assumes that ips are always 15 characters long (not true for ip6)
 
 == longer term
 - change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
-- write a client that drives a crystal fontz lcd
 
-$Id: TODO,v 1.24 2003/06/20 08:41:00 dijkstra Exp $
+$Id: TODO,v 1.25 2003/10/10 15:19:45 dijkstra Exp $

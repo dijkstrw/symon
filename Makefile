@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.11 2003/01/18 09:55:31 dijkstra Exp $
+# $Id: Makefile,v 1.12 2003/10/10 15:19:45 dijkstra Exp $
 
-SUBDIR=	lib symon symux symon2web client
+SUBDIR=	lib symon symux client
 
 .if make(clean)
 SUBDIR+= ports/symon
@@ -12,7 +12,6 @@ all: _SUBDIRUSE
 clean: _SUBDIRUSE
 install: _SUBDIRUSE
 
-# Not all the stuff that I'm working on is ready for release
 dist: clean
 	@workdir=`basename ${.CURDIR}`; \
 	cd ports/symon; \
@@ -20,7 +19,7 @@ dist: clean
 	${MAKE} clean; \
 	cd ../../..; \
 	echo Exporting symon-${V}.tar.gz; \
-	find $${workdir} -type f -print | egrep -v 'CVS|doc|README|regress|#'| \
+	find $${workdir} -type f -print | egrep -v 'CVS|README|regress|#'| \
 		tar -czvf /tmp/symon-${V}.tar.gz -I -; \
 	cp /tmp/symon-${V}.tar.gz /usr/ports/distfiles/; \
 	cd $${workdir}/ports/symon; \

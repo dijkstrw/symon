@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.19 2003/06/20 08:41:23 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.20 2003/10/10 15:20:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -91,6 +91,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	break;
     case MT_PROC:
 	ts = "proc_";
+	ta = args;
+	break;
+    case MT_SENSOR:
+	ts = "sensor";
 	ta = args;
 	break;
     default:
@@ -190,6 +194,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		case LXT_MBUF:
 		case LXT_DEBUG:
 		case LXT_PROC:
+		case LXT_SENSOR:
 		    st = token2type(l->op);
 		    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -225,7 +230,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		case LXT_COMMA:
 		    break;
 		default:
-		    parse_error(l, "{cpu|mem|if|io|pf|debug}");
+		    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor}");
 		    return 0;
 
 		    break;
@@ -317,6 +322,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    case LXT_MBUF:
 	    case LXT_DEBUG:
 	    case LXT_PROC:
+	    case LXT_SENSOR:
 		st = token2type(l->op);
 		strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -376,9 +382,9 @@ read_source(struct sourcelist * sol, struct lex * l)
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break;		/* LXT_CPU/IF/IO/MEM/PF/MBUF/DEBUG/PROC */
+		break;		/* LXT_CPU/IF/IO/MEM/PF/MBUF/DEBUG/PROC/SENSOR */
 	    default:
-		parse_error(l, "{cpu|mem|if|io|debug|proc}");
+		parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
 		return 0;
 		break;
 	    }
@@ -467,7 +473,6 @@ read_config_file(struct muxlist * mul, const char *filename)
 		    if (stream->file == NULL) {
 			warning("%s: no filename specified for stream '%s(%s)' in source '%s'",
 				l->filename, type2str(stream->type), stream->args, source->addr);
-			return 0;
 		    }
 		}
 	    }

@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.1 2003/10/05 07:52:37 dijkstra Exp $ */
+/* $Id: npack.c,v 1.2 2003/10/10 15:19:58 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -8,66 +8,64 @@
 #include <assert.h>
 #include <string.h>
 
+#include "xmalloc.h"
 #include "data.h"
 
 int main(int argc, char **argv) 
 {
-    char buffer[4][_POSIX2_LINE_MAX];
-    struct packedstream ps[4];
-    int ilen[4], olen[4];
+    char *buffer;
+    char *str;
+    struct packedstream *ps;
+    int ilen, olen;
 
-    bzero(&buffer[0][0], sizeof(buffer));
-    bzero(&buffer[1][0], sizeof(buffer));
-    bzero(&buffer[2][0], sizeof(buffer));
-    bzero(&buffer[3][0], sizeof(buffer));
-    bzero(&ps[0], sizeof(ps));
-    bzero(&ps[1], sizeof(ps));
-    bzero(&ps[2], sizeof(ps));
-    bzero(&ps[3], sizeof(ps));
+    buffer = xmalloc(_POSIX2_LINE_MAX);
+    str = xmalloc(_POSIX2_LINE_MAX);
+    ps = xmalloc(sizeof(struct packedstream));
 
-    /* test L, u_int64_t */
-    ilen[0] = snpack(&buffer[0][0], sizeof(buffer), "test L", MT_PF, 
-		     (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff, 
-		     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    olen[0] = sunpack(&buffer[0][0], &ps[0]);
+    ilen = snpack(buffer, _POSIX2_LINE_MAX, "test pack", MT_TEST, 
+		  /* test L, u_int64_t */
+		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff, 
+		  /* test D, double */
+		  (double) 0, (double) 100000, (double) -100000, (double) -12.05,
+		  /* test l, u_int32_t */
+		  (u_int32_t) 0, (u_int32_t) 0xffffffff, (u_int32_t) 0, (u_int32_t) 0x12345678,
+		  /* test s, u_int16_t */
+		  (int) 0, (int) 0xffff, (int) 0, (int) 0x8765,
+		  /* test c, float */
+		  (double) 0.0 , (double) 100.0, (double) 0, (double) 12.34,
+		  /* test b, u_int8_t */
+		  (int) 0, (int) 0xff, (int) 0, (int) 0x12);
+    olen = sunpack(buffer, ps);
 
-    assert(ilen[0] == olen[0]);
-    assert(strcmp("test L", ps[0].args) == 0);
-    assert(ps[0].data.ps_pf.bytes_v4_in == 0);
-    assert(ps[0].data.ps_pf.bytes_v4_out == 0xffffffffffffffff);
-    assert(ps[0].data.ps_pf.bytes_v6_in == 0);
-    assert(ps[0].data.ps_pf.bytes_v6_out == 0xffffff);
+/*    ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
+      printf(str); */
 
-    /* test D, int64_t */
-    ilen[0] = snpack(&buffer[0][0], sizeof(buffer), "test D1", MT_SENSOR,
-		     (int64_t) 0);
-    ilen[1] = snpack(&buffer[1][0], sizeof(buffer), "test D2", MT_SENSOR,
-		     (int64_t) 0x7fffffffffffffff);
-    ilen[2] = snpack(&buffer[2][0], sizeof(buffer), "test D3", MT_SENSOR,
-		     (int64_t) -1);
-    ilen[3] = snpack(&buffer[3][0], sizeof(buffer), "test D4", MT_SENSOR,
-		     (int64_t) 428030200203020);
-    olen[0] = sunpack(&buffer[0][0], &ps[0]);
-    olen[1] = sunpack(&buffer[1][0], &ps[1]);
-    olen[2] = sunpack(&buffer[2][0], &ps[2]);
-    olen[3] = sunpack(&buffer[3][0], &ps[3]);
+    assert(ilen == olen);
+    assert(strcmp("test pack", ps->args) == 0);
+    assert(ps->data.ps_test.L[0] == 0);
+    assert(ps->data.ps_test.L[1] == 0xffffffffffffffff);
+    assert(ps->data.ps_test.L[2] == 0);
+    assert(ps->data.ps_test.L[3] == 0xffffff);
+    assert(ps->data.ps_test.D[0] == 0);
+    assert(ps->data.ps_test.D[1] == 100000000000);
+    assert(ps->data.ps_test.D[2] == -100000000000);
+    assert(ps->data.ps_test.D[3] == -12050000);
+    assert(ps->data.ps_test.l[0] == 0);
+    assert(ps->data.ps_test.l[1] == 0xffffffff);
+    assert(ps->data.ps_test.l[2] == 0);
+    assert(ps->data.ps_test.l[3] == 0x12345678);
+    assert(ps->data.ps_test.s[0] == 0);
+    assert(ps->data.ps_test.s[1] == 0xffff);
+    assert(ps->data.ps_test.s[2] == 0);
+    assert(ps->data.ps_test.s[3] == 0x8765);
+    assert(ps->data.ps_test.c[0] == 0);
+    assert(ps->data.ps_test.c[1] == 10000);
+    assert(ps->data.ps_test.c[2] == 0);
+    assert(ps->data.ps_test.c[3] == 1234);
+    assert(ps->data.ps_test.b[0] == 0);
+    assert(ps->data.ps_test.b[1] == 0xff);
+    assert(ps->data.ps_test.b[2] == 0);
+    assert(ps->data.ps_test.b[3] == 0x12);
     
-    assert(ilen[0] == ilen[0]);
-    assert(ilen[1] == ilen[1]);
-    assert(ilen[2] == ilen[2]);
-    assert(ilen[3] == ilen[3]);
-    assert(strcmp("test D1", ps[0].args) == 0);
-    assert(strcmp("test D2", ps[1].args) == 0);
-    assert(strcmp("test D3", ps[2].args) == 0);
-    assert(strcmp("test D4", ps[3].args) == 0);
-    assert(ps[0].data.ps_sensor.value == 0);
-    assert(ps[1].data.ps_sensor.value == 0x7fffffffffffffff);
-    assert(ps[2].data.ps_sensor.value == -1);
-    assert(ps[3].data.ps_sensor.value == 428030200203020);
-    
-    /* test l, u_int32_t */
-    /* test s, u_int16_t */
-    /* test c, u_int16_t, actual = float * 10 */
-    /* test b, u_int8_t */
     return 0;
 }

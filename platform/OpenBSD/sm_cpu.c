@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.14 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.15 2003/10/10 15:20:01 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -142,9 +142,9 @@ get_cpu(char *symon_buf, int maxlen, char *s)
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
 
     return snpack(symon_buf, maxlen, s, MT_CPU,
-		  cp_states[CP_USER],
-		  cp_states[CP_NICE],
-		  cp_states[CP_SYS],
-		  cp_states[CP_INTR],
-		  cp_states[CP_IDLE]);
+		  (double) (cp_states[CP_USER] / 10.0),
+		  (double) (cp_states[CP_NICE] / 10.0),
+		  (double) (cp_states[CP_SYS] / 10.0),
+		  (double) (cp_states[CP_INTR] / 10.0),
+		  (double) (cp_states[CP_IDLE] / 10.0));
 }

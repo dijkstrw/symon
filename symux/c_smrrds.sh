@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.19 2003/06/20 08:41:23 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.20 2003/10/10 15:20:03 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -120,7 +120,7 @@ if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_)"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$)"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -156,6 +156,14 @@ cpu[0-9].rrd)
 	DS:system:GAUGE:5:0:100 \
 	DS:interrupt:GAUGE:5:0:100 \
 	DS:idle:GAUGE:5:0:100 \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+
+sensor*.rrd)
+    # Build sensor file
+    rrdtool create $i $RRD_ARGS \
+	DS:value:GAUGE:5:-U:U \
 	$RRA_SETUP
     echo "$i created"
     ;;
@@ -267,7 +275,7 @@ io_*.rrd)
     echo $i - unknown
     cat <<EOF
 Usage: $0 [oneday] all
-       $0 [oneday] cpu0|mem|pf|mbuf|debug|proc|<if>|<io>
+       $0 [oneday] cpu0|mem|pf|mbuf|debug|proc|<if>|<io>|sensor[0-25]
 
 Where:
 if=	`echo $INTERFACES|

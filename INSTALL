@@ -6,12 +6,8 @@ Priviledges
 symux needs read and write access to it's rrdfiles.
 
 monitoring needs:
-cpu, if, mem, io, debug, proc  - symon can run as nobody
-pf                             - symon needs r/w on /dev/pf
-
-symon2web is a php4 application and needs access to the rrdfiles. Note that
-symon2web interprets the url for graphing parameters. It should never be exposed
-to untrusted users | the outside world.
+cpu, debug, if, io, mbuf, mem, proc, sensor - symon can run as nobody
+pf                                          - symon needs r/w on /dev/pf
 
 Real quick 
 ==========
@@ -24,15 +20,13 @@ or grab the port and do
 make package
 pkg_add symon-mon-version.tgz on all monitored hosts
 pkg_add symon-mux-version.tgz on the loghost
-pkg_add symon-web-version.tgz on the loghost
+
+Install the seperate syweb package to show the data stored in the rrd files.
 
 Less quick, but more verbose
 ============================
 - Install rrdtool where you want to run the gatherer. 
 	cd /usr/ports/net/rrdtool && make install
-
-- Install php4 where you want to run the web frontend. 
-	cd /usr/ports/www/php4 && make install
 
 - Building by hand: Check Makefile.inc for settings. Things to watch out for
   are:
@@ -58,44 +52,20 @@ Less quick, but more verbose
 	cd /usr/ports/packages/$ARCH/All/
 	pkg_add symon-mon-version.tgz               on monitored hosts
 	pkg_add symon-mux-version.tgz               on the loghost | gatherer
-	pkg_add symon-web-version.tgz               on the loghost | webfrontend
 
 - Create an '/etc/symon.conf'. Note that there is an example configuration in
   $PREFIX/$SHRDIR. 
 
 - Create a symux.conf on the gatherer host. You can specify alternative
-  locations than '/etc/symux.conf' using 'symux -f <symux.conf>'.
+  locations than '/etc/symux.conf' using 'symux -f symux.conf'.
 
 - Create the rrd files where the incoming symon data is to be
-  stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that 'symon2web'
-  expects an '.../machine/*.rrd' style directory structure.
+  stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that syweb expects
+  an '.../machine/*.rrd' style directory structure somewhere under /var/www.
 
 - Fire up symon, symux. Check system logs for any failures.
 
-- Only if you need the webinterface: symon2web is installed in
-  $PREFIX/$SHRDIR/. Copy the files to a convenient apache directory and modify
-  the symon2web/datasources.inc to reflect your filelocations. datasources.inc
-  also contains some settings on how the data is displayed.
-
-  symon2web runs 'rrdtool' to generate graphs as requests for pictures come
-  in. As of OpenBSD 3.2 apache is chrooted at /var/www. The easiest way around
-  this is to break the chroot. You were not planning of running this software
-  on a machine tied to the internet anyway.
-
-     + $symon2web["view"] = show all graphs for all machines ('all') or show
-       only graphs for a single selected machine ('one').
-
-     + $symon2web["magnify"] = to which format should the graph be magnified if
-       clicked on. Values are:
-          '' for no magnification, 
-          'tiny'   =  100 x  75, 
-          'small'  =  200 x 125,
-          'normal' =  300 x 225, 
-          'big'    =  600 x 450, 
-          'huge'   = 1024 x 640.
-
-     + test your setup with test_config.php - this will try to run rrdtool and
-       see if your rrd files are accessable by symon2web.
+- Only if you need the webinterface: download and install syweb. 
 
 Getting measurements without the web
 ====================================
@@ -118,7 +88,7 @@ This package is an OpenBSD application. You might be able to make symux and
 symon2web run on POSIX compliant unixes, but the monitoring application itself
 (symon) is OpenBSD specific.
 
-Willem Dijkstra <wpd@xs4all.nl>
+Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.10 2003/01/08 16:04:40 dijkstra Exp $
+$Id: INSTALL,v 1.11 2003/10/10 15:19:45 dijkstra Exp $
 

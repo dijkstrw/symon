@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.29 2003/06/20 08:41:19 dijkstra Exp $ */
+/* $Id: symon.c,v 1.30 2003/10/10 15:20:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -54,23 +54,41 @@ __BEGIN_DECLS
 void alarmhandler(int);
 void exithandler(int);
 void huphandler(int);
+void set_stream_use(struct muxlist *);
 __END_DECLS
 
 int flag_hup = 0;
 
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
-    {MT_IO, init_io, gets_io, get_io},	/* gets_io obtains entire io state,
-					 * get_io = just a copy */
-    {MT_CPU, init_cpu, NULL, get_cpu},
-    {MT_MEM, init_mem, NULL, get_mem},
-    {MT_IF, init_if, NULL, get_if},
-    {MT_PF, init_pf, NULL, get_pf},
-    {MT_DEBUG, init_debug, NULL, get_debug},
-    {MT_PROC, init_proc, gets_proc, get_proc},
-    {MT_MBUF, init_mbuf, NULL, get_mbuf},
-    {MT_EOT, NULL, NULL}
+    {MT_IO, 0, init_io, gets_io, get_io},	/* gets_io obtains entire io state,
+					         * get_io = just a copy */
+    {MT_CPU, 0, init_cpu, NULL, get_cpu},
+    {MT_MEM, 0, init_mem, NULL, get_mem},
+    {MT_IF, 0, init_if, NULL, get_if},
+    {MT_PF, 0, init_pf, NULL, get_pf},
+    {MT_DEBUG, 0, init_debug, NULL, get_debug},
+    {MT_PROC, 0, init_proc, gets_proc, get_proc},
+    {MT_MBUF, 0, init_mbuf, NULL, get_mbuf},
+    {MT_SENSOR, 0, init_sensor, NULL, get_sensor},
+    {MT_EOT, 0, NULL, NULL}
 };
+
+void
+set_stream_use(struct muxlist *mul) {
+    struct mux *mux;
+    struct stream *stream;
+    int i;
+
+    for (i = 0; i < MT_EOT; i++)
+	streamfunc[i].used = 0;
+
+
+    SLIST_FOREACH(mux, mul, muxes) {
+	SLIST_FOREACH(stream, &mux->sl, streams)
+	    streamfunc[stream->type].used = 1;
+    }
+}
 
 /* alarmhandler that gets called every SYMON_INTERVAL */
 void 
@@ -98,13 +116,8 @@ huphandler(int s)
  * - with minimal performance impact
  * - in a secure way.
  *
- * Measuring system parameters (e.g. interfaces) sometimes means traversing
- * lists in kernel memory. Because of this the measurement of data has been
- * decoupled from the processing and storage of data. Storing the measured
- * information that symon provides is done by a second program, called symux.
- *
- * Symon can keep track of cpu, memory, disk and network interface
- * interactions. Symon was built specifically for OpenBSD.
+ * Measurements are processed by a second program called symux. symon and symux
+ * communicate via udp.
  */
 int 
 main(int argc, char *argv[])
@@ -205,7 +218,8 @@ main(int argc, char *argv[])
 	    (streamfunc[stream->type].init) (stream->args);
 	}
     }
-
+    set_stream_use(&mul);
+    
     /* setup alarm */
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
@@ -217,7 +231,7 @@ main(int argc, char *argv[])
     }
 
     for (;;) {			/* FOREVER */
-	sleep(SYMON_INTERVAL * 2);	/* alarm will always interrupt sleep */
+	sleep(SYMON_INTERVAL);	/* alarm will always interrupt sleep */
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
@@ -240,13 +254,14 @@ main(int argc, char *argv[])
 			(streamfunc[stream->type].init) (stream->args);
 		    }
 		}
+		set_stream_use(&mul);
 	    }
 	}
 	else {
 
 	    /* populate for modules that get all their measurements in one go */
 	    for (i = 0; i < MT_EOT; i++)
-		if (streamfunc[i].gets != NULL)
+		if (streamfunc[i].used && (streamfunc[i].gets != NULL))
 		    (streamfunc[i].gets) ();
 
 	    SLIST_FOREACH(mux, &mul, muxes) {

@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.5 2003/06/20 08:41:03 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.6 2003/10/10 15:19:47 dijkstra Exp $
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
 # All rights reserved.
@@ -62,7 +62,8 @@ my $streamitem =
      mbuf => {totmbufs => 1, mt_data => 2, mt_oobdata => 3, mt_control => 4,
 	      mt_header => 5, mt_ftable => 6, mt_soname => 7, mt_soopts => 8,
 	      pgused => 9, pgtotal => 10, totmem => 11, totpct => 12, 
-	      m_drops => 13, m_wait => 14, m_drain => 15 }};
+	      m_drops => 13, m_wait => 14, m_drain => 15 },
+     sensor => {value => 1}};
 sub new {
     my ($class, %arg) = @_;
     my $self;

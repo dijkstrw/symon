@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.11 2002/11/29 10:49:41 dijkstra Exp $ */
+/* $Id: share.c,v 1.12 2003/10/10 15:20:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -316,7 +316,7 @@ spawn_client(int sock)
     check_master();
 
     bzero(peername, sizeof(peername));
-    clientsock = accept_connection(sock, (char *) &peername, sizeof(peername));
+    clientsock = accept_connection(sock, (char *) &peername[0], sizeof(peername));
 
     if ((pid = fork())) {
 	/* server */
@@ -326,7 +326,7 @@ spawn_client(int sock)
 	else {
 	    newclients++;
 	    info("forked client(%d) for incoming connection from %.17s",
-		 pid, peername);
+		 pid, &peername[0]);
 	}
 
 	close(clientsock);

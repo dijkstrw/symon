@@ -1,7 +1,18 @@
-30/03/2003 - 2.61
+03/10/2003 - 2.61
 
-   - graph_debug and graph_proc were not included in the symon2web package
-     PLIST (David Norman)
+   - added sensor probe
+
+   - removed symon2web from base source package. symon2web (or the new syweb
+     package) can be downloaded from the main website. 
+
+   - symux churnbuffer calculation now deals with ipv6 hostnames too
+
+   - symux now allows file-less streams to be accepted
+
+   - removed bug in display of incoming client connections on symux
+
+   - symon uses group probes only for configured streams
+
    - c_config.sh was not included in the PLIST for the symon package 
      (Andrew Dalgleish)
 
@@ -59,8 +70,8 @@
 
    Overhauled the networking code. Everything is now ip6 aware. This
    does mean that the ':' is no longer a keyword in the lexer;
-   i.e. '<host>:<port>' statements should now be written as '<host>
-   <port>' or '<host> port <port>'.
+   i.e. 'host:port' statements should now be written as 'host
+   port' or 'host "port" port'.
 
    Added the debug module. This can be used to retrieve debug0
    ... debug19 variables from the kernel.
@@ -116,7 +127,7 @@
    Someone at www.deadly.org pointed out that symon is no longer
    compatible with OpenBSD 3.0 - removed claim from the website.
 
-   Added -f <file> switch to symon.
+   Added -f file switch to symon.
 
    The lexer started parsing from character position 1 instead of 0.
 
@@ -279,4 +290,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.19 2003/09/22 10:58:59 dijkstra Exp $
+$Id: CHANGELOG,v 1.20 2003/10/10 15:19:44 dijkstra Exp $
