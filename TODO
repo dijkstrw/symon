@@ -1,78 +1,13 @@
-Project Overview:
+TODO:
 
 == current problems / short term
-
-- ensure that functions have names to look alike
-- ensure same coding style troughout the source
-- build a website
-- write a paper for daemonnews
-
-- change rrd to accommodate batch updates
-- mon2web should have graph objects/modules
-  (ask a module what graphing options it supports and show these,
-   the same module should also draw the picture, maybe php oo?)
-- weird: rrd_update fails for monmux when not in daemon mode?
+- rework sending struct
+- rework port makefile, current version contains both (mon|monmux) on a host
+  and that does not make sense for a probe only host.
+- add pf graphs
 
 == longer term
+- change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
 - write a client that drives a crystal fontz lcd
-- port to freebsd
-- port to linux
 
-== log 
-25/07/2002 - rewrite stringptr functions in monmux to snprintf ones
-           - package it for openbsd
-           - added a crc32 algorithm in netmon and netmux
-           - added DEBUG handling in Makefiles
-           - removed a bug in monmux that made it reprocess already processed data.
-
-22/06/2002 - added shared code, upgraded networking code
-
-04/04/2002 - changed mon/monmux.conf format
-	     written manual pages
-             look at mon/cpu.c/percentages, give appropriate people credits.
-
-01/04/2002 - changed all memsets into bzero
-             all output messages have the same format now
-             write pids in /var/run 
-             SIGHUP = reload configuration
-
-31/03/2002 - cleaned up source
-
-             added error reporting routines. 
-
-29/03/2002 - mon and monmux no use monpacket to communicate with each
-             other. This format defines: version, lenght and crc of the traffic
-             exchanged.
-
-             mon no longer connects. monmux and mon can be started and stopped
-             independently.
-
-             monmux now checks if incoming traffic is allowed from a certain host.             
-
-             added rrd write support to monmux
-
-             made c_monrrds.sh determine what files to build from environment
-
-             got mon2web up to date with mon1. changed interface layout to
-             have output as a negative area - i'm not finished with this.
-
-22/03/2002 - Added get/set preamble, still tinkering with those s(u)(n)pack
-             functions. Added one that translates it into text.
-
-06/01/2002 - Removed init and get functions from the monlib. (init functions
-             were also required in non-mon applications, not like it is
-             supposed to be :)
-
-             Next step is to rewrite the get functions into using the pack
-             function.
-
-05/01/2002 - Wrote spack and sunpack; endianess agnostic values to bytestream
-             (and back) functions. The packet format has almost been defined
-             now.
-
-24/11/2001 - Rewrote lib to KNF, OpCodes removed
-03/11/2001 - Added datatypes and rewrote readconf to use SLISTs.
-01/10/2001 - Mon configuration is read from a mon.conf. 
-29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
-             parsing code and removed a second comment reader.

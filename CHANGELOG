@@ -1,0 +1,104 @@
+31/08/2002 - 2.3
+
+    Makefiles, mon/mon.c: 
+     - Environment variable KVM will enable the building of a setgid kmem
+       version of the monitor. If this environment variable is not present, a
+       non priviledged monitor will be built. (Note that all kvm dependant
+       modules will fail during operation)
+
+       After today's changes, only the io probe needs kvm.
+
+    mon/if.c:
+     - obtain ifdata as per h1kari's suggestion.
+
+    mon/pf.c: 
+     - global naming in sync with other probes
+     - repeated initialisation would eat up fds
+
+    Jan Sipke van der Veen
+     - version number inconcistencies (main pkg/syslog)
+
+    Daniel Hartmeier
+     - shmat usage in monmux/share.c != 64 bit safe
+     - some cpp macros missed precendence parenthesis
+
+
+29/08/2002 - 2.2
+
+    Merged contributions by Daniel Hartmeier:
+     - cpu probe had a nasty va_arg bug that only showed up on big-endian
+       machines.
+    
+29/08/2002 - 2.1
+
+    Merged contributions by Daniel Hartmeier:
+     - pf probe
+     - changes to make mon compile on macppc and sparc64
+
+28/08/2002 - released 2.0
+
+    monitoring behaviour (mon) separated from storage/forwarding (monmux) and
+    picture display (mon2web). Only mon has to run with kmem priviledges
+    because of the if and io probes. Although the entire package was built with
+    portability to other OpenBSD architectures in mind, it was never tested.
+
+==== unreleased ====
+
+25/07/2002 - rewrite stringptr functions in monmux to snprintf ones
+           - package it for openbsd
+           - added a crc32 algorithm in netmon and netmux
+           - added DEBUG handling in Makefiles
+           - removed a bug in monmux that made it reprocess already processed data.
+
+22/06/2002 - added shared code, upgraded networking code
+
+04/04/2002 - changed mon/monmux.conf format
+	     written manual pages
+             look at mon/cpu.c/percentages, give appropriate people credits.
+
+01/04/2002 - changed all memsets into bzero
+             all output messages have the same format now
+             write pids in /var/run 
+             SIGHUP = reload configuration
+
+31/03/2002 - cleaned up source
+
+             added error reporting routines. 
+
+29/03/2002 - mon and monmux no use monpacket to communicate with each
+             other. This format defines: version, lenght and crc of the traffic
+             exchanged.
+
+             mon no longer connects. monmux and mon can be started and stopped
+             independently.
+
+             monmux now checks if incoming traffic is allowed from a certain host.             
+
+             added rrd write support to monmux
+
+             made c_monrrds.sh determine what files to build from environment
+
+             got mon2web up to date with mon1. changed interface layout to
+             have output as a negative area - i'm not finished with this.
+
+22/03/2002 - Added get/set preamble, still tinkering with those s(u)(n)pack
+             functions. Added one that translates it into text.
+
+06/01/2002 - Removed init and get functions from the monlib. (init functions
+             were also required in non-mon applications, not like it is
+             supposed to be :)
+
+             Next step is to rewrite the get functions into using the pack
+             function.
+
+05/01/2002 - Wrote spack and sunpack; endianess agnostic values to bytestream
+             (and back) functions. The packet format has almost been defined
+             now.
+
+24/11/2001 - Rewrote lib to KNF, OpCodes removed
+03/11/2001 - Added datatypes and rewrote readconf to use SLISTs.
+01/10/2001 - Mon configuration is read from a mon.conf. 
+29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
+             parsing code and removed a second comment reader.
+
+$Id: CHANGELOG,v 1.1 2002/08/31 15:54:57 dijkstra Exp $

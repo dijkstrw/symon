@@ -27,6 +27,9 @@ Slightly less quick but with pretty pictures
      + SHRDIR = Where are the example configurations to be installed. Defaults
                 to 'share/mon'.
 
+- Decide if you want to monitor disk usage. Define KVM as an environment
+  variable before you run make if you do.
+
 - Run make && make install
 
 - Create an '/etc/mon.conf'. Note that there is an example configuration in
@@ -55,7 +58,7 @@ Installing mon on many machines
   cd ~mon/ports/mon
   make package
 - The binary package can be found at 
-  /usr/ports/packages/<arch>/All/mon-2.0.tgz
+  /usr/ports/packages/<arch>/All/mon-version.tgz
 
 - You can transfer the resulting package to many machines and install it by
   pkg_add it.
@@ -66,5 +69,5 @@ mon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.2 2002/08/29 19:37:38 dijkstra Exp $
+$Id: INSTALL,v 1.3 2002/08/31 15:54:57 dijkstra Exp $
 
