@@ -1,95 +1,103 @@
 24/01/2002 - 2.58
 
-   Gustavo Chamone helped find a rare bug in symon/sm_io.c. strsep() would
-   clobber stream information and make this first stream in the configuration file
-   disappear.
+   Gustavo Chamone helped find a rare bug in symon/sm_io.c. strsep()
+   would clobber stream information and make the first stream in the
+   configuration file disappear.
+
+   Daniel Hartmeier patched symon/sm_pf.c to deal with changes pf. His
+   patch should also work for previous versions of pf.
 
 10/01/2002 - 2.57
 
-   Christian Weisgerber reported that netinet/ip_ipsp.h already defines htonq - fixed.
-   Will Wainwright reported 1) a small bug in test_config.php - fixed, 2) that
-   I left out some files (class_proc.inc and class_debug.inc) from the PLIST
-   files.
+   Christian Weisgerber reported that netinet/ip_ipsp.h already defines
+   htonq - fixed. Will Wainwright reported 1) a small bug in
+   test_config.php - fixed, 2) that I left out some files
+   (class_proc.inc and class_debug.inc) from the PLIST files.
 
 29/12/2002 - 2.56
 
-   Added proc and debug symon2web frontends. Debug has limited useability, you
-   are better off defining one for yourself.
+   Added proc and debug symon2web frontends. Debug has limited
+   useability, you are better off defining one for yourself.
 
 14/12/2002 - 
 
-   Added the proc module. This can be used to retrieve accumulated information
-   about processes with the same name. A proc(httpd) statement in symon.conf,
-   for instance, will result in the reporting of the number of processes called
-   "httpd" and the amounts of cpu and memory that they take.
+   Added the proc module. This can be used to retrieve accumulated
+   information about processes with the same name. A proc(httpd)
+   statement in symon.conf, for instance, will result in the reporting
+   of the number of processes called "httpd" and the amounts of cpu and
+   memory that they take.
   
-   Added em device to c_smrrds.sh - thanks to Jung.
-   Fixed typo in SymuxClient.pm - thanks Tobias Gresch.
-   c_config.sh did not deal with type mfs devices - thanks Dom De Vitto.
+   Added em device to c_smrrds.sh - thanks to Jung.  Fixed typo in
+   SymuxClient.pm - thanks Tobias Gresch.  c_config.sh did not deal with
+   type mfs devices - thanks Dom De Vitto.
 
 29/11/2002 - 2.55
 
-   Markus Friedl reported that unresolvable ip addresses cannot be used in the
-   configuration file - fixed.
+   Markus Friedl reported that unresolvable ip addresses cannot be used
+   in the configuration file - fixed.
 
-   Overhauled the networking code. Everything is now ip6 aware. This does mean
-   that the ':' is no longer a keyword in the lexer; i.e. '<host>:<port>'
-   statements should now be written as '<host> <port>' or '<host> port <port>'.
+   Overhauled the networking code. Everything is now ip6 aware. This
+   does mean that the ':' is no longer a keyword in the lexer;
+   i.e. '<host>:<port>' statements should now be written as '<host>
+   <port>' or '<host> port <port>'.
 
-   Added the debug module. This can be used to retrieve debug0 ... debug19
-   variables from the kernel.
+   Added the debug module. This can be used to retrieve debug0
+   ... debug19 variables from the kernel.
 
 08/11/2002 - 2.54
 
-   Added a perl module that allows ppl to connect to symux and do something
-   with the measurements as they come in. (I plan to drive an LCD using this,
-   but it could also be used to get, say, daily bandwidth usage)
+   Added a perl module that allows ppl to connect to symux and do
+   something with the measurements as they come in. (I plan to drive an
+   LCD using this, but it could also be used to get, say, daily
+   bandwidth usage)
  
-   Clients of symux would not sleep after they had read and relayed data symux
-   gave to them. This could lead to one child eating up multiple 'semaphore
-   slots' and starvation in other clients - fixed.
+   Clients of symux would not sleep after they had read and relayed data
+   symux gave to them. This could lead to one child eating up multiple
+   'semaphore slots' and starvation in other clients - fixed.
 
 25/10/2002 - 2.53
 
-   Henning Brauer suggested a datadir statement for symux configuration -
-   added.
+   Henning Brauer suggested a datadir statement for symux configuration
+   - added.
 
    Henning also reported that c_smrrds.sh cannot create vlan10 and
-   up. c_smrrds.sh now has a special case for pseudo-interfaces (bridge, enc,
-   faith, gif, ppp, sppp, strip, tun, vlan)
+   up. c_smrrds.sh now has a special case for pseudo-interfaces (bridge,
+   enc, faith, gif, ppp, sppp, strip, tun, vlan)
 
-   Nick Nauwelaerts helped improve dependency definitions in the port Makefile.
+   Nick Nauwelaerts helped improve dependency definitions in the port
+   Makefile.
 
 18/10/2002 - 2.52
 
-   Julien Touche reported that symon/symux do not report initial cfg errors on
-   the commandline - fixed.
+   Julien Touche reported that symon/symux do not report initial cfg
+   errors on the commandline - fixed.
 
-   Reinhard Sammer, Julien and Henning Brauer all noticed that the php code
-   needed globals - fixed. Passing by reference at call time resulted in php
-   warnings - fixed.
+   Reinhard Sammer, Julien and Henning Brauer all noticed that the php
+   code needed globals - fixed. Passing by reference at call time
+   resulted in php warnings - fixed.
 
-   Henning thought it was nice to see a single machine at a time. Julien wanted
-   clickable magnification for individual graphs. Both options can now be
-   configured in datasources.inc.
+   Henning thought it was nice to see a single machine at a time. Julien
+   wanted clickable magnification for individual graphs. Both options
+   can now be configured in datasources.inc.
 
-   Resolved a bug reported by Vincent Kessler (who also provided the fix -
-   cheers mate) in the rrdupdate call in symux - optind needs to be cleared
-   ahead of the getopt call in rrdupdate.
+   Resolved a bug reported by Vincent Kessler (who also provided the fix
+   - cheers mate) in the rrdupdate call in symux - optind needs to be
+   cleared ahead of the getopt call in rrdupdate.
 
-   The Makefile.inc no longer overwrites CFLAGS. Configuration directories are
-   now taken from the environment as expected by the openbsd ports
-   system. (Thanks to Nick Nauwelaerts for pointing this out)
+   The Makefile.inc no longer overwrites CFLAGS. Configuration
+   directories are now taken from the environment as expected by the
+   openbsd ports system. (Thanks to Nick Nauwelaerts for pointing this
+   out)
 
-   Installation of symon now also generates a default symon.conf file if the
-   system does not already have one. 
+   Installation of symon now also generates a default symon.conf file if
+   the system does not already have one.
    
-   Someone at www.deadly.org pointed out that symon is no longer compatible
-   with OpenBSD 3.0 - removed claim from the website.
+   Someone at www.deadly.org pointed out that symon is no longer
+   compatible with OpenBSD 3.0 - removed claim from the website.
 
    Added -f <file> switch to symon.
 
-   The lexer started parsing from character position 1 instead of 0. 
+   The lexer started parsing from character position 1 instead of 0.
 
    symux would bomb out after a hup - fixed.
 
@@ -100,11 +108,11 @@
 
 13/09/2002 - 2.5 - kvm gone, renamed mon to symon
 
-   Rewrote io.c to obtain information via sysctl only. All kvm code is now
-   gone.
+   Rewrote io.c to obtain information via sysctl only. All kvm code is
+   now gone.
 
-   Renamed mon to symon, monmux to symux and mon2web to symon2web. I liked mon
-   better, but that name is already taken.
+   Renamed mon to symon, monmux to symux and mon2web to symon2web. I
+   liked mon better, but that name is already taken.
 
    Cleaned up webpages to be XHTML 1.0.
 
@@ -115,19 +123,20 @@
 
 09/09/2002 - Towards a better port makefile
 
-   Reworked port Makefile. It now generates a number of packages that can be
-   used to just install mon, monmux or mon2web. The KVM stuff has become a special
-   flavor of the monitor package.
+   Reworked port Makefile. It now generates a number of packages that
+   can be used to just install mon, monmux or mon2web. The KVM stuff has
+   become a special flavor of the monitor package.
 
 06/09/2002 - Cosmetics again
 
    monmux/c_monrrds.sh:
-     - Added RRD_ARGS support. All created rrds have start=epoch. Incoming data
-       from hosts may be from an earlier time than rrd creation now.
+     - Added RRD_ARGS support. All created rrds have
+       start=epoch. Incoming data from hosts may be from an earlier time
+       than rrd creation now.
 
    mon2web/class_[io|if|mem|cpu].inc, index.php:
-     - Rewrote argument representation of the graphs to be the same as how it
-       is configured in the configuration files.
+     - Rewrote argument representation of the graphs to be the same as
+       how it is configured in the configuration files.
 
    mon2web/class_pf.inc, graph_pf.php:
      - Initial pf support.
@@ -142,15 +151,16 @@
      - header structure is now safely transported across the network.
 
    lib/data.c
-     - added streamtypes b(yte) and s(hort) in preparation for new streams.
+     - added streamtypes b(yte) and s(hort) in preparation for new
+       streams.
 
 31/08/2002 - 2.3
 
     Makefiles, mon/mon.c: 
-     - Environment variable KVM will enable the building of a setgid kmem
-       version of the monitor. If this environment variable is not present, a
-       non priviledged monitor will be built. (Note that all kvm dependant
-       modules will fail during operation)
+     - Environment variable KVM will enable the building of a setgid
+       kmem version of the monitor. If this environment variable is not
+       present, a non priviledged monitor will be built. (Note that all
+       kvm dependant modules will fail during operation)
 
        After today's changes, only the io probe needs kvm.
 
@@ -172,8 +182,8 @@
 29/08/2002 - 2.2
 
     Merged contributions by Daniel Hartmeier:
-     - cpu probe had a nasty va_arg bug that only showed up on big-endian
-       machines.
+     - cpu probe had a nasty va_arg bug that only showed up on
+       big-endian machines.
     
 29/08/2002 - 2.1
 
@@ -183,10 +193,11 @@
 
 28/08/2002 - released 2.0
 
-    monitoring behaviour (mon) separated from storage/forwarding (monmux) and
-    picture display (mon2web). Only mon has to run with kmem priviledges
-    because of the if and io probes. Although the entire package was built with
-    portability to other OpenBSD architectures in mind, it was never tested.
+    monitoring behaviour (mon) separated from storage/forwarding
+    (monmux) and picture display (mon2web). Only mon has to run with
+    kmem priviledges because of the if and io probes. Although the
+    entire package was built with portability to other OpenBSD
+    architectures in mind, it was never tested.
 
 ==== unreleased ====
 
@@ -247,4 +258,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.16 2003/01/24 13:33:49 dijkstra Exp $
+$Id: CHANGELOG,v 1.17 2003/01/26 20:40:46 dijkstra Exp $
