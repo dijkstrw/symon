@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.12 2002/09/20 09:38:11 dijkstra Exp $ */
+/* $Id: lex.c,v 1.13 2002/10/25 15:24:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -70,6 +70,7 @@ static struct {
     { ":", LXT_COLON },
     { "accept", LXT_ACCEPT },
     { "cpu", LXT_CPU },
+    { "datadir", LXT_DATADIR },
     { "if", LXT_IF },
     { "in", LXT_IN },
     { "io", LXT_IO },

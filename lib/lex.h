@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.12 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: lex.h,v 1.13 2002/10/25 15:24:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -50,20 +50,21 @@
 #define LXT_COLON      4
 #define LXT_COMMA      5
 #define LXT_CPU        6
-#define LXT_END        7
-#define LXT_IF         8
-#define LXT_IN         9
-#define LXT_IO        10
-#define LXT_MEM       11
-#define LXT_MONITOR   12
-#define LXT_MUX       13
-#define LXT_OPEN      14
-#define LXT_PF        15
-#define LXT_PORT      16
-#define LXT_SOURCE    17
-#define LXT_STREAM    18
-#define LXT_TO        19
-#define LXT_WRITE     20
+#define LXT_DATADIR    7
+#define LXT_END        8
+#define LXT_IF         9
+#define LXT_IN        10
+#define LXT_IO        11
+#define LXT_MEM       12
+#define LXT_MONITOR   13
+#define LXT_MUX       14
+#define LXT_OPEN      15
+#define LXT_PF        16
+#define LXT_PORT      17
+#define LXT_SOURCE    18
+#define LXT_STREAM    19
+#define LXT_TO        20
+#define LXT_WRITE     21
 
 struct lex {
     char *buffer;          /* current line(s) */
