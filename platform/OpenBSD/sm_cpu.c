@@ -1,7 +1,7 @@
-/* $Id: sm_cpu.c,v 1.13 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.14 2002/11/29 10:48:53 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
- * 
+ *
  * The percentages function was written by William LeFebvre and is part of the
  * 'top' utility. His copyright statement is below.
  *
@@ -66,7 +66,7 @@ int percentages(int, int *, long *, long *, long *);
 __END_DECLS
 
 /* Globals for this module all start with cp_ */
-static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
+static int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
 static size_t cp_size;
 static long cp_time[CPUSTATES];
 static long cp_old[CPUSTATES];
@@ -97,27 +97,27 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
     for (i = 0; i < cnt; i++) {
 	if ((change = *new - *old) < 0) {
 	    /* this only happens when the counter wraps */
-	    change = ((unsigned int)*new-(unsigned int)*old);
-        }
+	    change = ((unsigned int) *new - (unsigned int) *old);
+	}
 	total_change += (*dp++ = change);
 	*old++ = *new++;
     }
-  
+
     /* avoid divide by zero potential */
     if (total_change == 0)
 	total_change = 1;
-  
+
     /* calculate percentages based on overall change, rounding up */
     half_total = total_change / 2l;
     for (i = 0; i < cnt; i++)
 	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
-  
+
     /* return the total in case the caller wants to use it */
     return total_change;
 }
 /* Prepare cpu module for use */
 void 
-init_cpu(char *s) 
+init_cpu(char *s)
 {
     char buf[_POSIX2_LINE_MAX];
 
@@ -129,7 +129,7 @@ init_cpu(char *s)
 }
 /* Get new cpu measurements */
 int 
-get_cpu(char *symon_buf, int maxlen, char *s) 
+get_cpu(char *symon_buf, int maxlen, char *s)
 {
     int total;
 
@@ -140,11 +140,11 @@ get_cpu(char *symon_buf, int maxlen, char *s)
 
     /* convert cp_time counts to percentages */
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
-    
+
     return snpack(symon_buf, maxlen, s, MT_CPU,
-		  cp_states[CP_USER], 
-		  cp_states[CP_NICE], 
-		  cp_states[CP_SYS], 
-		  cp_states[CP_INTR], 
+		  cp_states[CP_USER],
+		  cp_states[CP_NICE],
+		  cp_states[CP_SYS],
+		  cp_states[CP_INTR],
 		  cp_states[CP_IDLE]);
 }

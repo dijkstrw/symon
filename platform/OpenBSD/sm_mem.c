@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.12 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.13 2002/11/29 10:48:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -64,10 +64,10 @@ static int me_pagesize;
 static int me_nswap;
 struct swapent *me_swdev = NULL;
 /* Prepare mem module for first use */
-void
-init_mem(char *s) 
+void 
+init_mem(char *s)
 {
-    me_pagesize = sysconf( _SC_PAGESIZE );
+    me_pagesize = sysconf(_SC_PAGESIZE);
     me_pageshift = 0;
     while (me_pagesize > 1) {
 	me_pageshift++;
@@ -79,17 +79,17 @@ init_mem(char *s)
 
     /* determine number of swap entries */
     me_nswap = swapctl(SWAP_NSWAP, 0, 0);
-  
-    if (me_swdev) 
+
+    if (me_swdev)
 	xfree(me_swdev);
 
     if (me_nswap != 0)
-      me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
+	me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
     else
-      me_swdev = NULL;
+	me_swdev = NULL;
 
-    if (me_swdev == NULL && me_nswap != 0) 
-	me_nswap=0; 
+    if (me_swdev == NULL && me_nswap != 0)
+	me_nswap = 0;
 
     info("started module mem(%s)", s);
 }
@@ -97,7 +97,7 @@ init_mem(char *s)
 int 
 get_mem(char *symon_buf, int maxlen, char *s)
 {
-    int i,rnswap;
+    int i, rnswap;
 
     if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
 	warning("%s:%d: sysctl failed", __FILE__, __LINE__);
@@ -110,14 +110,14 @@ get_mem(char *symon_buf, int maxlen, char *s)
     me_stats[2] = pagetob(me_vmtotal.t_free);
 
     rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
-    if (rnswap == -1) { 
+    if (rnswap == -1) {
 	/* A swap device may have been added; increase and retry */
-	init_mem(NULL); 
+	init_mem(NULL);
 	rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
     }
 
     me_stats[3] = me_stats[4] = 0;
-    if (rnswap == me_nswap) { /* Read swap succesfully */
+    if (rnswap == me_nswap) {	/* Read swap succesfully */
 	/* Total things up */
 	for (i = 0; i < me_nswap; i++) {
 	    if (me_swdev[i].se_flags & SWF_ENABLE) {
@@ -127,8 +127,7 @@ get_mem(char *symon_buf, int maxlen, char *s)
 	}
     }
 
-    return snpack(symon_buf, maxlen, s, MT_MEM, 
-		  me_stats[0], me_stats[1], me_stats[2], 
+    return snpack(symon_buf, maxlen, s, MT_MEM,
+		  me_stats[0], me_stats[1], me_stats[2],
 		  me_stats[3], me_stats[4]);
 }
-

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.11 2002/10/18 12:29:48 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.12 2002/11/29 10:48:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -32,20 +32,13 @@
 
 #include <sys/queue.h>
 
-#include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
-#include <assert.h>
-#include <limits.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 #include "data.h"
 #include "error.h"
 #include "lex.h"
-#include "symon.h"
 #include "net.h"
-#include "readconf.h"
+#include "symon.h"
 #include "xmalloc.h"
 
 __BEGIN_DECLS
@@ -54,63 +47,65 @@ int read_symon_args(struct mux *, struct lex *);
 int read_monitor(struct muxlist *, struct lex *);
 __END_DECLS
 
+const char *default_symux_port = SYMUX_PORT;
+
 /* <hostname> (port|:|,| ) <number> */
-int
-read_host_port(struct muxlist *mul, struct mux *mux, struct lex *l)
+int 
+read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 {
+    char muxname[_POSIX2_LINE_MAX];
+
     lex_nexttoken(l);
-    if (!lookup(l->token)) {
+    if (!getip(l->token)) {
 	warning("%s:%d: could not resolve '%s'",
 		l->filename, l->cline, l->token);
 	return 0;
     }
 
-    if (rename_mux(mul, mux, lookup_address) == NULL) {
-	warning("%s:%d: monitored data for host '%s' has already been specified",
-		l->filename, l->cline, lookup_address);
-	return 0;
-    }
-	
-    mux->ip = lookup_ip;
+    mux->addr = xstrdup((const char *) &res_host);
 
     /* check for port statement */
     if (!lex_nexttoken(l))
 	return 1;
 
-    if (l->op == LXT_PORT || l->op == LXT_COLON || l->op == LXT_COMMA)
+    if (l->op == LXT_PORT || l->op == LXT_COMMA)
 	lex_nexttoken(l);
-    else {
-	if (l->type != LXY_NUMBER) {
-	    lex_ungettoken(l);
-	    mux->port = SYMUX_PORT;
-	    return 1;
-	}
-    }
 
     if (l->type != LXY_NUMBER) {
-	parse_error(l, "<number>");
+	lex_ungettoken(l);
+	mux->port = xstrdup(default_symux_port);
+    }
+    else {
+	mux->port = xstrdup((const char *) l->token);
+    }
+
+    bzero(&muxname, sizeof(muxname));
+    snprintf(&muxname[0], sizeof(muxname), "%s %s", mux->addr, mux->port);
+    if (rename_mux(mul, mux, muxname) == NULL) {
+	warning("%s:%d: monitored data for host '%s' has already been specified",
+		l->filename, l->cline, muxname);
 	return 0;
     }
 
-    mux->port = l->value;
     return 1;
 }
-/* parse "<cpu(arg)|mem|if(arg)|io(arg)>", end condition == "}" */
+/* parse "<cpu(arg)|mem|if(arg)|io(arg)|debug|pf>", end condition == "}" */
 int 
-read_symon_args(struct mux *mux, struct lex *l) 
+read_symon_args(struct mux * mux, struct lex * l)
 {
     char sn[_POSIX2_LINE_MAX];
     char sa[_POSIX2_LINE_MAX];
-    int  st;
+    int st;
 
     EXPECT(l, LXT_BEGIN)
-    while (lex_nexttoken(l) && l->op != LXT_END) {
+	while (lex_nexttoken(l) && l->op != LXT_END) {
 	switch (l->op) {
 	case LXT_CPU:
 	case LXT_IF:
 	case LXT_IO:
 	case LXT_MEM:
 	case LXT_PF:
+	case LXT_DEBUG:
 	    st = token2type(l->op);
 	    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -118,19 +113,20 @@ read_symon_args(struct mux *mux, struct lex *l)
 	    lex_nexttoken(l);
 	    if (l->op == LXT_OPEN) {
 		lex_nexttoken(l);
-		if (l->op == LXT_CLOSE){
+		if (l->op == LXT_CLOSE) {
 		    parse_error(l, "<stream argument>");
 		    return 0;
 		}
 		strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
 		lex_nexttoken(l);
-		if (l->op != LXT_CLOSE){
+		if (l->op != LXT_CLOSE) {
 		    parse_error(l, ")");
 		    return 0;
 		}
-	    } else {
+	    }
+	    else {
 		lex_ungettoken(l);
-		sa[0]='\0';
+		sa[0] = '\0';
 	    }
 
 	    if ((add_mux_stream(mux, st, sa)) == NULL) {
@@ -138,27 +134,27 @@ read_symon_args(struct mux *mux, struct lex *l)
 			l->filename, l->cline, sn, sa);
 		return 0;
 	    }
-	    
-	    break; /* LXT_CPU/IF/IO/MEM/PF */
+
+	    break;		/* LXT_CPU/IF/IO/MEM/PF/DEBUG */
 	case LXT_COMMA:
 	    break;
 	default:
-	    parse_error(l, "{cpu|mem|if|io|pf}");
+	    parse_error(l, "{cpu|mem|if|io|pf|debug}");
 	    return 0;
 	    break;
 	}
     }
-    
+
     return 1;
 }
 
 /* parse monitor <args> stream [to] <host>:<port> */
-int
-read_monitor(struct muxlist *mul, struct lex *l)
+int 
+read_monitor(struct muxlist * mul, struct lex * l)
 {
     struct mux *mux;
 
-    mux = add_mux(mul, "<unnamed host>");
+    mux = add_mux(mul, SYMON_UNKMUX);
 
     /* parse cpu|mem|if|io */
     if (!read_symon_args(mux, l))
@@ -167,20 +163,16 @@ read_monitor(struct muxlist *mul, struct lex *l)
     /* parse stream to */
     EXPECT(l, LXT_STREAM);
     lex_nexttoken(l);
-    if (l->op != LXT_TO) 
+    if (l->op != LXT_TO)
 	lex_ungettoken(l);
 
     /* parse host */
-    if (!read_host_port(mul, mux, l))
-	return 0;
-    
-    return 1;
+    return read_host_port(mul, mux, l);
 }
 
 /* Read symon.conf */
-int
-read_config_file(struct muxlist *muxlist, 
-		 const char *filename)
+int 
+read_config_file(struct muxlist * muxlist, const char *filename)
 {
     struct lex *l;
     struct mux *mux;
@@ -189,16 +181,16 @@ read_config_file(struct muxlist *muxlist,
 
     if ((l = open_lex(filename)) == NULL)
 	return 0;
-    
+
     while (lex_nexttoken(l)) {
-    /* expecting keyword now */
+	/* expecting keyword now */
 	switch (l->op) {
 	case LXT_MONITOR:
-	    if (!read_monitor(muxlist, l)) 
+	    if (!read_monitor(muxlist, l))
 		return 0;
 	    break;
 	default:
-	    parse_error(l, "monitor" );
+	    parse_error(l, "monitor");
 	    return 0;
 	    break;
 	}
@@ -206,6 +198,10 @@ read_config_file(struct muxlist *muxlist,
 
     /* sanity checks */
     SLIST_FOREACH(mux, muxlist, muxes) {
+	if (strncmp(SYMON_UNKMUX, mux->name, sizeof(SYMON_UNKMUX)) == 0) {
+	    /* mux was not initialised for some reason */
+	    return 0;
+	}
 	if (SLIST_EMPTY(&mux->sl)) {
 	    warning("%s: no monitors selected for mux '%s'",
 		    l->filename, mux->name);

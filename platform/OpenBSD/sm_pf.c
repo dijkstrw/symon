@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.3 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.4 2002/11/29 10:48:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -31,7 +31,7 @@
  */
 
 /*
- * Get current pf statistics and return them in symon_buf as 
+ * Get current pf statistics and return them in symon_buf as
  *
  *   bytes_v4_in : bytes_v4_out : bytes_v6_in : bytes_v6_out :
  *   packets_v4_in_pass : * packets_v4_in_drop : packets_v4_out_pass :
@@ -39,7 +39,7 @@
  *   packets_v6_out_pass : * packets_v6_out_drop : states_entries :
  *   states_searches : states_inserts : * states_removals : counters_match :
  *   counters_badoffset : counters_fragment : * counters_short :
- *   counters_normalize : counters_memory 
+ *   counters_normalize : counters_memory
  *
  */
 #include <sys/types.h>
@@ -60,36 +60,36 @@
 static int pf_dev = -1;
 
 /* Prepare if module for first use */
-void
+void 
 init_pf(char *s)
 {
     if (pf_dev == -1)
 	if ((pf_dev = open("/dev/pf", O_RDWR)) == -1)
-	    fatal("%s:%d: open(\"/dev/pf\") failed, %.200s", 
+	    fatal("%s:%d: open(\"/dev/pf\") failed, %.200s",
 		  __FILE__, __LINE__, strerror(errno));
 
     info("started module pf(%s)", s);
 }
 /* Get pf statistics */
-int
+int 
 get_pf(char *symon_buf, int maxlen, char *arg)
 {
     struct pf_status s;
     u_int64_t n;
-    
+
     if (pf_dev == -1) {
 	warning("pf(%s) failed (dev == -1)", arg);
 	return 0;
     }
-    
+
     if (ioctl(pf_dev, DIOCGETSTATUS, &s)) {
 	warning("pf(%s) failed (ioctl error)", arg);
 	return 0;
     }
-    
+
     if (!s.running)
 	return 0;
-    
+
     n = s.states;
     return snpack(symon_buf, maxlen, arg, MT_PF,
 		  s.bcounters[0][PF_IN],

@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.6 2002/09/14 15:49:39 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.7 2002/11/29 10:48:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,7 +35,7 @@
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
- * 
+ *
  */
 
 #include <sys/types.h>
@@ -66,42 +66,40 @@
 int if_s = -1;
 /* Prepare if module for first use */
 void 
-init_if(char *s) 
+init_if(char *s)
 {
     if (if_s == -1)
 	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	    fatal("%s:%d: socket failed, %.200", 
+	    fatal("%s:%d: socket failed, %.200",
 		  __FILE__, __LINE__, strerror(errno));
 
     info("started module if(%s)", s);
 }
 /* Get interface statistics */
 int 
-get_if(char *symon_buf, int maxlen, char *interface) 
+get_if(char *symon_buf, int maxlen, char *interface)
 {
     struct ifreq ifr;
     struct if_data ifdata;
 
-    strncpy(ifr.ifr_name, interface, IFNAMSIZ-1);
+    strncpy(ifr.ifr_name, interface, IFNAMSIZ - 1);
     ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_data = (caddr_t)&ifdata;
-    
+    ifr.ifr_data = (caddr_t) & ifdata;
+
     if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
 	warning("if(%s) failed (ioctl error)", interface);
 	return 0;
     }
-    
+
     return snpack(symon_buf, maxlen, interface, MT_IF,
-		  ifdata.ifi_ipackets, 
-		  ifdata.ifi_opackets, 
-		  ifdata.ifi_ibytes, 
-		  ifdata.ifi_obytes, 
-		  ifdata.ifi_imcasts, 
-		  ifdata.ifi_omcasts, 
-		  ifdata.ifi_ierrors, 
-		  ifdata.ifi_oerrors, 
-		  ifdata.ifi_collisions, 
+		  ifdata.ifi_ipackets,
+		  ifdata.ifi_opackets,
+		  ifdata.ifi_ibytes,
+		  ifdata.ifi_obytes,
+		  ifdata.ifi_imcasts,
+		  ifdata.ifi_omcasts,
+		  ifdata.ifi_ierrors,
+		  ifdata.ifi_oerrors,
+		  ifdata.ifi_collisions,
 		  ifdata.ifi_iqdrops);
 }
-
-

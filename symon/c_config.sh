@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_config.sh,v 1.1 2002/10/18 12:29:48 dijkstra Exp $
+# $Id: c_config.sh,v 1.2 2002/11/29 10:48:53 dijkstra Exp $
 #
 # Create an example configuration file for symon on a host and print to stdout
 
@@ -36,6 +36,6 @@ cat <<EOF
 #
 monitor { $if 
           $io 
-          cpu(0), mem } stream to $host:$port
+          cpu(0), mem } stream to $host $port
 EOF
 
