@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.16 2002/12/15 15:00:01 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.17 2002/12/29 16:20:31 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -158,26 +158,26 @@ if_*.rrd)
 debug.rrd)
     # Build debug file
     rrdtool create $i $RRD_ARGS \
-	DS:debug0:COUNTER:5:U:U DS:debug1:COUNTER:5:U:U \
-	DS:debug2:COUNTER:5:U:U DS:debug3:COUNTER:5:U:U \
-	DS:debug4:COUNTER:5:U:U DS:debug5:COUNTER:5:U:U \
-	DS:debug6:COUNTER:5:U:U DS:debug7:COUNTER:5:U:U \
-	DS:debug8:COUNTER:5:U:U DS:debug9:COUNTER:5:U:U \
-	DS:debug10:COUNTER:5:U:U DS:debug11:COUNTER:5:U:U \
-	DS:debug12:COUNTER:5:U:U DS:debug13:COUNTER:5:U:U \
-	DS:debug14:COUNTER:5:U:U DS:debug15:COUNTER:5:U:U \
-	DS:debug16:COUNTER:5:U:U DS:debug17:COUNTER:5:U:U \
-	DS:debug18:COUNTER:5:U:U DS:debug19:COUNTER:5:U:U \
+	DS:debug0:GAUGE:5:U:U DS:debug1:GAUGE:5:U:U \
+	DS:debug2:GAUGE:5:U:U DS:debug3:GAUGE:5:U:U \
+	DS:debug4:GAUGE:5:U:U DS:debug5:GAUGE:5:U:U \
+	DS:debug6:GAUGE:5:U:U DS:debug7:GAUGE:5:U:U \
+	DS:debug8:GAUGE:5:U:U DS:debug9:GAUGE:5:U:U \
+	DS:debug10:GAUGE:5:U:U DS:debug11:GAUGE:5:U:U \
+	DS:debug12:GAUGE:5:U:U DS:debug13:GAUGE:5:U:U \
+	DS:debug14:GAUGE:5:U:U DS:debug15:GAUGE:5:U:U \
+	DS:debug16:GAUGE:5:U:U DS:debug17:GAUGE:5:U:U \
+	DS:debug18:GAUGE:5:U:U DS:debug19:GAUGE:5:U:U \
 	$RRA_SETUP
     echo "$i created"
     ;;
 proc_*.rrd)
     # Build proc file
     rrdtool create $i $RRD_ARGS \
-	DS:number:COUNTER:5:0:U DS:uticks:COUNTER:5:0:U \
-	DS:sticks:COUNTER:5:0:U DS:iticks:COUNTER:5:0:U \
-	DS:cpusec:COUNTER:5:0:U DS:cpupct:GAUGE:5:0:100 \
-        DS:procsz:COUNTER:5:0:U DS:rsssz:COUNTER:5:0:U \
+	DS:number:GAUGE:5:0:U DS:uticks:GAUGE:5:0:U \
+	DS:sticks:GAUGE:5:0:U DS:iticks:GAUGE:5:0:U \
+	DS:cpusec:GAUGE:5:0:U DS:cpupct:GAUGE:5:0:100 \
+        DS:procsz:GAUGE:5:0:U DS:rsssz:GAUGE:5:0:U \
 	$RRA_SETUP
     echo "$i created"
     ;;
