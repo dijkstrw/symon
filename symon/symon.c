@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.25 2002/09/20 09:37:02 dijkstra Exp $ */
+/* $Id: symon.c,v 1.26 2002/10/18 12:29:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #include <syslog.h>
 #include <unistd.h>
 
@@ -67,7 +68,7 @@ struct funcmap streamfunc[] = {
     {MT_EOT, NULL, NULL}
 };
 
-/* Alarmhandler that gets called every SYMON_INTERVAL */
+/* alarmhandler that gets called every SYMON_INTERVAL */
 void 
 alarmhandler(int s) {
     /* EMPTY */
@@ -149,9 +150,13 @@ main(int argc, char *argv[])
 	    info("symon version %s", SYMON_VERSION);
 	default:
 	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
-	    exit(1);
+	    exit(EX_USAGE);
 	}
     }
+
+    /* parse configuration file */
+    if (!read_config_file(&mul, cfgfile))
+	fatal("configuration contained errors; quitting");
 
     setegid(getgid());
     setgid(getgid());
@@ -172,20 +177,17 @@ main(int argc, char *argv[])
 
     info("symon version %s", SYMON_VERSION);
 
-    if (!read_config_file(&mul, cfgfile))
-	fatal("configuration contained errors; quitting");
-
     if (flag_debug == 1)
 	info("program id=%d", (u_int) getpid());
 
-    /* Setup signal handlers */
+    /* setup signal handlers */
     signal(SIGALRM, alarmhandler);
     signal(SIGHUP, huphandler);
     signal(SIGINT, exithandler); 
     signal(SIGQUIT, exithandler); 
     signal(SIGTERM, exithandler); 
 
-    /* Prepare crc32 */
+    /* prepare crc32 */
     init_crc32();
 
     /* init modules */
@@ -196,7 +198,7 @@ main(int argc, char *argv[])
 	}
     }
 
-    /* Setup alarm */
+    /* setup alarm */
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
     alarminterval.it_interval.tv_sec=
@@ -220,7 +222,7 @@ main(int argc, char *argv[])
 	    } else {
 		free_muxlist(&mul);
 		mul = newmul;
-		info("read configuration file succesfully");
+		info("read configuration file '%.100s' succesfully", cfgfile);
 
 		/* init modules */
 		SLIST_FOREACH(mux, &mul, muxes) {
@@ -230,24 +232,25 @@ main(int argc, char *argv[])
 		    }
 		}
 	    }
-	}
-
-	/* populate data space for modules that get all their measurements in
-           one go */
-	for (i=0; i<MT_EOT; i++)
-	    if (streamfunc[i].gets != NULL)
-		(streamfunc[i].gets)();
-
-	SLIST_FOREACH(mux, &mul, muxes) {
-	    prepare_packet(mux);
+	} else {
 	    
-	    SLIST_FOREACH(stream, &mux->sl, streams)
-		stream_in_packet(stream, mux);
-
-	    finish_packet(mux);
-
-	    send_packet(mux);
+	    /* populate for modules that get all their measurements in one go */
+	    for (i=0; i<MT_EOT; i++)
+		if (streamfunc[i].gets != NULL)
+		    (streamfunc[i].gets)();
+	    
+	    SLIST_FOREACH(mux, &mul, muxes) {
+		prepare_packet(mux);
+		
+		SLIST_FOREACH(stream, &mux->sl, streams)
+		    stream_in_packet(stream, mux);
+		
+		finish_packet(mux);
+		
+		send_packet(mux);
+	    }
 	}
     }
     /* NOTREACHED */
+    return (EX_SOFTWARE);
 }

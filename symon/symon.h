@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.20 2002/09/16 06:26:26 dijkstra Exp $ */
+/* $Id: symon.h,v 1.21 2002/10/18 12:29:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -37,10 +37,9 @@
 
 #include "lex.h"
 #include "data.h"
+#include "conf.h"
 
-#define SYMON_CONFIG_FILE "/etc/symon.conf"
 #define SYMON_PID_FILE    "/var/run/symon.pid"
-#define SYMON_VERSION     "2.51"
 #define SYMON_INTERVAL 5                           /* measurement interval */
 #define SYMON_WARN_SENDERR 50                      /* warn every x errors */
 #define SYMON_MAX_DOBJECTS  100                    /* max dynamic alloction
