@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.36 2004/08/07 14:49:00 dijkstra Exp $ */
+/* $Id: symon.c,v 1.37 2004/08/08 12:11:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -31,6 +31,7 @@
  */
 
 #include <sys/param.h>
+#include <sys/time.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -42,16 +43,16 @@
 #include <string.h>
 #include <sysexits.h>
 #include <syslog.h>
+#include <time.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 #include "conf.h"
 #include "data.h"
 #include "error.h"
-#include "symon.h"
-#include "symonnet.h"
 #include "net.h"
 #include "readconf.h"
+#include "symon.h"
+#include "symonnet.h"
 #include "xmalloc.h"
 
 __BEGIN_DECLS
@@ -159,6 +160,7 @@ main(int argc, char *argv[])
     struct itimerval alarminterval;
     struct stream *stream;
     struct mux *mux;
+    time_t now, last_update;
     FILE *pidfile;
     char *cfgpath;
     int ch;
@@ -257,8 +259,10 @@ main(int argc, char *argv[])
 	fatal("alarm setup failed: %.200s", strerror(errno));
     }
 
+    last_update = time();
     for (;;) {			/* FOREVER */
 	sleep(symon_interval);	/* alarm will interrupt sleep */
+	now = time();
 
 	if (flag_hup == 1) {
 	    flag_hup = 0;
@@ -287,6 +291,13 @@ main(int argc, char *argv[])
 		info("configuration unreachable because of privsep; keeping old configuration");
 	    }
 	} else {
+	    if (now < (last_update + symon_interval)) {
+		debug("did not sleep %d seconds - skipping a measurement", symon_interval);
+		continue;
+	    } else {
+		last_update = now;
+	    }
+
 	    /* populate for modules that get all their measurements in one go */
 	    for (i = 0; i < MT_EOT; i++)
 		if (streamfunc[i].used && (streamfunc[i].gets != NULL))
