@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.6 2002/07/11 15:27:33 dijkstra Exp $ */
+/* $Id: share.c,v 1.7 2002/08/29 05:38:39 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -159,11 +159,15 @@ check_master()
 void 
 master_resetsem()
 {
+    union semun semarg;
+
+    semarg.val = 0;
+
     check_sem();
     check_master();
 
-    if ((semctl(semid, SEM_WAIT, SETVAL, 0) != 0) ||
-	(semctl(semid, SEM_READ, SETVAL, 0) != 0))
+    if ((semctl(semid, SEM_WAIT, SETVAL, semarg) != 0) ||
+	(semctl(semid, SEM_READ, SETVAL, semarg) != 0))
 	fatal("%s:%d: Internal error: Cannot reset semaphores",
 	      __FILE__, __LINE__);
 }
@@ -172,12 +176,14 @@ void
 master_forbidread()
 {
     int clientsread;
+    union semun semarg;
 
     check_sem();
     check_master();
     
     /* prepare for a new read */
-    if ((clientsread = semctl(semid, SEM_READ, GETVAL, 0)) < 0)
+    semarg.val = 0;
+    if ((clientsread = semctl(semid, SEM_READ, GETVAL, semarg)) < 0)
 	fatal("%s:%d: Internal error: Cannot read semaphore",
 	      __FILE__, __LINE__);
 
@@ -193,9 +199,13 @@ master_forbidread()
 void
 master_permitread()
 {
+    union semun semarg;
+
     shm->seqnr++;
 
-    if (semctl(semid, SEM_WAIT, SETVAL, realclients) != 0)
+    semarg.val = realclients;
+
+    if (semctl(semid, SEM_WAIT, SETVAL, semarg) != 0)
 	fatal("%s:%d: Internal error: Cannot reset semaphores",
 	      __FILE__, __LINE__);
 }
@@ -327,6 +337,8 @@ reap_clients()
 void 
 exitmaster() 
 {
+    union semun semarg;
+
     if (master == 0)
 	return;
 	
@@ -352,7 +364,8 @@ exitmaster()
 
     switch (semstat) {
     case SIPC_KEYED:
-	if (semctl(semid, 0, IPC_RMID, 0) != 0) 
+	semarg.val = 0;
+	if (semctl(semid, 0, IPC_RMID, semarg) != 0) 
 	    warning("%s:%d: Internal error: could not remove semaphore %d",
 		    __FILE__, __LINE__, semid);
 	/* no break */
