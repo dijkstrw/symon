@@ -1,7 +1,7 @@
-/* $Id: sm_proc.c,v 1.4 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.5 2005/01/14 16:13:38 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -148,7 +148,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
     u_quad_t  cpu_sticks =0;
     u_int32_t cpu_secs = 0;
     double    cpu_pct = 0;
-    u_int16_t cpu_pcti = 0;
+    double    cpu_pcti = 0;
     u_int32_t mem_procsize = 0;
     u_int32_t mem_rss = 0;
     int n = 0;
@@ -161,7 +161,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
 	     cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
 	     /* cpu time - percentage since last measurement */
 	     cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
-	     cpu_pcti += cpu_pct * 10;
+	     cpu_pcti += cpu_pct;
 	     /* memory size - shared pages are counted multiple times */
 	     mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
 				     pp->kp_eproc.e_vm.vm_dsize + /* data */
