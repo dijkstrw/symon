@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.16 2002/08/31 15:00:25 dijkstra Exp $ */
+/* $Id: symon.h,v 1.17 2002/09/10 18:32:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -45,7 +45,7 @@
 
 #define MON_CONFIG_FILE "/etc/mon.conf"
 #define MON_PID_FILE    "/var/run/mon.pid"
-#define MON_VERSION     "2.3"
+#define MON_VERSION     "2.4"
 #define MON_INTERVAL 5                           /* measurement interval */
 #define MON_WARN_SENDERR 50                      /* warn every x errors */
 
