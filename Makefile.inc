@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.25 2004/08/08 12:17:06 dijkstra Exp $
+# $Id: Makefile.inc,v 1.26 2004/08/09 06:26:17 dijkstra Exp $
 
 V=2.67
 OS!=uname -s
@@ -18,7 +18,7 @@ STRIP=  strip
 POD2MAN= pod2man
 
 RRDDIR= /usr/local
-BINDIR= sbin
+BINDIR= libexec
 MANDIR=	man
 SHRDIR= share/symon
 EXADIR= share/examples/symon

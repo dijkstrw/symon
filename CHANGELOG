@@ -4,7 +4,7 @@
      Probes for FreeBSD: cpu, debug, mbuf, mem and proc.  Probes for NetBSD:
      cpu, debug, if, io, mbuf, proc and sensor.
 
-   - Added initial support for Linux: if.
+   - Added initial support for Linux: cpu and if.
 
    - Textual: INSTALL (Hiddo Hut)
 
@@ -357,4 +357,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.34 2004/08/09 06:00:44 dijkstra Exp $
+$Id: CHANGELOG,v 1.35 2004/08/09 06:26:17 dijkstra Exp $
