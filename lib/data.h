@@ -1,5 +1,5 @@
 /*
- * $Id: data.h,v 1.3 2002/03/29 15:16:34 dijkstra Exp $
+ * $Id: data.h,v 1.4 2002/03/29 16:29:19 dijkstra Exp $
  *
  * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
@@ -87,6 +87,10 @@ struct mux {
 };
 SLIST_HEAD(muxlist, mux);
 
+/* ps2str types */
+#define PS2STR_PRETTY 0
+#define PS2STR_RRD    1
+
 /* Stream types */
 #define MT_IO     0
 #define MT_CPU    1
@@ -173,7 +177,7 @@ __BEGIN_DECLS
 int            token2type __P((int));
 int            snpack __P((char *, int, char*, int, ...));
 int            sunpack __P((char *, struct packedstream *));
-int            psdata2strn __P((struct packedstream *, char *, int));
+int            psdata2strn __P((struct packedstream *, char *, int, int));
 struct stream *find_source_stream __P((struct source *, int, char *));
 struct stream *add_source_stream __P((struct source *, int, char *)); 
 struct stream *find_mux_stream __P((struct mux *,  int, char *)); 

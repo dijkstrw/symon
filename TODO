@@ -2,7 +2,6 @@ Project Overview:
 
 == current problems / short term
 - add a fast crc algorithm in netmon and netmux
-- add rrd support to multiplexer
 - allow other programs to connect to monmux for stream updates
 - change rrd to accommodate batch updates
 - make programs robust. failure => fatal now (by design :)
@@ -24,6 +23,8 @@ Project Overview:
              independently.
 
              monmux now checks if incoming traffic is allowed from a certain host.             
+
+             added rrd write support to monmux
 
 22/03/2002 - Added get/set preamble, still tinkering with those s(u)(n)pack
              functions. Added one that translates it into text.

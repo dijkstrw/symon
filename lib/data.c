@@ -1,5 +1,5 @@
 /*
- * $Id: data.c,v 1.3 2002/03/29 15:16:34 dijkstra Exp $
+ * $Id: data.c,v 1.4 2002/03/29 16:29:19 dijkstra Exp $
  *
  * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
@@ -28,15 +28,16 @@
  */
 struct {
     char type;
+    char *rrdformat;
     char *strformat;
     int  strlen;
     int  bytelen;
     u_int64_t max;
 } streamvar[] = {
-    {'L', " %20qu",   21, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
-    {'l', " %10lu",   11, sizeof(u_int32_t), (u_int64_t) 0xffffffff},
-    {'c', "  %3.2f",   6, sizeof(u_int16_t), (u_int64_t) 100},
-    {'\0', NULL, 0, 0, 0}
+    {'L', ":%qu",    " %20qu",   22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
+    {'l', ":%lu",    " %10lu",   12, sizeof(u_int32_t), (u_int64_t) 0xffffffff},
+    {'c', ":%3.2f", "  %3.2f",   7, sizeof(u_int16_t), (u_int64_t) 100},
+    {'\0', NULL, NULL, 0, 0, 0}
 };
 
 struct {
@@ -134,7 +135,7 @@ int bytelenvar(var)
     return 0;
 }
 /* formatstrvar(var)
- * return the maximum lenght that a streamvar of type var can have
+ * return the pretty formatstr for streamvar 
  */
 char *formatstrvar(var)
     char var;
@@ -144,6 +145,23 @@ char *formatstrvar(var)
     for (i=0; streamvar[i].type > '\0'; i++)
 	if (streamvar[i].type == var)
 	    return streamvar[i].strformat;
+    
+    fatal("internal error: Type spefication for stream var '%c' not found", var);
+    
+    /* NOT REACHED */
+    return "";
+}
+/* rrdstrvar(var)
+ * return the rrd formatstr for streamvar 
+ */
+char *rrdstrvar(var)
+    char var;
+{
+    int i;
+
+    for (i=0; streamvar[i].type > '\0'; i++)
+	if (streamvar[i].type == var)
+	    return streamvar[i].rrdformat;
     
     fatal("internal error: Type spefication for stream var '%c' not found", var);
     
@@ -314,10 +332,11 @@ int sunpack(buf, ps)
 /* psdata2strn(ps, buf, maxlen)
  * get the ascii representation of packedstream
  */
-int psdata2strn(ps, buf, maxlen)
+int psdata2strn(ps, buf, maxlen, pretty)
     struct packedstream *ps;
     char *buf;
     int maxlen;
+    int pretty;
 {
     int i=0;
     char vartype;
@@ -335,24 +354,28 @@ int psdata2strn(ps, buf, maxlen)
 	if (checklen(maxlen, (out-buf), strlenvar(vartype)))
 	    return 0;
 	
-	formatstr = formatstrvar(vartype);
+	if (pretty == PS2STR_PRETTY)
+	    formatstr = formatstrvar(vartype);
+
+	if (pretty == PS2STR_RRD) 
+	    formatstr = rrdstrvar(vartype);
 
 	switch (vartype) {
 	case 'c':
 	    c = (*((u_int16_t *)in) / 10);
-	    sprintf(out, formatstr, c); 
+	    snprintf(out, strlenvar(vartype), formatstr, c); 
 	    in  += sizeof(u_int16_t);
 	    break;
 
 	case 'l': 
 	    l = *((u_int32_t *)in);
-	    sprintf(out, formatstr, l); 
+	    snprintf(out, strlenvar(vartype), formatstr, l); 
 	    in  += sizeof(u_int32_t);
 	    break;
 
 	case 'L': 
 	    q = *((u_int64_t *)in);
-	    sprintf(out, formatstr, q); 
+	    snprintf(out, strlenvar(vartype), formatstr, q); 
 	    in  += sizeof(u_int64_t);
 	    break;
 
@@ -360,7 +383,7 @@ int psdata2strn(ps, buf, maxlen)
 	    warning("Unknown stream format identifier");
 	    return 0;
 	}
-	out += strlenvar(vartype);
+	out += strlen(out);
 	i++;
     }
     return (out-buf);
