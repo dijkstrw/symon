@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.12 2002/09/14 15:54:55 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.13 2002/10/25 15:24:55 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -59,7 +59,8 @@ RRD_ARGS="--step=$INTERVAL --start=0"
 # --- user configuration ends here
 
 # All interfaces and disks
-INTERFACES="an|awi|be|bge|bm|bridge|cnw|dc|de|ec|ef|eg|el|enc|ep|ex|faith|fea|fpa|fxp|gem|gif|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|ppp|qe|qec|sf|sis|sk|skc|sl|sm|siop|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vme|vr|wb|we|wi|wx|xe|xl"
+INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|qe|qec|sf|sis|sk|skc|sl|sm|siop|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
+VIRTUALINTERFACES="bridge|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
 
 # addsuffix adds a suffix to each entry of a list (item|item|...)
@@ -81,14 +82,16 @@ fi
 
 DISKS=`addsuffix $DISKS [0-9]`
 INTERFACES=`addsuffix $INTERFACES [0-9]`
+VIRTUALINTERFACES=`addsuffix $VIRTUALINTERFACES \\.\\*`
 
 for i
 do
 # add if_*.rrd if it is an interface
 if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
+if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
-# add .rrd if it is a cpu or mem
+# add .rrd if it is a cpu, mem, or pf
 if [ `echo $i | egrep -e "^(cpu[0-9]|mem|pf)$"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
