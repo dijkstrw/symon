@@ -1,9 +1,10 @@
 /*
- * $Id: xmalloc.c,v 1.2 2001/09/02 19:01:49 dijkstra Exp $
+ * $Id: xmalloc.c,v 1.3 2002/03/09 16:18:19 dijkstra Exp $
  */
 #include <err.h>
 #include <strings.h>
 #include <stdlib.h>
+
 #include "xmalloc.h"
 
 void *xmalloc(size)

@@ -1,16 +1,17 @@
 /*
- * $Id: net.c,v 1.2 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: net.c,v 1.3 2002/03/09 16:18:18 dijkstra Exp $
  *
  * Holds all network functions for monmux
  */
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <limits.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+
 
 /*
  * lookup( hostname )

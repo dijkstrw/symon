@@ -1,10 +1,11 @@
 /* 
- * $Id: error.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: error.c,v 1.4 2002/03/09 16:18:18 dijkstra Exp $
  *
  * Routines that show errors
  */
 #include <stdarg.h>
 #include <stdio.h>
+
 #include "error.h"
 
 void fatal(char *str, ...)

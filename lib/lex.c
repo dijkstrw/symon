@@ -1,5 +1,5 @@
 /*
- * $Id: lex.c,v 1.4 2001/09/30 14:42:29 dijkstra Exp $
+ * $Id: lex.c,v 1.5 2002/03/09 16:18:18 dijkstra Exp $
  *
  * Simple lexical analyser:
  *
@@ -25,38 +25,40 @@
 #include <err.h>
 #include <limits.h>
 #include <stdlib.h>
+
 #include "xmalloc.h"
 #include "lex.h"
 #include "error.h"
 
 static struct {
     const char *name;
-    OpCodes opcode;
+    int opcode;
 } keywords[] = {
-    { "source", oSource },
-    { "hub", oHub },
-    { "port", oPort },
-    { "accept", oAccept },
-    { "write", oWrite },
-    { "in", oIn },
-    { "cpu", oCpu },
-    { "mem", oMem },
-    { "if", oIf },
-    { "io", oIo },
-    { "{", oBegin },
-    { "}", oEnd },
-    { ",", oComma },
-    { "(", oOpen },
-    { ")", oClose },
-    { ":", oColon },
+    { "source", LXT_SOURCE },
+    { "hub", LXT_HUB },
+    { "port", LXT_PORT },
+    { "stream", LXT_STREAM },
+    { "accept", LXT_ACCEPT },
+    { "write", LXT_WRITE },
+    { "in", LXT_IN },
+    { "cpu", LXT_CPU },
+    { "mem", LXT_MEM },
+    { "if", LXT_IF },
+    { "io", LXT_IO },
+    { "{", LXT_BEGIN },
+    { "}", LXT_END },
+    { ",", LXT_COMMA },
+    { "(", LXT_OPEN },
+    { ")", LXT_CLOSE },
+    { ":", LXT_COLON },
     { NULL, 0 }
 };
 #define KW_OPS "{},():"
 
 /*
- * Returns the number of the token pointed to by cp or oBadToken
+ * Returns the number of the token pointed to by cp or LXT_BADTOKEN
  */
-OpCodes parse_token(cp)
+int parse_token(cp)
     const char *cp;
 {
     u_int i;
@@ -65,13 +67,13 @@ OpCodes parse_token(cp)
 	if (strcasecmp(cp, keywords[i].name) == 0)
 	    return keywords[i].opcode;
         
-    return oBadToken;
+    return LXT_BADTOKEN;
 }
 /*
  * Returns the ascii representation of an opcode
  */
 const char* parse_opcode(op)
-    const OpCodes op;
+    const int op;
 {
     u_int i;
     
@@ -169,9 +171,9 @@ int lex_nexttoken(l)
 	return 1;
     }
 	
-    l->op = oBadToken;
+    l->op = LXT_BADTOKEN;
     l->value = 0;
-    l->type = tUnknown;
+    l->type = LXY_UNKNOWN;
 
     /* find first non whitespace */
     while (l->buffer[l->curpos] == ' ' || 
@@ -190,7 +192,7 @@ int lex_nexttoken(l)
 		return 0;
     }
     
-    l->type = tString;
+    l->type = LXY_STRING;
 
     /* delimited string */
     if (l->buffer[l->curpos] == '"') {
@@ -255,7 +257,7 @@ int lex_nexttoken(l)
     /* number */
     if (l->token[0] >= '0' && l->token[0] <= '9' ) {
 	if (strlen(l->token) == strspn(l->token, "0123456789")) {
-	    l->type = tNumber;
+	    l->type = LXY_NUMBER;
 	    l->value = strtol(l->token, NULL , 10);
 	}
     }
@@ -276,11 +278,11 @@ struct lex *open_lex(filename)
     l->endpos = 0;
     l->unget = 0;
     l->cline = 1;
-    l->type = tNumber;
+    l->type = LXY_UNKNOWN;
     l->value = 0;
     l->token = xmalloc(_POSIX2_LINE_MAX);
     l->tokpos = 0;
-    l->op = oBadToken;
+    l->op = LXT_BADTOKEN;
 
     if ((l->fh = fopen(l->filename, "r")) == NULL) {
 	fatal("Could not open file '%s':%s", 
@@ -300,3 +302,10 @@ void close_lex(l)
     if (l->token) xfree(l->token);
     xfree(l);
 }
+void parse_error(l, s)
+    struct lex *l;
+    const char *s;
+{
+    fatal("%s:%d: Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
+}
+
