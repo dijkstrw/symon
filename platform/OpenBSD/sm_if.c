@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.4 2002/08/09 08:21:31 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.5 2002/08/31 15:01:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,19 +33,15 @@
 /*
  * Get current interface statistics from kernel and return them in mon_buf as
  *
- * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors : oerrors : colls : drops
- *
- * This module uses the kvm interface to read kernel values directly. It needs
- * a valid kvm handle and will only work if this has been obtained by someone
- * belonging to group kmem. Note that these priviledges (sgid kmem) can be
- * dropped right after the handle has been obtained.  
+ * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
+ * oerrors : colls : drops
  * 
- * Re-entrant code: globals are used to speedup calculations for all interfaces.
  */
 
 #include <sys/types.h>
-#include <sys/protosw.h>
+#include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/sockio.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
@@ -59,34 +55,23 @@
 #include <netiso/iso.h>
 #include <netiso/iso_var.h>
 
-#include <string.h>
+#include <errno.h>
 #include <limits.h>
+#include <string.h>
 
 #include "error.h"
 #include "mon.h"
 
 /* Globals for this module start with if_ */
-struct ifnet if_ifnet;
-size_t if_size_ifnet;
-struct ifnet_head if_ifhead;   
-size_t if_size_ifhead;
-union {
-    struct ifaddr   ifa;
-    struct in_ifaddr in;
-    struct in6_ifaddr in6;
-    struct ns_ifaddr ns;
-    struct ipx_ifaddr ipx;
-    struct iso_ifaddr iso;
-} if_ifaddr;
-size_t if_size_ifaddr;
-char if_name[IFNAMSIZ];
+int if_s = -1;
 /* Prepare if module for first use */
 void 
 init_if(char *s) 
 {
-    if_size_ifnet = sizeof if_ifnet;
-    if_size_ifhead = sizeof if_ifhead;
-    if_size_ifaddr = sizeof if_ifaddr;
+    if (if_s == -1)
+	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	    fatal("%s:%d: socket failed, %.200", 
+		  __FILE__, __LINE__, strerror(errno));
 
     info("started module if(%s)", s);
 }
@@ -94,36 +79,29 @@ init_if(char *s)
 int 
 get_if(char *mon_buf, int maxlen, char *interface) 
 {
-    u_long ifnetptr;
+    struct ifreq ifr;
+    struct if_data ifdata;
 
-    ifnetptr = mon_nl[MON_IFNET].n_value;
-    if (ifnetptr == 0)
-	fatal("%s:%d: ifnet = symbol not defined", __FILE__, __LINE__);
-
-    /* obtain first ifnet structure in kernel memory */
-    if (kread(ifnetptr, (char *) &if_ifhead, if_size_ifhead)) {
-	warning("if(%s) failed", interface);
+    strncpy(ifr.ifr_name, interface, IFNAMSIZ-1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+    ifr.ifr_data = (caddr_t)&ifdata;
+    
+    if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
+	warning("if(%s) failed (ioctl error)", interface);
 	return 0;
     }
-
-    ifnetptr = (u_long) if_ifhead.tqh_first;
-  
-    while (ifnetptr) {
-	kread(ifnetptr, (char *) &if_ifnet, if_size_ifnet);
-	bcopy(if_ifnet.if_xname, (char *) &if_name, IFNAMSIZ);
-	if_name[IFNAMSIZ - 1] = '\0';
-	ifnetptr = (u_long) if_ifnet.if_list.tqe_next;
-
-	if (interface != 0 && strncmp(if_name, interface, IFNAMSIZ) == 0) {
-	    return snpack(mon_buf, maxlen, interface, MT_IF,
-		      if_ifnet.if_ipackets, if_ifnet.if_opackets, 
-		      if_ifnet.if_ibytes, if_ifnet.if_obytes, 
-		      if_ifnet.if_imcasts, if_ifnet.if_omcasts, 
-		      if_ifnet.if_ierrors, if_ifnet.if_oerrors, 
-		      if_ifnet.if_collisions, if_ifnet.if_iqdrops);
-	}
-    }
-
-    return 0;
+    
+    return snpack(mon_buf, maxlen, interface, MT_IF,
+		  ifdata.ifi_ipackets, 
+		  ifdata.ifi_opackets, 
+		  ifdata.ifi_ibytes, 
+		  ifdata.ifi_obytes, 
+		  ifdata.ifi_imcasts, 
+		  ifdata.ifi_omcasts, 
+		  ifdata.ifi_ierrors, 
+		  ifdata.ifi_oerrors, 
+		  ifdata.ifi_collisions, 
+		  ifdata.ifi_iqdrops);
 }
+
 
