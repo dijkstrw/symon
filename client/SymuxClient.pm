@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.2 2002/11/29 10:47:35 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.3 2002/12/14 14:03:44 dijkstra Exp $
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
 # All rights reserved.
@@ -52,7 +52,7 @@ my $streamitem =
 	       counters_badoffset => 18, counters_fragment => 19,
 	       counters_short => 20, counters_normalize => 21, 
 	       counters_memory => 22},
-     debug => {debug0 => 1, debug1 => 2, debug3 => 3, debug4 => 4, debug5 = 5,
+     debug => {debug0 => 1, debug1 => 2, debug3 => 3, debug4 => 4, debug5 => 5,
 	       debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9, 
 	       debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
 	       debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,

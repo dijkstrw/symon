@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_config.sh,v 1.2 2002/11/29 10:48:53 dijkstra Exp $
+# $Id: c_config.sh,v 1.3 2002/12/14 14:03:48 dijkstra Exp $
 #
 # Create an example configuration file for symon on a host and print to stdout
 
@@ -26,7 +26,7 @@ bridge*|enc*|gif*|gre*|lo*|pflog*|ppp*|sl*|tun*|vlan*)
 	;;
 esac
 done
-io=`mount | sed '1,1d;s/^\/dev\/\([a-z]*[0-9]\).*$/io(\1), /g' | uniq | tr -d \\\n`
+io=`mount | grep -v ' type mfs ' | sed '1,1d;s/^\/dev\/\([a-z]*[0-9]\).*$/io(\1), /g' | uniq | tr -d \\\n`
 host=${1:-127.0.0.1}
 port=${2:-2100}
 cat <<EOF
