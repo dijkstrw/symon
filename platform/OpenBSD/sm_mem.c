@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.10 2002/04/01 20:15:59 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.11 2002/04/09 05:37:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -83,7 +83,10 @@ init_mem(char *s)
     if (me_swdev) 
 	xfree(me_swdev);
 
-    me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
+    if (me_nswap != 0)
+      me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
+    else
+      me_swdev = NULL;
 
     if (me_swdev == NULL && me_nswap != 0) 
 	me_nswap=0; 

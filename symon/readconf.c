@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.5 2002/04/04 20:48:56 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.6 2002/04/09 05:37:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -157,7 +157,7 @@ read_monitor(struct muxlist *mul, struct lex *l)
 {
     struct mux *mux;
 
-    mux = add_mux(mul, "");
+    mux = add_mux(mul, "<unnamed host>");
 
     /* parse cpu|mem|if|io */
     if (!read_mon_args(mux, l))

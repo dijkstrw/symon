@@ -1,0 +1,108 @@
+.\"  -*- nroff -*-
+.\"
+.\" Copyright (c) 2001-2002 Willem Dijkstra
+.\" All rights reserved.
+.\" 
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 
+.\"    - Redistributions of source code must retain the above copyright
+.\"      notice, this list of conditions and the following disclaimer.
+.\"    - Redistributions in binary form must reproduce the above
+.\"      copyright notice, this list of conditions and the following
+.\"      disclaimer in the documentation and/or other materials provided
+.\"      with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+.\" FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+.\" COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+.\" CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+.\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\" 
+.Dd April 5, 2002
+.Dt MON 8
+.Os
+.Sh NAME
+.Nm mon
+.Nd system monitor
+.Sh SYNOPSIS
+.Nm 
+.Op Fl vd
+.Pp
+.Sh DESCRIPTION
+.Nm
+is a lightweight system monitor that measures cpu, memory, interface and disk statistics every 5 seconds. This information is then spooled to   
+.Xr monmux 8
+for further processing. 
+.Pp
+.Nm
+has been designed to inflict minimal performance and security impact on the system it monitors. 
+.Xr monmux 8
+has performance impact proportional to the amount of streams it needs to manage. Ideally it should live on a different system and collect data from several 
+.Nm
+instances in a LAN.
+
+The options:
+.Bl -tag -width Ds
+.It Fl a
+Show version information.
+.It Fl d
+Stop 
+.Nm
+from becoming a daemon and show debug information on stdout.
+
+.Sh CONFIGURATION
+.Nm
+obtains configuration data from 
+.Pq Pa /etc/mon.conf .
+The configuration file contains monitor stanzas that define what resources should be monitored and to which 
+.Xr monmux 8
+the information should be streamed to.
+.Pp
+Multiple monitor statements to different muxes are allowed. Whitespace, newlines and text behind '#' are ignored. The format in BNF:
+.Pp
+.nf
+monitor-rule = "monitor" "{" resources "}" "stream" ["to"] host [ port ]
+resources    = resource ["(" argument ")"] [ ","|" " resources ]
+resource     = "cpu" | "mem" | "if" | "io"
+host         = ip4addr | hostname
+port         = [ "port" | ":" | "," ] portnumber
+argument     = number | interfacename | diskname
+.fi
+.Sh EXAMPLE
+Here is an example 
+.Ar mon.conf
+that monitors cpu, memory, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] and streams that information to localhost on port 2100.
+.Pp
+.nf
+monitor { cpu(0),  mem,     if(xl0), if(de0),
+          if(lo0), if(wi0), io(wd0), io(wd1), 
+          io(wd2), io(wd3), io(cd0), io(cd1), 
+          io(ccd0)} stream to 127.0.0.1 2100
+.fi
+.Sh SIGNALS
+.Bl -tag -width Ds
+.It SIGHUP
+Causes
+.Nm
+to read 
+.Ar /etc/mon.conf .
+.Nm
+will keep the old configuration if errors occured during parsing of the configuration file.
+.Sh BUGS
+Every monitored resource mentioned 
+.Ar /etc/mon.conf 
+gets queried. Mentioning, for example, cpu(0) twice for different muxes will result in two distinct cpu(0) measurement actions. 
+.Sh AUTHOR
+Willem Dijkstra <wpd@xs4all.nl>
+.Sh SEE ALSO
+.Xr monmux 8 
+ 

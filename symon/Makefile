@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.17 2002/04/01 20:15:59 dijkstra Exp $
+# $Id: Makefile,v 1.18 2002/04/09 05:37:36 dijkstra Exp $
 
 PROG=	mon
 SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c monnet.c
-NOMAN=	No man page yet.
+MAN=    mon.8
 BINGRP=	kmem
 BINMODE=2555
 LDADD=  -lkvm -L../lib -lmon
