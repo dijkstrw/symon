@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.4 2004/03/20 15:46:27 dijkstra Exp $ */
+/* $Id: npack.c,v 1.5 2004/08/07 14:50:24 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "conf.h"
 #include "xmalloc.h"
 #include "data.h"
 
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 
     ilen = snpack(buffer, _POSIX2_LINE_MAX, "123456789012345678901234567890", MT_TEST,
 		  /* test L, u_int64_t */
-		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffff, (u_int64_t) 0, (u_int64_t) 0xffffff,
+		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffffLL, (u_int64_t) 0, (u_int64_t) 0xffffff,
 		  /* test D, double */
 		  (double) 0, (double) 100000, (double) -100000, (double) -12.05,
 		  /* test l, u_int32_t */
@@ -71,12 +72,12 @@ int main(int argc, char **argv)
     assert(ilen == olen);
     assert(strcmp("123456789012345", ps->args) == 0);
     assert(ps->data.ps_test.L[0] == 0);
-    assert(ps->data.ps_test.L[1] == 0xffffffffffffffff);
+    assert(ps->data.ps_test.L[1] == 0xffffffffffffffffLL);
     assert(ps->data.ps_test.L[2] == 0);
     assert(ps->data.ps_test.L[3] == 0xffffff);
     assert(ps->data.ps_test.D[0] == 0);
-    assert(ps->data.ps_test.D[1] == 100000000000);
-    assert(ps->data.ps_test.D[2] == -100000000000);
+    assert(ps->data.ps_test.D[1] == 100000000000LL);
+    assert(ps->data.ps_test.D[2] == -100000000000LL);
     assert(ps->data.ps_test.D[3] == -12050000);
     assert(ps->data.ps_test.l[0] == 0);
     assert(ps->data.ps_test.l[1] == 0xffffffff);
