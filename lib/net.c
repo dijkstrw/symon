@@ -1,4 +1,4 @@
-/* $Id: net.c,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: net.c,v 1.6 2002/08/29 19:38:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -98,7 +98,7 @@ lookup(char *name)
 	    snprintf(lookup_hostname, (_POSIX2_LINE_MAX - 1), "%s", chostname);
 	
 	if (*host->h_addr_list) {
-	    lookup_ip = ntohl(*(unsigned long *) *(char **) host->h_addr_list);
+	    lookup_ip = ntohl(*(u_int32_t *) *(char **) host->h_addr_list);
 
 	    snprintf(lookup_address, (_POSIX2_LINE_MAX - 1),"%u.%u.%u.%u", 
 		    (lookup_ip >> 24), (lookup_ip >> 16) & 0xff,

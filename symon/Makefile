@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.22 2002/07/25 14:25:29 dijkstra Exp $
+# $Id: Makefile,v 1.23 2002/08/29 19:38:53 dijkstra Exp $
 .include "../Makefile.inc"
 
-SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c monnet.c
+SRCS=	mon.c cpu.c mem.c if.c io.c pf.c readconf.c monnet.c
 OBJS+=	${SRCS:R:S/$/.o/g}
 LIBS=  -lkvm -L../lib -lmon
 CFLAGS+=-DMON_KVM -DNET_INET6 -I../lib

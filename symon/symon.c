@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.19 2002/08/11 19:52:16 dijkstra Exp $ */
+/* $Id: symon.c,v 1.20 2002/08/29 19:38:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -83,6 +83,7 @@ struct funcmap streamfunc[] = {
     {MT_CPU, init_cpu, get_cpu},
     {MT_MEM, init_mem, get_mem},
     {MT_IF,  init_if,  get_if},
+    {MT_PF,  init_pf,  get_pf},
     {MT_EOT, NULL, NULL}
 };
 

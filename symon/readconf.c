@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.8 2002/08/11 19:53:15 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.9 2002/08/29 19:38:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -110,6 +110,7 @@ read_mon_args(struct mux *mux, struct lex *l)
 	case LXT_IF:
 	case LXT_IO:
 	case LXT_MEM:
+	case LXT_PF:
 	    st = token2type(l->op);
 	    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -138,11 +139,11 @@ read_mon_args(struct mux *mux, struct lex *l)
 		return 0;
 	    }
 	    
-	    break; /* LXT_CPU/IF/IO/MEM */
+	    break; /* LXT_CPU/IF/IO/MEM/PF */
 	case LXT_COMMA:
 	    break;
 	default:
-	    parse_error(l, "cpu|mem|if|io|}");
+	    parse_error(l, "{cpu|mem|if|io|pf}");
 	    return 0;
 	    break;
 	}

@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.14 2002/04/04 20:48:56 dijkstra Exp $ */
+/* $Id: symon.h,v 1.15 2002/08/29 19:38:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -84,6 +84,10 @@ extern int  get_if(char *, int, char *);
 /* io.c */
 extern void init_io(char *);
 extern int  get_io(char *, int, char *);
+
+/* pf.c */
+extern void init_pf(char *);
+extern int  get_pf(char *, int, char *);
 __END_DECLS
 
 #endif /*_MON_MON_H*/

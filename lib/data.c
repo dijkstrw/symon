@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.13 2002/08/29 05:59:34 dijkstra Exp $ */
+/* $Id: data.c,v 1.14 2002/08/29 19:38:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -92,6 +92,7 @@ struct {
     {MT_CPU, "ccccc"},
     {MT_MEM, "lllll"},
     {MT_IF,  "llllllllll"},
+    {MT_PF,  "LLLLLLLLLLLLLLLLLLLLLL"},
     {MT_EOT, ""}
 };
 
@@ -103,6 +104,7 @@ struct {
     {MT_CPU, LXT_CPU},
     {MT_MEM, LXT_MEM},
     {MT_IF,  LXT_IF},
+    {MT_PF,  LXT_PF},
     {MT_EOT, LXT_BADTOKEN}
 };
 /* parallel crc32 table */
@@ -272,7 +274,10 @@ snpack(char *buf, int maxlen, char *id, int type, ...)
 		     
 	switch (streamform[type].form[i]) {
 	case 'c':
-	    c = va_arg(ap, u_int16_t);
+	    c = va_arg(ap, int); /* int instead of u_int16_t to avoid just
+                                    getting the first 2 bytes if the compiler
+                                    generated an int on the stack -- cheers
+                                    dhartmei@ */
 	    c = htons(c);
 	    bcopy(&c, buf + offset, sizeof(u_int16_t));
 	    offset += sizeof(u_int16_t);
@@ -381,7 +386,8 @@ sunpack(char *buf, struct packedstream *ps)
 int 
 ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 {
-    float c;
+    float f;
+    u_int16_t c;
     u_int64_t q;
     u_int32_t l;
     int i=0;
@@ -411,19 +417,20 @@ ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 
 	switch (vartype) {
 	case 'c':
-	    c = (*((u_int16_t *)in) / 10);
-	    snprintf(out, strlenvar(vartype), formatstr, c); 
+	    bcopy(in, &c, sizeof(u_int16_t));
+	    f = (float)c / 10.0;
+	    snprintf(out, strlenvar(vartype), formatstr, f); 
 	    in  += sizeof(u_int16_t);
 	    break;
 
 	case 'l': 
-	    l = *((u_int32_t *)in);
+	    bcopy(in, &l, sizeof(u_int32_t));
 	    snprintf(out, strlenvar(vartype), formatstr, l); 
 	    in  += sizeof(u_int32_t);
 	    break;
 
 	case 'L': 
-	    q = *((u_int64_t *)in);
+	    bcopy(in, &q, sizeof(u_int64_t));
 	    snprintf(out, strlenvar(vartype), formatstr, q); 
 	    in  += sizeof(u_int64_t);
 	    break;

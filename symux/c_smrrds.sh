@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.8 2002/07/25 19:10:03 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.9 2002/08/29 19:38:56 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -33,6 +33,7 @@
 #       all      Makes all files for active interfaces and disks
 #       mem      Make memory file
 #       cpu?     Make cpu file
+#       pf       Make pf file
 
 # --- user configuration starts here
 INTERVAL=`grep MON_INTERVAL ../mon/mon.h 2>/dev/null | cut -f3 -d\ `
@@ -57,7 +58,7 @@ RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
 # --- user configuration ends here
 
 # All interfaces and disks
-INTERFACES="an|awi|bge|bridge|cnw|dc|de|ec|ef|eg|el|enc|ep|ex|faith|fea|fpa|fxp|gif|gre|ie|lc|le|le|lge|lmc|lo|ne|ne|nge|ray|rl|ppp|sf|sis|sk|skc|sl|sm|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vr|wb|we|wi|wx|xe|xl"
+INTERFACES="an|awi|be|bge|bm|bridge|cnw|dc|de|ec|ef|eg|el|enc|ep|ex|faith|fea|fpa|fxp|gem|gif|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|ne|nge|ray|rl|ppp|qe|qec|sf|sis|sk|skc|sl|sm|siop|sppp|ste|stge|strip|ti|tl|tr|tun|tx|txp|vlan|vme|vr|wb|we|wi|wx|xe|xl"
 DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
 
 # addsuffix adds a suffix to each entry of a list (item|item|...)
@@ -87,7 +88,7 @@ if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu or mem
-if [ `echo $i | egrep -e "^(cpu[0-9]|mem)$"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]|mem|pf)$"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -97,10 +98,11 @@ fi
 case $i in
 
 all)
-    echo "Creating rrd files for {cpu0|mem|disks|interfaces}"
+    echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf}"
     sh $this cpu0 mem
     sh $this interfaces
     sh $this disks
+    sh $this pf
     ;;
 
 if|interfaces)
@@ -145,6 +147,29 @@ if_*.rrd)
 	DS:imcasts:COUNTER:5:U:U DS:omcasts:COUNTER:5:U:U \
 	DS:ierrors:COUNTER:5:U:U DS:oerrors:COUNTER:5:U:U \
 	DS:collisions:COUNTER:5:U:U DS:drops:COUNTER:5:U:U \
+	$RRA_SETUP
+    echo "$i created"
+    ;;
+
+pf.rrd)
+    # Build pf file
+    rrdtool create $i --step=$INTERVAL \
+	DS:bytes_v4_in:DERIVE:5:0:U DS:bytes_v4_out:DERIVE:5:0:U \
+	DS:bytes_v6_in:DERIVE:5:0:U DS:bytes_v6_out:DERIVE:5:0:U \
+	DS:packets_v4_in_pass:DERIVE:5:0:U DS:packets_v4_in_drop:DERIVE:5:0:U \
+	DS:packets_v4_out_pass:DERIVE:5:0:U DS:packets_v4_out_drop:DERIVE:5:0:U \
+	DS:packets_v6_in_pass:DERIVE:5:0:U DS:packets_v6_in_drop:DERIVE:5:0:U \
+	DS:packets_v6_out_pass:DERIVE:5:0:U DS:packets_v6_out_drop:DERIVE:5:0:U \
+	DS:states_entries:ABSOLUTE:5:0:U \
+	DS:states_searches:DERIVE:5:0:U \
+	DS:states_inserts:DERIVE:5:0:U \
+	DS:states_removals:DERIVE:5:0:U \
+	DS:counters_match:DERIVE:5:0:U \
+	DS:counters_badoffset:DERIVE:5:0:U \
+	DS:counters_fragment:DERIVE:5:0:U \
+	DS:counters_short:DERIVE:5:0:U \
+	DS:counters_normalize:DERIVE:5:0:U \
+	DS:counters_memory:DERIVE:5:0:U \
 	$RRA_SETUP
     echo "$i created"
     ;;

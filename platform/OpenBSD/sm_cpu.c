@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.11 2002/05/09 12:39:50 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.12 2002/08/29 19:38:53 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  * 
@@ -62,7 +62,7 @@
 #include "mon.h"
 
 __BEGIN_DECLS
-int percentages(int, float *, long *, long *, long *);
+int percentages(int, int *, long *, long *, long *);
 __END_DECLS
 
 /* Globals for this module all start with cp_ */
@@ -71,7 +71,7 @@ static size_t cp_size;
 static long cp_time[CPUSTATES];
 static long cp_old[CPUSTATES];
 static long cp_diff[CPUSTATES];
-static float cp_states[CPUSTATES];
+static int cp_states[CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -81,7 +81,7 @@ static float cp_states[CPUSTATES];
  *      useful on BSD mchines for calculating cpu state percentages.
  */
 int 
-percentages(int cnt, float *out, register long *new, register long *old, long *diffs)
+percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
 {
     register int i;
     register long change;
@@ -142,9 +142,9 @@ get_cpu(char *mon_buf, int maxlen, char *s)
     total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
     return snpack(mon_buf, maxlen, s, MT_CPU,
-		  (u_int16_t) cp_states[CP_USER], 
-		  (u_int16_t) cp_states[CP_NICE], 
-		  (u_int16_t) cp_states[CP_SYS], 
-		  (u_int16_t) cp_states[CP_INTR], 
-		  (u_int16_t) cp_states[CP_IDLE]);
+		  cp_states[CP_USER], 
+		  cp_states[CP_NICE], 
+		  cp_states[CP_SYS], 
+		  cp_states[CP_INTR], 
+		  cp_states[CP_IDLE]);
 }

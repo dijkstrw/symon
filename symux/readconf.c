@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.11 2002/08/11 19:54:48 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.12 2002/08/29 19:38:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -114,7 +114,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 
     source = add_source(sol, lookup_address);
     source->ip = lookup_ip;
-
+    
     EXPECT(l, LXT_BEGIN);
     while (lex_nexttoken(l)) {
 	switch (l->op) {
@@ -127,6 +127,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 		case LXT_IF:
 		case LXT_IO:
 		case LXT_MEM:
+		case LXT_PF:
 		    st = token2type(l->op);
 		    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -157,11 +158,11 @@ read_source(struct sourcelist *sol, struct lex *l)
 			return 0;
 		    }
 
-		    break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM */
+		    break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM/LXT_PF */
 		case LXT_COMMA:
 		    break;
 		default:
-		    parse_error(l, "{cpu|mem|if|io}");
+		    parse_error(l, "{cpu|mem|if|io|pf}");
 		    return 0;
 
 		    break;
@@ -176,6 +177,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 	    case LXT_IF:
 	    case LXT_IO:
 	    case LXT_MEM:
+	    case LXT_PF:
 		st = token2type(l->op);
 		strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 		
@@ -225,7 +227,7 @@ read_source(struct sourcelist *sol, struct lex *l)
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM */
+		break; /* LXT_CPU/LXT_IF/LXT_IO/LXT_MEM/LXT_PF */
 	    default:
 		parse_error(l, "{cpu|mem|if|io}");
 		return 0;

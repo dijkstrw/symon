@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.12 2002/08/11 20:02:53 dijkstra Exp $ */
+/* $Id: data.h,v 1.13 2002/08/29 19:38:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -51,21 +51,19 @@
 /* Polynominal to use for CRC generation */
 #define MON_CRCPOLY  0x04c11db7
 
-#ifdef WORDS_BIGENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 #define htonq(n) n
 #define ntohq(n) n
 #else
 static inline u_int64_t
 htonq (u_int64_t v)
 {
-   return htonl ((u_int32_t) (v >> 32))
-      | (u_int64_t) ntohl ((u_int32_t) v) << 32;
+    return (u_int64_t)htonl(v) << 32 | htonl(v >> 32);
 }
 static inline u_int64_t
 ntohq (u_int64_t v) 
 {
-   return ntohl ((u_int32_t) (v >>32))
-      | (u_int64_t) ntohl ((u_int32_t) v) << 32;
+    return (u_int64_t)ntohl(v) << 32 | ntohl(v >> 32);
 }
 #endif
 
@@ -80,10 +78,11 @@ ntohq (u_int64_t v)
 #define MON_PACKET_VER  1
 struct monpacket {
     struct {
-	u_int8_t mon_version;
 	u_int64_t timestamp;
-	u_int16_t length;
 	u_int32_t crc;
+	u_int16_t length;
+	u_int8_t mon_version;
+	u_int8_t reserved;
     } header;
     char data[_POSIX2_LINE_MAX];
 };  
@@ -135,17 +134,16 @@ SLIST_HEAD(muxlist, mux);
 #define MT_CPU    1
 #define MT_MEM    2
 #define MT_IF     3
-#define MT_EOT    4
+#define MT_PF     4
+#define MT_EOT    5
 
 /* NOTE: struct packetstream
  *
  * Unpacking of incoming packets is done via a packedstream structure. This
  * structure defines the maximum amount of data that can be contained in a
- * single network representation of a stream. 
- *
- * This sucks in the way of portability (e.g. adding multiple cpu types) and
- * maintainabilty. This code will need to be refactored when I port it to other
- * oses.  
+ * single network representation of a stream. It is used internally for sizing
+ * only. Although the union members are here, they could also read u_int64_t[4]
+ * with io, for instance.
  */
 #define MON_PS_ARGLEN    16
 struct packedstream {
@@ -184,33 +182,32 @@ struct packedstream {
 	    u_int32_t mcolls;
 	    u_int32_t mdrops;
 	} ps_if;
+	struct {
+	    u_int64_t bytes_v4_in;
+	    u_int64_t bytes_v4_out;
+	    u_int64_t bytes_v6_in;
+	    u_int64_t bytes_v6_out;
+	    u_int64_t packets_v4_in_pass;
+	    u_int64_t packets_v4_in_drop;
+	    u_int64_t packets_v4_out_pass;
+	    u_int64_t packets_v4_out_drop;
+	    u_int64_t packets_v6_in_pass;
+	    u_int64_t packets_v6_in_drop;
+	    u_int64_t packets_v6_out_pass;
+	    u_int64_t packets_v6_out_drop;
+	    u_int64_t states_entries;
+	    u_int64_t states_searches;
+	    u_int64_t states_inserts;
+	    u_int64_t states_removals;
+	    u_int64_t counters_match;
+	    u_int64_t counters_badoffset;
+	    u_int64_t counters_fragment;
+	    u_int64_t counters_short;
+	    u_int64_t counters_normalize;
+	    u_int64_t counters_memory;
+	} ps_pf;
     } data;
 };
-
-#define mio_total_transfers  data.ps_io.mtotal_transfers
-#define mio_total_seeks      data.ps_io.mtotal_seeks
-#define mio_total_bytes      data.ps_io.mtotal_bytes
-#define mcpm_user            data.ps_cpu.uuser
-#define mcpm_nice            data.ps_cpu.unice
-#define mcpm_system          data.ps_cpu.usystem
-#define mcpm_interrupt       data.ps_cpu.uinterrupt
-#define mcpm_idle            data.ps_cpu.uidle
-#define mmem_real_active     data.ps_mem.mreal_active
-#define mmem_real_total      data.ps_mem.mreal_total
-#define mmem_free            data.ps_mem.mfree
-#define mmem_swap_msed       data.ps_mem.uswap_used
-#define mmem_swap_total      data.ps_mem.mswap_total
-#define mif_ipackets         data.ps_if.mipackets
-#define mif_opackets         data.ps_if.mopackets
-#define mif_ibytes           data.ps_if.mibytes
-#define mif_obytes           data.ps_if.mobytes
-#define mif_imcasts          data.ps_if.mimcasts
-#define mif_omcasts          data.ps_if.momcasts
-#define mif_ierrors          data.ps_if.mierrors
-#define mif_oerrors          data.ps_if.moerrors
-#define mif_colls            data.ps_if.mcolls
-#define mif_drops            data.ps_if.mdrops
-
 
 /* prototypes */
 __BEGIN_DECLS

@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.7 2002/07/20 14:28:29 dijkstra Exp $ */
+/* $Id: error.c,v 1.8 2002/08/29 19:38:52 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -34,6 +34,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <syslog.h>
 
 #include "error.h"
