@@ -1,6 +1,36 @@
+/* $Id: sm_io.c,v 1.2 2002/03/31 14:27:47 dijkstra Exp $ */
+
 /*
- * $Id: sm_io.c,v 1.1 2002/03/09 16:25:33 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/*
  * Get current disk transfer statistics from kernel and return them in mon_buf as
  * 
  * total nr of transfers : total seeks : total bytes transferred
@@ -14,51 +44,57 @@
  * 
  * TODO: di_name is too large
  */
-#include <limits.h>
 #include <sys/disk.h>
+
+#include <limits.h>
+#include <string.h>
+
+#include "error.h"
 #include "mon.h"
 
-struct disk di_disk;
-size_t di_size_disk;
-struct disklist_head di_dihead;
-size_t di_size_dihead;
-char di_name[_POSIX2_LINE_MAX];
-
-void init_io(s) 
-    char *s;
+/* Globals for this module start with io_ */
+struct disk io_disk;
+size_t io_size_disk;
+struct disklist_head io_dihead;
+size_t io_size_dihead;
+char io_name[_POSIX2_LINE_MAX];
+/* Prepare io module for first use */
+void 
+init_io(char *s) 
 {
-    di_size_disk = sizeof di_disk;
-    di_size_dihead = sizeof di_dihead;
+    io_size_disk = sizeof io_disk;
+    io_size_dihead = sizeof io_dihead;
 }
-int get_io(mon_buf, maxlen, disk) 
-    char *mon_buf;
-    int maxlen;
-    char *disk;
+/* Get new io statistics */
+int 
+get_io(char *mon_buf, int maxlen, char *disk) 
 {
-    u_long diskaddr;
+    u_long diskptr;
 
-    /*
-     * Find the pointer to the first disk structure.  Replace
-     * the pointer to the TAILQ_HEAD with the actual pointer
-     * to the first list element.
-     */
-    kread(mon_nl[MON_DL].n_value, (char *) &di_dihead, di_size_dihead);
-    diskaddr = (u_long) di_dihead.tqh_first;
+    diskptr = mon_nl[MON_DL].n_value;
+    if (diskptr == 0)
+	fatal("%s:%d: dl = symbol not defined", __FILE__, __LINE__);
 
-    /* Traverse over disks */
-    while (diskaddr) {
-	kread(diskaddr, (char *) &di_disk, di_size_disk);
-	diskaddr = (u_long) di_disk.dk_link.tqe_next;
-	if (di_disk.dk_name != NULL) {
-	    kread((u_long)di_disk.dk_name, (char *) &di_name, _POSIX2_LINE_MAX);
-	    di_name[_POSIX2_LINE_MAX - 1] = '\0'; /* sanity */
-	    if (disk != NULL && strcmp(di_name, disk) == 0) {
+    /* obtain first disk structure in kernel memory */
+    kread(mon_nl[MON_DL].n_value, (char *) &io_dihead, io_size_dihead);
+    diskptr = (u_long) io_dihead.tqh_first;
+
+    while (diskptr) {
+	kread(diskptr, (char *) &io_disk, io_size_disk);
+	diskptr = (u_long) io_disk.dk_link.tqe_next;
+
+	if (io_disk.dk_name != NULL) {
+	    kread((u_long)io_disk.dk_name, (char *) &io_name, _POSIX2_LINE_MAX);
+	    io_name[_POSIX2_LINE_MAX - 1] = '\0';
+
+	    if (disk != NULL && strncmp(io_name, disk, _POSIX2_LINE_MAX) == 0) {
 		return snpack(mon_buf, maxlen, disk, MT_IO,
-			      di_disk.dk_xfer, di_disk.dk_seek,
-			      di_disk.dk_bytes);
+			      io_disk.dk_xfer, io_disk.dk_seek,
+			      io_disk.dk_bytes);
 	    }
 	}
     }
+
     return 0;
 }
 

@@ -1,59 +1,80 @@
+/* $Id: xmalloc.c,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+
 /*
- * $Id: xmalloc.c,v 1.3 2002/03/09 16:18:19 dijkstra Exp $
+ * Author: Tatu Ylonen <ylo@cs.hut.fi>
+ * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
+ *                    All rights reserved
+ * Versions of malloc and friends that check their results, and never return
+ * failure (they call fatal if they encounter an error).
+ *
+ * As far as I am concerned, the code I have written for this software
+ * can be used freely for any purpose.  Any derived versions of this
+ * software must be clearly marked as such, and if the derived work is
+ * incompatible with the protocol description in the RFC file, it must be
+ * called by a name other than "ssh" or "Secure Shell".
  */
-#include <err.h>
+
 #include <strings.h>
 #include <stdlib.h>
 
 #include "xmalloc.h"
+#include "error.h"
 
-void *xmalloc(size)
-    size_t size;
+void *
+xmalloc(size_t size)
 {
     void *ptr;
     
     if (size == 0)
-	errx(1, "xmalloc: zero size");
+	fatal("xmalloc: zero size");
+    
     ptr = malloc(size);
+    
     if (ptr == NULL)
-	errx(1, "xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
+	fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
+    
     return ptr;
 }
 
-void *xrealloc(ptr, new_size)
-    void *ptr;
-    size_t new_size;
+void *
+xrealloc(void *ptr, size_t new_size)
 {
     void *new_ptr;
     
     if (new_size == 0)
-	errx(1, "xrealloc: zero size");
+	fatal("xrealloc: zero size");
+
     if (ptr == NULL)
 	new_ptr = malloc(new_size);
     else
 	new_ptr = realloc(ptr, new_size);
+
     if (new_ptr == NULL)
-	errx(1, "xrealloc: out of memory (new_size %lu bytes)", (u_long) new_size);
+	fatal("xrealloc: out of memory (new_size %lu bytes)", (u_long) new_size);
+
     return new_ptr;
 }
 
-void xfree(ptr)
-    void *ptr;
+void 
+xfree(void *ptr)
 {
     if (ptr == NULL)
-	errx(1, "xfree: NULL pointer given as argument");
+	fatal("xfree: NULL pointer given as argument");
+
     free(ptr);
 }
 
-char *xstrdup(str)
-    const char *str;
+char 
+*xstrdup(const char *str)
 {
     size_t len = strlen(str) + 1;
     char *cp;
 
     if (len == 0)
-	errx(1, "xstrdup: zero size");
+	fatal("xstrdup: zero size");
+
     cp = xmalloc(len);
     strlcpy(cp, str, len);
+
     return cp;
 }

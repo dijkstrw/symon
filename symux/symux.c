@@ -1,29 +1,60 @@
+/* $Id: symux.c,v 1.7 2002/03/31 14:27:50 dijkstra Exp $ */
+
 /*
- * $Id: symux.c,v 1.6 2002/03/29 16:28:15 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
- * Daemon that multiplexes incoming mon traffic to subscribed clients
- * and archives it periodically in rrd files.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
+
 #include <sys/types.h>
-#include <machine/endian.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <errno.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <syslog.h>
+
+#include <machine/endian.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <syslog.h>
+#include <unistd.h>
 #include <rrd.h>
 
-#include "error.h"
-#include "monmux.h"
-#include "readconf.h"
-#include "limits.h"
 #include "data.h"
+#include "error.h"
+#include "limits.h"
+#include "monmux.h"
 #include "muxnet.h"
 #include "net.h"
+#include "readconf.h"
+
+__BEGIN_DECLS
+void signalhandler(int);
+void close_listensock();
+__END_DECLS
 
 struct muxlist muxlist = SLIST_HEAD_INITIALIZER(muxlist);
 struct sourcelist sourcelist = SLIST_HEAD_INITIALIZER(sourcelist);
@@ -33,20 +64,36 @@ fd_set fdset;
 int maxfd;
 int signal_seen;
 
-void signalhandler(s) 
-    int s;
+void 
+signalhandler(int s) 
 {
     signal_seen = s;
 }
 
-void close_listensock() 
+void 
+close_listensock() 
 {
     close(listen_sock);
 }
 
-int main(argc, argv)
-    int argc;
-    char *argv[];
+/* 
+ * Monmux is the receiver of mon performance measurements.
+ *
+ * The main goals mon hopes to accomplish is:
+ * - to take fine grained measurements of system parameters 
+ * - with minimal performance impact 
+ * - in a secure way.
+ * 
+ * Measuring system parameters (e.g. interfaces) sometimes means traversing
+ * lists in kernel memory. Because of this the measurement of data has been
+ * decoupled from the processing and storage of data. Storing the measured
+ * information that mon provides is done by a second program, called monmux.
+ * 
+ * Mon can keep track of cpu, memory, disk and network interface
+ * interactions. Mon was built specifically for OpenBSD.
+ */
+int 
+main(int argc, char *argv[])
 {
     struct mux *mux;
     struct monpacket packet;
@@ -60,27 +107,19 @@ int main(argc, argv)
     time_t t;
 	
     /* parse configuration file */
-    read_config_file("monmux.conf");
+    read_config_file(config_file);
 
 #ifndef DEBUG
-    if (daemon(0,0) != 0) {
-	syslog(LOG_ALERT, "daemonize failed -- exiting");
+    if (daemon(0,0) != 0)
 	fatal("daemonize failed");
-    }
 #endif
 
-    syslog(LOG_INFO, "monmux $Revision: 1.6 $ started");
+    inform("monmux $Revision: 1.7 $ started");
 
     mux = SLIST_FIRST(&muxlist);
 
     /* catch signals */
-    signal(SIGINT, signalhandler);
-    signal(SIGQUIT, signalhandler);
     signal(SIGTERM, signalhandler);
-    signal(SIGXCPU, signalhandler);
-    signal(SIGXFSZ, signalhandler);
-    signal(SIGUSR1, signalhandler);
-    signal(SIGUSR2, signalhandler);
 
     listen_sock = getmuxsocket(mux);
 
@@ -103,19 +142,19 @@ int main(argc, argv)
 
 		    t = (time_t) packet.header.timestamp;
 		    sprintf(stringbuf, "%u", t);
-		    psdata2strn(&ps, stringbuf + strlen(stringbuf), 
+		    ps2strn(&ps, stringbuf + strlen(stringbuf), 
 				sizeof(stringbuf) - strlen(stringbuf), 
 				PS2STR_RRD);
 
 		    arg_ra[2] = stringbuf;
 
 #ifdef DEBUG
-		    syslog(LOG_INFO,"%d(%s)='%s'",ps.type,ps.args,stringbuf);
+		    inform("%d(%s)='%s'",ps.type,ps.args,stringbuf);
 #else
 		    rrd_update(3,arg_ra);
 
 		    if (rrd_test_error()) {
-			syslog(LOG_INFO,"rrd_update:%s",rrd_get_error());
+			warning("rrd_update:%s",rrd_get_error());
 			rrd_clear_error();                                                            
 		    }
 #endif
@@ -125,7 +164,3 @@ int main(argc, argv)
     }
     /* NOT REACHED */
 }
-
-
-
-

@@ -1,22 +1,45 @@
+/* $Id: symon.h,v 1.11 2002/03/31 14:27:47 dijkstra Exp $ */
+
 /*
- * $Id: symon.h,v 1.10 2002/03/29 16:29:38 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
- * Mon - a minimal system monitor
- * 
- * General (global) definitions
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
-#ifndef _MON_H
-#define _MON_H
+
+#ifndef _MON_MON_H
+#define _MON_MON_H
+
+#include <sys/queue.h>
 
 #include <kvm.h>
 #include <nlist.h>
-#include <sys/queue.h>
 
 #include "lex.h"
 #include "data.h"
-
-/* Log base 2 of 1024 is 10 (2^10=1024) */
-#define LOG1024		10
 
 /* Number of seconds between measurement intervals */
 #define MON_INTERVAL 5
@@ -30,8 +53,7 @@ extern kvm_t *kvmd;
 extern struct nlist mon_nl[];
 #define MON_IFNET 0
 #define MON_DL    1
-extern int kread(u_long,char *,int);
-#endif
+#endif /* MON_KVM */
 
 struct funcmap {
     int type;
@@ -43,21 +65,25 @@ extern struct funcmap streamfunc[];
 
 /* prototypes */
 __BEGIN_DECLS
+#ifdef MON_KVM
+extern int kread(u_long, char *, int);
+#endif 
+
 /* cpu.c */
-extern void init_cpu __P((char *));
-extern int  get_cpu __P((char *, int, char *));
+extern void init_cpu(char *);
+extern int  get_cpu(char *, int, char *);
 
 /* mem.c */
-extern void init_mem __P((char *));
-extern int  get_mem __P((char *, int, char *));
+extern void init_mem(char *);
+extern int  get_mem(char *, int, char *);
 
-/* ifstat.c */
-extern void init_if __P((char *));
-extern int  get_if __P((char *, int, char *));
+/* if.c */
+extern void init_if(char *);
+extern int  get_if(char *, int, char *);
 
-/* disk.c */
+/* io.c */
 extern void init_io __P((char *));
 extern int  get_io __P((char *, int, char *));
 __END_DECLS
 
-#endif /* _MON_H */
+#endif /*_MON_MON_H*/

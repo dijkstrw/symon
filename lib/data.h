@@ -1,16 +1,45 @@
+/* $Id: data.h,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+
 /*
- * $Id: data.h,v 1.4 2002/03/29 16:29:19 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/*
  * A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
- * source can provide multiple 'streams' simultaniously. A source spools
+ * source can provide multiple 'streams' simultaneously. A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
  * representation is called a 'packedstream'.
  */
-#ifndef _DATA_H
-#define _DATA_H
+#ifndef _MON_LIB_DATA_H
+#define _MON_LIB_DATA_H
 
-#include <sys/cdefs.h>
 #include <sys/queue.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -37,12 +66,15 @@ ntohq (u_int64_t v)
 }
 #endif
 
-/* Mon stream version 
+/* Mon packet version 
  * version 1:
- * <mon version:8><time in seconds since epoch:32><streams>*
+ * mon_version:timestamp:length:crc:n*packedstream
+ * 
+ * Note that the data portion is limited. The current (31/03/2002) largest
+ * streamtype (if) needs 42 bytes without arguments. My _POSIX2_LINE_MAX is 2k,
+ * so that works out to about 38 packedstreams in a single mon packet.  
  */
-#define MON_STREAMVER  1
-
+#define MON_PACKET_VER  1
 struct monpacket {
     struct {
 	u_int8_t mon_version;
@@ -53,9 +85,12 @@ struct monpacket {
     char data[_POSIX2_LINE_MAX];
 };  
   
-/* Note that packedstreams are never associated with streams directly. The
-   streams are only used to see what should be done to the data in the
-   packedstream. */
+/* The difference between a stream and a packed stream:
+ * - A stream ties stream information to a file. 
+ * - A packed stream is the measured data itself 
+ *
+ * A stream is meta data describing properties, a packed stream is the data itself.
+ */
 struct stream {
     int type;
     char *args;
@@ -75,14 +110,14 @@ SLIST_HEAD(sourcelist, source);
 
 struct mux {
     char *name;
+    int offset;
     int socket;
+    struct monpacket packet;
+    struct sockaddr_in sockaddr;
+    struct streamlist sl;
     u_int32_t senderr;
     u_int32_t ip;
     u_int16_t port;
-    struct sockaddr_in sockaddr;
-    struct streamlist sl;
-    struct monpacket packet;
-    int offset;
     SLIST_ENTRY(mux) muxes;
 };
 SLIST_HEAD(muxlist, mux);
@@ -105,7 +140,8 @@ SLIST_HEAD(muxlist, mux);
  * single network representation of a stream. 
  *
  * This sucks in the way of portability (e.g. adding multiple cpu types) and
- * maintainabilty. This code will be refactored when I port it to other oses. 
+ * maintainabilty. This code will need to be refactored when I port it to other
+ * oses.  
  */
 #define MON_PS_ARGLEN    16
 struct packedstream {
@@ -174,20 +210,18 @@ struct packedstream {
 
 /* prototypes */
 __BEGIN_DECLS
-int            token2type __P((int));
-int            snpack __P((char *, int, char*, int, ...));
-int            sunpack __P((char *, struct packedstream *));
-int            psdata2strn __P((struct packedstream *, char *, int, int));
-struct stream *find_source_stream __P((struct source *, int, char *));
-struct stream *add_source_stream __P((struct source *, int, char *)); 
-struct stream *find_mux_stream __P((struct mux *,  int, char *)); 
-struct stream *add_mux_stream __P((struct mux *, int, char *)); 
-struct source *find_source __P((struct sourcelist *, char *));
-struct source *find_source_ip __P((struct sourcelist *, u_int32_t));
-struct source *add_source __P((struct sourcelist *, char *));
-struct mux    *find_mux __P((struct muxlist *, char *));
-struct mux    *add_mux __P((struct muxlist *, char *));
+int            token2type(int);
+int            snpack(char *, int, char*, int, ...);
+int            sunpack(char *, struct packedstream *);
+int            ps2strn(struct packedstream *, char *, int, int);
+struct stream *find_source_stream(struct source *, int, char *);
+struct stream *add_source_stream(struct source *, int, char *); 
+struct stream *find_mux_stream(struct mux *,  int, char *);
+struct stream *add_mux_stream(struct mux *, int, char *);
+struct source *find_source(struct sourcelist *, char *);
+struct source *find_source_ip(struct sourcelist *, u_int32_t);
+struct source *add_source(struct sourcelist *, char *);
+struct mux    *find_mux(struct muxlist *, char *);
+struct mux    *add_mux(struct muxlist *, char *);
 __END_DECLS
-#endif                                      /* _DATA_H */
-
-
+#endif /*_MON_LIB_DATA_H*/

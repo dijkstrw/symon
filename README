@@ -10,10 +10,6 @@ Programming rules:
 - Defined values are not overloaded in functionality if possible. Same reason
   as above.
 
+- Error messages carry __FILE__, __LINE__ if they are failed assertions and
+  plain English if they can be attributed to the end-user.
 
-== Problems Solved ==
-
-- Generate a format for network traversal of data
-
-	1) all data is big-endian
-	2) streams are considered elements

@@ -1,18 +1,29 @@
+/* $Id: xmalloc.h,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+
 /*
- * $Id:
+ * Author: Tatu Ylonen <ylo@cs.hut.fi>
+ * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland
+ *                    All rights reserved
+ * Versions of malloc and friends that check their results, and never return
+ * failure (they call fatal if they encounter an error).
+ *
+ * As far as I am concerned, the code I have written for this software
+ * can be used freely for any purpose.  Any derived versions of this
+ * software must be clearly marked as such, and if the derived work is
+ * incompatible with the protocol description in the RFC file, it must be
+ * called by a name other than "ssh" or "Secure Shell".
  */
 
-#ifndef _XMALLOC_H
-#define _XMALLOC_H
+#ifndef _MON_LIB_XMALLOC_H
+#define _MON_LIB_XMALLOC_H
 
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
-/* Like malloc and friends, but these call errx if something breaks */
+/* Like malloc and friends, but these call fatal if something breaks */
 __BEGIN_DECLS
-void   *xmalloc __P((size_t));
-void   *xrealloc __P((void *, size_t));
-void    xfree __P((void *));
-char   *xstrdup __P((const char *));
+void   *xmalloc(size_t);
+void   *xrealloc(void *, size_t);
+void    xfree(void *);
+char   *xstrdup(const char *);
 __END_DECLS
-#endif /* _XMALLOC_H */
+#endif /*_MON_LIB_XMALLOC_H*/

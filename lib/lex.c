@@ -1,30 +1,58 @@
+/* $Id: lex.c,v 1.6 2002/03/31 14:27:46 dijkstra Exp $ */
+
 /*
- * $Id: lex.c,v 1.5 2002/03/09 16:18:18 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
- * Simple lexical analyser:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/*
+ * This lexical analyser was written to be smaller than flex and with less
+ * features. Its attributes in random order: capable of multiple instances, one
+ * token lookahead, strings delimited by ' or ", comments can start anywhere
+ * with # and last until eol, max token size = _POSIX2_LINE_LENGTH. Tokens are
+ * defined in lex.h, the mapping of tokens to ascii happens here.
  *
  * Usage:
- * l = open_lex(filename); 
- * while (lex_nexttoken(l)) {
- *     use l->token, l->op, l->value
- * }
- * close_lex(l);
  *
- * Attributes:
- * - push back one token
- * - keywords are in lex.h
- * - strings are delimited by " or '
- * - '\n' like statements are not parsed
- * - comments start with # and last until eol
- * - max token size = _POSIX2_LINE_LENGTH
+ *    l = open_lex(filename); 
+ *    while (lex_nexttoken(l)) {
+ *       use l->token, l->op, l->value
+ *    }
+ *    close_lex(l); 
  */
+
 #include <sys/types.h>
-#include <string.h>
-#include <stdio.h>
+
 #include <errno.h>
-#include <err.h>
 #include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "xmalloc.h"
 #include "lex.h"
@@ -55,11 +83,9 @@ static struct {
 };
 #define KW_OPS "{},():"
 
-/*
- * Returns the number of the token pointed to by cp or LXT_BADTOKEN
- */
-int parse_token(cp)
-    const char *cp;
+/* Return the number of the token pointed to by cp or LXT_BADTOKEN */
+int 
+parse_token(const char *cp)
 {
     u_int i;
 
@@ -69,11 +95,9 @@ int parse_token(cp)
         
     return LXT_BADTOKEN;
 }
-/*
- * Returns the ascii representation of an opcode
- */
-const char* parse_opcode(op)
-    const int op;
+/* Return the ascii representation of an opcode */
+const char* 
+parse_opcode(const int op)
 {
     u_int i;
     
@@ -81,21 +105,19 @@ const char* parse_opcode(op)
 	if (keywords[i].opcode == op)
 	    return keywords[i].name;
 
-    return keywords[i].name; /* NULL */
+    return NULL;
 }
-/*
- * Read a line from the configuration file and allocate extra room if
- * needed 
- */
-int lex_readline(l)
-    struct lex *l;
+/* Read a line and increase buffer if needed */
+int 
+lex_readline(struct lex *l)
 {
     char *bp;
 
     bp = l->buffer;
     
     if (l->buffer) {
-	if ((l->curpos < l->endpos) && ((l->bsize - l->endpos) < _POSIX2_LINE_MAX)) {
+	if ((l->curpos < l->endpos) && 
+	    ((l->bsize - l->endpos) < _POSIX2_LINE_MAX)) {
 	    l->bsize += _POSIX2_LINE_MAX;
 	    l->buffer = xrealloc(l->buffer, l->bsize);
 	    bp += l->endpos;
@@ -116,12 +138,9 @@ int lex_readline(l)
 	return 1;
     }
 }
-/*
- * Tokens are copied out of the input stream. This allows us to deal with
- * successive tokens without whitespace in the middle.  
-*/
-void lex_copychar(l) 
-    struct lex *l;
+/* Copy char out of input stream */
+void 
+lex_copychar(struct lex *l) 
 {
     l->token[l->tokpos]=l->buffer[l->curpos];
     
@@ -131,12 +150,12 @@ void lex_copychar(l)
 	/* NOT REACHED */
     }
 }
-int lex_nextchar(l)
-    struct lex *l;
+/* Get next char, read next line if needed */
+int 
+lex_nextchar(struct lex *l)
 {
     l->curpos++;
 
-    /* read line if needed */
     if (l->curpos > l->endpos)
 	if (!lex_readline(l))
 	    return 0;
@@ -145,25 +164,22 @@ int lex_nextchar(l)
     
     return 1;
 }
-/*
- * Close of current token with a '\0'
- */
-void lex_termtoken(l)
-    struct lex *l;
+/* Close of current token with a '\0' */
+void 
+lex_termtoken(struct lex *l)
 {
     l->token[l->tokpos] = l->token[_POSIX2_LINE_MAX-1] = '\0';
     l->tokpos=0;
 }
-void lex_ungettoken(l) 
-    struct lex *l;
+/* Unget token; the lexer allows 1 look a head. */
+void 
+lex_ungettoken(struct lex *l) 
 {
     l->unget = 1;
 }
-/*
- * Get the next token in lex->token. return 0 if no more tokens found.
- */
-int lex_nexttoken(l)
-    struct lex *l;
+/* Get the next token in lex->token. return 0 if no more tokens found. */
+int
+lex_nexttoken(struct lex *l)
 {
     /* return same token as last time if it has been pushed back */
     if (l->unget) {
@@ -194,7 +210,7 @@ int lex_nexttoken(l)
     
     l->type = LXY_STRING;
 
-    /* delimited string */
+    /* "delimited string" */
     if (l->buffer[l->curpos] == '"') {
 	if (!lex_nextchar(l)) {
 	    warning("%s:%d:unbalanced '\"'", l->filename, l->cline);
@@ -212,7 +228,7 @@ int lex_nexttoken(l)
 	return 1;
     }
     
-    /* delimited string 2 */
+    /* 'delimited string' */
     if (l->buffer[l->curpos] == '\'') {
 	if (!lex_nextchar(l)) {
 	    warning("%s:%d:unbalanced \"\'\"", l->filename, l->cline);
@@ -263,38 +279,36 @@ int lex_nexttoken(l)
     }
     return 1;
 }    
-/*
- * Create and initialize a lexical analyser
- */
-struct lex *open_lex(filename)
-    const char *filename;
+/* Create and initialize a lexical analyser */
+struct lex *
+open_lex(const char *filename)
 {
     struct lex *l;
     
     l = xmalloc(sizeof(struct lex));
-    l->filename = filename;
     l->buffer = NULL;
+    l->cline = 1;
     l->curpos = 0;
     l->endpos = 0;
-    l->unget = 0;
-    l->cline = 1;
-    l->type = LXY_UNKNOWN;
-    l->value = 0;
+    l->filename = filename;
+    l->op = LXT_BADTOKEN;
     l->token = xmalloc(_POSIX2_LINE_MAX);
     l->tokpos = 0;
-    l->op = LXT_BADTOKEN;
+    l->type = LXY_UNKNOWN;
+    l->unget = 0;
+    l->value = 0;
 
     if ((l->fh = fopen(l->filename, "r")) == NULL) {
 	fatal("Could not open file '%s':%s", 
 	     l->filename,strerror(errno));
-	/* NOT REACHED */
     }
 
     lex_nextchar(l);
     return l;
 }
-void close_lex(l)
-    struct lex *l;
+/* Destroy a lexical analyser */
+void 
+close_lex(struct lex *l)
 {
     if (l == NULL) return;
     if (l->fh) fclose(l->fh);
@@ -302,9 +316,9 @@ void close_lex(l)
     if (l->token) xfree(l->token);
     xfree(l);
 }
-void parse_error(l, s)
-    struct lex *l;
-    const char *s;
+/* Signal a parse error */
+void
+parse_error(struct lex *l, const char *s)
 {
     fatal("%s:%d: Expected %s (found '%.5s')\n", l->filename, l->cline, s, l->token);
 }

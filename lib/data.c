@@ -1,7 +1,36 @@
+/* $Id: data.c,v 1.5 2002/03/31 14:27:46 dijkstra Exp $ */
+
 /*
- * $Id: data.c,v 1.4 2002/03/29 16:29:19 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
- * A host carrying a 'mon' is considered a 'source' of information. A single
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/* A host carrying a 'mon' is considered a 'source' of information. A single
  * data 'stream' of information has a particular type: <cpu|mem|if|io>. A
  * source can provide multiple 'streams' simultaniously.A source spools
  * information towards a 'mux'. A 'stream' that has been converted to network
@@ -9,14 +38,23 @@
  */
 #include <assert.h>
 #include <limits.h>
-#include <string.h>
 #include <stdarg.h>
+#include <string.h>
 #include <time.h>
 
-#include "error.h"
 #include "data.h"
+#include "error.h"
 #include "lex.h"
 #include "xmalloc.h"
+
+__BEGIN_DECLS
+int            bytelenvar(char);
+int            checklen(int, int, int);
+struct stream *create_stream(int, char *);
+char          *formatstrvar(char);
+char          *rrdstrvar(char);
+int            strlenvar(char);
+__END_DECLS
 
 /* Stream formats
  * 
@@ -36,40 +74,17 @@ struct {
 } streamvar[] = {
     {'L', ":%qu",    " %20qu",   22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffff},
     {'l', ":%lu",    " %10lu",   12, sizeof(u_int32_t), (u_int64_t) 0xffffffff},
-    {'c', ":%3.2f", "  %3.2f",   7, sizeof(u_int16_t), (u_int64_t) 100},
-    {'\0', NULL, NULL, 0, 0, 0}
+    {'c', ":%3.2f", "  %3.2f",    7, sizeof(u_int16_t), (u_int64_t) 100},
+    {'\0', NULL,         NULL,    0,                 0,             0}
 };
-
+/* streams of <type> have the packedstream <form> */
 struct {
     int type;
     char *form;
 } streamform[] = {
-/* io =     (u_int64) total nr of transfers : 
- *          (u_int64) total seeks : 
- *          (u_int64) total bytes transferred */
     {MT_IO,  "LLL"},
-/* cpu =    (u_int16) user : (u_int16) nice : 
- *          (u_int16) system : (u_int16) interrupt : 
- *          (u_int16) idle
- * values = (3.2f) <= 100.00 */
     {MT_CPU, "ccccc"},
-/* mem =    (u_int32) real active : 
- *          (u_int32) real total : 
- *          (u_int32) free : 
- *          (u_int32) swap used : 
- *          (u_int32) swap total */
     {MT_MEM, "lllll"},
-/* ifstat 
- * if =     (u_int32) ipackets : 
- *          (u_int32) opackets : 
- *          (u_int32) ibytes : 
- *          (u_int32) obytes : 
- *          (u_int32) imcasts : 
- *          (u_int32) omcasts : 
- *          (u_int32) ierrors : 
- *          (u_int32) oerrors : 
- *          (u_int32) colls : 
- *          (u_int32) drops */
     {MT_IF,  "llllllllll"},
     {MT_EOT, ""}
 };
@@ -85,8 +100,9 @@ struct {
     {MT_EOT, LXT_BADTOKEN}
 };
 
-int token2type(token)
-    int token;
+/* Convert lexical entities to stream entities */
+int 
+token2type(int token)
 {
     int i;
 
@@ -100,11 +116,9 @@ int token2type(token)
     /* NOT REACHED */
     return 0;
 }
-/* strlenvar(var)
- * return the maximum lenght that a streamvar of type var can have
- */
-int strlenvar(var)
-    char var;
+/* Return the maximum lenght of the ascii representation of streamvar <var> */
+int 
+strlenvar(char var)
 {
     int i;
 
@@ -117,11 +131,9 @@ int strlenvar(var)
     /* NOT REACHED */
     return 0;
 }
-/* bytelenvar(var)
- * return the maximum lenght that a streamvar of type var can have
- */
-int bytelenvar(var)
-    char var;
+/* Return the maximum lenght of the network representation of streamvar <var> */
+int 
+bytelenvar(char var)
 {
     int i;
 
@@ -134,11 +146,9 @@ int bytelenvar(var)
     /* NOT REACHED */
     return 0;
 }
-/* formatstrvar(var)
- * return the pretty formatstr for streamvar 
- */
-char *formatstrvar(var)
-    char var;
+/* Return the ascii format string for streamvar <var> */
+char *
+formatstrvar(char var)
 {
     int i;
 
@@ -151,11 +161,9 @@ char *formatstrvar(var)
     /* NOT REACHED */
     return "";
 }
-/* rrdstrvar(var)
- * return the rrd formatstr for streamvar 
- */
-char *rrdstrvar(var)
-    char var;
+/* Return the rrd format string for streamvar <var> */
+char *
+rrdstrvar(char var)
 {
     int i;
 
@@ -168,14 +176,9 @@ char *rrdstrvar(var)
     /* NOT REACHED */
     return "";
 }
-/* checklen(maxlen, start, extra)
- * Check if extra is allowed if we are at start and want to fit into maxlen.
- * returns false/0 if we fit
- */
-int checklen(maxlen, current, extra) 
-    int maxlen;
-    int current;
-    int extra;
+/* Check whether <extra> more bytes fit in <maxlen> when we are already at <start> */
+int 
+checklen(int maxlen, int current, int extra) 
 {
     if ((current + extra) < maxlen) {
 	return 0;
@@ -185,31 +188,33 @@ int checklen(maxlen, current, extra)
 	return 1;
     }
 }
-/* snpack(buffer, maxlen, type, <args>)
- * Pack multiple arguments of a certain MT_TYPE into a big-endian bytestream.
- * Return the number of bytes actually stored.  */
-int snpack(char *buf, int maxlen, char *id, int type, ...)
+/* 
+ * Pack multiple arguments of a MT_TYPE into a network order bytestream.
+ * snpack returns the number of bytes actually stored.  
+ */
+int 
+snpack(char *buf, int maxlen, char *id, int type, ...)
 {
     va_list ap;
+    u_int16_t c;
+    u_int32_t l;
+    u_int64_t q;
     int i = 0;
     int offset = 0;
-    u_int64_t q;
-    u_int32_t l;
-    u_int16_t c;
 
     if (type > MT_EOT) {
-	warning("stream type (%d) out of range!", type);
+	warning("stream type (%d) out of range", type);
 	return 0;
     }
 
     if ( maxlen < 2 ) {
-	fatal("maxlen too small!");
+	fatal("maxlen too small");
     } else {
 	buf[offset++] = type & 0xff;
     }
 
     if (id) {
-	if (strlen(id)+1 >= maxlen) {
+	if ((strlen(id) + 1) >= maxlen) {
 	    return 0;
 	} else {
 	    strncpy(&buf[offset], id, maxlen-1);
@@ -217,8 +222,7 @@ int snpack(char *buf, int maxlen, char *id, int type, ...)
 	}
     }
     buf[offset++] = '\0';
-	    
-    	    
+	        	    
     va_start(ap, type);
     while (streamform[type].form[i] != '\0'){
 	/* check for buffer overflow */
@@ -229,21 +233,21 @@ int snpack(char *buf, int maxlen, char *id, int type, ...)
 	case 'c':
 	    c = va_arg(ap, u_int16_t);
 	    c = htons(c);
-	    bcopy(&c, buf+offset, sizeof(u_int16_t));
+	    bcopy(&c, buf + offset, sizeof(u_int16_t));
 	    offset += sizeof(u_int16_t);
 	    break;
 
 	case 'l': 
 	    l = va_arg(ap, u_int32_t);
 	    l = htonl(l);
-	    bcopy(&l, buf+offset, sizeof(u_int32_t));
+	    bcopy(&l, buf + offset, sizeof(u_int32_t));
 	    offset += sizeof(u_int32_t);
 	    break;
 
 	case 'L': 
 	    q = va_arg(ap, u_int64_t);
 	    q = htonq(q);
-	    bcopy(&q, buf+offset, sizeof(u_int64_t));
+	    bcopy(&q, buf + offset, sizeof(u_int64_t));
 	    offset += sizeof(u_int64_t);
 	    break;
 
@@ -257,20 +261,23 @@ int snpack(char *buf, int maxlen, char *id, int type, ...)
 
     return offset;
 }
-/* sunpack(buffer, type, <args>)
- * Unpack multiple arguments of a certain MT_TYPE from a big-endian bytestream.
- * Return the number of bytes actually read.
- */
-int sunpack(buf, ps)
-    char *buf;
-    struct packedstream *ps;
+/* 
+ * Unpack a packedstream in buf into a struct packetstream. Returns the number
+ * of bytes actually read.  
+ * 
+ * Note that this function does "automatic" bounds checking; it uses a
+ * description of the packedstream (streamform) to parse the actual bytes. This
+ * description corresponds to the amount of bytes that will fit inside the
+ * packedstream structure.  */
+int 
+sunpack(char *buf, struct packedstream *ps)
 {
+    char *in, *out;
     int i=0;
     int type;
-    char *in, *out;
-    u_int64_t q;
-    u_int32_t l;
     u_int16_t c;
+    u_int32_t l;
+    u_int64_t q;
     
     bzero(ps, sizeof(struct packedstream));
 
@@ -327,24 +334,19 @@ int sunpack(buf, ps)
 	}
 	i++;
     }
-    return ((void*)in - (void *)buf);
+    return (in - buf);
 }
-/* psdata2strn(ps, buf, maxlen)
- * get the ascii representation of packedstream
- */
-int psdata2strn(ps, buf, maxlen, pretty)
-    struct packedstream *ps;
-    char *buf;
-    int maxlen;
-    int pretty;
+/* Get the RRD or 'pretty' ascii representation of packedstream */
+int 
+ps2strn(struct packedstream *ps, char *buf, const int maxlen, int pretty)
 {
-    int i=0;
-    char vartype;
-    char *in, *out;
-    char *formatstr;
+    float c;
     u_int64_t q;
     u_int32_t l;
-    float c;
+    int i=0;
+    char *formatstr;
+    char *in, *out;
+    char vartype;
     
     in = (char *)(&ps->data);
     out = (char *)buf;
@@ -354,11 +356,17 @@ int psdata2strn(ps, buf, maxlen, pretty)
 	if (checklen(maxlen, (out-buf), strlenvar(vartype)))
 	    return 0;
 	
-	if (pretty == PS2STR_PRETTY)
+	switch (pretty) {
+	case PS2STR_PRETTY:
 	    formatstr = formatstrvar(vartype);
-
-	if (pretty == PS2STR_RRD) 
+	    break;
+	case PS2STR_RRD:
 	    formatstr = rrdstrvar(vartype);
+	    break;
+	default:
+	    warning("Unknown pretty identifier");
+	    return 0;
+	}
 
 	switch (vartype) {
 	case 'c':
@@ -386,12 +394,10 @@ int psdata2strn(ps, buf, maxlen, pretty)
 	out += strlen(out);
 	i++;
     }
-    return (out-buf);
+    return (out - buf);
 }
-    
-struct stream *create_stream(type, args)
-    int type;
-    char *args;
+struct stream *
+create_stream(int type, char *args)
 {
     struct stream *p;
 
@@ -399,19 +405,17 @@ struct stream *create_stream(type, args)
 	fatal("internal error: Stream type unknown.\n");
 
     p = (struct stream *)xmalloc(sizeof(struct stream));
-    memset(p, 0, sizeof(struct stream));
+    bzero(p, sizeof(struct stream));
     p->type = type;
-    if (args != NULL) {
+
+    if (args != NULL)
 	p->args = xstrdup(args);
-    }
     
     return p;
 }
-
-struct stream *find_source_stream(source, type, args) 
-    struct source *source;
-    int type;
-    char *args;
+/* Find the stream handle in a source */
+struct stream *
+find_source_stream(struct source *source, int type, char *args) 
 {
     struct stream *p;
 
@@ -424,13 +428,12 @@ struct stream *find_source_stream(source, type, args)
 		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
+
     return NULL;
 }
-
-struct stream *add_source_stream(source, type, args) 
-    struct source *source;
-    int type;
-    char *args;
+/* Add a stream to a source */
+struct stream *
+add_source_stream(struct source *source, int type, char *args) 
 {
     struct stream *p;
 
@@ -446,11 +449,9 @@ struct stream *add_source_stream(source, type, args)
 
     return p;
 }
-
-struct stream *find_mux_stream(mux, type, args) 
-    struct mux *mux;
-    int type;
-    char *args;
+/* Find a stream in a mux */
+struct stream *
+find_mux_stream(struct mux *mux, int type, char *args) 
 {
     struct stream *p;
 
@@ -463,13 +464,12 @@ struct stream *find_mux_stream(mux, type, args)
 		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
+
     return NULL;
 }
-
-struct stream *add_mux_stream(mux, type, args) 
-    struct mux *mux;
-    int type;
-    char *args;
+/* Add a stream to a mux */
+struct stream *
+add_mux_stream(struct mux *mux, int type, char *args) 
 {
     struct stream *p;
 
@@ -485,10 +485,9 @@ struct stream *add_mux_stream(mux, type, args)
 
     return p;
 }
-
-struct source *find_source(sol, name) 
-    struct sourcelist *sol;
-    char *name;
+/* Find a source by name in a sourcelist */
+struct source *
+find_source(struct sourcelist *sol, char *name) 
 {
     struct source *p;
 
@@ -500,12 +499,12 @@ struct source *find_source(sol, name)
 	    && strncmp(name, p->name, _POSIX2_LINE_MAX) == 0)
 	    return p;
     }
+
     return NULL;
 }
-
-struct source *find_source_ip(sol, ip) 
-    struct sourcelist *sol;
-    u_int32_t ip;
+/* Find a source by ip in a sourcelist */
+struct source *
+find_source_ip(struct sourcelist *sol, u_int32_t ip) 
 {
     struct source *p;
 
@@ -513,37 +512,34 @@ struct source *find_source_ip(sol, ip)
 	return NULL;
 
     SLIST_FOREACH(p, sol, sources) {
-	if (p->ip == ip) {
+	if (p->ip == ip)
 	    return p;
-	}
     }
 
     return NULL;
 }
-
-struct source *add_source(sol, name)
-    struct sourcelist *sol;
-    char *name;
+/* Add a source with to a sourcelist */
+struct source *
+add_source(struct sourcelist *sol, char *name)
 {
     struct source* p;
 
     if (sol == NULL)
 	return NULL;
 
-    if (find_source( sol, name ) != NULL)
+    if (find_source(sol, name) != NULL)
 	return NULL;
 
     p = (struct source *)xmalloc(sizeof(struct source));
-    memset(p, 0, sizeof(struct source));
+    bzero(p, sizeof(struct source));
     p->name = xstrdup(name);
     SLIST_INSERT_HEAD(sol, p, sources);
 
     return p;
 }
-
-struct mux *find_mux(mul, name) 
-    struct muxlist *mul;
-    char *name;
+/* Find a mux by name in a muxlist */
+struct mux *
+find_mux(struct muxlist *mul, char *name) 
 {
     struct mux *p;
 
@@ -555,12 +551,12 @@ struct mux *find_mux(mul, name)
 	    && strncmp(name, p->name, _POSIX2_LINE_MAX) == 0)
 	    return p;
     }
+
     return NULL;
 }
-
-struct mux *add_mux(mul, name)
-    struct muxlist *mul;
-    char *name;
+/* Add a mux to a muxlist */
+struct mux *
+add_mux(struct muxlist *mul, char *name)
 {
     struct mux* p;
 
@@ -571,7 +567,7 @@ struct mux *add_mux(mul, name)
 	return NULL;
 
     p = (struct mux *)xmalloc(sizeof(struct mux));
-    memset(p, 0, sizeof(struct mux));
+    bzero(p, sizeof(struct mux));
     p->name = xstrdup(name);
     SLIST_INSERT_HEAD(mul, p, muxes);
 

@@ -1,6 +1,42 @@
-/*
- * $Id: sm_cpu.c,v 1.8 2002/03/22 16:40:00 dijkstra Exp $
+/* $Id: sm_cpu.c,v 1.9 2002/03/31 14:27:47 dijkstra Exp $ */
+
+/* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
+ * 
+ * Part of this code is based on code by Thorsten Lockert
+ * <tholo@sigmasoft.com>, Christos Zoulas <christos@ee.cornell.edu> and Tobias
+ * Weingartner <weingart@openbsd.org>. 
+ * (The function percentages from OpenBSD/usr/src/usr.bin/top/machine.c)
  *
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * 
+ */
+
+/*
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
  *
@@ -10,18 +46,18 @@
  *
  * This module uses the sysctl interface and can run as any user.
  */
-#include <sys/param.h>
 #include <sys/dkstat.h>
+#include <sys/param.h>
 #include <sys/sysctl.h>
-#include <limits.h>
-#include <stdio.h>
-#include <syslog.h>
-#include <varargs.h>
+
+#include "error.h"
 #include "mon.h"
 
-/*
- * globals for this module all start with cp_
- */
+__BEGIN_DECLS
+int percentages(int, float *, long *, long *, long *);
+__END_DECLS
+
+/* Globals for this module all start with cp_ */
 static int cp_time_mib[] = { CTL_KERN, KERN_CPTIME };
 static size_t cp_size;
 static long cp_time[CPUSTATES];
@@ -36,12 +72,8 @@ static float cp_states[CPUSTATES];
  *      The routine assumes modulo arithmetic.  This function is especially
  *      useful on BSD mchines for calculating cpu state percentages.
  */
-int percentages(cnt, out, new, old, diffs)
-    int cnt;
-    float *out;
-    register long *new;
-    register long *old;
-    long *diffs;
+int 
+percentages(int cnt, float *out, register long *new, register long *old, long *diffs)
 {
     register int i;
     register long change;
@@ -54,10 +86,8 @@ int percentages(cnt, out, new, old, diffs)
     dp = diffs;
 
     /* calculate changes for each state and the overall change */
-    for (i = 0; i < cnt; i++)
-    {
-	if ((change = *new - *old) < 0)
-        {
+    for (i = 0; i < cnt; i++) {
+	if ((change = *new - *old) < 0) {
 	    /* this only happens when the counter wraps */
 	    change = ((unsigned int)*new-(unsigned int)*old);
         }
@@ -67,23 +97,19 @@ int percentages(cnt, out, new, old, diffs)
   
     /* avoid divide by zero potential */
     if (total_change == 0)
-    {
 	total_change = 1;
-    }
   
     /* calculate percentages based on overall change, rounding up */
     half_total = total_change / 2l;
     for (i = 0; i < cnt; i++)
-    {
 	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
-    }
   
     /* return the total in case the caller wants to use it */
-    return(total_change);
+    return total_change;
 }
-
-void init_cpu(s) 
-    char *s;
+/* Prepare cpu module for use */
+void 
+init_cpu(char *s) 
 {
     char buf[_POSIX2_LINE_MAX];
 
@@ -91,16 +117,15 @@ void init_cpu(s)
     /* Call get_cpu once to fill the cp_old structure */
     get_cpu(buf, sizeof(buf), NULL);
 }
-
-int get_cpu(mon_buf, maxlen, s) 
-    char *mon_buf;
-    int maxlen;
-    char *s;
+/* Get new cpu measurements */
+int 
+get_cpu(char *mon_buf, int maxlen, char *s) 
 {
     int total;
+
     if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-	syslog(LOG_WARNING,"cpu.c:%d: sysctl kern.cp_time failed",__LINE__);
-	total = 0;
+	warning("cpu.c:%d: sysctl kern.cp_time failed", __LINE__);
+	return 0;
     }
 
     /* convert cp_time counts to percentages */

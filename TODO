@@ -5,7 +5,13 @@ Project Overview:
 - allow other programs to connect to monmux for stream updates
 - change rrd to accommodate batch updates
 - make programs robust. failure => fatal now (by design :)
-- clean up source
+- mon2web should have graph objects/modules
+  (ask a module what graphing options it supports and show these,
+   the same module should also draw the picture, maybe php oo?)
+- look at lib/net.c/lookup, rewrite it to not be joe's solution.
+- add daemon syslog and verbose to error.[ch]
+- bzero / memset 
+- all errors should have the same format
 
 == longer term
 - write a muxer that supports unix pipes
@@ -14,6 +20,7 @@ Project Overview:
 - port to linux
 
 == log 
+31/03/2002 - cleaned up source
 
 29/03/2002 - mon and monmux no use monpacket to communicate with each
              other. This format defines: version, lenght and crc of the traffic
@@ -25,6 +32,11 @@ Project Overview:
              monmux now checks if incoming traffic is allowed from a certain host.             
 
              added rrd write support to monmux
+
+             made c_monrrds.sh determine what files to build from environment
+
+             got mon2web up to date with mon1. changed interface layout to
+             have output as a negative area - i'm not finished with this.
 
 22/03/2002 - Added get/set preamble, still tinkering with those s(u)(n)pack
              functions. Added one that translates it into text.

@@ -1,9 +1,37 @@
+/* $Id: readconf.c,v 1.2 2002/03/31 14:27:48 dijkstra Exp $ */
+
 /*
- * $Id: readconf.c,v 1.1 2002/03/17 13:37:31 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
- * Parse mon.conf style configuration files 
- * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
  */
+
+#include <sys/queue.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +39,6 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/queue.h>
 
 #include "readconf.h"
 #include "mon.h"
@@ -21,13 +48,18 @@
 #include "net.h"
 #include "data.h"
 
+__BEGIN_DECLS
+void read_hub(struct lex *);
+void read_stream(struct lex *);
+__END_DECLS
+
 extern struct muxlist muxlist;
 
 /*
  * hub <host> (port|:|,| ) <number> } 
  */
-void read_hub(l)
-    struct lex *l;
+void 
+read_hub(struct lex *l)
 {
     struct mux *m;
 
@@ -52,11 +84,8 @@ void read_hub(l)
     
     m->port = l->value;
 }
-/*
- * stream { cpu() | mem | io() | if() }
- */
-void read_stream(l)
-    struct lex *l;
+/* stream { cpu() | mem | io() | if() } */
+void read_stream(struct lex *l)
 {
     struct stream *stream;
     struct mux *mux;
@@ -71,7 +100,7 @@ void read_stream(l)
 	      l->filename, l->cline);
     mux = SLIST_FIRST(&muxlist);
 
-    expect(LXT_BEGIN);
+    EXPECT(LXT_BEGIN);
     while (lex_nexttoken(l) && l->op != LXT_END) {
 	switch (l->op) {
 	case LXT_CPU:
@@ -107,7 +136,9 @@ void read_stream(l)
 	}
     }
 }
-void read_config_file(const char *filename)
+/* Read mon.conf */
+void 
+read_config_file(const char *filename)
 {
     struct lex *l;
 
@@ -131,14 +162,13 @@ void read_config_file(const char *filename)
     }
 
     /* sanity checks */
-    if (SLIST_EMPTY(&muxlist)) {
+    if (SLIST_EMPTY(&muxlist))
 	fatal("%s: No hub section seen\n",
 	      l->filename);
-    } else {
+    else
 	if (SLIST_EMPTY(&(SLIST_FIRST(&muxlist))->sl))
 	    fatal("%s: No stream section seen\n",
 		  l->filename);
-    }
 
     close_lex(l);
 }

@@ -1,6 +1,36 @@
+/* $Id: sm_if.c,v 1.2 2002/03/31 14:27:47 dijkstra Exp $ */
+
 /*
- * $Id: sm_if.c,v 1.1 2002/03/09 16:25:33 dijkstra Exp $
+ * Copyright (c) 2001-2002 Willem Dijkstra
+ * All rights reserved.
  *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
+/*
  * Get current interface statistics from kernel and return them in mon_buf as
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors : oerrors : colls : drops
@@ -13,14 +43,10 @@
  * Re-entrant code: globals are used to speedup calculations for all interfaces.
  */
 
-#include <string.h>
 #include <sys/types.h>
 #include <sys/protosw.h>
 #include <sys/socket.h>
-#include <syslog.h>
-#include <varargs.h>
-#include <limits.h>
-/* Include all possible interfaces => need to know struct ifnet sizes */
+
 #include <net/if.h>
 #include <net/if_dl.h>
 #include <net/if_types.h>
@@ -32,12 +58,18 @@
 #include <netipx/ipx_if.h>
 #include <netiso/iso.h>
 #include <netiso/iso_var.h>
+
+#include <string.h>
+#include <limits.h>
+
+#include "error.h"
 #include "mon.h"
 
-struct ifnet ne_ifnet;
-size_t ne_size_ifnet;
-struct ifnet_head ne_ifhead;       /* TAILQ_HEAD */
-size_t ne_size_ifhead;
+/* Globals for this module start with if_ */
+struct ifnet if_ifnet;
+size_t if_size_ifnet;
+struct ifnet_head if_ifhead;   
+size_t if_size_ifhead;
 union {
     struct ifaddr   ifa;
     struct in_ifaddr in;
@@ -45,52 +77,47 @@ union {
     struct ns_ifaddr ns;
     struct ipx_ifaddr ipx;
     struct iso_ifaddr iso;
-} ne_ifaddr;
-size_t ne_size_ifaddr;
-char ne_name[IFNAMSIZ];
-
-void init_if(s) 
-    char *s;
+} if_ifaddr;
+size_t if_size_ifaddr;
+char if_name[IFNAMSIZ];
+/* Prepare if module for first use */
+void 
+init_if(char *s) 
 {
-    ne_size_ifnet = sizeof ne_ifnet;
-    ne_size_ifhead = sizeof ne_ifhead;
-    ne_size_ifaddr = sizeof ne_ifaddr;
+    if_size_ifnet = sizeof if_ifnet;
+    if_size_ifhead = sizeof if_ifhead;
+    if_size_ifaddr = sizeof if_ifaddr;
 }
-int get_if(mon_buf, maxlen, interface) 
-    char *mon_buf;
-    int maxlen;
-    char *interface;
+/* Get interface statistics */
+int 
+get_if(char *mon_buf, int maxlen, char *interface) 
 {
-    u_long ifnetaddr;
+    u_long ifnetptr;
 
-    /* Read interface list */
-    ifnetaddr=mon_nl[MON_IFNET].n_value;
-    if (ifnetaddr == 0) {
-	syslog(LOG_ALERT,"ifstat.c:%d: ifnet = symbol not defined",__LINE__);
-	exit(1);
-    }  
-    /*
-     * Find the pointer to the first ifnet structure.  Replace
-     * the pointer to the TAILQ_HEAD with the actual pointer
-     * to the first list element.
-     */
-    kread(ifnetaddr, (char *) &ne_ifhead, ne_size_ifhead);
-    ifnetaddr = (u_long) ne_ifhead.tqh_first;
+    ifnetptr = mon_nl[MON_IFNET].n_value;
+    if (ifnetptr == 0)
+	fatal("%s:%d: ifnet = symbol not defined", __FILE__, __LINE__);
+
+    /* obtain first ifnet structure in kernel memory */
+    kread(ifnetptr, (char *) &if_ifhead, if_size_ifhead);
+    ifnetptr = (u_long) if_ifhead.tqh_first;
   
-    while (ifnetaddr) {
-	kread(ifnetaddr, (char *) &ne_ifnet, ne_size_ifnet);
-	bcopy(ne_ifnet.if_xname, (char *) &ne_name, IFNAMSIZ);
-	ne_name[IFNAMSIZ - 1] = '\0'; /* sanity */
-	ifnetaddr = (u_long) ne_ifnet.if_list.tqe_next;
-	if (interface != 0 && strcmp(ne_name, interface) == 0) {
+    while (ifnetptr) {
+	kread(ifnetptr, (char *) &if_ifnet, if_size_ifnet);
+	bcopy(if_ifnet.if_xname, (char *) &if_name, IFNAMSIZ);
+	if_name[IFNAMSIZ - 1] = '\0';
+	ifnetptr = (u_long) if_ifnet.if_list.tqe_next;
+
+	if (interface != 0 && strncmp(if_name, interface, IFNAMSIZ) == 0) {
 	    return snpack(mon_buf, maxlen, interface, MT_IF,
-		      ne_ifnet.if_ipackets, ne_ifnet.if_opackets, 
-		      ne_ifnet.if_ibytes, ne_ifnet.if_obytes, 
-		      ne_ifnet.if_imcasts, ne_ifnet.if_omcasts, 
-		      ne_ifnet.if_ierrors, ne_ifnet.if_oerrors, 
-		      ne_ifnet.if_collisions, ne_ifnet.if_iqdrops);
+		      if_ifnet.if_ipackets, if_ifnet.if_opackets, 
+		      if_ifnet.if_ibytes, if_ifnet.if_obytes, 
+		      if_ifnet.if_imcasts, if_ifnet.if_omcasts, 
+		      if_ifnet.if_ierrors, if_ifnet.if_oerrors, 
+		      if_ifnet.if_collisions, if_ifnet.if_iqdrops);
 	}
     }
+
     return 0;
 }
 
