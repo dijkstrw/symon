@@ -39,7 +39,8 @@
 .Pp
 .Sh DESCRIPTION
 .Nm
-is a lightweight system monitor that measures cpu, memory, interface and disk statistics every 5 seconds. This information is then spooled to   
+is a lightweight system monitor that measures cpu, memory, interface and disk
+statistics every 5 seconds. This information is then spooled to
 .Xr monmux 8
 for further processing. 
 .Pp
@@ -47,10 +48,16 @@ for further processing.
 has been designed to inflict minimal performance and security impact on the system it monitors. 
 .Xr monmux 8
 has performance impact proportional to the amount of streams it needs to manage. Ideally 
-.Xr monmux should live on a different system and collect data from several 
+.Xr monmux 
+should live on a different system and collect data from several 
 .Nm
 instances in a LAN. 
-
+.Lp
+.Nm
+needs
+.Ar kmem
+priviledges in order to obtain it's data.
+.Lp
 The options:
 .Bl -tag -width Ds
 .It Fl a
@@ -59,7 +66,7 @@ Show version information.
 Stop 
 .Nm
 from becoming a daemon and show debug information on stdout.
-
+.El
 .Sh CONFIGURATION
 .Nm
 obtains configuration data from 
@@ -81,7 +88,8 @@ argument     = number | interfacename | diskname
 .Sh EXAMPLE
 Here is an example 
 .Ar mon.conf
-that monitors cpu, memory, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] and streams that information to localhost on port 2100.
+that monitors cpu, memory, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1]
+and streams that information to localhost on port 2100.
 .Pp
 .nf
 monitor { cpu(0),  mem,     if(xl0), if(de0),
@@ -98,6 +106,16 @@ to read
 .Ar /etc/mon.conf .
 .Nm
 will keep the old configuration if errors occured during parsing of the configuration file.
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa /var/run/mon.pid
+Contains the program id of the
+.Nm
+daemon.
+.It Pa /etc/mon.conf
+.Nm
+system wide configuration file. 
+.El
 .Sh BUGS
 Every monitored resource mentioned 
 .Ar /etc/mon.conf 
