@@ -1,3 +1,8 @@
+08/01/2002 - 2.57
+
+   Christian Weisgerber reported that netinet/ip_ipsp.h already defines htonq - fixed.
+   Will Wainwright reported a small bug in test_config.php - fixed.
+
 29/12/2002 - 2.56
 
    Added proc and debug symon2web frontends. Debug has limited useability, you
@@ -234,4 +239,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.13 2002/12/29 16:23:40 dijkstra Exp $
+$Id: CHANGELOG,v 1.14 2003/01/08 16:04:40 dijkstra Exp $

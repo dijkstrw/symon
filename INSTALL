@@ -6,8 +6,8 @@ Priviledges
 symux needs read and write access to it's rrdfiles.
 
 monitoring needs:
-cpu, if, mem, io - symon can run as nobody
-pf               - symon needs r/w on /dev/pf
+cpu, if, mem, io, debug, proc  - symon can run as nobody
+pf                             - symon needs r/w on /dev/pf
 
 symon2web is a php4 application and needs access to the rrdfiles. Note that
 symon2web interprets the url for graphing parameters. It should never be exposed
@@ -78,9 +78,9 @@ Less quick, but more verbose
   also contains some settings on how the data is displayed.
 
   symon2web runs 'rrdtool' to generate graphs as requests for pictures come
-  in. As of OpenBSD 3.2 apache is chrooted at /var/www. Make sure a statically
-  linked rrdtool is available, or break the chroot. You were not planning of
-  running this software on a machine tied to the internet anyway.
+  in. As of OpenBSD 3.2 apache is chrooted at /var/www. The easiest way around
+  this is to break the chroot. You were not planning of running this software
+  on a machine tied to the internet anyway.
 
      + $symon2web["view"] = show all graphs for all machines ('all') or show
        only graphs for a single selected machine ('one').
@@ -120,5 +120,5 @@ symon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.9 2002/11/29 10:50:28 dijkstra Exp $
+$Id: INSTALL,v 1.10 2003/01/08 16:04:40 dijkstra Exp $
 
