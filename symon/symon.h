@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.4 2001/05/02 21:38:38 dijkstra Exp $
+ * $Id: symon.h,v 1.5 2001/05/19 14:24:35 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -15,14 +15,18 @@ extern char mon_buf[];
 
 /* Monitor subsystem structure */
 struct monm {
-  char* type;
-  char* arg;
-  char* file;
-  void  (*init)(char *);
-  char* (*get)(char *);
-  int   interval;
-  int   sleep;
+    char* type;
+    char* arg;
+    char* file;
+    void  (*init)(char *);
+    char* (*get)(char *);
 };
+/* Number of seconds between measurement intervals */
+#define MON_INTERVAL 5
+
+/* Semaphores for entering and exitting the measurement region */
+#define S_STARTMEASURE 0
+#define S_STOPMEASURE  1
 
 /* kvm interface */
 #ifdef MON_KVM

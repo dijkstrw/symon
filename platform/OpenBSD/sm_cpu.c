@@ -1,5 +1,5 @@
 /*
- * $Id: sm_cpu.c,v 1.5 2001/05/02 21:38:38 dijkstra Exp $
+ * $Id: sm_cpu.c,v 1.6 2001/05/19 14:24:35 dijkstra Exp $
  *
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in mon_buf as
@@ -35,74 +35,74 @@ static float cp_states[CPUSTATES];
  *      useful on BSD mchines for calculating cpu state percentages.
  */
 int percentages(cnt, out, new, old, diffs)
-     int cnt;
-     float *out;
-     register long *new;
-     register long *old;
-     long *diffs;
+    int cnt;
+    float *out;
+    register long *new;
+    register long *old;
+    long *diffs;
 {
-  register int i;
-  register long change;
-  register long total_change;
-  register long *dp;
-  long half_total;
+    register int i;
+    register long change;
+    register long total_change;
+    register long *dp;
+    long half_total;
 
-  /* initialization */
-  total_change = 0;
-  dp = diffs;
+    /* initialization */
+    total_change = 0;
+    dp = diffs;
 
-  /* calculate changes for each state and the overall change */
-  for (i = 0; i < cnt; i++)
+    /* calculate changes for each state and the overall change */
+    for (i = 0; i < cnt; i++)
     {
-      if ((change = *new - *old) < 0)
+	if ((change = *new - *old) < 0)
         {
-	  /* this only happens when the counter wraps */
-	  change = ((unsigned int)*new-(unsigned int)*old);
+	    /* this only happens when the counter wraps */
+	    change = ((unsigned int)*new-(unsigned int)*old);
         }
-      total_change += (*dp++ = change);
-      *old++ = *new++;
+	total_change += (*dp++ = change);
+	*old++ = *new++;
     }
   
     /* avoid divide by zero potential */
-  if (total_change == 0)
+    if (total_change == 0)
     {
-      total_change = 1;
+	total_change = 1;
     }
   
-  /* calculate percentages based on overall change, rounding up */
-  half_total = total_change / 2l;
-  for (i = 0; i < cnt; i++)
+    /* calculate percentages based on overall change, rounding up */
+    half_total = total_change / 2l;
+    for (i = 0; i < cnt; i++)
     {
-      *out++ = ((*diffs++ * 1000 + half_total) / total_change);
+	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
     }
   
-  /* return the total in case the caller wants to use it */
-  return(total_change);
+    /* return the total in case the caller wants to use it */
+    return(total_change);
 }
 
 void init_cpu(s) 
-     char *s;
+    char *s;
 {
-  cp_size = sizeof(cp_time);
-  /* Call get_cpu once to fill the cp_old structure */
-  get_cpu(NULL);
+    cp_size = sizeof(cp_time);
+    /* Call get_cpu once to fill the cp_old structure */
+    get_cpu(NULL);
 }
 
 char *get_cpu(s) 
-     char *s;
+    char *s;
 {
-  int total;
-  if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
-    syslog(LOG_WARNING,"cpu.c:%d: sysctl kern.cp_time failed",__LINE__);
-    total = 0;
-  }
+    int total;
+    if (sysctl(cp_time_mib, 2, &cp_time, &cp_size, NULL, 0) < 0) {
+	syslog(LOG_WARNING,"cpu.c:%d: sysctl kern.cp_time failed",__LINE__);
+	total = 0;
+    }
 
-  /* convert cp_time counts to percentages */
-  total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+    /* convert cp_time counts to percentages */
+    total = percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
     
-  snprintf( &mon_buf[0], _POSIX2_LINE_MAX, 
-	    "N:%3.2f:%3.2f:%3.2f:%3.2f:%3.2f", 
-	    cp_states[CP_USER]/10, cp_states[CP_NICE]/10, cp_states[CP_SYS]/10, 
-	    cp_states[CP_INTR]/10, cp_states[CP_IDLE]/10);
-  return &mon_buf[0];
+    snprintf( &mon_buf[0], _POSIX2_LINE_MAX, 
+	      "N:%3.2f:%3.2f:%3.2f:%3.2f:%3.2f", 
+	      cp_states[CP_USER]/10, cp_states[CP_NICE]/10, cp_states[CP_SYS]/10, 
+	      cp_states[CP_INTR]/10, cp_states[CP_IDLE]/10);
+    return &mon_buf[0];
 }
