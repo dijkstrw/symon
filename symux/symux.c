@@ -1,5 +1,5 @@
 /*
- * $Id: symux.c,v 1.3 2001/09/20 19:26:33 dijkstra Exp $
+ * $Id: symux.c,v 1.4 2002/03/22 16:40:22 dijkstra Exp $
  *
  * Daemon that multiplexes incoming mon traffic to subscribed clients
  * and archives it periodically in rrd files.
@@ -13,13 +13,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <syslog.h>
+
 #include "error.h"
 #include "monmux.h"
 #include "readconf.h"
 #include "limits.h"
+#include "data.h"
+#include "muxnet.h"
+#include "net.h"
 
-struct hub *hub;
-struct source *sources;
+struct muxlist muxlist = SLIST_HEAD_INITIALIZER(muxlist);
+struct sourcelist sourcelist = SLIST_HEAD_INITIALIZER(sourcelist);
 
 int listen_sock;
 fd_set fdset;
@@ -41,14 +46,20 @@ int main(argc, argv)
     int argc;
     char *argv[];
 {
-    struct sockaddr_in sins, sind;
-    struct hostent *hp;
-    char cbuf[_POSIX2_LINE_MAX];
-    int error;
+    struct sockaddr_in sind;
+    struct mux *mux;
+    struct packedstream ps;
+    struct source *source;
+
+    char netbuf[_POSIX2_LINE_MAX];
+    char stringbuf[_POSIX2_LINE_MAX];
+    int offset, size;
     socklen_t sl;
 
     /* parse configuration file */
     read_config_file("monmux.conf");
+
+    mux = SLIST_FIRST(&muxlist);
 
     /* catch signals */
 //    signal(SIGALRM, alarmhandler);
@@ -60,34 +71,33 @@ int main(argc, argv)
     signal(SIGUSR1, signalhandler);
     signal(SIGUSR2, signalhandler);
 
-    memset(&sins, 0, sizeof(sins));
-    sins.sin_family = AF_INET;
-    sins.sin_port = htons(hub->port);
-    hp = gethostbyname(hub->name);
-    if (hp == NULL) {
-	herror(hub->name);
-	return (-1);
-    }
-    memcpy(&(sins.sin_addr.s_addr), hp->h_addr, hp->h_length);
-    
-    listen_sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (listen_sock < 0) {
-	fatal("socket: %.200s", strerror(errno));
-    } else {
-	atexit( close_listensock );
-    }
+    listen_sock = getmuxsocket(mux);
 
-    if (bind(listen_sock, (struct sockaddr *)&sins, sizeof(sins)) < 0) {
-	fatal("Bind failed: %.200s.", strerror(errno));
-    }
+    atexit(close_listensock);
 
     for (;;) {
 	sl = sizeof(sind);
-	error = recvfrom(listen_sock, cbuf, sizeof(cbuf), 0, (struct sockaddr *)&sind, &sl);
-	if ( error < 0 ) {
+	size = recvfrom(listen_sock, netbuf, sizeof(netbuf), 0, (struct sockaddr *)&sind, &sl);
+	if ( size < 0 ) {
 	    /* do sth */
 	} else {
-	    cbuf[error] = '\0';
+	    time_t t;
+	    source = find_source_ip(&sourcelist, ntohl((u_int32_t)sind.sin_addr.s_addr));
+
+	    if (source == NULL) {
+		syslog(LOG_INFO, "ignored data from %u.%u.%u.%u",
+		       (lookup_ip >> 24), (lookup_ip >> 16) & 0xff, 
+		       (lookup_ip >> 8) & 0xff, lookup_ip & 0xff);
+	    } /* else { */
+	    
+		/* TODO: check mon type and get length */
+		offset = getpreamble(netbuf, &t);
+		while ((size - offset) > 0) {
+		    offset += sunpack(netbuf + offset, &ps);
+		    psdata2strn(&ps, stringbuf, sizeof(stringbuf));
+		    printf("type %d(%s):%s\n", ps.type, ps.args, stringbuf);
+//		}
+	    }
 //	    process(ntohl(sind.sin_addr.s_addr), cbuf);
 	}
     }

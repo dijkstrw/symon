@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.4 2001/09/30 15:10:20 dijkstra Exp $
+# $Id: Makefile,v 1.5 2002/03/22 16:40:22 dijkstra Exp $
 
 PROG=	monmux
-SRCS=	monmux.c readconf.c
+SRCS=	monmux.c readconf.c muxnet.c
 NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
