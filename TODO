@@ -4,14 +4,14 @@ Project Overview:
 - add a fast crc algorithm in netmon and netmux
 - allow other programs to connect to monmux for stream updates
 - change rrd to accommodate batch updates
-- make programs robust. failure => fatal now (by design :)
 - mon2web should have graph objects/modules
   (ask a module what graphing options it supports and show these,
    the same module should also draw the picture, maybe php oo?)
-- look at lib/net.c/lookup, rewrite it to not be joe's solution.
-- add daemon syslog and verbose to error.[ch]
-- bzero / memset 
-- all errors should have the same format
+- weird: rrd_update fails for monmux when not in daemon mode?
+- look at lib/net.c/lookup, give joe credits for his work.
+- look at mon/cpu.c/percentages, give appropriate people credits.
+- SIGHUP should be reload configuration
+- write manual pages
 
 == longer term
 - write a muxer that supports unix pipes
@@ -20,7 +20,13 @@ Project Overview:
 - port to linux
 
 == log 
+01/04/2002 - changed all memsets into bzero
+             all output messages have the same format now
+             write pids in /var/run
+
 31/03/2002 - cleaned up source
+
+             added error reporting routines. 
 
 29/03/2002 - mon and monmux no use monpacket to communicate with each
              other. This format defines: version, lenght and crc of the traffic

@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.6 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: lex.h,v 1.7 2002/04/01 14:43:49 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -96,7 +96,7 @@ __END_DECLS
 	    parse_error(l, parse_opcode((x)));    \
 	    return;                               \
 	}                                         \
-    } while(0);
+    } while (0);
 
 #endif /*_MON_LIB_LEX_H*/
 
