@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.24 2004/08/07 12:21:36 dijkstra Exp $
+# $Id: Makefile.inc,v 1.25 2004/08/08 12:17:06 dijkstra Exp $
 
 V=2.67
 OS!=uname -s
@@ -6,9 +6,9 @@ OS!=uname -s
 AR=	ar
 CC=	cc
 .ifdef DEBUG
-CFLAGS+=-g -Wall -D__USE_XOPEN
+CFLAGS+=-g -Wall
 .else
-CFLAGS+=-Wall -D__USE_XOPEN
+CFLAGS+=-Wall
 .endif
 INSTALL=install
 LORDER=	lorder
