@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.13 2002/04/04 17:46:58 dijkstra Exp $ */
+/* $Id: symon.h,v 1.14 2002/04/04 20:48:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -43,12 +43,9 @@
 
 #define MON_CONFIG_FILE "/etc/mon.conf"
 #define MON_PID_FILE    "/var/run/mon.pid"
-#define MON_VERSION "2.0"
-/* Number of seconds between measurement intervals */
-#define MON_INTERVAL 5
-
-/* warn at every x send errors to a mux */
-#define MON_WARN_SENDERR 50
+#define MON_VERSION     "2.0"
+#define MON_INTERVAL 5                           /* measurement interval */
+#define MON_WARN_SENDERR 50                      /* warn every x errors */
 
 /* kvm interface */
 #ifdef MON_KVM
@@ -85,8 +82,8 @@ extern void init_if(char *);
 extern int  get_if(char *, int, char *);
 
 /* io.c */
-extern void init_io __P((char *));
-extern int  get_io __P((char *, int, char *));
+extern void init_io(char *);
+extern int  get_io(char *, int, char *);
 __END_DECLS
 
 #endif /*_MON_MON_H*/

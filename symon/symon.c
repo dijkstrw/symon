@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.15 2002/04/04 17:46:58 dijkstra Exp $ */
+/* $Id: symon.c,v 1.16 2002/04/04 20:48:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -250,20 +250,3 @@ main(int argc, char *argv[])
     }
     /* NOTREACHED */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
