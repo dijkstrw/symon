@@ -70,7 +70,7 @@ from becoming a daemon and show debug information on stdout.
 .Sh CONFIGURATION
 .Nm
 obtains configuration data from 
-.Ar /etc/mon.conf .
+.Pa /etc/mon.conf .
 The configuration file contains monitor stanzas that define what resources should be monitored and to which 
 .Xr monmux 8
 the information should be streamed to.
@@ -103,7 +103,7 @@ monitor { cpu(0),  mem,     if(xl0), if(de0),
 Causes
 .Nm
 to read 
-.Ar /etc/mon.conf .
+.Pa /etc/mon.conf .
 .Nm
 will keep the old configuration if errors occured during parsing of the configuration file.
 .Sh FILES
@@ -118,12 +118,12 @@ system wide configuration file.
 .El
 .Sh BUGS
 Every monitored resource mentioned 
-.Ar /etc/mon.conf 
+.Pa /etc/mon.conf 
 gets queried. Mentioning, for example, cpu(0) twice for different muxes will result in two distinct cpu(0) measurement actions. 
 .Pp
 .Nm 
 does not check whether resources mentioned in 
-.Ar /etc/mon.conf
+.Pa /etc/mon.conf
 exist. 
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>
