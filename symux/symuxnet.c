@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.17 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.18 2004/08/07 14:49:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -122,10 +122,14 @@ int
 get_client_socket(struct mux * mux)
 {
     struct addrinfo hints, *res;
-    int error, sock;
+    int error, sock, one = 1;
 
     if ((sock = socket(mux->sockaddr.ss_family, SOCK_STREAM, 0)) == -1)
 	fatal("could not obtain socket: %.200s", strerror(errno));
+
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
+        fatal ("could set socket options: %.200s", strerror (errno));
+    }
 
     bzero((void *) &hints, sizeof(struct addrinfo));
 

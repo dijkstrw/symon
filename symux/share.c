@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.16 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: share.c,v 1.17 2004/08/07 14:49:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -49,7 +49,6 @@
 #include "conf.h"
 #include "data.h"
 #include "error.h"
-#include "os.h"
 #include "symux.h"
 #include "symuxnet.h"
 #include "share.h"
