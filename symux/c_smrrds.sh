@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.21 2003/10/12 17:26:10 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.22 2003/12/13 14:45:42 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2003 Willem Dijkstra
@@ -274,6 +274,8 @@ io_*.rrd)
     # Default match
     echo $i - unknown
     cat <<EOF
+Create rrd files for symux.
+
 Usage: $0 [oneday] all
        $0 [oneday] cpu0|mem|pf|mbuf|debug|proc|<if>|<io>|sensor[0-25]
 

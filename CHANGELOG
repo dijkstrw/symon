@@ -1,7 +1,14 @@
 14/10/2003 - 2.63
 
-   - pf probe needs read access to /dev/pf. pf does not need to be root
+   - pf probe needs read access to /dev/pf. symon does not need to be root
      anymore.
+
+   - HOMEPAGE in Makefile was off (Robert Winder)
+
+   - port: MESSAGEs were incorrect (Soeren Thing Andersen), PLIST incomplete
+     (Henning Brauer)
+
+   - port PLIST
 
 12/10/2003 - 2.62
 
@@ -301,4 +308,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.22 2003/10/14 20:09:36 dijkstra Exp $
+$Id: CHANGELOG,v 1.23 2003/12/13 14:44:30 dijkstra Exp $
