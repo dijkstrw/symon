@@ -110,9 +110,11 @@ source-stmt  = "source" host "{"
                [ datadir-stmt ] "}"
 accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
-resources    = resource ["(" argument ")"] [ ","|" " resources ]
-resource     = "cpu" | "mem" | "if" | "io" | "io1" | "pf" | "debug" |
+resources    = resource version ["(" argument ")"]
+               [ ","|" " resources ]
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
                "proc" | "mbuf" | "sensor"
+version      = "" | number
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
@@ -127,9 +129,13 @@ in the
 specifies the port-number for both the udp port (incoming
 .Xr symon 8
 traffic) and the tcp port for incoming listeners.
+.It Va version
+is needed to distinguish between the same type of information (i.e.
+.Va io
+) coming from different versions of OpenBSD. If no version number is
+supplied, the latest will be assumed.
 .It Va datadir
-will guess filenames for all
-accepted streams.
+will guess filenames for all accepted streams.
 .Va write
 statements always take precendence over a
 .Va datadir
@@ -206,18 +212,19 @@ Time spent in ( user, nice, system, interrupt, idle ). Total time is 100, data
 is offered with precision 2.
 .It mem
 Memory in ( real_active, real_total, free, swap_used, swap_total ). All values
-are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers
-internally.
+are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers.
 .It if
 Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
 multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
-). Values are 32 bit unsigned integers internally.
+). Values are 32 bit unsigned integers.
 .It io
-Io/disk counters ( total_rxfers, total_wxfers, total_seeks, total_rbytes,
-total_wbytes). Values are 64 bit unsigned integers internally.
+Alias for io2. See below.
 .It io1
 Pre OpenBSD 3.5 io/disk counters ( total_transfers, total_seeks, total_bytes
-). Values are 64 bit unsigned integers internally.
+). Values are 64 bit unsigned integers.
+.It io2
+Io/disk counters ( total_rxfers, total_wxfers, total_seeks, total_rbytes,
+total_wbytes). Values are 64 bit unsigned integers.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
 bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
@@ -225,7 +232,7 @@ packets_v4_out_drop : packets_v6_in_pass : packets_v6_in_drop :
 packets_v6_out_pass : packets_v6_out_drop : states_entries : states_searches :
 states_inserts : states_removals : counters_match : counters_badoffset :
 counters_fragment : counters_short : counters_normalize : counters_memory
-). Values are 64 bit unsigned integers internally.
+). Values are 64 bit unsigned integers.
 .It debug
 Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32
 bit unsigned integers.
@@ -264,11 +271,44 @@ daemon.
 .Nm
 system wide configuration file.
 .El
-.Sh LEGACY
+.Sh LEGACY FORMATS
 .Nm
-supports symon(8) clients that send pre OpenBSD 3.5 disk statistics. These
-streams should be identified as "io1(wd0)" instead of "io(wd0)" in the
-configuration file.
+supports symon(8) clients that send pre OpenBSD 3.5 disk
+statistics. These streams should be identified as io1(<disk>) instead of
+io(<disk>) in
+.Pa /etc/symux.conf.
+Note that symon(8) measures io1 or io2 depending on whether it was
+compiled on a host that supports version 1 or 2.
+.Pp
+Because the structure of the incoming data has changed, the rrd files
+concerning io need to change as well:
+.Bl -tag -width Ds
+.It Upgrading symux only
+Move all
+.Pa io_<disk>.rrd
+files to
+.Pa io1_<disk>.rrd.
+Change the
+.Nm
+configuration file to accept and write io1.
+.Pp
+.It Upgrading hosts to OpenBSD 3.5 and updating symon(8)
+create new
+.Pa io_<disk>.rrd
+files using c_smrrds.sh for the upgraded host. Both symon(8) and
+.Nm
+configuration files can be left untouched as their io statements will
+now default to io2.
+.El
+.Pp
+.Nm
+will output what version of information it is offered by symon(8)s on
+the network when started with the
+.Va -d
+flag.
+.Pp
+Note that although an io1 can be translated into an io2 using rrdtool
+dump - vi dump - rrdtool restore, this is not recommended.
 .Sh BUGS
 .Nm
 writes incoming data to rrd files "in process". An rrdupdate on a somewhat

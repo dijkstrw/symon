@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.20 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: lex.c,v 1.21 2004/02/27 09:50:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -77,6 +77,7 @@ static struct {
     { "in", LXT_IN },
     { "io", LXT_IO },
     { "io1", LXT_IO1 },
+    { "io2", LXT_IO },
     { "mbuf", LXT_MBUF },
     { "mem", LXT_MEM },
     { "monitor", LXT_MONITOR },
@@ -358,6 +359,6 @@ close_lex(struct lex *l)
 void
 parse_error(struct lex *l, const char *s)
 {
-    warning("%.200s:%d: expected '%.200s' found '%.8s')",
+    warning("%.200s:%d: expected '%.200s' found '%.8s'",
 	    l->filename, l->cline, s, l->token);
 }
