@@ -1,5 +1,5 @@
 /*
- * $Id: symon.h,v 1.9 2002/03/29 15:17:08 dijkstra Exp $
+ * $Id: symon.h,v 1.10 2002/03/29 16:29:38 dijkstra Exp $
  *
  * Mon - a minimal system monitor
  * 
@@ -19,7 +19,7 @@
 #define LOG1024		10
 
 /* Number of seconds between measurement intervals */
-#define MON_INTERVAL 1
+#define MON_INTERVAL 5
 
 /* warn at every x send errors to a mux */
 #define MON_WARN_SENDERR 50
