@@ -1,4 +1,4 @@
-/* $Id: error.h,v 1.6 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: error.h,v 1.7 2002/11/29 10:50:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,10 +40,10 @@ extern int flag_debug;
 extern int flag_daemon;
 
 __BEGIN_DECLS
-__dead void fatal(char *, ...);
-void        warning(char *, ...);
-void        info(char *, ...);
-void        debug(char *, ...);
+__dead void fatal(char *,...);
+void warning(char *,...);
+void info(char *,...);
+void debug(char *,...);
 __END_DECLS
 
-#endif /*_SYMON_LIB_ERROR_H*/
+#endif				/* _SYMON_LIB_ERROR_H */

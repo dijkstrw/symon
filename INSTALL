@@ -77,6 +77,11 @@ Less quick, but more verbose
   the symon2web/datasources.inc to reflect your filelocations. datasources.inc
   also contains some settings on how the data is displayed.
 
+  symon2web runs 'rrdtool' to generate graphs as requests for pictures come
+  in. As of OpenBSD 3.2 apache is chrooted at /var/www. Make sure a statically
+  linked rrdtool is available, or break the chroot. You were not planning of
+  running this software on a machine tied to the internet anyway.
+
      + $symon2web["view"] = show all graphs for all machines ('all') or show
        only graphs for a single selected machine ('one').
 
@@ -88,6 +93,9 @@ Less quick, but more verbose
           'normal' =  300 x 225, 
           'big'    =  600 x 450, 
           'huge'   = 1024 x 640.
+
+     + test your setup with test_config.php - this will try to run rrdtool and
+       see if your rrd files are accessable by symon2web.
 
 Getting measurements without the web
 ====================================
@@ -101,6 +109,7 @@ Example:
 hoard$ getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
 93.40
 
+Historical data can be gathered using rrdfetch(1) from symux's rrd files.
 
 Portability
 ===========
@@ -111,5 +120,5 @@ symon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.8 2002/11/08 15:40:17 dijkstra Exp $
+$Id: INSTALL,v 1.9 2002/11/29 10:50:28 dijkstra Exp $
 

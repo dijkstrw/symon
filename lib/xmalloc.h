@@ -1,4 +1,4 @@
-/* $Id: xmalloc.h,v 1.5 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: xmalloc.h,v 1.6 2002/11/29 10:50:29 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -21,9 +21,9 @@
 
 /* Like malloc and friends, but these call fatal if something breaks */
 __BEGIN_DECLS
-void   *xmalloc(size_t);
-void   *xrealloc(void *, size_t);
-void    xfree(void *);
-char   *xstrdup(const char *);
+void *xmalloc(size_t);
+void *xrealloc(void *, size_t);
+void xfree(void *);
+char *xstrdup(const char *);
 __END_DECLS
-#endif /*_SYMON_LIB_XMALLOC_H*/
+#endif				/* _SYMON_LIB_XMALLOC_H */

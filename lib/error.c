@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.9 2002/09/14 15:56:18 dijkstra Exp $ */
+/* $Id: error.c,v 1.10 2002/11/29 10:50:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -40,35 +40,37 @@
 #include "error.h"
 
 __BEGIN_DECLS
-void output_message(int, char *, va_list); 
+void output_message(int, char *, va_list);
 __END_DECLS
 
 int flag_daemon = 0;
 int flag_debug = 0;
 
-enum { SYMON_LOG_FATAL, 
-       SYMON_LOG_WARNING,
-       SYMON_LOG_INFO,
-       SYMON_LOG_DEBUG } loglevels;
+enum {
+    SYMON_LOG_FATAL,
+    SYMON_LOG_WARNING,
+    SYMON_LOG_INFO,
+    SYMON_LOG_DEBUG
+}    loglevels;
 
 struct {
     int type;
     int priority;
     char *errtxt;
     FILE *stream;
-} logmapping[] = {
-    {SYMON_LOG_FATAL,   LOG_ERR,     "fatal",   stderr},
-    {SYMON_LOG_WARNING, LOG_WARNING, "warning", stderr},
-    {SYMON_LOG_INFO,    LOG_INFO,    "",        stdout},
-    {SYMON_LOG_DEBUG,   LOG_DEBUG,   "debug",   stdout},
-    {-1,              0,           "",        NULL}
+}      logmapping[] = {
+    { SYMON_LOG_FATAL, LOG_ERR, "fatal", stderr },
+    { SYMON_LOG_WARNING, LOG_WARNING, "warning", stderr },
+    { SYMON_LOG_INFO, LOG_INFO, "", stdout },
+    { SYMON_LOG_DEBUG, LOG_DEBUG, "debug", stdout },
+    { -1, 0, "", NULL }
 };
-/* 
- * Internal helper that actually outputs every 
- * (fatal|warning|info|debug) message 
+/*
+ * Internal helper that actually outputs every
+ * (fatal|warning|info|debug) message
  */
-void
-output_message(int level, char *fmt, va_list args) 
+void 
+output_message(int level, char *fmt, va_list args)
 {
     char msgbuf[_POSIX2_LINE_MAX];
     int loglevel;
@@ -77,7 +79,7 @@ output_message(int level, char *fmt, va_list args)
 	return;
 
     vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
-    
+
     for (loglevel = 0; logmapping[loglevel].type != -1; loglevel++) {
 	if (logmapping[loglevel].type == level)
 	    break;
@@ -89,11 +91,13 @@ output_message(int level, char *fmt, va_list args)
 
     if (flag_daemon) {
 	syslog(logmapping[loglevel].priority, msgbuf);
-    } else {
+    }
+    else {
 	if (strlen(logmapping[loglevel].errtxt) > 0) {
-	    fprintf(logmapping[loglevel].stream, "%s: %s\n", 
+	    fprintf(logmapping[loglevel].stream, "%s: %s\n",
 		    logmapping[loglevel].errtxt, msgbuf);
-	} else 
+	}
+	else
 	    fprintf(logmapping[loglevel].stream, "%s\n", msgbuf);
 
 	fflush(logmapping[loglevel].stream);
@@ -101,18 +105,18 @@ output_message(int level, char *fmt, va_list args)
 }
 /* Output error and exit */
 __dead void 
-fatal(char *fmt, ...)
+fatal(char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
     output_message(SYMON_LOG_FATAL, fmt, ap);
     va_end(ap);
-        
-    exit( 1 );
+
+    exit(1);
 }
 /* Warn and continue */
 void 
-warning(char *fmt, ...)
+warning(char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -121,7 +125,7 @@ warning(char *fmt, ...)
 }
 /* Inform and continue */
 void 
-info(char *fmt, ...)
+info(char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -129,12 +133,11 @@ info(char *fmt, ...)
     va_end(ap);
 }
 /* Debug statements only */
-void
-debug(char *fmt, ...)
+void 
+debug(char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
     output_message(SYMON_LOG_DEBUG, fmt, ap);
     va_end(ap);
 }
-

@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.13 2002/10/25 15:24:31 dijkstra Exp $ */
+/* $Id: lex.h,v 1.14 2002/11/29 10:50:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -32,7 +32,7 @@
 
 /*
  * This file defines the keyword tokens and lexer structure for the simple
- * lexical analyser. 
+ * lexical analyser.
  */
 
 #ifndef _SYMON_LIB_LEX_H
@@ -47,10 +47,10 @@
 #define LXT_ACCEPT     1
 #define LXT_BEGIN      2
 #define LXT_CLOSE      3
-#define LXT_COLON      4
-#define LXT_COMMA      5
-#define LXT_CPU        6
-#define LXT_DATADIR    7
+#define LXT_COMMA      4
+#define LXT_CPU        5
+#define LXT_DATADIR    6
+#define LXT_DEBUG      7
 #define LXT_END        8
 #define LXT_IF         9
 #define LXT_IN        10
@@ -67,30 +67,32 @@
 #define LXT_WRITE     21
 
 struct lex {
-    char *buffer;          /* current line(s) */
+    char *buffer;		/* current line(s) */
     const char *filename;
     FILE *fh;
-    char *token;           /* last token seen */
-    long value;            /* value of last token seen, if num */
-    int bsize;             /* size of buffer  */
-    int cline;             /* current lineno */
-    int curpos;            /* current position in buffer */
-    int endpos;            /* current maxpos in buffer */
-    int op;                /* opcode of token, if string */
-    int unget;             /* bool; token pushed back */
-    int tokpos;            /* current position in token buffer */
-    enum { LXY_STRING, LXY_NUMBER, LXY_UNKNOWN } 
-        type;              /* type of token in buffer */
+    char *token;		/* last token seen */
+    long value;			/* value of last token seen, if num */
+    int bsize;			/* size of buffer  */
+    int cline;			/* current lineno */
+    int curpos;			/* current position in buffer */
+    int endpos;			/* current maxpos in buffer */
+    int op;			/* opcode of token, if string */
+    int unget;			/* bool; token pushed back */
+    int tokpos;			/* current position in token buffer */
+    enum {
+	LXY_STRING, LXY_NUMBER, LXY_UNKNOWN
+    }
+         type;			/* type of token in buffer */
 };
 
 __BEGIN_DECLS
 struct lex *open_lex(const char *);
-void        close_lex(struct lex *);
-int         lex_nexttoken(struct lex *);
-void        lex_ungettoken(struct lex *);
-const char* parse_opcode(int);
-int         parse_token(const char *);
-void        parse_error(struct lex *, const char *);
+void close_lex(struct lex *);
+int lex_nexttoken(struct lex *);
+void lex_ungettoken(struct lex *);
+const char *parse_opcode(int);
+int parse_token(const char *);
+void parse_error(struct lex *, const char *);
 __END_DECLS
 
 /* EXPECT(l,x) = next token in l must be opcode x or error.  */
@@ -102,5 +104,4 @@ __END_DECLS
 	}                                         \
     } while (0);
 
-#endif /*_SYMON_LIB_LEX_H*/
-
+#endif				/* _SYMON_LIB_LEX_H */

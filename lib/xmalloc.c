@@ -1,4 +1,4 @@
-/* $Id: xmalloc.c,v 1.4 2002/03/31 14:27:46 dijkstra Exp $ */
+/* $Id: xmalloc.c,v 1.5 2002/11/29 10:50:29 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -24,15 +24,15 @@ void *
 xmalloc(size_t size)
 {
     void *ptr;
-    
+
     if (size == 0)
 	fatal("xmalloc: zero size");
-    
+
     ptr = malloc(size);
-    
+
     if (ptr == NULL)
 	fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
-    
+
     return ptr;
 }
 
@@ -40,7 +40,7 @@ void *
 xrealloc(void *ptr, size_t new_size)
 {
     void *new_ptr;
-    
+
     if (new_size == 0)
 	fatal("xrealloc: zero size");
 
@@ -64,7 +64,7 @@ xfree(void *ptr)
     free(ptr);
 }
 
-char 
+char
 *xstrdup(const char *str)
 {
     size_t len = strlen(str) + 1;
