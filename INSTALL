@@ -21,10 +21,13 @@ Linux:    - r on /proc/net/dev: if
 
 Real quick on OpenBSD
 =====================
-make && make install && vi /etc/symux.conf /etc/symon.conf &&
+(cd /usr/ports/net/rrdtool && make install) &&
+	make &&
+	make install &&
+	vi /etc/symux.conf /etc/symon.conf &&
 	~symon/symux/c_smrrds.sh all &&
 	/usr/local/libexec/symux &&
-	useradd _symon
+	useradd -d /var/empty -L daemon -c 'symon Account' -s /sbin/nologin _symon
 	/usr/local/libexec/symon
 
 or grab the port and do
@@ -99,5 +102,5 @@ rudimentary support for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.15 2005/01/14 16:14:32 dijkstra Exp $
+$Id: INSTALL,v 1.16 2005/01/14 16:15:21 dijkstra Exp $
 
