@@ -1,6 +1,8 @@
 TODO:
 
 == current problems / short term
+- check that cpupct from proc is not broken. (got the feeling that %c handling
+  might not be correct)
 - rewrite sm_proc.c, don't count shared pages twice
 - rewrite index.php, allow rrds in same dir as phps
 - rewrite symon2web to allow use on internet websites
@@ -13,4 +15,4 @@ TODO:
 - write a muxer that supports unix pipes
 - write a client that drives a crystal fontz lcd
 
-$Id: TODO,v 1.22 2002/12/15 14:28:35 dijkstra Exp $
+$Id: TODO,v 1.23 2002/12/29 16:23:40 dijkstra Exp $

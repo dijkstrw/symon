@@ -1,12 +1,18 @@
-14/12/2002 - 2.56
+29/12/2002 - 2.56
+
+   Added proc and debug symon2web frontends. Debug has limited useability, you
+   are better of defining one for yourself.
+
+14/12/2002 - 
 
    Added the proc module. This can be used to retrieve accumulated information
-   about processes with the same name. A proc(apache) statement in symon.conf,
+   about processes with the same name. A proc(httpd) statement in symon.conf,
    for instance, will result in the reporting of the number of processes called
-   "apache" and the amounts of cpu and memory that they take.
-   
-   Added em device to c_smrrds.sh - thanks
-   Fixed typo in SymuxClient.pm - thanks Tobias Gresch 
+   "httpd" and the amounts of cpu and memory that they take.
+  
+   Added em device to c_smrrds.sh - thanks to Jung.
+   Fixed typo in SymuxClient.pm - thanks Tobias Gresch.
+   c_config.sh did not deal with type mfs devices - thanks Dom De Vitto.
 
 29/11/2002 - 2.55
 
@@ -228,4 +234,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.12 2002/12/15 14:28:35 dijkstra Exp $
+$Id: CHANGELOG,v 1.13 2002/12/29 16:23:40 dijkstra Exp $
