@@ -1,1 +1,2 @@
-# $Id: Makefile.inc,v 1.1 2004/09/25 10:21:56 dijkstra Exp $
+# $Id: Makefile.inc,v 1.2 2005/03/22 07:17:43 dijkstra Exp $
+MANDIR=man
