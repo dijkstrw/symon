@@ -1,5 +1,5 @@
 /*
- * $Id: symon.c,v 1.9 2002/03/09 16:25:33 dijkstra Exp $
+ * $Id: symon.c,v 1.10 2002/03/17 13:37:31 dijkstra Exp $
  *
  * This program wakes up every MON_INTERVAL to measure cpu, memory and
  * interface statistics. This code takes care of waking up every so often,
@@ -21,6 +21,7 @@
 
 #include "mon.h"
 #include "net.h"
+#include "monnet.h"
 #include "readconf.h"
 #include "data.h"
 #include "error.h"
@@ -47,7 +48,7 @@ int kread(addr, buf, size)
 }
 #endif /* MON_KVM */
 
-/* map stream types onto inits and getters */
+/* map stream types to inits and getters */
 struct {
     int type;
     void (*init)(char *);
@@ -60,6 +61,7 @@ struct {
     {MT_EOT, NULL, NULL}
 };
 
+/* alarmhandler that gets called every MON_INTERVAL */
 void alarmhandler() {
 }
 
@@ -67,8 +69,7 @@ int main(argc, argv)
     int argc;
     char *argv[];
 {
-    int i;
-    struct itimerval ai,ri;
+    struct itimerval alarminterval;
     struct mux *mux;
     struct stream *stream;
     char mon_buf[_POSIX2_LINE_MAX];
@@ -98,16 +99,17 @@ int main(argc, argv)
 
 #ifndef DEBUG
     if (daemon(0,0) != 0) {
-	syslog(LOG_ALERT,"daemonize failed -- exiting");
+	syslog(LOG_ALERT, "daemonize failed -- exiting");
 	fatal("daemonize failed");
     }
 #endif
 
     /* Init modules */
-    syslog(LOG_INFO,"mon $Revision: 1.9 $ started");
+    syslog(LOG_INFO, "mon $Revision: 1.10 $ started");
 
     offset = 0;
     SLIST_FOREACH(mux, &muxlist, muxes) {
+	connect2mux(mux);
 	SLIST_FOREACH(stream, &mux->sl, streams) {
 	    (streamfunc[stream->type].init)(stream->args);
 	}
@@ -124,32 +126,34 @@ int main(argc, argv)
 /*      signal(SIGUSR2, exit); */
 
     /* Setup alarm */
-    timerclear(&ai.it_interval);
-    timerclear(&ai.it_value);
-    ai.it_interval.tv_sec=ai.it_value.tv_sec=MON_INTERVAL;
-    if (setitimer(ITIMER_REAL, &ai, &ri) != 0) {
+    timerclear(&alarminterval.it_interval);
+    timerclear(&alarminterval.it_value);
+    alarminterval.it_interval.tv_sec=
+	alarminterval.it_value.tv_sec=MON_INTERVAL;
+    if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
 	syslog(LOG_INFO,"alarm setup failed -- %s", strerror(errno));
 	exit(1);
     }
 
     for (;;) {  /* forever */
-	/* sleep until the signal handler catches an alarm */
-	sleep(MON_INTERVAL*2);
+	sleep(MON_INTERVAL*2);    /* alarm will always interrupt sleep */
+	printf("sleeping.\n");
 
-	/* fill mux->data with stream getters.
-	   mux->offset stores the amount of data actually written */
 	SLIST_FOREACH(mux, &muxlist, muxes) {
+	    /* fill mux->data with stream getters.
+	       mux->offset stores the amount of data actually written */
 	    memset(mux->data, 0, _POSIX2_LINE_MAX);
 	    mux->offset = 0;
+
 	    SLIST_FOREACH(stream, &mux->sl, streams) {
-		printf( "%s: pre=%4d, post=", stream->args, mux->offset);
-		mux->offset += (streamfunc[stream->type].get)
-		    (&mux->data[mux->offset], 
-		     _POSIX2_LINE_MAX - mux->offset, 
-		     stream->args);
-		printf( "%4d\n", mux->offset);
+		mux->offset += 
+		    (streamfunc[stream->type].get) (&mux->data[mux->offset], 
+						    _POSIX2_LINE_MAX - mux->offset, 
+						    stream->args);
 	    }
-	    warning("buffer mon_buf filled upto %d\n", mux->offset);
+
+	    /* send monitored data to mux */
+	    senddata(mux);
 	}
     }
     /* NOTREACHED */

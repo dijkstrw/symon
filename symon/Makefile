@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.12 2002/03/09 16:25:33 dijkstra Exp $
+# $Id: Makefile,v 1.13 2002/03/17 13:37:31 dijkstra Exp $
 
 PROG=	mon
-SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c
+SRCS=	mon.c cpu.c mem.c if.c io.c readconf.c monnet.c
 NOMAN=	No man page yet.
 BINGRP=	kmem
 BINMODE=2555
