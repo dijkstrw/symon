@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.5 2002/06/24 05:50:00 dijkstra Exp $ */
+/* $Id: share.c,v 1.6 2002/07/11 15:27:33 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -307,13 +307,17 @@ reap_clients()
     status = 0;
 
     /* Reap all children that died */
-    while (((int)(clientpid = wait4(-1, &status, WNOHANG, NULL)) != 0) && realclients >= 0) {
+    while (((int)(clientpid = wait4(-1, &status, WNOHANG, NULL)) > 0) && realclients >= 0) {
+
+      /* wait4 is supposed to return 0 if there is no status to report, but
+	 it also reports -1 on OpenBSD 2.9 */
+
 	if (WIFEXITED(status))
-	    info("client process %d exited", status);
+	    info("client process %d exited", clientpid, status);
 	if (WIFSIGNALED(status))
-	    info("client process %d killed with signal %d", status, WTERMSIG(status));
+	    info("client process %d killed with signal %d", clientpid, WTERMSIG(status));
 	if (WIFSTOPPED(status))
-	    info("client process %d stopped with signal %d", status, WSTOPSIG(status));
+	    info("client process %d stopped with signal %d", clientpid, WSTOPSIG(status));
 
 	realclients--;
     }
@@ -365,6 +369,7 @@ client_loop()
 {
     int total;
     int sent;
+    int written;
 
     for (;;) { /* FOREVER */
 	
@@ -374,10 +379,17 @@ client_loop()
 	sent = 0;
 
 	while (sent < total) {
-	    sent += write(clientsock, (char *)(shared_getmem() + sent), total - sent);
-	    debug("client written %d bytes of %d total", sent, total);
+	  
+	  if ((written = write(clientsock, (char *)(shared_getmem() + sent), total - sent)) == -1) {
+	    info("Write error. Client will quit.");
+	    exit(1);
+	  }
+	  
+	  sent += written;
+	  
+	  debug("client written %d bytes of %d total", sent, total);
 	}
-
+	
 	client_doneread();
     }
 }

@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.14 2002/06/24 05:48:35 dijkstra Exp $ */
+/* $Id: symux.c,v 1.15 2002/07/11 15:27:33 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -205,7 +205,7 @@ main(int argc, char *argv[])
 	master_forbidread();
 	timestamp = (time_t) packet.header.timestamp;
 	stringbuf = (char *)shared_getmem();
-	snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u:",
+	snprintf(stringbuf, maxstringlen, "%u.%u.%u.%u;",
 		IPAS4BYTES(source->ip));
 	
 	/* hide this string region from rrd update */
@@ -255,13 +255,16 @@ main(int argc, char *argv[])
 		}
 		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
-		snprintf(stringptr, maxstringlen, "\n");
+		snprintf(stringptr, maxstringlen, ";");
 		maxstringlen -= strlen(stringptr);
 		stringptr += strlen(stringptr);
 	    }
 	}
 	/* packet = parsed and in ascii in shared region -> copy to clients */
+	snprintf(stringptr, maxstringlen, "\n");
+	stringptr += strlen(stringptr);
 	shared_setlen((stringptr - stringbuf));
+	debug("Churnbuffer used: %d", (stringptr - stringbuf));
 	master_permitread();
     }
     /* NOT REACHED */

@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.5 2002/06/24 05:48:35 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.6 2002/07/11 15:27:33 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -110,7 +110,9 @@ waitfortraffic(struct mux *mux, struct sourcelist *sourcelist,
     int socksactive;
     int maxsock;
 
-    maxsock = ((mux->clientsocket > mux->monsocket)?mux->clientsocket:mux->monsocket);
+    maxsock = ((mux->clientsocket > mux->monsocket) ?
+	       mux->clientsocket :
+	       mux->monsocket);
     maxsock++;
 
     for (;;) { /* FOREVER - until a valid mon packet is received */
@@ -154,17 +156,22 @@ recvmonpacket(struct mux *mux, struct sourcelist *sourcelist,
     tries = 0;
     do {
 	sl = sizeof(sind);
+
 	size = recvfrom(mux->monsocket, (void *)packet + received, 
 			sizeof(struct monpacket) - received, 
 			0, (struct sockaddr *)&sind, &sl);
-	received += size;
+	if (size > 0)
+	  received += size;
+
 	tries++;
-    } while ((errno == EAGAIN || errno == EINTR) &&
-	     (received < sizeof(struct monpacket)) &&
-	     (tries < MONMUX_MAXREADTRIES));
-    
-    if (errno) 
-	fatal("recvfrom failed: %s", strerror(errno));
+    } while ((size == -1) && 
+	     (errno == EAGAIN || errno == EINTR) && 
+	     (tries < MONMUX_MAXREADTRIES) &&
+	     (received < sizeof(struct monpacket)));
+
+    if ((size == -1) && 
+	errno) 
+      warning("recvfrom failed: %s", strerror(errno));
 
     sourceaddr = ntohl((u_int32_t)sind.sin_addr.s_addr);
     *source = find_source_ip(sourcelist, sourceaddr);
