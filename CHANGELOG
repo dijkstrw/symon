@@ -2,6 +2,8 @@
 
    - graph_debug and graph_proc were not included in the symon2web package
      PLIST (David Norman)
+   - c_config.sh was not included in the PLIST for the symon package 
+     (Andrew Dalgleish)
 
 23/03/2003 - 2.60
 
@@ -277,4 +279,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.18 2003/06/20 08:41:00 dijkstra Exp $
+$Id: CHANGELOG,v 1.19 2003/09/22 10:58:59 dijkstra Exp $
