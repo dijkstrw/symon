@@ -3,14 +3,24 @@ Installation notes
 
 Priviledges
 ===========
-symux needs read and write access to it's rrdfiles.
+symux needs read and write access to its rrdfiles.
 
-symon needs:
-cpu, debug, if, io, mbuf, mem, proc, sensor - symon can run as nobody
-pf                                          - symon needs r/w on /dev/pf
+symon needs to interface with your kernel. Depending on your host system this
+leads to different priviledge requirements:
 
-Real quick
-==========
+OpenBSD:  - sysctl: cpu, debug, if, io, mbuf, mem, proc, sensor
+          - rw on /dev/pf for pf
+
+NetBSD:   - sysctl: cpu, debug, if, io, mbuf, proc
+          - r on /dev/sysmon for sensor
+
+FreeBSD:  - sysctl: all
+
+Linux:    - r on /proc/net/dev: if
+          - r on /proc/stat: cpu
+
+Real quick on OpenBSD
+=====================
 make && make install && vi /etc/symux.conf /etc/symon.conf &&
 	~symon/symux/c_smrrds.sh all &&
 	/usr/local/libexec/symux &&
@@ -24,13 +34,12 @@ pkg_add symon-mux-version.tgz on the loghost
 
 Install the seperate syweb package to show the data stored in the rrd files.
 
-Less quick, but more verbose
-============================
-- Install rrdtool where you want to run the gatherer.
-	cd /usr/ports/net/rrdtool && make install
+Less quick, but all OSes
+========================
+- Install rrdtool on the host that will also run your symux gatherer.
+	BSDs: cd /usr/ports/net/rrdtool && make install
 
-- Building by hand: Check Makefile.inc for settings. Things to watch out for
-  are:
+- Check Makefile.inc for settings. Things to watch out for are:
 
      + PREFIX = Where does the installation tree start. Defaults to
                 '/usr/local'.
@@ -44,15 +53,10 @@ Less quick, but more verbose
      + SHRDIR = Where are the example configurations to be installed. Defaults
                 to 'share/symon'.
 
-   Run make && make install
+     + RRDDIR = $RRDDIR/include should yield rrd.h.
 
-- Building from the port:
-	cd ~symon/ports/symon or cd /usr/ports/sysutils/symon
-	make package
-
-	cd /usr/ports/packages/$ARCH/All/
-	pkg_add symon-mon-version.tgz               on monitored hosts
-	pkg_add symon-mux-version.tgz               on the loghost | gatherer
+   BSDs: Run make && make install
+  Linux: Run pmake && pmake install
 
 - Create an '/etc/symon.conf' for each monitored host and one symux.conf for
   the gatherer host. See the manual pages on how to specify alternative
@@ -63,11 +67,13 @@ Less quick, but more verbose
   stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that syweb expects
   an '.../machine/*.rrd' style directory structure somewhere under /var/www.
 
-- Fire up symux and symon:
+- Both symon and symux will daemonize if started normally. Start them with
+  debugging on initially to iron out any configuration problems:
 
-  /usr/local/libexec/symux && /usr/local/libexec/symon
+  $PREFIX/$BINDIR/symux -d &
+  $PREFIX/$BINDIR/symon -d
 
-  Check system logs for any failures.
+- Remove -d flags and check system logs for any failures.
 
 - Only if you need the webinterface: download and install syweb.
 
@@ -80,7 +86,7 @@ called 'getsymonitem.pl' shows how to use the module.
 
 Example:
 
-hoard$ getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
+nexus$ getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
 93.40
 
 Historical data can be gathered using rrdfetch(1) from symux's rrd files.
@@ -88,11 +94,10 @@ Historical data can be gathered using rrdfetch(1) from symux's rrd files.
 Portability
 ===========
 
-This package is an OpenBSD application. You might be able to make symux and
-syweb run on POSIX compliant unixes, but the monitoring application itself
-(symon) is OpenBSD specific.
+This package was originally built as an OpenBSD application. It now has
+rudimentary support for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.13 2004/02/24 22:13:20 dijkstra Exp $
+$Id: INSTALL,v 1.14 2004/08/08 19:56:03 dijkstra Exp $
 

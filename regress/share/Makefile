@@ -1,6 +1,15 @@
-# $Id: Makefile,v 1.3 2004/08/07 12:21:36 dijkstra Exp $
-PROG=	testshare
-SRCS=	testshare.c share.c
-LDADD=  -L../../lib -lsymon
-CFLAGS+=-DDEBUG -I ../../lib  -I ../../symux
-.include <bsd.prog.mk>
+# $Id: Makefile,v 1.4 2004/08/08 19:56:03 dijkstra Exp $
+.include "../../Makefile.inc"
+
+SRCS=	testshare.c ../../symux/share.c
+OBJS=	${SRCS:R:S/$/.o/g}
+LIBS=  -L../../lib -lsymon
+CFLAGS+=-I../../lib -I../../platform/${OS} -I../../symux -DTESTSHARE
+
+all: testshare
+
+testshare: ${OBJS}
+	${CC} -o $@ ${OBJS} ${LIBS}
+.ifndef DEBUG
+	${STRIP} $@
+.endif

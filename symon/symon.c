@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.39 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: symon.c,v 1.40 2004/08/08 19:56:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -118,10 +118,20 @@ drop_priviledges(int unsecure)
 	if (chdir("/") < 0)
 	    fatal("chdir / failed: %.200s", strerror(errno));
 
-	if (setgroups(1, &pw->pw_gid) ||
-	    setegid(pw->pw_gid) || setgid(pw->pw_gid) ||
-	    seteuid(pw->pw_uid) || setuid(pw->pw_uid))
-	    fatal("can't drop privileges: %.200s", strerror(errno));
+	if (setgroups(1, &pw->pw_gid))
+	    fatal("can't setgroups: %.200s", strerror(errno));
+
+	if (setgid(pw->pw_gid))
+	    fatal("can't set group id: %.200s", strerror(errno));
+
+	if (setegid(pw->pw_gid))
+	    fatal("can't set effective group id: %.200s", strerror(errno));
+
+	if (setuid(pw->pw_uid))
+	    fatal("can't set user id: %.200s", strerror(errno));
+
+	if (seteuid(pw->pw_uid))
+	    fatal("can't set effective user id: %.200s", strerror(errno));
     }
 }
 /* alarmhandler that gets called every symon_interval */

@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.17 2004/08/07 14:49:32 dijkstra Exp $ */
+/* $Id: share.c,v 1.18 2004/08/08 19:56:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -312,7 +312,11 @@ spawn_client(int sock)
 
     check_master();
 
+#ifdef TESTSHARE
+    clientsock = 0;
+#else
     clientsock = accept_connection(sock);
+#endif
 
     if ((pid = fork())) {
 	/* server */
