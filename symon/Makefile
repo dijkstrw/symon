@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.38 2005/02/25 15:10:10 dijkstra Exp $
+# $Id: Makefile,v 1.39 2005/03/20 16:17:22 dijkstra Exp $
 .include "../Makefile.inc"
 .include "../platform/${OS}/Makefile.inc"
 
@@ -26,9 +26,9 @@ symon: ${OBJS}
 clean:
 	rm -f conf.h symon symon.cat8 symon.core ${OBJS}
 
-install: symon symon.cat8 symon.conf
+install: symon symon.8 symon.conf
 	${INSTALL} -c -m 555  -g wheel -o root symon      ${PREFIX}/${BINDIR}
-	${INSTALL} -c -m 444  -g wheel -o root symon.cat8 ${PREFIX}/${MANDIR}/cat8/symon.0
+	${INSTALL} -c -m 444  -g wheel -o root symon.8 ${PREFIX}/${MANDIR}/man8/symon.8
 	${INSTALL} -d -m 555  -g bin   -o root ${PREFIX}/${SHRDIR}
 	${INSTALL} -c -m 555  -g wheel -o root c_config.sh ${PREFIX}/${SHRDIR}
 	${INSTALL} -d -m 555  -g bin   -o root ${PREFIX}/${EXADIR}

@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.32 2005/01/15 17:31:11 dijkstra Exp $ */
+/* $Id: symon.h,v 1.33 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -49,8 +49,8 @@
  *
  * - privinit = priviledged init, called before chroot
  * - init     = called once, right after configuration
- * - gets     = called every monitor interval, can be used by modules that get all
- *              their measurements in one go.
+ * - gets     = called every monitor interval, can be used by modules that get
+ *              all their measurements in one go.
  * - get      = obtain measurement
  */
 struct funcmap {
@@ -90,6 +90,12 @@ extern int get_io(char *, int, char *);
 extern void privinit_pf();
 extern void init_pf(char *);
 extern int get_pf(char *, int, char *);
+
+/* sm_pfq.c */
+extern void privinit_pfq();
+extern void init_pfq(char *);
+extern void gets_pfq();
+extern int get_pfq(char *, int, char *);
 
 /* sm_mbuf.c */
 extern void init_mbuf(char *);

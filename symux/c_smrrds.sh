@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.29 2005/02/25 15:10:10 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.30 2005/03/20 16:17:22 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2005 Willem Dijkstra
@@ -149,7 +149,7 @@ if [ X"$1$2$3$4$5$6$7$8$9" = "X" ]; then
 Create rrd files for symux.
 
 Usage: `basename $0` [oneday] [interval <seconds>] all | cpu0 | mem |
-		   pf | mbuf | debug | proc_<process> |
+		   pf | pfq_<queue> | mbuf | debug | proc_<process> |
 		   <if> | <io> | sensor[0-25]
 
 Where:
@@ -157,6 +157,8 @@ oneday  = modify rrds to only contain one day of information
 seconds = modify rrds for non standard monitoring interval
 process = the name of a process as specified in sy{mon,mux}.conf
 	  e.g. proc(httpd) -> proc_httpd
+queue = the name of a queue as specified in sy{mon,mux}.conf
+	  e.g. pfq(root) -> pfq_root
 
 if=	`echo $INTERFACES|
    awk 'BEGIN  {FS="|"}
@@ -177,7 +179,7 @@ io=	`echo $DISKS|
 		}
 		print " ";}'`
 
-Pre 3.5 disk statistics are available via the io1_<disk> argument.
+OpenBSD pre-3.5 disk statistics are available via the io1_<disk> argument.
 EOF
     exit 1;
 fi
@@ -190,7 +192,7 @@ if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"` ]; then i=$i.rrd; fi
+if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|pfq_|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"` ]; then i=$i.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
@@ -299,6 +301,15 @@ pf.rrd)
 	DS:counters_normalize:DERIVE:$INTERVAL:0:U \
 	DS:counters_memory:DERIVE:$INTERVAL:0:U
     ;;
+
+pfq_*.rrd)
+	# Build pfq file
+	create_rrd $i \
+	    DS:sent_bytes:COUNTER:$INTERVAL:0:U \
+	    DS:sent_packets:COUNTER:$INTERVAL:0:U \
+	    DS:drop_bytes:COUNTER:$INTERVAL:0:U \
+	    DS:drop_packets:COUNTER:$INTERVAL:0:U
+	;;
 
 mbuf.rrd)
     # Build mbuf file

@@ -1,7 +1,7 @@
-/* $Id: data.c,v 1.26 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: data.c,v 1.27 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the
@@ -83,7 +83,7 @@ struct {
     int strlen;
     int bytelen;
     u_int64_t max;
-}      streamvar[] = {
+} streamvar[] = {
     { 'L', ":%llu", " %20llu", 22, sizeof(u_int64_t), (u_int64_t) 0xffffffffffffffffLL },
     { 'D', ":%7.6f", " %7.6f", 23, sizeof(int64_t), (u_int64_t) 0xffffffffffffffffLL },
     { 'l', ":%lu", " %10lu", 12, sizeof(u_int32_t), (u_int64_t) 0xffffffff },
@@ -96,7 +96,7 @@ struct {
 struct {
     int type;
     char *form;
-}      streamform[] = {
+} streamform[] = {
     { MT_IO1, "LLL" },
     { MT_CPU, "ccccc" },
     { MT_MEM, "lllll" },
@@ -107,6 +107,7 @@ struct {
     { MT_MBUF, "lllllllllllllll" },
     { MT_SENSOR, "D" },
     { MT_IO2, "LLLLL" },
+    { MT_PFQ, "LLLL" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -114,7 +115,7 @@ struct {
 struct {
     int type;
     int token;
-}      streamtoken[] = {
+} streamtoken[] = {
     { MT_IO1, LXT_IO1 },
     { MT_CPU, LXT_CPU },
     { MT_MEM, LXT_MEM },
@@ -125,6 +126,7 @@ struct {
     { MT_MBUF, LXT_MBUF },
     { MT_SENSOR, LXT_SENSOR },
     { MT_IO2, LXT_IO },
+    { MT_PFQ, LXT_PFQ },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

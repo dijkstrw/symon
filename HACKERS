@@ -1,0 +1,32 @@
+$Id: HACKERS,v 1.1 2005/03/20 16:17:22 dijkstra Exp $
+
+Adding a new probe
+------------------
+
+Get your measurement as fast as possible with as little fuss as possible. Ideal
+is to get all items that the user might want to query in one gets() and give
+symon the readings for a particular item in a get().
+
+Places to touch:
+
+- lib/data.[ch]: define the new dataformat. MT_YOURSTREAM should be the old
+  MT_EOF to not break old versions.
+
+- lib/lex.[ch]: define the token for the lexer
+
+- sym[on|ux]/readconf.c: parse the new token
+
+- symux/c_smrrds.sh: add new rrdtool storage format
+
+- platform/stub/sm_<name>.c: insert your stub probe here. Makefile will look
+  for platform/<os>/sm_<name>.c after that.
+
+- platform/<os>/sm_<name>.c: your probe
+
+- symon/main.c: insert hooks into probe caller table
+
+- symon/symon.8, symux/symux.8: add your token and its internal format to the
+  manual pages.
+
+
+

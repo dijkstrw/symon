@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.26 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.27 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,6 +85,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	ts = "pf";
 	ta = "";
 	break;
+    case MT_PFQ:
+	ts  = "pfq_";
+	ta = args;
+	break;
     case MT_MBUF:
 	ts = "mbuf";
 	ta = "";
@@ -107,10 +111,11 @@ insert_filename(char *path, int maxlen, int type, char *args)
 	return 0;
     }
 
-    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen)
+    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen) {
 	return 0;
-    else
+    } else {
 	return 1;
+    }
 }
 /* mux <host> (port|,| ) <number> */
 int
@@ -195,6 +200,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 		case LXT_IO1:
 		case LXT_MEM:
 		case LXT_PF:
+		case LXT_PFQ:
 		case LXT_MBUF:
 		case LXT_DEBUG:
 		case LXT_PROC:
@@ -307,9 +313,9 @@ read_source(struct sourcelist * sol, struct lex * l)
 
 		    /* try filename */
 		    if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
+			/* warn, but allow */
 			warning("%.200s:%d: file '%.200s', guessed by datadir,  cannot be opened",
 				l->filename, l->cline, path);
-			return 0;
 		    } else {
 			close(fd);
 			stream->file = xstrdup(path);
@@ -327,6 +333,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    case LXT_IO1:
 	    case LXT_MEM:
 	    case LXT_PF:
+	    case LXT_PFQ:
 	    case LXT_MBUF:
 	    case LXT_DEBUG:
 	    case LXT_PROC:
@@ -386,7 +393,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 			stream->file = xstrdup(l->token);
 		    }
 		}
-		break;		/* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC/SENSOR */
+		break;		/* LXT_CPU/IF/IO/IO1/MEM/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
 	    default:
 		parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
 		return 0;

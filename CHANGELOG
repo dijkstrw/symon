@@ -1,6 +1,14 @@
+19/03/2005 - 2.71
+
+   - Ulrich Spörlein updated mem probe for FreeBSD-current and removed some
+     bugs from FreeBSD/conf.sh.
+
+   - J. Martin Petersen contributed the FreeBSD io probe and a new probe called
+     pfq that can monitor pf altq queues.
+
 22/02/2005 - 2.70
 
-   - Ulrich Spoerlein updated the FreeBSD proc and mem probes, found a bug in
+   - Ulrich Spörlein updated the FreeBSD proc and mem probes, found a bug in
      the mem probe for OpenBSD and helped extend the shell config files for
      FreeBSD.
 
@@ -388,4 +396,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.41 2005/02/25 15:10:09 dijkstra Exp $
+$Id: CHANGELOG,v 1.42 2005/03/20 16:17:22 dijkstra Exp $

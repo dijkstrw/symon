@@ -1,7 +1,7 @@
-/* $Id: lex.c,v 1.24 2004/08/07 14:47:44 dijkstra Exp $ */
+/* $Id: lex.c,v 1.25 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,7 @@ static struct {
     { "monitor", LXT_MONITOR },
     { "mux", LXT_MUX },
     { "pf", LXT_PF },
+    { "pfq", LXT_PFQ },
     { "port", LXT_PORT },
     { "proc", LXT_PROC },
     { "second", LXT_SECOND },

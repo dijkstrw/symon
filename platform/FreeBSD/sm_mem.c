@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.3 2005/02/25 15:10:09 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.4 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -104,7 +104,7 @@ init_mem(char *s)
 int
 get_mem(char *symon_buf, int maxlen, char *s)
 {
-#ifdef HAS_VM_NSWAPDEV
+#ifdef HAS_XSWDEV
     int i;
     int vmnswp_dat, vmnswp_siz;
 #endif
@@ -119,17 +119,12 @@ get_mem(char *symon_buf, int maxlen, char *s)
     me_stats[1] = pagetob(me_vmtotal.t_rm);
     me_stats[2] = pagetob(me_vmtotal.t_free);
 
-#ifdef HAS_VM_NSWAPDEV
+#ifdef HAS_XSWDEV
     vmnswp_siz = sizeof (int);
     if (sysctl(me_vmnswp_mib_nam, me_vmnswp_mib_len, &vmnswp_dat, (void *)&vmnswp_siz, NULL, 0) < 0) {
 	warning("%s:%d: sysctl nswapdev failed", __FILE__, __LINE__);
 	vmnswp_dat = 0;
     }
-#endif
-
-    me_stats[3] = me_stats[4] = 0;
-
-#ifdef HAS_VM_NSWAPDEV
     for (i = 0; i < vmnswp_dat; i++) {
 	struct xswdev vmiswp_dat;
 	int vmiswp_siz;
@@ -139,6 +134,8 @@ get_mem(char *symon_buf, int maxlen, char *s)
 	me_stats[3] += (vmiswp_dat.xsw_used * DEV_BSIZE);
 	me_stats[4] += (vmiswp_dat.xsw_nblks * DEV_BSIZE);
     }
+#else
+    me_stats[3] = me_stats[4] = 0;
 #endif
 
     return snpack(symon_buf, maxlen, s, MT_MEM,

@@ -1,2 +1,4 @@
-# $Id: Makefile.inc,v 1.2 2005/02/25 15:10:09 dijkstra Exp $
-LIBS= -lkvm
+# $Id: Makefile.inc,v 1.3 2005/03/20 16:17:22 dijkstra Exp $
+LIBS=-lkvm -ldevstat
+SYSCONFDIR=${PREFIX}/etc
+BINDIR=bin

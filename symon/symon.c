@@ -1,7 +1,7 @@
-/* $Id: symon.c,v 1.40 2004/08/08 19:56:03 dijkstra Exp $ */
+/* $Id: symon.c,v 1.41 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,6 +79,7 @@ struct funcmap streamfunc[] = {
     {MT_MBUF, 0, NULL, init_mbuf, NULL, get_mbuf},
     {MT_SENSOR, 0, privinit_sensor, init_sensor, NULL, get_sensor},
     {MT_IO2, 0, NULL, init_io, gets_io, get_io},
+    {MT_PFQ, 0, privinit_pfq, init_pfq, gets_pfq, get_pfq},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 

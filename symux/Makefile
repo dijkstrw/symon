@@ -1,5 +1,6 @@
-# $Id: Makefile,v 1.22 2005/02/25 15:10:10 dijkstra Exp $
+# $Id: Makefile,v 1.23 2005/03/20 16:17:22 dijkstra Exp $
 .include "../Makefile.inc"
+.include "../platform/${OS}/Makefile.inc"
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
 OBJS+=	${SRCS:R:S/$/.o/g}
@@ -17,9 +18,9 @@ symux: ${OBJS}
 clean:
 	rm -f conf.h symux symux.cat8 symux.core ${OBJS}
 
-install: symux symux.cat8 c_smrrds.sh symux.conf
-	${INSTALL} -c -m 555 -g bin   -o root symux      ${PREFIX}/${BINDIR}
-	${INSTALL} -c -m 444 -g wheel -o root symux.cat8 ${PREFIX}/${MANDIR}/cat8/symux.0
+install: symux symux.8 c_smrrds.sh symux.conf
+	${INSTALL} -c -m 555 -g bin   -o root symux	   ${PREFIX}/${BINDIR}
+	${INSTALL} -c -m 444 -g wheel -o root symux.8	   ${PREFIX}/${MANDIR}/man8/symux.8
 	${INSTALL} -d -m 555 -g bin   -o root ${PREFIX}/${SHRDIR}
 	${INSTALL} -c -m 544 -g bin   -o root c_smrrds.sh  ${PREFIX}/${SHRDIR}
 	${INSTALL} -d -m 555 -g bin   -o root ${PREFIX}/${EXADIR}

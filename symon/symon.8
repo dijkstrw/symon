@@ -59,10 +59,9 @@ instances in a LAN.
 .Lp
 By default,
 .Nm
-will drop privileges and chroot(2) to home of
-.Ar "_symon".
-This behaviour is not strictly needed for the cpu, mem, mbuf, disk debug and
-interface probes as these will work even when
+will drop privileges and chroot(2) to home of the symon user.  This behaviour
+is not strictly needed for the cpu, mem, mbuf, disk debug and interface probes
+as these will work even when
 .Nm
 is started as
 .Ar "nobody".
@@ -106,8 +105,8 @@ monitor-rule = "monitor" "{" resources "}" [every]
                "stream" ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
 argument     = number | interfacename | diskname
-resource     = "cpu" | "mem" | "if" | "io" | "pf" | "debug" |
-               "proc" | "mbuf" | "sensor"
+resource     = "cpu" | "mem" | "if" | "io" | "pf" | "pfq" |
+               "debug" | "proc" | "mbuf" | "sensor"
 every        = "every" time
 time         = "second" | number "seconds"
 host         = ip4addr | ip6addr | hostname

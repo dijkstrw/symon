@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.3 2005/02/25 15:10:10 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.4 2005/03/20 16:17:22 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -176,44 +176,50 @@ get_proc(char *symon_buf, int maxlen, char *process)
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
 #ifdef HAS_KI_PADDR
-	 if (strncmp(process, pp->ki_comm, strlen(process)) == 0) {
-	      /* cpu time - accumulated */
-	      if (proc_kd) {
-		   if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
-				  sizeof(pproc)) == sizeof(pproc)) {
-			cpu_uticks += pproc.p_uticks;  /* user */
-			cpu_sticks += pproc.p_sticks;  /* sys  */
-			cpu_iticks += pproc.p_iticks;  /* int  */
-		   } else {
-			warning("while reading kvm: %s", kvm_geterr(proc_kd));
-		   }
-	      }
-	     /* cpu time - percentage since last measurement */
-	     cpu_pct = pctdouble(pp->ki_pctcpu) * 100.0;
-	     cpu_pcti += cpu_pct;
-	     /* memory size - shared pages are counted multiple times */
-	     mem_procsize += pagetob(pp->ki_tsize + /* text pages */
-				     pp->ki_dsize + /* data */
-				     pp->ki_ssize); /* stack */
-	     mem_rss += pagetob(pp->ki_rssize);     /* rss  */
+	if (strncmp(process, pp->ki_comm, strlen(process)) == 0) {
+	    /* cpu time - accumulated */
+	    if (proc_kd) {
+		if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
+			     sizeof(pproc)) == sizeof(pproc)) {
+#ifdef HAS_RUSAGE_EXT
+		    cpu_uticks += pproc.p_rux.p_uticks;  /* user */
+		    cpu_sticks += pproc.p_rux.p_sticks;  /* sys  */
+		    cpu_iticks += pproc.p_rux.p_iticks;  /* int  */
 #else
-	 if (strncmp(process, pp->kp_proc.p_comm, strlen(process)) == 0) {
-	     /* cpu time - accumulated */
-	     cpu_uticks += pp->kp_proc.p_uticks;  /* user */
-	     cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
-	     cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
-
-	     /* cpu time - percentage since last measurement */
-	     cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
-	     cpu_pcti += cpu_pct;
-	     /* memory size - shared pages are counted multiple times */
-	     mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
-				     pp->kp_eproc.e_vm.vm_dsize + /* data */
-				     pp->kp_eproc.e_vm.vm_ssize); /* stack */
-	     mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+		    cpu_uticks += pproc.p_uticks;  /* user */
+		    cpu_sticks += pproc.p_sticks;  /* sys  */
+		    cpu_iticks += pproc.p_iticks;  /* int  */
 #endif
-	     n++;
-	 }
+		} else {
+		    warning("while reading kvm: %s", kvm_geterr(proc_kd));
+		}
+	    }
+	    /* cpu time - percentage since last measurement */
+	    cpu_pct = pctdouble(pp->ki_pctcpu) * 100.0;
+	    cpu_pcti += cpu_pct;
+	    /* memory size - shared pages are counted multiple times */
+	    mem_procsize += pagetob(pp->ki_tsize + /* text pages */
+				    pp->ki_dsize + /* data */
+				    pp->ki_ssize); /* stack */
+	    mem_rss += pagetob(pp->ki_rssize);     /* rss  */
+#else
+	if (strncmp(process, pp->kp_proc.p_comm, strlen(process)) == 0) {
+	    /* cpu time - accumulated */
+	    cpu_uticks += pp->kp_proc.p_uticks;  /* user */
+	    cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
+	    cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
+
+	    /* cpu time - percentage since last measurement */
+	    cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
+	    cpu_pcti += cpu_pct;
+	    /* memory size - shared pages are counted multiple times */
+	    mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
+				    pp->kp_eproc.e_vm.vm_dsize + /* data */
+				    pp->kp_eproc.e_vm.vm_ssize); /* stack */
+	    mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+#endif
+	    n++;
+	}
     }
 
     /* calc total cpu_secs spent */
