@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.7 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.8 2002/12/15 14:22:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -63,7 +63,7 @@
 #include "symon.h"
 
 /* Globals for this module start with if_ */
-int if_s = -1;
+static int if_s = -1;
 /* Prepare if module for first use */
 void 
 init_if(char *s)

@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.9 2002/11/29 10:48:53 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.10 2002/12/15 14:22:36 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -50,12 +50,12 @@
 #include "xmalloc.h"
 
 /* Globals for this module start with io_ */
-char *io_dkstr = NULL;
-struct diskstats *io_dkstats = NULL;
-char **io_dknames = NULL;
-int io_dks = 0;
-int io_maxdks = 0;
-int io_maxstr = 0;
+static char *io_dkstr = NULL;
+static struct diskstats *io_dkstats = NULL;
+static char **io_dknames = NULL;
+static int io_dks = 0;
+static int io_maxdks = 0;
+static int io_maxstr = 0;
 
 void 
 gets_io()
