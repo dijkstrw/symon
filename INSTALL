@@ -1,6 +1,20 @@
 Installation notes
 ==================
 
+Priviledges
+===========
+monmux needs read and write access to it's rrdfiles.
+
+monitoring needs:
+cpu, if, mem    - mon can run as nobody
+pf              - mon needs r/w on /dev/pfctl
+io              - probe is kvm, mon needs kmem. Note that this probe is 
+                  disabled in the standard build.
+
+mon2web is a php4 application and needs access to the rrdfiles. Note that
+mon2web interprets the url for graphing parameters. It should never be exposed
+to untrusted users.
+
 Real quick 
 ==========
 make && make install && vi /etc/monmux.conf /etc/mon.conf && 
@@ -8,8 +22,14 @@ make && make install && vi /etc/monmux.conf /etc/mon.conf &&
 	/usr/local/libexec/monmux && 
 	/usr/local/libexec/mon
 
-Slightly less quick but with pretty pictures
-============================================
+or grab the port and do
+make package
+pkg_add mon-monitor-version.tgz on all monitored hosts
+pkg_add mon-mux-version.tgz on the loghost
+pkg_add mon-web-version.tgz on the loghost
+
+Less quick, but more verbose
+============================
 - Install rrdtool. cd /usr/ports/net/rrdtool && make install should do the
   trick.
 
@@ -28,7 +48,8 @@ Slightly less quick but with pretty pictures
                 to 'share/mon'.
 
 - Decide if you want to monitor disk usage. Define KVM as an environment
-  variable before you run make if you do.
+  variable before you run make if you do. Note: the monitor will be built with
+  kmem priviledges. This is a bad thing.
 
 - Run make && make install
 
@@ -44,24 +65,26 @@ Slightly less quick but with pretty pictures
 
 - Fire up mon, monmux. Check system logs for any failures.
 
-- only if you need the webinterface: mon2web is not installed anywhere by
-  default. Copy the files to a convenient apache directory and modify the
-  mon2web/datasources.inc to reflect your filelocations. Note that it uses php,
-  so you may need to (cd /usr/ports/www/php4; make install).
+- Only if you need the webinterface: mon2web is installed in
+  $PREFIX/$SHRDIR/. Copy the files to a convenient apache directory and modify
+  the mon2web/datasources.inc to reflect your filelocations. Note that it uses
+  php, so you may need to (cd /usr/ports/www/php4; make install).
 
 Installing mon on many machines
 ===============================
 
-- Copy the mon-version.tar.gz to /usr/ports/distfiles/
+- Grab the port files, these are also included in the full source package under
+  ~mon/ports/mon.
 
-- Use the ports directory to create a mon package. 
-  cd ~mon/ports/mon
+- cd ~mon/ports/mon
   make package
-- The binary package can be found at 
-  /usr/ports/packages/<arch>/All/mon-version.tgz
 
-- You can transfer the resulting package to many machines and install it by
-  pkg_add it.
+- The binary packages can be found at 
+  /usr/ports/packages/<arch>/All/mon-{monitor|mux|web}-version.tgz
+
+- It makes sense to transfer the mon-monitor-version.tgz to other machines and
+  install by pkg_add it. The other 2 packages (mux and web) are the gatherer and
+  web frontend. Chances are you want these on your loghost only.
 
 This package is an OpenBSD application. You might be able to make monmux and
 mon2web run on POSIX compliant unixes, but the monitoring application itself
@@ -69,5 +92,5 @@ mon2web run on POSIX compliant unixes, but the monitoring application itself
 
 Willem Dijkstra <wpd@xs4all.nl>
 
-$Id: INSTALL,v 1.3 2002/08/31 15:54:57 dijkstra Exp $
+$Id: INSTALL,v 1.4 2002/09/10 19:19:52 dijkstra Exp $
 

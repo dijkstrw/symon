@@ -1,3 +1,8 @@
+10/09/2002 - 2.4
+
+   Added some example pf graphs. This data is hard to plot, ideas are
+   welcome. Added better port support.
+
 09/09/2002 - Towards a better port makefile
 
    Reworked port Makefile. It now generates a number of packages that can be
@@ -132,4 +137,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.3 2002/09/09 22:04:40 dijkstra Exp $
+$Id: CHANGELOG,v 1.4 2002/09/10 19:19:52 dijkstra Exp $

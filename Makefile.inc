@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.5 2002/09/10 18:32:44 dijkstra Exp $
+# $Id: Makefile.inc,v 1.6 2002/09/10 19:19:52 dijkstra Exp $
 
 V=2.4
 
@@ -21,7 +21,7 @@ STRIP=  strip
 BINDIR= libexec
 MANDIR=	man
 SHRDIR= share/mon
-WEBDIR= share/mon/web
+WEBDIR= ${SHRDIR}/web
 
 .ifndef PREFIX
 PREFIX=/usr/local
