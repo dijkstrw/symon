@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.7 2002/07/25 14:23:05 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.8 2002/07/25 19:10:03 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2002 Willem Dijkstra
@@ -72,7 +72,7 @@ addsuffix() {
 }
 
 this=$0
-if [ X"$1" == "X" ]; then
+if [ X"$1$2$3$4$5$6$7$8$9" == "X" ]; then
     sh $this help
     exit 1;
 fi
@@ -97,7 +97,7 @@ fi
 case $i in
 
 all)
-    echo "Creating rrd files for {cpu|mem|disks|interfaces}"
+    echo "Creating rrd files for {cpu0|mem|disks|interfaces}"
     sh $this cpu0 mem
     sh $this interfaces
     sh $this disks
@@ -166,7 +166,7 @@ io_*.rrd)
     # Default match
     cat <<EOF
 Usage: $0 all
-       $0 cpu|mem|<if>|<io>
+       $0 cpu0|mem|<if>|<io>
 
 Where:
 if=	`echo $INTERFACES|

@@ -39,18 +39,28 @@
 .Pp
 .Sh DESCRIPTION
 .Xr mon 8
-is a lightweight system monitor that measures cpu, memory, interface and disk statistics every 5 seconds. This information is then spooled to   
+is a lightweight system monitor that measures cpu, memory, interface and disk
+statistics every 5 seconds. This information is then spooled to
 .Nm
 for further processing. 
 .Pp
 .Xr mon 8
-has been designed to inflict minimal performance and security impact on the system it monitors. 
+has been designed to inflict minimal performance and security impact on the
+system it monitors.
 .Nm
-has performance impact proportional to the amount of streams it needs to manage. Ideally it should live on a different system and collect data from several 
+has performance impact proportional to the amount of streams it needs to
+manage. Ideally 
+.Nm 
+should live on a different system and collect data from several
 .Xr mon 8
 instances in a LAN.
 .Nm 
-currently only stores the incoming streams in .rrd files; future versions will also allow other programs to attach to monmux and use the incoming monitor data.
+stores the incoming streams in .rrd files and distributes the information to
+connected listeners. Listeners can connect to
+.Nm
+on a tcp port and receive incoming 
+.Xr mon 8
+transmissions decoded into ascii.
 
 The options:
 .Bl -tag -width Ds
@@ -84,12 +94,20 @@ resource          = "cpu" | "mem" | "if" | "io"
 argument          = number | interfacename | diskname
 write-statement   = "write" resource "in" filename
 .fi
+.Pp
+Note that the port specifies both a udp port for incoming 
+.Xr mon 8
+traffic and a tcp port for incoming listeners.
+
 .Sh EXAMPLE
 Here is an example 
 .Ar monmux.conf
-that listens to port 2100 on lo0, and accepts cpu, memory, interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] streams from a 
+that listens to udp port 2100 on lo0, and accepts cpu, memory, interfaces
+xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] streams from a
 .Xr mon 8
 on localhost. 
+.Nm
+will also listen on tcp port 2100 for incoming listeners.
 .Pp
 .nf
 mux 127.0.0.1:2100
@@ -115,6 +133,33 @@ source 127.0.0.1 {
 	write io(cd1)  in "/export/mon/localhost/io_cd1.rrd"
 }
 .fi
+.Sh LISTENERS
+.Nm
+offers received 
+.Xr mon 8 
+data to other programs via tcp. An example of a listener session:
+.Pp
+.nf
+hoard:~/project/mon$ telnet 127.0.0.1 2100
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+
+127.0.0.1;io:cd1:1027452867:262:308:536576;io:cd0:1027452867
+:0:0:0;io:wd3:1027452867:249140:249140:11797277696;io:wd2:10
+27452867:4074001:4074001:64923271168;io:wd1:1027452867:43183
+9:431839:11880622080;io:wd0:1027452867:10890717:10890717:125
+382360064;if:lo0:1027452867:86952111:86952111:1164079422:116
+4079422:0:0:0:0:0:0;if:de0:1027452867:117562055:90333984:405
+8603563:1844391820:2588654:1:0:0:4013757:0;if:xl0:1027452867
+:149845272:187785769:2494862812:739916810:43291:1:3:0:318440
+7:0;mem::1027452867:26566656:68579328:323141632:3571712:1047
+67488;cpu:0:1027452867:0.00:0.00:0.00:0.00:99.00;
+^]
+
+telnet> close
+Connection closed.
+.fi
 .Sh SIGNALS
 .Bl -tag -width Ds
 .It SIGHUP
@@ -126,7 +171,13 @@ to read
 will keep the old configuration if errors occured during parsing of the configuration file.
 .Sh BUGS
 .Nm 
-does not yet support exporting monitored information to other programs.
+writes incoming data to rrd files first. This causes 
+.Nm 
+to lockup while rrdupdate is updating the rrd file. 
+.Nm
+will be unresponsive during this process. 
+.Pp
+The listener format should be documented in the man page.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>
 .Sh SEE ALSO

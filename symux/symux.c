@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.17 2002/07/25 14:23:05 dijkstra Exp $ */
+/* $Id: symux.c,v 1.18 2002/07/25 19:10:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -244,6 +244,12 @@ main(int argc, char *argv[])
 			arg_ra[1] = "--";
 			arg_ra[2] = stream->file;
 			
+			/* This call will cost a lot (monmux will become
+			 * unresponsive and eat up massive amounts of cpu) if
+			 * the rrdfile is out of sync. While I could update the
+			 * rrd in a separate process, I choose not to at this
+			 * time.  
+			 */
 			rrd_update(4, arg_ra);
 			
 			if (rrd_test_error()) {
