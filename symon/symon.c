@@ -1,15 +1,12 @@
 /*
- * $Id: symon.c,v 1.5 2001/05/19 14:24:35 dijkstra Exp $
+ * $Id: symon.c,v 1.6 2001/06/24 12:27:37 dijkstra Exp $
  *
  * All configuration is done in the source. The main program
  * does not take any arguments (yet)
  *
- * Two semaphores are used:
- * S_STARTMEASUREMENT and S_STOPMEASUREMENT. The main program -- with the
- * measurement loop -- blocks on START until the alarm handler removes the
- * block. The measurement loop will run and unblock STOP when finished. The
- * alarm handler checks STOP to determine wether the measurement is finished
- * before the next START is unblocked.
+ * This program wakes up every MON_INTERVAL to measure cpu, memory and
+ * interface statistics. This code takes care of waking up every so ofte, while
+ * the actual measurement tasks are handled elsewhere.
  * 
  */
 #include <err.h>
@@ -19,10 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ipc.h>
 #include <sys/param.h>
-#include <sys/sem.h>
-#include <sys/types.h>
 #include <syslog.h>
 #include <time.h>
 #include <unistd.h>
@@ -42,6 +36,7 @@ struct monm monm[] = {
 #ifdef MON_KVM
     {"ifstat",  "xl0", "/home/dijkstra/project/mon/if_xl0.rrd", init_ifstat,  get_ifstat},
     {"ifstat",  "de0", "/home/dijkstra/project/mon/if_de0.rrd", init_ifstat,  get_ifstat},
+    {"ifstat",  "wi0", "/home/dijkstra/project/mon/if_wi0.rrd", init_ifstat,  get_ifstat},
 #endif
     { NULL, NULL, NULL, NULL, NULL}
 };
@@ -65,29 +60,7 @@ int kread(addr, buf, size)
 }
 #endif
 
-int sem=0;
-struct sembuf asb;
-
-void releasesem() {
-    if (sem)
-	semctl(sem,1,IPC_RMID,0);
-}
-
 void alarmhandler() {
-    asb.sem_num=S_STOPMEASURE;
-    asb.sem_flg=IPC_NOWAIT;
-    asb.sem_op=-1;
-    if (semop(sem,&asb,1)) {
-	syslog(LOG_ALERT,"alarm before end of measurements -- skipping %d seconds", 
-	       MON_INTERVAL);
-    } else {
-	asb.sem_num=S_STARTMEASURE;
-	asb.sem_flg=IPC_NOWAIT;
-	asb.sem_op=1;
-	if (semop(sem,&asb,1)) {
-	    syslog(LOG_INFO,"alarm: sem failed -- %s", strerror(errno));
-	}
-    }
 }
 
 int main(argc, argv)
@@ -97,7 +70,6 @@ int main(argc, argv)
     int i;
     char *arg_ra[2];
     struct itimerval ai,ri;
-    struct sembuf sembuf;
 
 #ifdef MON_KVM
     char *nlistf = NULL, *memf = NULL;
@@ -127,7 +99,7 @@ int main(argc, argv)
 #endif
 
     /* Init modules */
-    syslog(LOG_INFO,"system monitor $Revision: 1.5 $ started");
+    syslog(LOG_INFO,"system monitor $Revision: 1.6 $ started");
 
     i=-1;
     while (monm[++i].type) {
@@ -135,23 +107,6 @@ int main(argc, argv)
 	(monm[i].init)(monm[i].arg);
     }
 
-    /* Setup semaphore */
-    if ((sem = semget(IPC_PRIVATE,2,(SEM_A|SEM_R)))==0) {
-	syslog(LOG_INFO,"could not obtain semaphore -- %s", strerror(errno));
-	exit(1);
-    }
-    syslog(LOG_INFO,"obtained semaphore w/id:%d",sem);
-    atexit(releasesem);
-
-    if (semctl(sem,0,SETVAL,S_STARTMEASURE)!=0) {
-	syslog(LOG_INFO,"could not set semaphore -- %s", strerror(errno));
-	exit(1);
-    }
-    if (semctl(sem,1,SETVAL,S_STOPMEASURE)!=0) {
-	syslog(LOG_INFO,"could not set semaphore -- %s", strerror(errno));
-	exit(1);
-    }
-    
     /* Setup signal handlers */
     signal(SIGALRM, alarmhandler);
     signal(SIGINT, exit);
@@ -172,18 +127,8 @@ int main(argc, argv)
     }
 
     for (;;) {  /* forever */
-	sembuf.sem_num=S_STARTMEASURE;
-	sembuf.sem_flg=0;
-	sembuf.sem_op=-1;
-	while (semop(sem,&sembuf,1)!=0) {
-	    /* semop will return with an EINTR if it is interrupted by a
-               signal. This happens each MON_INTERVAL with us!
-               (sys/kern/sysv_sem.c) */
-	    if (errno!=EINTR) {
-		syslog(LOG_INFO,"measurement start: sem failed -- %s", strerror(errno));
-		exit(1);
-	    } 
-	}
+      /* sleep until the signal handler catches an alarm */
+	sleep(MON_INTERVAL*2);
 
 	/* run past the modules */
 	i=-1;
@@ -193,20 +138,14 @@ int main(argc, argv)
 	    arg_ra[2]=monm[i].get(monm[i].arg);
 #ifdef DEBUG
 	    syslog(LOG_INFO,"%s(%s)='%s'",monm[i].type,monm[i].arg,&mon_buf[0]);
-#endif
+#else
 	    rrd_update(3,arg_ra);
+
 	    if (rrd_test_error()) {
 		syslog(LOG_INFO,"rrd_update:%s",rrd_get_error());
 		rrd_clear_error();                                                            
 	    }
-	}
-
-	sembuf.sem_num=S_STOPMEASURE;
-	sembuf.sem_flg=IPC_NOWAIT;
-	sembuf.sem_op=1;
-	while (semop(sem,&sembuf,1)) {
-	    syslog(LOG_ALERT,"measurement stop: sem failed -- %s", strerror(errno));
-	    exit(1);
+#endif
 	}
     }
     /* NOTREACHED */
