@@ -1,15 +1,17 @@
 Programming rules:
 
-- Cpu cost matters more than storage.
+- Cpu cost matters more than storage. Network traffic is more expensive than
+  cpu. 
 
 - Structures are not overloaded in functionality even if that would be possible
   memberwise. Overloading = code can be understood in more than one way and
-  leads to more maintenance and bugs.
+  that leads to more maintenance and bugs.
 
-- Defines are not overloaded in functionality if possible. Same reason as
-  above.
+- Defined values are not overloaded in functionality if possible. Same reason
+  as above.
 
-== Problems to be solved ==
+
+== Problems Solved ==
 
 - Generate a format for network traversal of data
 
