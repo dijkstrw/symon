@@ -1,3 +1,8 @@
+13/09/2002 - kvm gone
+
+   Rewrote io.c to obtain information via sysctl only. All kvm code is now
+   gone.
+
 10/09/2002 - 2.4
 
    Added some example pf graphs. This data is hard to plot, ideas are
@@ -137,4 +142,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number	
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.4 2002/09/10 19:19:52 dijkstra Exp $
+$Id: CHANGELOG,v 1.5 2002/09/13 07:42:50 dijkstra Exp $

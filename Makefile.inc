@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.6 2002/09/10 19:19:52 dijkstra Exp $
+# $Id: Makefile.inc,v 1.7 2002/09/13 07:42:50 dijkstra Exp $
 
 V=2.4
 
@@ -8,9 +8,6 @@ CC=	cc
 CFLAGS= -g -Wall
 .else
 CFLAGS= -O2 -Wall
-.endif
-.ifdef KVM
-CFLAGS+=-DMON_KVM
 .endif
 INSTALL=install
 LORDER=	lorder

@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.22 2002/08/31 16:09:55 dijkstra Exp $ */
+/* $Id: symon.c,v 1.23 2002/09/13 07:42:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -57,39 +57,13 @@ __END_DECLS
 
 int flag_hup = 0;
 
-#ifdef MON_KVM
-kvm_t *kvmd;
-struct nlist mon_nl[] = {
-    {"_disklist"},   /* MON_DL    = 0  (mon.h)*/
-    {""},
-};
-/* Read kernel memory */
-int 
-kread(u_long addr, char *buf, int size)
-{
-    if (kvm_read(kvmd, addr, buf, size) != size) {
-	warning("kvm_read:%s", kvm_geterr(kvmd));
-	return 1;
-    }
-
-    return 0;
-}
-#else /* MON_KVM */
-int 
-kread(u_long addr, char *buf, int size)
-{
-    warning("kvm_read not compiled in, calling probe will signal failure");
-
-    return 0;
-}
-#endif
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
-    {MT_IO,  init_io,  get_io},
-    {MT_CPU, init_cpu, get_cpu},
-    {MT_MEM, init_mem, get_mem},
-    {MT_IF,  init_if,  get_if},
-    {MT_PF,  init_pf,  get_pf},
+    {MT_IO,  init_io,  gets_io, get_io},  /* gets_io obtains entire io state, get_io = just a copy */
+    {MT_CPU, init_cpu, NULL,    get_cpu},
+    {MT_MEM, init_mem, NULL,    get_mem},
+    {MT_IF,  init_if,  NULL,    get_if},
+    {MT_PF,  init_pf,  NULL,    get_pf},
     {MT_EOT, NULL, NULL}
 };
 
@@ -132,11 +106,8 @@ main(int argc, char *argv[])
     struct stream *stream;
     struct mux *mux;
     FILE *f;
-#ifdef MON_KVM
-    char mon_buf[_POSIX2_LINE_MAX];
-    char *nlistf = NULL, *memf = NULL;
-#endif
     int ch;
+    int i;
 
     SLIST_INIT(&mul);
 
@@ -156,19 +127,6 @@ main(int argc, char *argv[])
 	    exit(1);
 	}
     }
-
-#ifdef MON_KVM
-    /* Populate our kernel name list */
-    if ((kvmd = kvm_openfiles(nlistf, memf, NULL, O_RDONLY, mon_buf)) == NULL)
-	fatal("kvm_open: %s", mon_buf);
-    
-    if (kvm_nlist(kvmd, mon_nl) < 0 || mon_nl[0].n_type == 0) {
-	if (nlistf)
-	    fatal("%s: no namelist", nlistf);
-	else
-	    fatal("no namelist");
-    }
-#endif /* MON_KVM */
 
     setegid(getgid());
     setgid(getgid());
@@ -248,6 +206,12 @@ main(int argc, char *argv[])
 		}
 	    }
 	}
+
+	/* populate data space for modules that get all their measurements in
+           one go */
+	for (i=0; i<MT_EOT; i++)
+	    if (streamfunc[i].gets != NULL)
+		(streamfunc[i].gets)();
 
 	SLIST_FOREACH(mux, &mul, muxes) {
 	    prepare_packet(mux);

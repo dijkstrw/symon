@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.6 2002/09/02 06:16:26 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.7 2002/09/13 07:42:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,15 +35,11 @@
  * 
  * total nr of transfers : total seeks : total bytes transferred
  *
- * This module uses the kvm interface to read kernel values directly. It needs
- * a valid kvm handle and will only work if this has been obtained by someone
- * belonging to group kmem. Note that these priviledges can be dropped right
- * after the handle has been obtained. (sgid kmem on executable) 
- *
- * Re-entrant code: globals are used to speedup calculations for all disks.
+ * Non re-entrant code: gets_io messes with globals r/w without a semaphore.
  * 
- * TODO: di_name is too large
  */
+#include <sys/param.h>
+#include <sys/sysctl.h>
 #include <sys/disk.h>
 
 #include <limits.h>
@@ -51,60 +47,105 @@
 
 #include "error.h"
 #include "mon.h"
+#include "xmalloc.h"
 
 /* Globals for this module start with io_ */
-struct disk io_disk;
-size_t io_size_disk;
-struct disklist_head io_dihead;
-size_t io_size_dihead;
-char io_name[_POSIX2_LINE_MAX];
+char *io_dkstr = NULL;
+struct diskstats *io_dkstats = NULL;
+char **io_dknames = NULL;
+int io_dks = 0;
+int io_maxdks = 0;
+int io_maxstr = 0;
+
+void 
+gets_io() 
+{
+    int mib[3];
+    char *p;
+    int dks;
+    size_t size;
+    size_t strsize;
+    
+    /* how much memory is needed */
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKCOUNT;
+    size = sizeof(dks);
+    if (sysctl(mib, 2, &dks, &size, NULL, 0) < 0) {
+	fatal("%s:%d: sysctl failed: can't get hw.diskcount",
+	      __FILE__, __LINE__);
+    }
+
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKNAMES;
+    strsize = 0;
+    if (sysctl(mib, 2, NULL, &strsize, NULL, 0) < 0) {
+	fatal("%s:%d: sysctl failed: can't get hw.disknames", 
+	      __FILE__, __LINE__);
+    }
+
+    /* increase buffers if necessary */
+    if (dks > io_maxdks || strsize > io_maxstr) {
+	io_maxdks = dks;
+	io_maxstr = strsize;
+
+	if (io_maxdks > MON_MAX_DOBJECTS) {
+	    fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
+		  __FILE__, __LINE__, MON_MAX_DOBJECTS);
+	}
+	
+	if (io_maxstr > MON_MAX_OBJSIZE) {
+	    fatal("%s:%d: string size exceeded (%d)",
+		  __FILE__, __LINE__, MON_MAX_OBJSIZE);
+	}
+
+	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct diskstats));
+	io_dknames = xrealloc(io_dknames, io_maxdks * sizeof(char *));
+	io_dkstr = xrealloc(io_dkstr, io_maxstr + 1);
+    }
+
+    /* read data in anger */
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKNAMES;
+    if (sysctl(mib, 2, io_dkstr, &io_maxstr, NULL, 0) < 0) {
+	fatal("%s:%d: io can't get hw.disknames"
+	      __FILE__, __LINE__);
+    }
+    io_dkstr[io_maxstr] = '\0';
+
+    mib[0] = CTL_HW;
+    mib[1] = HW_DISKSTATS;
+    size = io_maxdks * sizeof(struct diskstats);
+    if (sysctl(mib, 2, io_dkstats, &size, NULL, 0) < 0) {
+	fatal("%s:%d: io can't get hw.diskstats"
+	      __FILE__, __LINE__);
+    }
+
+    p = io_dkstr;
+    io_dks = 0;
+    while ((io_dknames[io_dks] = strsep(&p, ",")) != NULL)
+	io_dks++;
+}    
 /* Prepare io module for first use */
 void 
 init_io(char *s) 
 {
-#ifdef MON_KVM
-    io_size_disk = sizeof io_disk;
-    io_size_dihead = sizeof io_dihead;
-
     info("started module io(%s)", s);
-#else
-    warning("io(%s) requires kvm support which was disabled at compile time", s);
-#endif
 }
 /* Get new io statistics */
 int 
 get_io(char *mon_buf, int maxlen, char *disk) 
 {
-#ifdef MON_KVM
-    u_long diskptr;
+    int i;
 
-    /* obtain first disk structure in kernel memory */
-    if (kread(mon_nl[MON_DL].n_value, (char *) &io_dihead, io_size_dihead)) {
-	warning("io(%s) failed", disk);
-	return 0;
-    }
-
-    diskptr = (u_long) io_dihead.tqh_first;
-
-    while (diskptr) {
-	kread(diskptr, (char *) &io_disk, io_size_disk);
-	diskptr = (u_long) io_disk.dk_link.tqe_next;
-
-	if (io_disk.dk_name != NULL) {
-	    kread((u_long)io_disk.dk_name, (char *) &io_name, _POSIX2_LINE_MAX);
-	    io_name[_POSIX2_LINE_MAX - 1] = '\0';
-
-	    if (disk != NULL && strncmp(io_name, disk, _POSIX2_LINE_MAX) == 0) {
-		return snpack(mon_buf, maxlen, disk, MT_IO,
-			      io_disk.dk_xfer, io_disk.dk_seek,
-			      io_disk.dk_bytes);
-	    }
-	}
-    }
+    /* look for disk */
+    for (i=0; i<io_dks; i++) {
+	if (strncmp(io_dknames[i], disk, 
+		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
+	    return snpack(mon_buf, maxlen, disk, MT_IO,
+			  io_dkstats[i].ds_xfer, 
+			  io_dkstats[i].ds_seek,
+			  io_dkstats[i].ds_bytes);
+    } 
 
     return 0;
-#else
-    return 0;
-#endif
 }
-

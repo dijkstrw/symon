@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.17 2002/09/10 18:32:58 dijkstra Exp $ */
+/* $Id: symon.h,v 1.18 2002/09/13 07:42:53 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2002 Willem Dijkstra
@@ -35,11 +35,6 @@
 
 #include <sys/queue.h>
 
-#ifdef MON_KVM
-#include <kvm.h>
-#include <nlist.h>
-#endif
-
 #include "lex.h"
 #include "data.h"
 
@@ -48,33 +43,20 @@
 #define MON_VERSION     "2.4"
 #define MON_INTERVAL 5                           /* measurement interval */
 #define MON_WARN_SENDERR 50                      /* warn every x errors */
-
-/* kvm interface */
-#ifdef MON_KVM
-extern kvm_t *kvmd;
-extern struct nlist mon_nl[];
-#define MON_DL    0
-#endif /* MON_KVM */
-
+#define MON_MAX_DOBJECTS  100                    /* max dynamic alloction
+                                                     = 100 objects */
+#define MON_MAX_OBJSIZE  (_POSIX2_LINE_MAX)      /* max allocation unit 
+						     = _POSIX2_LINE_MAX */
 struct funcmap {
     int type;
     void (*init)(char *);
+    void (*gets)();
     int (*get)(char*, int, char *);
 };
-
 extern struct funcmap streamfunc[];
 
 /* prototypes */
 __BEGIN_DECLS
-#ifdef MON_KVM
-extern int kread(u_long, char *, int);
-#else
-extern int kread(u_long, char *, int); /* This is a stub that reports an error
-					  when called. I included it so as not
-					  to miss any stuff when the time has
-					  come to rip all MON_KVM stuff out */
-#endif
-
 /* cpu.c */
 extern void init_cpu(char *);
 extern int  get_cpu(char *, int, char *);
@@ -89,6 +71,7 @@ extern int  get_if(char *, int, char *);
 
 /* io.c */
 extern void init_io(char *);
+extern void gets_io();
 extern int  get_io(char *, int, char *);
 
 /* pf.c */
