@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.4 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.5 2005/05/31 09:13:55 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -182,9 +182,9 @@ get_proc(char *symon_buf, int maxlen, char *process)
 		if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
 			     sizeof(pproc)) == sizeof(pproc)) {
 #ifdef HAS_RUSAGE_EXT
-		    cpu_uticks += pproc.p_rux.p_uticks;  /* user */
-		    cpu_sticks += pproc.p_rux.p_sticks;  /* sys  */
-		    cpu_iticks += pproc.p_rux.p_iticks;  /* int  */
+		    cpu_uticks += pproc.p_rux.rux_uticks;  /* user */
+		    cpu_sticks += pproc.p_rux.rux_sticks;  /* sys  */
+		    cpu_iticks += pproc.p_rux.rux_iticks;  /* int  */
 #else
 		    cpu_uticks += pproc.p_uticks;  /* user */
 		    cpu_sticks += pproc.p_sticks;  /* sys  */

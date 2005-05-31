@@ -1,3 +1,7 @@
+31/05/2005 - 2.72
+
+   - Ulrich Spörlein updated proc probe for FreeBSD-current.
+
 19/03/2005 - 2.71
 
    - Ulrich Spörlein updated mem probe for FreeBSD-current and removed some
@@ -396,4 +400,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.43 2005/03/22 07:17:42 dijkstra Exp $
+$Id: CHANGELOG,v 1.44 2005/05/31 09:13:55 dijkstra Exp $
