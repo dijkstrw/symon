@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.4 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.5 2005/06/26 12:34:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -118,6 +118,7 @@ get_mem(char *symon_buf, int maxlen, char *s)
     me_stats[0] = pagetob(me_vmtotal.t_arm);
     me_stats[1] = pagetob(me_vmtotal.t_rm);
     me_stats[2] = pagetob(me_vmtotal.t_free);
+    me_stats[3] = me_stats[4] = 0;
 
 #ifdef HAS_XSWDEV
     vmnswp_siz = sizeof (int);
@@ -134,8 +135,6 @@ get_mem(char *symon_buf, int maxlen, char *s)
 	me_stats[3] += (vmiswp_dat.xsw_used * DEV_BSIZE);
 	me_stats[4] += (vmiswp_dat.xsw_nblks * DEV_BSIZE);
     }
-#else
-    me_stats[3] = me_stats[4] = 0;
 #endif
 
     return snpack(symon_buf, maxlen, s, MT_MEM,
