@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.19 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symux.h,v 1.20 2005/06/26 12:35:41 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -44,5 +44,8 @@
 
 /* Number of retries allowed in recvfrom */
 #define SYMUX_MAXREADTRIES 5
+
+/* Number of data slots for clients in shared memory */
+#define SYMUX_SHARESLOTS  20
 
 #endif				/* _SYMUX_SYMUX_H */

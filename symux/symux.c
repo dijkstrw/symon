@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.32 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: symux.c,v 1.33 2005/06/26 12:35:40 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -111,9 +111,10 @@ main(int argc, char *argv[])
     struct mux *mux;
     FILE *f;
     int ch;
-    int offset;
-    time_t timestamp;
     int churnbuflen;
+    int offset;
+    int slot;
+    time_t timestamp;
 
     SLIST_INIT(&mul);
 
@@ -237,9 +238,10 @@ main(int argc, char *argv[])
 	    offset = mux->offset;
 	    maxstringlen = shared_getmaxlen();
 	    /* put time:ip: into shared region */
-	    master_forbidread();
+	    slot = master_forbidread();
 	    timestamp = (time_t) packet.header.timestamp;
-	    stringbuf = (char *) shared_getmem();
+	    stringbuf = shared_getmem(slot);
+	    debug("stringbuf = 0x%8x", stringbuf);
 	    snprintf(stringbuf, maxstringlen, "%s;", source->addr);
 
 	    /* hide this string region from rrd update */
@@ -309,7 +311,7 @@ main(int argc, char *argv[])
 	     */
 	    snprintf(stringptr, maxstringlen, "\n");
 	    stringptr += strlen(stringptr);
-	    shared_setlen((stringptr - stringbuf));
+	    shared_setlen(slot, (stringptr - stringbuf));
 	    debug("churnbuffer used: %d", (stringptr - stringbuf));
 	    master_permitread();
 	}			/* flag_hup == 0 */
