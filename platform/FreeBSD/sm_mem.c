@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.5 2005/06/26 12:34:11 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.6 2005/09/30 14:07:10 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -99,6 +99,10 @@ init_mem(char *s)
     }
 
     info("started module mem(%.200s)", s);
+}
+void
+gets_mem()
+{
 }
 /* Get memory statistics */
 int
