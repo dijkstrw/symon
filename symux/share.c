@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.19 2005/06/26 12:35:40 dijkstra Exp $ */
+/* $Id: share.c,v 1.20 2005/09/30 14:04:43 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -216,8 +216,6 @@ client_waitread()
 {
     int slot = ++seqnr % SYMUX_SHARESLOTS;
     struct sembuf sops;
-
-
 
     if (seqnr < (shm->seqnr - SYMUX_SHARESLOTS - 1)) {
 	close(clientsock);
