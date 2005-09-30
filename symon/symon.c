@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.41 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: symon.c,v 1.42 2005/09/30 14:04:30 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -71,7 +71,7 @@ int symon_interval = SYMON_DEFAULT_INTERVAL;
 struct funcmap streamfunc[] = {
     {MT_IO1, 0, NULL, init_io, gets_io, get_io},
     {MT_CPU, 0, NULL, init_cpu, gets_cpu, get_cpu},
-    {MT_MEM, 0, NULL, init_mem, NULL, get_mem},
+    {MT_MEM, 0, NULL, init_mem, gets_mem, get_mem},
     {MT_IF, 0, NULL, init_if, gets_if, get_if},
     {MT_PF, 0, privinit_pf, init_pf, NULL, get_pf},
     {MT_DEBUG, 0, NULL, init_debug, NULL, get_debug},
