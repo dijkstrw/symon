@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.2 2005/09/30 14:07:22 dijkstra Exp $ */
 
 #include <stdlib.h>
 
@@ -9,7 +9,11 @@ init_mem(char *s)
 {
     fatal("mem module not available");
 }
-
+void
+gets_mem()
+{
+    fatal("mem module not available");
+}
 int
 get_mem(char *symon_buf, int maxlen, char *s)
 {
