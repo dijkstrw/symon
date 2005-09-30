@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.12 2004/08/07 14:48:35 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.13 2005/09/30 14:07:38 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -48,8 +48,6 @@
 #include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netns/ns.h>
-#include <netns/ns_if.h>
 #include <netipx/ipx.h>
 #include <netipx/ipx_if.h>
 
