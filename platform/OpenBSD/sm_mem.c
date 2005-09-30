@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.17 2005/02/25 15:10:10 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.18 2005/09/30 14:08:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -92,6 +92,10 @@ init_mem(char *s)
 	me_nswap = 0;
 
     info("started module mem(%.200s)", s);
+}
+void
+gets_mem()
+{
 }
 /* Get memory statistics */
 int
