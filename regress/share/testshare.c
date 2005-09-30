@@ -1,4 +1,4 @@
-/* $Id: testshare.c,v 1.3 2004/08/08 19:56:03 dijkstra Exp $ */
+/* $Id: testshare.c,v 1.4 2005/09/30 14:05:12 dijkstra Exp $ */
 
 /* Regression test for shared memory information transfer between symux master
  * and n clients.
@@ -24,20 +24,20 @@ main(int argc, char *argv[])
 /* test initialization */
     initshare();
 
-    shm = (char *) shared_getmem();
 /* test forking n clients */
     for (i=0; i<clients; i++)
 	spawn_client(0);
 
 /* throughput test */
-    for (i=50000; i > 0; i--) {
+    for (i=5000; i > 0; i--) {
+	shm = (char *) shared_getmem(i);
 	master_forbidread();
 	for (j=0; j<clients; j++)
 	    printf(".");
 	memset(&shm[2], (i%26)+65, 80);
 	shm[1] = 80;
 	master_permitread();
-	usleep(1);
+	info("step %d\n", i);
     }
 /* kill some clients */
 
