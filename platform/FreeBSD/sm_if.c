@@ -1,7 +1,8 @@
-/* $Id: sm_if.c,v 1.1 2005/01/14 16:12:55 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Fredrik Soderblom
+ * Copyright (c) 2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,53 +54,41 @@
 
 #include "error.h"
 #include "symon.h"
+#include "xmalloc.h"
 
 /* Globals for this module start with if_ */
-static int if_s = -1;
+static int if_cur = 0;
+static int if_max = 0;
+struct ifmibdata *if_md = NULL;
+
 /* Prepare if module for first use */
 void
-init_if(char *s)
+init_if(struct stream *st)
 {
-    if (if_s == -1)
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
-	    fatal("%s:%d: socket failed, %.200",
-		  __FILE__, __LINE__, strerror(errno));
-
-    info("started module if(%.200s)", s);
+    info("started module if(%.200s)", st->arg);
 }
 
 int
 get_ifcount(void)
 {
-    int name[5], count;
+    int name[5] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_SYSTEM, IFMIB_IFCOUNT};
+    int count;
     size_t len;
-  
-    name[0] = CTL_NET;
-    name[1] = PF_LINK;
-    name[2] = NETLINK_GENERIC;
-    name[3] = IFMIB_SYSTEM;
-    name[4] = IFMIB_IFCOUNT;
 
     len = sizeof(int);
 
-    if (sysctl(name, 5, &count, &len, NULL, 0) != -1)
-        return(count);
-    else
-        return(-1);
+    if (sysctl(name, 5, &count, &len, NULL, 0) != -1) {
+	return count;
+    } else {
+	return -1;
+    }
 }
 
 int
 get_ifmib_general(int row, struct ifmibdata *ifmd)
 {
-    int name[6];
+    int name[6] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_IFDATA, row, IFDATA_GENERAL};
     size_t len;
-
-    name[0] = CTL_NET;
-    name[1] = PF_LINK;
-    name[2] = NETLINK_GENERIC;
-    name[3] = IFMIB_IFDATA;
-    name[4] = row;
-    name[5] = IFDATA_GENERAL;
 
     len = sizeof(*ifmd);
 
@@ -110,31 +99,50 @@ get_ifmib_general(int row, struct ifmibdata *ifmd)
 void
 gets_if()
 {
-}
-int
-get_if(char *symon_buf, int maxlen, char *interface)
-{
     int i;
-    struct ifmibdata ifmd;
-    struct if_data ifdata;
-    int ifcount = get_ifcount();
 
-    for (i = 1; i <= ifcount; i++) {
-        get_ifmib_general(i, &ifmd);
-        if (!strcmp(ifmd.ifmd_name, interface))
-            break;
+    /* how much memory is needed */
+    if_cur = get_ifcount();
+
+    /* increase buffers if necessary */
+    if (if_cur > if_max) {
+	if_max = if_cur;
+
+	if (if_max > SYMON_MAX_DOBJECTS) {
+	    fatal("%s:%d: dynamic object limit (%d) exceeded for ifmibdata structures",
+		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+	}
+
+	if_md = xrealloc(if_md, if_max * sizeof(struct ifmibdata));
     }
 
-    ifdata = ifmd.ifmd_data;
-    return snpack(symon_buf, maxlen, interface, MT_IF,
-		  ifdata.ifi_ipackets,
-		  ifdata.ifi_opackets,
-		  ifdata.ifi_ibytes,
-		  ifdata.ifi_obytes,
-		  ifdata.ifi_imcasts,
-		  ifdata.ifi_omcasts,
-		  ifdata.ifi_ierrors,
-		  ifdata.ifi_oerrors,
-		  ifdata.ifi_collisions,
-		  ifdata.ifi_iqdrops);
+    /* read data */
+    for (i = 1; i <= if_cur; i++) {
+	get_ifmib_general(i, &if_md[i - 1]);
+    }
+}
+int
+get_if(char *symon_buf, int maxlen, struct stream *st)
+{
+    int i;
+    struct if_data ifdata;
+
+    for (i = 1; i <= if_cur; i++) {
+	if (!strcmp(if_md[i - 1].ifmd_name, st->arg)) {
+	    ifdata = if_md[i - 1].ifmd_data;
+	    return snpack(symon_buf, maxlen, st->arg, MT_IF,
+			  ifdata.ifi_ipackets,
+			  ifdata.ifi_opackets,
+			  ifdata.ifi_ibytes,
+			  ifdata.ifi_obytes,
+			  ifdata.ifi_imcasts,
+			  ifdata.ifi_omcasts,
+			  ifdata.ifi_ierrors,
+			  ifdata.ifi_oerrors,
+			  ifdata.ifi_collisions,
+			  ifdata.ifi_iqdrops);
+	}
+    }
+
+    return 0;
 }

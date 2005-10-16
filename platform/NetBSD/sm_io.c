@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -93,22 +93,20 @@ gets_io()
 	      __FILE__, __LINE__);
     }
 }
-/* Prepare io module for first use */
 void
-init_io(char *s)
+init_io(struct stream *st)
 {
-    info("started module io(%.200s)", s);
+    info("started module io(%.200s)", st->arg);
 }
-/* Get new io statistics */
 int
-get_io(char *symon_buf, int maxlen, char *disk)
+get_io(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
 
     for (i = 0; i < io_maxdks; i++)
-	if (strncmp(io_dkstats[i].dk_name, disk,
+	if (strncmp(io_dkstats[i].dk_name, st->arg,
 		    sizeof(io_dkstats[i].dk_name)) == 0)
-	    return snpack(symon_buf, maxlen, disk, MT_IO2,
+	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
 			  io_dkstats[i].dk_rxfer,
 			  io_dkstats[i].dk_wxfer,
 			  io_dkstats[i].dk_seek,

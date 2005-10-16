@@ -1,8 +1,8 @@
-/* $Id: sm_debug.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c)      2004 Matthew Gream
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,13 +53,13 @@ static int db_mib[] = { CTL_DEBUG, 0 };
 static int db_v[SYMON_MAXDEBUGID];
 /* Prepare if module for first use */
 void
-init_debug(char *s)
+init_debug(struct stream *st)
 {
-    info("started module debug(%.200s)", s);
+    info("started module debug(%.200s)", st->arg);
 }
 /* Get debug statistics */
 int
-get_debug(char *symon_buf, int maxlen, char *s)
+get_debug(char *symon_buf, int maxlen, struct stream *st)
 {
     size_t len;
     int i;
@@ -73,7 +73,7 @@ get_debug(char *symon_buf, int maxlen, char *s)
 	sysctl(db_mib, sizeof(db_mib)/sizeof(int), &db_v[i], &len, NULL, 0);
     }
 
-    return snpack(symon_buf, maxlen, s, MT_DEBUG,
+    return snpack(symon_buf, maxlen, st->arg, MT_DEBUG,
 		  db_v[0], db_v[1], db_v[2], db_v[3], db_v[4], db_v[5], db_v[6],
 		  db_v[7], db_v[8], db_v[9], db_v[10], db_v[11], db_v[12], db_v[13],
 		  db_v[14], db_v[15], db_v[16], db_v[17], db_v[18], db_v[19]);

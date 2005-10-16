@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.16 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.17 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,8 +35,6 @@
  * symon_buf as
  *
  * total nr of transfers : total seeks : total bytes transferred
- *
- * Non re-entrant code: gets_io messes with globals r/w without a semaphore.
  *
  */
 
@@ -139,29 +137,29 @@ gets_io()
 }
 /* Prepare io module for first use */
 void
-init_io(char *s)
+init_io(struct stream *st)
 {
-    info("started module io(%.200s)", s);
+    info("started module io(%.200s)", st->arg);
 }
 /* Get new io statistics */
 int
-get_io(char *symon_buf, int maxlen, char *disk)
+get_io(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
 
     /* look for disk */
     for (i = 0; i <= io_dks; i++) {
-	if (strncmp(io_dknames[i], disk,
+	if (strncmp(io_dknames[i], st->arg,
 		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
 #ifdef HAS_IO2
-	    return snpack(symon_buf, maxlen, disk, MT_IO2,
+	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
 			  io_dkstats[i].ds_rxfer,
 			  io_dkstats[i].ds_wxfer,
 			  io_dkstats[i].ds_seek,
 			  io_dkstats[i].ds_rbytes,
 			  io_dkstats[i].ds_wbytes);
 #else
-	    return snpack(symon_buf, maxlen, disk, MT_IO1,
+	    return snpack(symon_buf, maxlen, st->arg, MT_IO1,
 			  io_dkstats[i].ds_xfer,
 			  io_dkstats[i].ds_seek,
 			  io_dkstats[i].ds_bytes);

@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.9 2005/01/15 17:31:11 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.10 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -67,12 +67,12 @@ privinit_pf()
 {
 }
 void
-init_pf(char *s)
+init_pf(struct stream *st)
 {
     fatal("pf support not available");
 }
 int
-get_pf(char *symon_buf, int maxlen, char *s)
+get_pf(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("pf support not available");
     return 0;
@@ -82,66 +82,75 @@ get_pf(char *symon_buf, int maxlen, char *s)
 
 /* Globals for this module start with pf_ */
 int pf_dev = -1;
-/* Priviledged init, called before priviledges are dropped */
+struct pf_status pf_stat;
+
+/* Privileged init, called before privileges are dropped */
 void
 privinit_pf()
 {
-    if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1)
+    if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1) {
 	warning("could not open \"/dev/pf\", %.200s", strerror(errno));
+    }
 }
 /* Prepare if module for first use */
 void
-init_pf(char *s)
+init_pf(struct stream *st)
 {
-    if (pf_dev == -1)
+    if (pf_dev == -1) {
 	privinit_pf();
+    }
 
-    info("started module pf(%.200s)", s);
+    info("started module pf()");
+}
+void
+gets_pf()
+{
+    if (pf_dev == -1) {
+	warning("could not get pf stats (dev == -1)");
+	pf_stat.running = 0;
+	return;
+    }
+
+    if (ioctl(pf_dev, DIOCGETSTATUS, &pf_stat)) {
+	warning("could not get pf stats (ioctl error)");
+	pf_stat.running = 0;
+	return;
+    }
 }
 /* Get pf statistics */
 int
-get_pf(char *symon_buf, int maxlen, char *arg)
+get_pf(char *symon_buf, int maxlen, struct stream *st)
 {
-    struct pf_status s;
     u_int64_t n;
 
-    if (pf_dev == -1) {
-	warning("pf(%.200s) failed (dev == -1)", arg);
+    if (!pf_stat.running) {
 	return 0;
     }
 
-    if (ioctl(pf_dev, DIOCGETSTATUS, &s)) {
-	warning("pf(%.200s) failed (ioctl error)", arg);
-	return 0;
-    }
-
-    if (!s.running)
-	return 0;
-
-    n = s.states;
-    return snpack(symon_buf, maxlen, arg, MT_PF,
-		  s.bcounters[0][0],
-		  s.bcounters[0][1],
-		  s.bcounters[1][0],
-		  s.bcounters[1][1],
-		  s.pcounters[0][0][PF_PASS],
-		  s.pcounters[0][0][PF_DROP],
-		  s.pcounters[0][1][PF_PASS],
-		  s.pcounters[0][1][PF_DROP],
-		  s.pcounters[1][0][PF_PASS],
-		  s.pcounters[1][0][PF_DROP],
-		  s.pcounters[1][1][PF_PASS],
-		  s.pcounters[1][1][PF_DROP],
+    n = pf_stat.states;
+    return snpack(symon_buf, maxlen, st->arg, MT_PF,
+		  pf_stat.bcounters[0][0],
+		  pf_stat.bcounters[0][1],
+		  pf_stat.bcounters[1][0],
+		  pf_stat.bcounters[1][1],
+		  pf_stat.pcounters[0][0][PF_PASS],
+		  pf_stat.pcounters[0][0][PF_DROP],
+		  pf_stat.pcounters[0][1][PF_PASS],
+		  pf_stat.pcounters[0][1][PF_DROP],
+		  pf_stat.pcounters[1][0][PF_PASS],
+		  pf_stat.pcounters[1][0][PF_DROP],
+		  pf_stat.pcounters[1][1][PF_PASS],
+		  pf_stat.pcounters[1][1][PF_DROP],
 		  n,
-		  s.fcounters[0],
-		  s.fcounters[1],
-		  s.fcounters[2],
-		  s.counters[0],
-		  s.counters[1],
-		  s.counters[2],
-		  s.counters[3],
-		  s.counters[4],
-		  s.counters[5]
+		  pf_stat.fcounters[0],
+		  pf_stat.fcounters[1],
+		  pf_stat.fcounters[2],
+		  pf_stat.counters[0],
+		  pf_stat.counters[1],
+		  pf_stat.counters[2],
+		  pf_stat.counters[3],
+		  pf_stat.counters[4],
+		  pf_stat.counters[5]
 	);
 }
 

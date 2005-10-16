@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.27 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.28 2005/10/16 15:27:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -63,6 +63,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
     switch (type) {
     case MT_CPU:
 	ts = "cpu";
+	ta = args;
+	break;
+    case MT_DF:
+	ts = "df_";
 	ta = args;
 	break;
     case MT_IF:
@@ -195,6 +199,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    while (lex_nexttoken(l) && l->op != LXT_END) {
 		switch (l->op) {
 		case LXT_CPU:
+		case LXT_DF:
 		case LXT_IF:
 		case LXT_IO:
 		case LXT_IO1:
@@ -294,13 +299,13 @@ read_source(struct sourcelist * sol, struct lex * l)
 		    if (!(insert_filename(&path[pc],
 					  _POSIX2_LINE_MAX - pc,
 					  stream->type,
-					  stream->args))) {
-			if (stream->args && strlen(stream->args)) {
+					  stream->arg))) {
+			if (stream->arg && strlen(stream->arg)) {
 			    warning("%.200s:%d: failed to construct stream "
 				    "%.200s(%.200s) filename using datadir '%.200s'",
 				    l->filename, l->cline,
 				    type2str(stream->type),
-				    stream->args, l->token);
+				    stream->arg, l->token);
 			} else {
 			    warning("%.200s:%d: failed to construct stream "
 				    "%.200s) filename using datadir '%.200s'",
@@ -328,6 +333,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 	    lex_nexttoken(l);
 	    switch (l->op) {
 	    case LXT_CPU:
+	    case LXT_DF:
 	    case LXT_IF:
 	    case LXT_IO:
 	    case LXT_IO1:
@@ -481,7 +487,7 @@ read_config_file(struct muxlist * mul, const char *filename)
 		    if (stream->file == NULL) {
 			/* warn, but allow */
 			warning("%.200s: no filename specified for stream '%.200s(%.200s)' in source '%.200s'",
-				l->filename, type2str(stream->type), stream->args, source->addr);
+				l->filename, type2str(stream->type), stream->arg, source->addr);
 		    }
 		}
 	    }

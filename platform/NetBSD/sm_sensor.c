@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -35,8 +35,6 @@
  *
  * num : value
  *
- * This code is not re-entrant. It uses sysctl and can be run as any
- * user.
  */
 
 #include <errno.h>
@@ -53,25 +51,26 @@
 
 /* Globals for this module start with sn_ */
 static int sn_dev = -1;
-/* Priviledged init, called before priviledges are dropped */
 void
 privinit_sensor()
 {
-    if (sn_dev == -1 && (sn_dev = open("/dev/sysmon", O_RDONLY)) == -1)
+    if (sn_dev == -1 && (sn_dev = open("/dev/sysmon", O_RDONLY)) == -1) {
 	warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));
+    }
 }
-/* Prepare if module for first use */
 void
-init_sensor(char *s)
+init_sensor(struct stream *st)
 {
-    if (sn_dev == -1)
+    if (sn_dev == -1) {
 	privinit_sensor();
+    }
+
+    st->sn = (strtol(st->arg, NULL, 10) & SYMON_SENSORMASK);
 
     info("started module sensors(%.200s)", s);
 }
-/* Get sensor statistics */
 int
-get_sensor(char *symon_buf, int maxlen, char *s)
+get_sensor(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
     double t;
@@ -79,31 +78,29 @@ get_sensor(char *symon_buf, int maxlen, char *s)
     envsys_basic_info_t e_info;
     envsys_tre_data_t e_data;
 
-    i = (int) (strtol(s, NULL, 10) & SYMON_SENSORMASK);
-
-    e_info.sensor = i;
+    e_info.sensor = st->sn;
     if (ioctl(sn_dev, ENVSYS_GTREINFO, &e_info) == -1) {
 	warning("%s:%d: sensor can't get sensor info %.200s -- %.200s",
-		__FILE__, __LINE__, s, strerror(errno));
+		__FILE__, __LINE__, st->arg, strerror(errno));
 	return 0;
     }
 
     if (!(e_info.validflags & ENVSYS_FVALID)) {
 	warning("%s:%d: sensor info is invalid %.200s -- %.200s",
-		__FILE__, __LINE__, s, strerror(errno));
+		__FILE__, __LINE__, st->arg, strerror(errno));
 	return 0;
     }
 
-    e_data.sensor = i;
+    e_data.sensor = st->sn;
     if (ioctl(sn_dev, ENVSYS_GTREDATA, &e_data) == -1) {
 	warning("%s:%d: sensor can't get sensor data %.200s -- %.200s",
-		__FILE__, __LINE__, s, strerror(errno));
+		__FILE__, __LINE__, st->arg, strerror(errno));
 	return 0;
     }
 
     if (!(e_data.validflags & ENVSYS_FCURVALID)) {
 	warning("%s:%d: sensor data is invalid %.200s -- %.200s",
-		__FILE__, __LINE__, s, strerror(errno));
+		__FILE__, __LINE__, st->arg, strerror(errno));
 	return 0;
     }
 
@@ -125,5 +122,5 @@ get_sensor(char *symon_buf, int maxlen, char *s)
 	    break;
     }
 
-    return snpack(symon_buf, maxlen, s, MT_SENSOR, t);
+    return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);
 }

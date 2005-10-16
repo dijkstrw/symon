@@ -1,8 +1,8 @@
-/* $Id: sm_proc.c,v 1.2 2005/01/14 16:13:38 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.3 2005/10/16 15:26:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,6 @@
  * number of processes : ticks_user : ticks_system : ticks_interrupt :
  * cpuseconds : procsizes : resident segment sizes
  *
- * Non re-entrant code: gets_proc messes with globals r/w without a semaphore.
  */
 
 #include <sys/param.h>
@@ -114,17 +113,21 @@ gets_proc()
 	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
-/* Prepare io module for first use */
 void
-init_proc(char *s)
+privinit_proc()
+{
+}
+void
+init_proc(struct stream *st)
 {
     int mib[2] = {CTL_KERN, KERN_CLOCKRATE};
     struct clockinfo cinf;
     size_t size = sizeof(cinf);
 
     /* get clockrate */
-    if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
+    if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1) {
 	fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
+    }
 
     proc_stathz = cinf.stathz;
 
@@ -136,11 +139,10 @@ init_proc(char *s)
 	proc_pagesize >>= 1;
     }
 
-    info("started module proc(%.200s)", s);
+    info("started module proc(%.200s)", st->arg);
 }
-/* Get new io statistics */
 int
-get_proc(char *symon_buf, int maxlen, char *process)
+get_proc(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
     struct kinfo_proc *pp;
@@ -156,7 +158,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
     int n = 0;
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
-	 if (strncmp(process, pp->kp_proc.p_comm, strlen(process)) == 0) {
+	 if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
 	     /* cpu time - accumulated */
 	     cpu_uticks += pp->kp_proc.p_uticks;  /* user */
 	     cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
@@ -177,7 +179,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
     cpu_ticks = cpu_uticks + cpu_sticks + cpu_iticks;
     cpu_secs = cpu_ticks / proc_stathz;
 
-    return snpack(symon_buf, maxlen, process, MT_PROC,
+    return snpack(symon_buf, maxlen, st->arg, MT_PROC,
 		  n,
 		  cpu_uticks, cpu_sticks, cpu_iticks, cpu_secs, cpu_pcti,
 		  mem_procsize, mem_rss );

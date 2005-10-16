@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.1 2004/11/21 10:26:55 dijkstra Exp $ */
+/* $Id: platform.h,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
 
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
@@ -12,6 +12,20 @@
 
 union semun {
 	int val;
+};
+
+union stream_parg {
+    struct {
+	u_int64_t time[CPUSTATES];
+	u_int64_t old[CPUSTATES];
+	u_int64_t diff[CPUSTATES];
+	int states[CPUSTATES];
+    } cp;
+    struct {
+	char rawdev[SYMON_PS_ARGLEN + 6]; /* "/dev/xxx" */
+    } df;
+    struct ifdatareq ifr;
+    int sn;
 };
 
 #endif

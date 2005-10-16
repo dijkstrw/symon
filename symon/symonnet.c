@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.14 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.15 2005/10/16 15:27:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -108,7 +108,7 @@ stream_in_packet(struct stream * stream, struct mux * mux)
     (streamfunc[stream->type].get)	/* call getter of stream */
     (&mux->packet.data[mux->offset],	/* packet buffer */
      sizeof(mux->packet.data) - mux->offset,	/* maxlen */
-     stream->args);
+     stream);
 }
 /* Ready a packet for transmission, set length and crc */
 void

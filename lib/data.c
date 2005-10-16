@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.27 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: data.c,v 1.28 2005/10/16 15:26:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -108,6 +108,7 @@ struct {
     { MT_SENSOR, "D" },
     { MT_IO2, "LLLLL" },
     { MT_PFQ, "LLLL" },
+    { MT_DF, "LLLLLLL" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -127,6 +128,7 @@ struct {
     { MT_SENSOR, LXT_SENSOR },
     { MT_IO2, LXT_IO },
     { MT_PFQ, LXT_PFQ },
+    { MT_DF, LXT_DF },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */
@@ -440,11 +442,11 @@ sunpack(char *buf, struct packedstream * ps)
     type = ps->type = (*in);
     in++;
     if ((*in) != '\0') {
-	strncpy(ps->args, in, sizeof(ps->args));
-	ps->args[sizeof(ps->args) - 1] = '\0';
-	in += strlen(ps->args) + 1;
+	strncpy(ps->arg, in, sizeof(ps->arg));
+	ps->arg[sizeof(ps->arg) - 1] = '\0';
+	in += strlen(ps->arg) + 1;
     } else {
-	ps->args[0] = '\0';
+	ps->arg[0] = '\0';
 	in++;
     }
 
@@ -606,7 +608,7 @@ create_stream(int type, char *args)
     p->type = type;
 
     if (args != NULL)
-	p->args = xstrdup(args);
+	p->arg = xstrdup(args);
 
     return p;
 }
@@ -622,7 +624,7 @@ find_source_stream(struct source * source, int type, char *args)
     SLIST_FOREACH(p, &source->sl, streams) {
 	if (((void *) p != NULL) && (p->type == type)
 	    && (((void *) args != (void *) p)
-		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
+		&& strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
 
@@ -658,7 +660,7 @@ find_mux_stream(struct mux * mux, int type, char *args)
     SLIST_FOREACH(p, &mux->sl, streams) {
 	if (((void *) p != NULL) && (p->type == type)
 	    && (((void *) args != (void *) p)
-		&& strncmp(args, p->args, _POSIX2_LINE_MAX) == 0))
+		&& strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
 	    return p;
     }
 
@@ -836,8 +838,8 @@ free_streamlist(struct streamlist * sl)
     while (p) {
 	np = SLIST_NEXT(p, streams);
 
-	if (p->args != NULL)
-	    xfree(p->args);
+	if (p->arg != NULL)
+	    xfree(p->arg);
 	if (p->file != NULL)
 	    xfree(p->file);
 	xfree(p);
@@ -888,7 +890,7 @@ calculate_churnbuffer(struct sourcelist * sol)
 	len = snprintf(&buf[0], _POSIX2_LINE_MAX, "%s;", source->addr);
 	SLIST_FOREACH(stream, &source->sl, streams) {
 	    len += strlen(type2str(stream->type)) + strlen(":");
-	    len += strlen(stream->args) + strlen(":");
+	    len += strlen(stream->arg) + strlen(":");
 	    len += (sizeof(time_t) * 3) + strlen(":"); /* 3 > ln(255) / ln(10) */
 	    len += strlentype(stream->type);
 	    n++;

@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2004 Willem Dijkstra
+.\" Copyright (c) 2001-2005 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ monitor-rule = "monitor" "{" resources "}" [every]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
 argument     = number | interfacename | diskname
 resource     = "cpu" | "mem" | "if" | "io" | "pf" | "pfq" |
-               "debug" | "proc" | "mbuf" | "sensor"
+               "debug" | "proc" | "mbuf" | "sensor" | "df"
 every        = "every" time
 time         = "second" | number "seconds"
 host         = ip4addr | ip6addr | hostname
@@ -131,7 +131,8 @@ information to localhost on port 2100.
 monitor { cpu(0),  mem, pf, if(xl0), if(de0),
 	  if(lo0), if(wi0), io(wd0), io(wd1),
 	  io(wd2), io(wd3), io(cd0), io(cd1),
-	  io(ccd0), debug, proc(httpd) } stream to 127.0.0.1 2100
+	  io(ccd0), df(sd0a), df(sd0d), df(sd0e),
+	  debug, proc(httpd) } stream to 127.0.0.1 2100
 .fi
 .Sh SIGNALS
 .Bl -tag -width Ds
@@ -170,9 +171,10 @@ does not check whether resources mentioned in
 exist.
 .Pp
 .Sh AUTHOR
-Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
-contributed the pf probe and helped to port to big-endian architectures.
-Matthew Gream <matthew.gream@pobox.com> contributed the NetBSD and FreeBSD
-ports.
+Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier helped to port to big-endian
+architectures. Matthew Gream helped to port symon to other BSD platforms.
+
+Port contributors: Marc Balmer, Matthew Gream, Daniel Hartmeier, J. Martin
+Petersen, Fredrik Soderblom and Harm Schotanus.
 .Sh SEE ALSO
 .Xr symux 8

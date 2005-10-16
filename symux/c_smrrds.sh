@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.30 2005/03/20 16:17:22 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.31 2005/10/16 15:27:03 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2005 Willem Dijkstra
@@ -129,6 +129,7 @@ OpenBSD)
 	INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
 	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
+	partcmd="grep ffs /etc/fstab | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]*[a-z]*\).*,\1,p' | sort -u"
 	interfacecmd="ifconfig -a| egrep -e \"^(\$INTERFACES):\" | cut -f1 -d\:  | sort -u"
 	;;
 NetBSD)
@@ -191,6 +192,8 @@ if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
 if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
 if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
+# add io_*.rrd if it is a disk
+if [ `echo $i | egrep -e "^($DISKS)[a-z]$"` ]; then i=df_$i.rrd; fi
 # add .rrd if it is a cpu, etc.
 if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|pfq_|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"` ]; then i=$i.rrd; fi
 
@@ -204,12 +207,13 @@ RRD_ARGS="--step=$INTERVAL --start=0"
 case $i in
 
 all)
-    echo "Creating rrd files for {cpu0|mem|disks|interfaces|pf|mbuf}"
+    echo "Creating rrd files for {cpu0|df|mem|disks|interfaces|pf|mbuf}"
     sh $this interval $INTERVAL child $config cpu0 mem
     sh $this interval $INTERVAL child $config interfaces
     sh $this interval $INTERVAL child $config disks
     sh $this interval $INTERVAL child $config pf
     sh $this interval $INTERVAL child $config mbuf
+    sh $this interval $INTERVAL child $config df
     ;;
 
 if|interfaces)
@@ -222,6 +226,11 @@ io|disks)
     sh $this child $config `eval $diskcmd`
     ;;
 
+df)
+    # obtain all ffs partitions
+    sh $this child $config `eval $partcmd`
+    ;;
+
 cpu[0-9].rrd)
     # Build cpu file
     create_rrd $i \
@@ -230,6 +239,18 @@ cpu[0-9].rrd)
 	DS:system:GAUGE:$INTERVAL:0:100 \
 	DS:interrupt:GAUGE:$INTERVAL:0:100 \
 	DS:idle:GAUGE:$INTERVAL:0:100
+    ;;
+
+df_*.rrd)
+    # Build df file
+    create_rrd $i \
+	DS:blocks:GAUGE:$INTERVAL:0:U \
+	DS:bfree:GAUGE:$INTERVAL:0:U \
+	DS:bavail:GAUGE:$INTERVAL:0:U \
+	DS:files:GAUGE:$INTERVAL:0:U \
+	DS:ffree:GAUGE:$INTERVAL:0:U \
+	DS:syncwrites:COUNTER:$INTERVAL:U:U \
+	DS:asyncwrites:COUNTER:$INTERVAL:U:U
     ;;
 
 sensor*.rrd)

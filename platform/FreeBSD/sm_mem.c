@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.6 2005/09/30 14:07:10 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.7 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -77,7 +77,7 @@ static size_t me_vmsize = sizeof(struct vmtotal);
 
 /* Prepare mem module for first use */
 void
-init_mem(char *s)
+init_mem(struct stream *st)
 {
     me_pagesize = sysconf(_SC_PAGESIZE);
     me_pageshift = 0;
@@ -98,7 +98,7 @@ init_mem(char *s)
 	me_vmiswp_mib_len = 0;
     }
 
-    info("started module mem(%.200s)", s);
+    info("started module mem(%.200s)", st->arg);
 }
 void
 gets_mem()
@@ -106,7 +106,7 @@ gets_mem()
 }
 /* Get memory statistics */
 int
-get_mem(char *symon_buf, int maxlen, char *s)
+get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
 #ifdef HAS_XSWDEV
     int i;
@@ -141,7 +141,7 @@ get_mem(char *symon_buf, int maxlen, char *s)
     }
 #endif
 
-    return snpack(symon_buf, maxlen, s, MT_MEM,
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
 		  me_stats[0], me_stats[1], me_stats[2],
 		  me_stats[3], me_stats[4]);
 }

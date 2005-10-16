@@ -1,5 +1,10 @@
 30/09/2005 - 2.72
 
+   - Rewrote all probes to a new api that allows per probe storage of
+     precomputed data
+
+   - Marc Balmer donated the df.c probe.
+
    - Harm Schotanus donated platform/Linux/sm_mem.c that works on 2.4/2.6
      linux kernels
 
@@ -412,4 +417,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.45 2005/09/30 14:04:56 dijkstra Exp $
+$Id: CHANGELOG,v 1.46 2005/10/16 15:26:47 dijkstra Exp $

@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.2 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.3 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /* The author of this code is Matthew Gream.
  *
@@ -72,10 +72,6 @@ static char cp_time_mib_str[] = "kern.cp_time";
 static int cp_time_mib[CTL_MAXNAME];
 static size_t cp_time_len = 0;
 static size_t cp_size;
-static long cp_time[CPUSTATES];
-static long cp_old[CPUSTATES];
-static long cp_diff[CPUSTATES];
-static int cp_states[CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -121,18 +117,20 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 }
 /* Prepare cpu module for use */
 void
-init_cpu(char *s)
+init_cpu(struct stream *st)
 {
+    char buf[SYMON_MAX_OBJSIZE];
+
     cp_time_len = CTL_MAXNAME;
     if (sysctlnametomib(cp_time_mib_str, cp_time_mib, &cp_time_len) < 0) {
 	warning("sysctlnametomib for cpu failed");
 	cp_time_len = 0;
     }
 
-    cp_size = sizeof(cp_time);
-    get_cpu(NULL, 0, NULL);
+    cp_size = sizeof(st->parg.cp.time);
+    get_cpu(buf, sizeof(buf), st);
 
-    info("started module cpu(%.200s)", s);
+    info("started module cpu(%.200s)", st->arg);
 }
 void
 gets_cpu()
@@ -140,26 +138,24 @@ gets_cpu()
 }
 /* Get new cpu measurements */
 int
-get_cpu(char *symon_buf, int maxlen, char *s)
+get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
-    if (!cp_time_len)
+    if (!cp_time_len) {
 	return 0;
+    }
 
-    if (sysctl(cp_time_mib, cp_time_len, &cp_time, &cp_size, NULL, 0) < 0) {
+    if (sysctl(cp_time_mib, cp_time_len, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
 	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
 	return 0;
     }
 
     /* convert cp_time counts to percentages */
-    (void)percentages(CPUSTATES, cp_states, cp_time, cp_old, cp_diff);
+    (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time, st->parg.cp.old, st->parg.cp.diff);
 
-    if (!symon_buf)
-	return 0;
-
-    return snpack(symon_buf, maxlen, s, MT_CPU,
-		  (double) (cp_states[CP_USER] / 10.0),
-		  (double) (cp_states[CP_NICE] / 10.0),
-		  (double) (cp_states[CP_SYS] / 10.0),
-		  (double) (cp_states[CP_INTR] / 10.0),
-		  (double) (cp_states[CP_IDLE] / 10.0));
+    return snpack(symon_buf, maxlen, st->arg, MT_CPU,
+		  (double) (st->parg.cp.states[CP_USER] / 10.0),
+		  (double) (st->parg.cp.states[CP_NICE] / 10.0),
+		  (double) (st->parg.cp.states[CP_SYS] / 10.0),
+		  (double) (st->parg.cp.states[CP_INTR] / 10.0),
+		  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

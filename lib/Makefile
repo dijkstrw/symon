@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.12 2004/09/25 10:21:56 dijkstra Exp $
+# $Id: Makefile,v 1.13 2005/10/16 15:26:51 dijkstra Exp $
 .include "../Makefile.inc"
 .include "../platform/${OS}/Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
 OBJS+=	${SRCS:R:S/$/.o/g}
-CFLAGS+=-I../platform/${OS}
+CFLAGS+=-I../platform/${OS} -I.
 
 all: libsymon.a
 

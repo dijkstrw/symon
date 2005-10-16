@@ -1,7 +1,7 @@
-/* $Id: sm_sensor.c,v 1.5 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.6 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,9 @@
  *
  * num : value
  *
- * This code is not re-entrant. It uses sysctl and can be run as any
- * user.
  */
+
+#include "conf.h"
 
 #include <sys/param.h>
 #include <sys/sysctl.h>
@@ -57,16 +57,15 @@ privinit_sensor()
     fatal("sensor support not available");
 }
 void
-init_sensor(char *s)
+init_sensor(struct stream *st)
 {
     fatal("sensor support not available");
 }
 int
-get_sensor(char *symon_buf, int maxlen, char *s)
+get_sensor(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("sensor support not available");
-
-    return 0; /* NOT REACHED */
+    return 0;
 }
 
 #else
@@ -83,29 +82,28 @@ privinit_sensor()
 {
 }
 void
-init_sensor(char *s)
+init_sensor(struct stream *st)
 {
-    info("started module sensors(%.200s)", s);
+    long l = strtol(st->arg, NULL, 10);
+    st->parg.sn = (int) (l & SYMON_SENSORMASK);
+
+    info("started module sensors(%.200s)", st->arg);
 }
 /* Get sensor statistics */
 int
-get_sensor(char *symon_buf, int maxlen, char *s)
+get_sensor(char *symon_buf, int maxlen, struct stream *st)
 {
     size_t len;
-    long l;
-    int i;
     double t;
 
     bzero((void *) &sn_sensor, sizeof(sn_sensor));
-    l = strtol(s, NULL, 10);
-    i = (int) (l & SYMON_SENSORMASK);
-    sn_mib[2] = i;
+    sn_mib[2] = st->parg.sn;
 
     len = sizeof(sn_sensor);
 
     if (sysctl(sn_mib, 3, &sn_sensor, &len, NULL, 0) == -1) {
 	warning("%s:%d: sensor can't get sensor %.200s -- %.200s",
-		__FILE__, __LINE__, s, strerror(errno));
+		__FILE__, __LINE__, st->arg, strerror(errno));
 
 	return 0;
     } else {
@@ -123,7 +121,7 @@ get_sensor(char *symon_buf, int maxlen, char *s)
 	    t = (double) sn_sensor.value;
 	}
 
-	return snpack(symon_buf, maxlen, s, MT_SENSOR, t);
+	return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);
     }
 }
 #endif /* HAS_SENSORS_H */

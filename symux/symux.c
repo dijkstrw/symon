@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.33 2005/06/26 12:35:40 dijkstra Exp $ */
+/* $Id: symux.c,v 1.34 2005/10/16 15:27:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -253,11 +253,11 @@ main(int argc, char *argv[])
 		offset += sunpack(packet.data + offset, &ps);
 
 		/* find stream in source */
-		stream = find_source_stream(source, ps.type, ps.args);
+		stream = find_source_stream(source, ps.type, ps.arg);
 
 		if (stream != NULL) {
-		    /* put type and args in and hide from rrd */
-		    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.args);
+		    /* put type and arg in and hide from rrd */
+		    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.arg);
 		    maxstringlen -= strlen(stringptr);
 		    stringptr += strlen(stringptr);
 		    /* put timestamp in and show to rrd */
@@ -302,7 +302,7 @@ main(int argc, char *argv[])
 		    stringptr += strlen(stringptr);
 		} else {
 		    debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
-			  ((ps.args == NULL) ? "0" : ps.args), source->addr);
+			  ((ps.arg == NULL) ? "0" : ps.arg), source->addr);
 		}
 	    }
 	    /*

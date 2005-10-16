@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.26 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: data.h,v 1.27 2005/10/16 15:26:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -40,13 +40,13 @@
 #ifndef _SYMON_LIB_DATA_H
 #define _SYMON_LIB_DATA_H
 
-#include <sys/queue.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include "platform.h"
+
 #include <netinet/in.h>
 #include <limits.h>
 
 #include "lex.h"
+#include "sylimits.h"
 
 /* Polynominal to use for CRC generation */
 #define SYMON_CRCPOLY  0x04c11db7
@@ -78,6 +78,7 @@ static inline u_int64_t
  * so that works out to about 38 packedstreams in a single symon packet.
  */
 #define SYMON_PACKET_VER  1
+#define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
 
 /* Sending structures over the network is dangerous as the compiler might have
  * added extra padding between items. symonpacketheader below is therefore also
@@ -105,9 +106,10 @@ struct symonpacket {
  */
 struct stream {
     int type;
-    char *args;
+    char *arg;
     char *file;
     SLIST_ENTRY(stream) streams;
+    union stream_parg parg;
 };
 SLIST_HEAD(streamlist, stream);
 
@@ -152,21 +154,19 @@ SLIST_HEAD(muxlist, mux);
 #define MT_SENSOR 8
 #define MT_IO2    9
 #define MT_PFQ    10
-#define MT_TEST   11
-#define MT_EOT    12
+#define MT_DF	  11
+#define MT_TEST   12
+#define MT_EOT    13
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
  * structure defines the maximum amount of data that can be contained in a
  * single network representation of a stream.
  */
-#define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
-#define SYMON_PS_ARGLEN        16	/* maximum argument length */
-#define SYMON_PS_ARGLENSTR    "15"	/* maximum number of chars in an argument, as str */
 struct packedstream {
     int type;
     int padding;
-    char args[SYMON_PS_ARGLEN];
+    char arg[SYMON_PS_ARGLEN];
     union {
 	struct symonpacketheader header;
 	struct {
@@ -287,6 +287,15 @@ struct packedstream {
 	    u_int16_t c[4];
 	    u_int8_t b[4];
 	}      ps_test;
+	struct {
+	    u_int64_t blocks;
+	    u_int64_t bfree;
+	    u_int64_t bavail;
+	    u_int64_t files;
+	    u_int64_t ffree;
+	    u_int64_t syncwrites;
+	    u_int64_t asyncwrites;
+	}      ps_df;
     }     data;
 };
 

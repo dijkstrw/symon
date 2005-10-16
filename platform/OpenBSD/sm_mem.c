@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.18 2005/09/30 14:08:01 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.19 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,7 +35,6 @@
  *
  * real active : real total : free : [swap used : swap total]
  *
- * This code is not re-entrant.
  */
 
 #include <sys/param.h>
@@ -65,7 +64,7 @@ static int me_nswap;
 struct swapent *me_swdev = NULL;
 /* Prepare mem module for first use */
 void
-init_mem(char *s)
+init_mem(struct stream *st)
 {
     me_pagesize = sysconf(_SC_PAGESIZE);
     me_pageshift = 0;
@@ -80,26 +79,26 @@ init_mem(char *s)
     /* determine number of swap entries */
     me_nswap = swapctl(SWAP_NSWAP, 0, 0);
 
-    if (me_swdev)
+    if (me_swdev) {
 	xfree(me_swdev);
+    }
 
-    if (me_nswap != 0)
+    if (me_nswap != 0) {
 	me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
-    else
+    } else {
 	me_swdev = NULL;
+    }
 
-    if (me_swdev == NULL && me_nswap != 0)
+    if (me_swdev == NULL && me_nswap != 0) {
 	me_nswap = 0;
+    }
 
-    info("started module mem(%.200s)", s);
+    if (st != NULL) {
+	info("started module mem(%.200s)", st->arg);
+    }
 }
 void
 gets_mem()
-{
-}
-/* Get memory statistics */
-int
-get_mem(char *symon_buf, int maxlen, char *s)
 {
     int i, rnswap;
 
@@ -130,8 +129,12 @@ get_mem(char *symon_buf, int maxlen, char *s)
 	    }
 	}
     }
-
-    return snpack(symon_buf, maxlen, s, MT_MEM,
+}
+/* Get memory statistics */
+int
+get_mem(char *symon_buf, int maxlen, struct stream *st)
+{
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
 		  me_stats[0], me_stats[1], me_stats[2],
 		  me_stats[3], me_stats[4]);
 }

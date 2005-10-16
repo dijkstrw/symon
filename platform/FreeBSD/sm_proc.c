@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.5 2005/05/31 09:13:55 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.6 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -121,20 +121,31 @@ gets_proc()
 	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
+void
+privinit_proc()
+{
+#ifdef HAS_KI_PADDR
+    char errbuf[_POSIX2_LINE_MAX];
+
+    proc_kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+    if (proc_kd == NULL) {
+	warning("while opening kvm (chrooted?): %s", errbuf);
+    }
+#endif
+}
+
 /* Prepare io module for first use */
 void
-init_proc(char *s)
+init_proc(struct stream *st)
 {
     int mib[2] = {CTL_KERN, KERN_CLOCKRATE};
     struct clockinfo cinf;
     size_t size = sizeof(cinf);
-#ifdef HAS_KI_PADDR
-    char errbuf[_POSIX2_LINE_MAX];
-#endif
 
     /* get clockrate */
-    if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1)
+    if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1) {
 	fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
+    }
 
     proc_stathz = cinf.stathz;
 
@@ -146,17 +157,11 @@ init_proc(char *s)
 	proc_pagesize >>= 1;
     }
 
-#ifdef HAS_KI_PADDR
-    proc_kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
-    if (proc_kd == NULL)
-      warning("while opening kvm (chrooted?): %s", errbuf);
-#endif
-
-    info("started module proc(%.200s)", s);
+    info("started module proc(%.200s)", st->arg);
 }
 /* Get new io statistics */
 int
-get_proc(char *symon_buf, int maxlen, char *process)
+get_proc(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
     struct kinfo_proc *pp;
@@ -176,7 +181,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
 #ifdef HAS_KI_PADDR
-	if (strncmp(process, pp->ki_comm, strlen(process)) == 0) {
+	if (strncmp(st->arg, pp->ki_comm, strlen(st->arg)) == 0) {
 	    /* cpu time - accumulated */
 	    if (proc_kd) {
 		if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
@@ -203,7 +208,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
 				    pp->ki_ssize); /* stack */
 	    mem_rss += pagetob(pp->ki_rssize);     /* rss  */
 #else
-	if (strncmp(process, pp->kp_proc.p_comm, strlen(process)) == 0) {
+	if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
 	    /* cpu time - accumulated */
 	    cpu_uticks += pp->kp_proc.p_uticks;  /* user */
 	    cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
@@ -226,7 +231,7 @@ get_proc(char *symon_buf, int maxlen, char *process)
     cpu_ticks = cpu_uticks + cpu_sticks + cpu_iticks;
     cpu_secs = cpu_ticks / proc_stathz;
 
-    return snpack(symon_buf, maxlen, process, MT_PROC,
+    return snpack(symon_buf, maxlen, st->arg, MT_PROC,
 		  n,
 		  cpu_uticks, cpu_sticks, cpu_iticks, cpu_secs, cpu_pcti,
 		  mem_procsize, mem_rss );

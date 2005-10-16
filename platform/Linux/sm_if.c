@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.3 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.4 2005/10/16 15:26:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -57,22 +57,22 @@ static int if_size = 0;
 static int if_maxsize = 0;
 struct if_device_stats
 {
-	unsigned long   rx_packets;             /* total packets received       */
-	unsigned long   tx_packets;             /* total packets transmitted    */
-	unsigned long   rx_bytes;               /* total bytes received         */
-	unsigned long   tx_bytes;               /* total bytes transmitted      */
-	unsigned long   rx_errors;              /* bad packets received         */
-	unsigned long   tx_errors;              /* packet transmit problems     */
-	unsigned long   rx_dropped;             /* no space in linux buffers    */
-	unsigned long   tx_dropped;             /* no space available in linux  */
-	unsigned long   multicast;              /* multicast packets received   */
-	unsigned long   collisions;
-	unsigned long   rx_frame_errors;        /* recv'd frame alignment error */
-	unsigned long   rx_fifo_errors;         /* recv'r fifo overrun          */
-	unsigned long   tx_carrier_errors;
-	unsigned long   tx_fifo_errors;
-	unsigned long   rx_compressed;
-	unsigned long   tx_compressed;
+    unsigned long   rx_packets;             /* total packets received       */
+    unsigned long   tx_packets;             /* total packets transmitted    */
+    unsigned long   rx_bytes;               /* total bytes received         */
+    unsigned long   tx_bytes;               /* total bytes transmitted      */
+    unsigned long   rx_errors;              /* bad packets received         */
+    unsigned long   tx_errors;              /* packet transmit problems     */
+    unsigned long   rx_dropped;             /* no space in linux buffers    */
+    unsigned long   tx_dropped;             /* no space available in linux  */
+    unsigned long   multicast;              /* multicast packets received   */
+    unsigned long   collisions;
+    unsigned long   rx_frame_errors;        /* recv'd frame alignment error */
+    unsigned long   rx_fifo_errors;         /* recv'r fifo overrun          */
+    unsigned long   tx_carrier_errors;
+    unsigned long   tx_fifo_errors;
+    unsigned long   rx_compressed;
+    unsigned long   tx_compressed;
 };
 /* Prepare if module for first use */
 void

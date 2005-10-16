@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.1 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -67,7 +67,7 @@ privinit_io()
 }
 
 void
-init_io(char *s)
+init_io(struct stream *st)
 {
     io_stats.dinfo = malloc(sizeof(struct devinfo));
     if (io_stats.dinfo == NULL) {
@@ -75,7 +75,7 @@ init_io(char *s)
     }
 
     io_stats.dinfo->mem_ptr = NULL;
-    info("started module io(%.200s)",s);
+    info("started module io(%.200s)", st->arg);
 }
 
 void
@@ -106,7 +106,7 @@ gets_io()
 }
 
 int
-get_io(char *symon_buf, int maxlen, char *dev)
+get_io(char *symon_buf, int maxlen, struct stream *st)
 {
     unsigned int i;
     struct devstat *ds;
@@ -114,12 +114,12 @@ get_io(char *symon_buf, int maxlen, char *dev)
     for (i=0; i < io_numdevs; i++) {
 	ds = &io_stats.dinfo->devices[i];
 
-	if (strncmp(ds->device_name, dev, strlen(ds->device_name)) == 0 &&
-	    strlen(ds->device_name) < strlen(dev) &&
-	    isdigit(dev[strlen(ds->device_name)]) &&
-	    atoi(&dev[strlen(ds->device_name)]) == ds->unit_number) {
+	if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&
+	    strlen(ds->device_name) < strlen(st->arg) &&
+	    isdigit(st->arg[strlen(ds->device_name)]) &&
+	    atoi(&st->arg[strlen(ds->device_name)]) == ds->unit_number) {
 #if DEVSTAT_USER_API_VER == 5
-	    return snpack(symon_buf, maxlen, dev, MT_IO2,
+	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
 			  ds->operations[DEVSTAT_READ],
 			  ds->operations[DEVSTAT_WRITE],
 			  (uint64_t) 0, /* don't know how to find #seeks */
@@ -127,7 +127,7 @@ get_io(char *symon_buf, int maxlen, char *dev)
 			  ds->bytes[DEVSTAT_WRITE]);
 
 #else
-	    return snpack(symon_buf, maxlen, dev, MT_IO2,
+	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
 			  ds->num_reads,
 			  ds->num_writes,
 			  (uint64_t) 0, /* don't know how to find #seeks */

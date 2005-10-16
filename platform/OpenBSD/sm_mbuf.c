@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.4 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.5 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -44,28 +44,26 @@
 
 #ifndef HAS_KERN_MBSTAT
 void
-init_mbuf(char *s)
+init_mbuf(struct stream *st)
 {
     fatal("mbuf module requires system upgrade (sysctl.h/KERN_MBSTAT)");
 }
 int
-get_mbuf(char *symon_buf, int maxlen, char *arg)
+get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("mbuf module requires system upgrade (sysctl.h/KERN_MBSTAT)");
-
-    return 0; /* NOT REACHED */
 }
 #else
 /* Prepare if module for first use */
 void
-init_mbuf(char *s)
+init_mbuf(struct stream *st)
 {
-    info("started module mbuf(%.200s)", s);
+    info("started module mbuf(%.200s)", st->arg);
 }
 
 /* Get mbuf statistics */
 int
-get_mbuf(char *symon_buf, int maxlen, char *arg)
+get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {
     struct mbstat mbstat;
     int npools;
@@ -84,8 +82,8 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     mib[1] = KERN_MBSTAT;
     size = sizeof(mbstat);
     if (sysctl(mib, 2, &mbstat, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
-	return (0);
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+	return 0;
     }
 
     mib[0] = CTL_KERN;
@@ -93,8 +91,8 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     mib[2] = KERN_POOL_NPOOLS;
     size = sizeof(npools);
     if (sysctl(mib, 3, &npools, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
-	return (0);
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+	return 0;
     }
 
     for (i = 1; npools; ++i) {
@@ -104,14 +102,14 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	mib[3] = i;
 	size = sizeof(pool);
 	if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
-	    return (0);
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+	    return 0;
 	}
 	npools--;
 	mib[2] = KERN_POOL_NAME;
 	size = sizeof(name);
 	if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
 	    return (0);
 	}
 	if (!strcmp(name, "mbpl")) {
@@ -125,8 +123,8 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	    break;
     }
     if (flag != 3) {
-	warning("mbuf(%.200s) failed (flag != 3)", arg);
-	return (0);
+	warning("mbuf(%.200s) failed (flag != 3)", st->arg);
+	return 0;
     }
 
     totmbufs = 0;
@@ -153,7 +151,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     stats[13] = mbstat.m_wait;
     stats[14] = mbstat.m_drain;
 
-    return snpack(symon_buf, maxlen, arg, MT_MBUF,
+    return snpack(symon_buf, maxlen, st->arg, MT_MBUF,
 		  stats[0],
 		  stats[1],
 		  stats[2],

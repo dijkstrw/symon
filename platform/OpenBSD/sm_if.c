@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.13 2005/09/30 14:07:38 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.14 2005/10/16 15:26:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,14 +62,19 @@
 static int if_s = -1;
 /* Prepare if module for first use */
 void
-init_if(char *s)
+init_if(struct stream *st)
 {
-    if (if_s == -1)
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    if (if_s == -1) {
+	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 	    fatal("%s:%d: socket failed, %.200",
 		  __FILE__, __LINE__, strerror(errno));
+	}
+    }
 
-    info("started module if(%.200s)", s);
+    strncpy(st->parg.ifr.ifr_name, st->arg, IFNAMSIZ - 1);
+    st->parg.ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+
+    info("started module if(%.200s)", st->arg);
 }
 /* Get interface statistics */
 void
@@ -77,21 +82,18 @@ gets_if()
 {
 }
 int
-get_if(char *symon_buf, int maxlen, char *interface)
+get_if(char *symon_buf, int maxlen, struct stream *st)
 {
-    struct ifreq ifr;
     struct if_data ifdata;
 
-    strncpy(ifr.ifr_name, interface, IFNAMSIZ - 1);
-    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
-    ifr.ifr_data = (caddr_t) & ifdata;
+    st->parg.ifr.ifr_data = (caddr_t) &ifdata;
 
-    if (ioctl(if_s, SIOCGIFDATA, &ifr)) {
-	warning("if(%.200s) failed (ioctl error)", interface);
+    if (ioctl(if_s, SIOCGIFDATA, &st->parg.ifr)) {
+	warning("if(%.200s) failed (ioctl error)", st->arg);
 	return 0;
     }
 
-    return snpack(symon_buf, maxlen, interface, MT_IF,
+    return snpack(symon_buf, maxlen, st->arg, MT_IF,
 		  ifdata.ifi_ipackets,
 		  ifdata.ifi_opackets,
 		  ifdata.ifi_ibytes,

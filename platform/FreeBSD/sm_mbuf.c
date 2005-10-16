@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.3 2005/01/15 17:31:11 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.4 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004 Matthew Gream
@@ -48,7 +48,7 @@ static size_t mbstat_len = 0;
 
 /* Prepare if module for first use */
 void
-init_mbuf(char *s)
+init_mbuf(struct stream *st)
 {
     mbstat_len = CTL_MAXNAME;
     if (sysctlnametomib(mbstat_mib_str, mbstat_mib, &mbstat_len) < 0) {
@@ -56,12 +56,12 @@ init_mbuf(char *s)
 	mbstat_len = 0;
     }
 
-    info("started module mbuf(%.200s)", s);
+    info("started module mbuf(%.200s)", st->arg);
 }
 
 /* Get mbuf statistics */
 int
-get_mbuf(char *symon_buf, int maxlen, char *arg)
+get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {
     struct mbstat mbstat;
 #ifdef KERN_POOL
@@ -80,7 +80,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 
     size = sizeof(mbstat);
     if (sysctl(mbstat_mib, mbstat_len, &mbstat, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
 	return (0);
     }
 
@@ -90,7 +90,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
     mib[2] = KERN_POOL_NPOOLS;
     size = sizeof(npools);
     if (sysctl(mib, 3, &npools, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
+	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
 	return (0);
     }
 
@@ -101,14 +101,14 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	mib[3] = i;
 	size = sizeof(pool);
 	if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
 	    return (0);
 	}
 	npools--;
 	mib[2] = KERN_POOL_NAME;
 	size = sizeof(name);
 	if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", arg, strerror(errno));
+	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
 	    return (0);
 	}
 	if (!strcmp(name, "mbpl")) {
@@ -122,7 +122,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 	    break;
     }
     if (flag != 3) {
-	warning("mbuf(%.200s) failed (flag != 3)", arg);
+	warning("mbuf(%.200s) failed (flag != 3)", st->arg);
 	return (0);
     }
 #endif
@@ -170,7 +170,7 @@ get_mbuf(char *symon_buf, int maxlen, char *arg)
 #endif
     stats[14] = mbstat.m_drain;
 
-    return snpack(symon_buf, maxlen, arg, MT_MBUF,
+    return snpack(symon_buf, maxlen, st->arg, MT_MBUF,
 		  stats[0],
 		  stats[1],
 		  stats[2],

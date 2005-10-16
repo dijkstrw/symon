@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2004 Willem Dijkstra
+.\" Copyright (c) 2001-2005 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -114,7 +114,7 @@ accept-stmt  = "accept" "{" resources "}"
 resources    = resource version ["(" argument ")"]
                [ ","|" " resources ]
 resource     = "cpu" | "mem" | "if" | "io" | "pf" | "pfq" |
-               "debug" | "proc" | "mbuf" | "sensor"
+               "debug" | "proc" | "mbuf" | "sensor" | "df"
 version      = "" | number
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
@@ -146,7 +146,8 @@ statement.
 Here is an example
 .Ar symux.conf
 that listens to udp port 2100 on lo0, and accepts cpu, memory, pf,
-interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1] streams from a
+interfaces xl0/de0/lo0/wi0, disks wd[0-3]/cd[0-1], disk free blocks
+of three partition streams from a
 .Xr symon 8
 on localhost.
 .Nm
@@ -159,7 +160,8 @@ source 127.0.0.1 {
 	     if(xl0), if(de0),
 	     if(lo0), if(wi0),
 	     io(wd0), io(wd1), io(wd2),
-	     io(wd3), io(cd0), io(cd1) }
+	     io(wd3), io(cd0), io(cd1),
+	     df(sd0a), df(sd0d), df(sd0e) }
 
     datadir "/var/www/symon/rrds/localhost"
 }
@@ -251,6 +253,9 @@ type.
 .It pfq
 pf/altq queue statistics ( sent_bytes : sent_packets : drop_bytes :
 drop_packets ). Values are 64 bit unsigned integers.
+.It df
+Disk free statistics ( blocks : bfree : bavail : files :
+ffree : synwrites : asyncwrites). Values are 64 bit unsigned integers.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds
@@ -324,9 +329,10 @@ to lockup while rrdupdate is updating the rrd file.
 .Nm
 will be unresponsive during this process.
 .Sh AUTHOR
-Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier <daniel@benzedrine.cx>
-contributed the pf probe and helped to port to big-endian architectures.
-Matthew Gream <matthew.gream@pobox.com> contributed the NetBSD and FreeBSD
-ports.
+Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier helped to port to big-endian
+architectures. Matthew Gream helped to port symon to other BSD platforms.
+
+Port contributors: Marc Balmer, Matthew Gream, Daniel Hartmeier, J. Martin
+Petersen, Fredrik Soderblom and Harm Schotanus.
 .Sh SEE ALSO
 .Xr symon 8

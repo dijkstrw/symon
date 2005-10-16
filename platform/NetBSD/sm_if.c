@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.2 2004/08/07 14:48:35 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.3 2005/10/16 15:26:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -58,18 +58,20 @@
 
 /* Globals for this module start with if_ */
 static int if_s = -1;
-/* Prepare if module for first use */
 void
-init_if(char *s)
+init_if(struct stream *st)
 {
-    if (if_s == -1)
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    if (if_s == -1) {
+	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
 	    fatal("%s:%d: socket failed, %.200",
 		  __FILE__, __LINE__, strerror(errno));
+	}
+    }
 
-    info("started module if(%.200s)", s);
+    strncpy(st->parg.ifr.ifdr_name, st->arg, sizeof(st->parg.ifr.ifdr_name));
+
+    info("started module if(%.200s)", st->arg);
 }
-/* Get interface statistics */
 void
 gets_if()
 {
@@ -77,18 +79,15 @@ gets_if()
 int
 get_if(char *symon_buf, int maxlen, char *interface)
 {
-    struct ifdatareq ifdr;
     const struct if_data* ifi;
 
-    strncpy(ifdr.ifdr_name, interface, sizeof (ifdr.ifdr_name));
-
-    if (ioctl(if_s, SIOCGIFDATA, (caddr_t)&ifdr)) {
-	warning("if(%.200s) failed (ioctl error)", interface);
+    if (ioctl(if_s, SIOCGIFDATA, (caddr_t)&st->parg.ifr)) {
+	warning("if(%.200s) failed (ioctl error)", st->arg);
 	return 0;
     }
-    ifi = &ifdr.ifdr_data;
+    ifi = &st->parg.ifr.ifdr_data;
 
-    return snpack(symon_buf, maxlen, interface, MT_IF,
+    return snpack(symon_buf, maxlen, st->arg, MT_IF,
 		  (u_int32_t) ifi->ifi_ipackets,
 		  (u_int32_t) ifi->ifi_opackets,
 		  (u_int32_t) ifi->ifi_ibytes,

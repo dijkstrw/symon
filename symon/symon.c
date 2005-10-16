@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.42 2005/09/30 14:04:30 dijkstra Exp $ */
+/* $Id: symon.c,v 1.43 2005/10/16 15:27:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -57,7 +57,7 @@
 
 __BEGIN_DECLS
 void alarmhandler(int);
-void drop_priviledges();
+void drop_privileges();
 void exithandler(int);
 void huphandler(int);
 void set_stream_use(struct muxlist *);
@@ -73,13 +73,14 @@ struct funcmap streamfunc[] = {
     {MT_CPU, 0, NULL, init_cpu, gets_cpu, get_cpu},
     {MT_MEM, 0, NULL, init_mem, gets_mem, get_mem},
     {MT_IF, 0, NULL, init_if, gets_if, get_if},
-    {MT_PF, 0, privinit_pf, init_pf, NULL, get_pf},
+    {MT_PF, 0, privinit_pf, init_pf, gets_pf, get_pf},
     {MT_DEBUG, 0, NULL, init_debug, NULL, get_debug},
-    {MT_PROC, 0, NULL, init_proc, gets_proc, get_proc},
+    {MT_PROC, 0, privinit_proc, init_proc, gets_proc, get_proc},
     {MT_MBUF, 0, NULL, init_mbuf, NULL, get_mbuf},
     {MT_SENSOR, 0, privinit_sensor, init_sensor, NULL, get_sensor},
     {MT_IO2, 0, NULL, init_io, gets_io, get_io},
     {MT_PFQ, 0, privinit_pfq, init_pfq, gets_pfq, get_pfq},
+    {MT_DF, 0, NULL, init_df, gets_df, get_df},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 
@@ -100,14 +101,14 @@ set_stream_use(struct muxlist *mul)
     }
 }
 void
-drop_priviledges(int unsecure)
+drop_privileges(int unsecure)
 {
     struct passwd *pw;
 
     if (unsecure) {
 	if (setegid(getgid()) || setgid(getgid()) ||
 	    seteuid(getuid()) || setuid(getuid()))
-	    fatal("can't drop priviledges: %.200s", strerror(errno));
+	    fatal("can't drop privileges: %.200s", strerror(errno));
     } else {
 	if ((pw = getpwnam(SYMON_USER)) == NULL)
 	    fatal("could not get user information for user '%.200s': %.200s",
@@ -213,7 +214,7 @@ main(int argc, char *argv[])
 
     set_stream_use(&mul);
 
-    /* open resources that might not be available after priviledge drop */
+    /* open resources that might not be available after privilege drop */
     for (i = 0; i < MT_EOT; i++)
 	if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
 	    (streamfunc[i].privinit) ();
@@ -222,7 +223,7 @@ main(int argc, char *argv[])
 	warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,
 		strerror(errno));
 
-    drop_priviledges(flag_unsecure);
+    drop_privileges(flag_unsecure);
 
     if (flag_debug != 1) {
 	if (daemon(0, 0) != 0)
@@ -255,7 +256,7 @@ main(int argc, char *argv[])
     SLIST_FOREACH(mux, &mul, muxes) {
 	connect2mux(mux);
 	SLIST_FOREACH(stream, &mux->sl, streams) {
-	    (streamfunc[stream->type].init) (stream->args);
+	    (streamfunc[stream->type].init) (stream);
 	}
     }
     set_stream_use(&mul);
@@ -293,7 +294,7 @@ main(int argc, char *argv[])
 		    SLIST_FOREACH(mux, &mul, muxes) {
 			connect2mux(mux);
 			SLIST_FOREACH(stream, &mux->sl, streams) {
-			    (streamfunc[stream->type].init) (stream->args);
+			    (streamfunc[stream->type].init) (stream);
 			}
 		    }
 		    set_stream_use(&mul);

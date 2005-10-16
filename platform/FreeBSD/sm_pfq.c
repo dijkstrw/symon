@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.1 2005/03/20 16:17:22 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -34,7 +34,6 @@
  * Get current altq statistics from pf and return them in symon_buf as
  * sent_bytes : sent_packets : drop_bytes : drop_packets
  *
- * Non re-entrant code: gets_pfq messes with the globals without locking.
  */
 
 #include "conf.h"
@@ -70,7 +69,7 @@ privinit_pfq()
     fatal("pf support not available");
 }
 void
-init_pfq(char *s)
+init_pfq(struct stream *st)
 {
     fatal("pf support not available");
 }
@@ -81,7 +80,7 @@ gets_pfq()
 }
 
 int
-get_pfq(char *b, int l, char *s)
+get_pfq(char *b, int l, struct stream *st)
 {
   fatal("pf support not available");
   return 0;
@@ -101,7 +100,7 @@ union class_stats {
  */
 
 struct altq_stats {
-    char qname[PF_QNAME_SIZE];
+    char qname[PF_QNAME_SIZE + IFNAMSIZ + 1];
     u_int64_t sent_bytes;
     u_int64_t sent_packets;
     u_int64_t drop_bytes;
@@ -109,7 +108,8 @@ struct altq_stats {
 };
 
 static struct altq_stats *pfq_stats = NULL;
-static int pfq_numstats = 0;
+static int pfq_cur = 0;
+static int pfq_max = 0;
 int pfq_dev = -1;
 
 void
@@ -121,13 +121,13 @@ privinit_pfq()
 }
 
 void
-init_pfq(char *s)
+init_pfq(struct stream *st)
 {
     if (pfq_dev == -1) {
 	privinit_pfq();
     }
 
-    info("started module pfq(%.200s)",s);
+    info("started module pfq(%.200s)", st->arg);
 }
 
 void
@@ -148,16 +148,25 @@ gets_pfq()
     }
     nqs = qs.nr;
 
-    if (nqs > pfq_numstats) {
+    /* Allocate memory for info for the nqs queues */
+    if (nqs > pfq_max) {
 	if (pfq_stats) {
 	    xfree(pfq_stats);
 	}
 
-	pfq_stats = xmalloc(nqs * sizeof(struct altq_stats));
-	pfq_numstats = nqs;
+	pfq_max = 2 * nqs;
+
+	if (pfq_max > SYMON_MAX_DOBJECTS) {
+	    fatal("%s:%d: dynamic object limit (%d) exceeded for pf queue structures",
+		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+	}
+
+	pfq_stats = xmalloc(pfq_max * sizeof(struct altq_stats));
     }
 
-    /* loop through the queues, copy info */
+    pfq_cur = 0;
+
+    /* Loop through the queues, copy info */
     for (i = 0; i < nqs; i++) {
 	qs.nr = i;
 	if (ioctl(pfq_dev, DIOCGETALTQ, &qs)) {
@@ -175,55 +184,54 @@ gets_pfq()
 		fatal("pfq: DIOCGETQSTATS failed");
 	    }
 
-	    strncpy(pfq_stats[i].qname, qs.altq.qname, PF_QNAME_SIZE);
+	    /* We're now ready to copy the data we want. */
+	    snprintf(pfq_stats[pfq_cur].qname, sizeof(pfq_stats[0].qname),
+		     "%s/%s", qs.altq.ifname, qs.altq.qname);
 
 	    switch (qs.altq.scheduler) {
 	    case ALTQT_CBQ:
-		pfq_stats[i].sent_bytes = q.cbq.xmit_cnt.bytes;
-		pfq_stats[i].sent_packets = q.cbq.xmit_cnt.packets;
-		pfq_stats[i].drop_bytes = q.cbq.drop_cnt.bytes;
-		pfq_stats[i].drop_packets = q.cbq.drop_cnt.packets;
+		pfq_stats[pfq_cur].sent_bytes = q.cbq.xmit_cnt.bytes;
+		pfq_stats[pfq_cur].sent_packets = q.cbq.xmit_cnt.packets;
+		pfq_stats[pfq_cur].drop_bytes = q.cbq.drop_cnt.bytes;
+		pfq_stats[pfq_cur].drop_packets = q.cbq.drop_cnt.packets;
 		break;
 
 	    case ALTQT_PRIQ:
-		pfq_stats[i].sent_bytes = q.priq.xmitcnt.bytes;
-		pfq_stats[i].sent_packets = q.priq.xmitcnt.packets;
-		pfq_stats[i].drop_bytes = q.priq.dropcnt.bytes;
-		pfq_stats[i].drop_packets = q.priq.dropcnt.packets;
+		pfq_stats[pfq_cur].sent_bytes = q.priq.xmitcnt.bytes;
+		pfq_stats[pfq_cur].sent_packets = q.priq.xmitcnt.packets;
+		pfq_stats[pfq_cur].drop_bytes = q.priq.dropcnt.bytes;
+		pfq_stats[pfq_cur].drop_packets = q.priq.dropcnt.packets;
 		break;
 
 	    case ALTQT_HFSC:
-		pfq_stats[i].sent_bytes = q.hfsc.xmit_cnt.bytes;
-		pfq_stats[i].sent_packets = q.hfsc.xmit_cnt.packets;
-		pfq_stats[i].drop_bytes = q.hfsc.drop_cnt.bytes;
-		pfq_stats[i].drop_packets = q.hfsc.drop_cnt.packets;
+		pfq_stats[pfq_cur].sent_bytes = q.hfsc.xmit_cnt.bytes;
+		pfq_stats[pfq_cur].sent_packets = q.hfsc.xmit_cnt.packets;
+		pfq_stats[pfq_cur].drop_bytes = q.hfsc.drop_cnt.bytes;
+		pfq_stats[pfq_cur].drop_packets = q.hfsc.drop_cnt.packets;
 		break;
 
 	    default:
-		warning("pfq: unknown altq scheduler type (%d) encountered",
-			qs.altq.scheduler);
+		warning("pfq: unknown altq scheduler type encountered");
 		break;
 	    }
-	} else {
-	    /* Make sure the lookup in get_pfq fails immediately whenever
-	     * there's no queue in the slot. We do this by nul'ing the name */
-	    pfq_stats[i].qname[0] = '\0';
+	    pfq_cur++;
 	}
     }
 }
 
 int
-get_pfq(char *symon_buf, int maxlen, char *queue)
+get_pfq(char *symon_buf, int maxlen, struct stream *st)
 {
     unsigned int i;
 
-    for (i = 0; i < pfq_numstats; i++) {
-	if (strncmp(pfq_stats[i].qname, queue, PF_QNAME_SIZE) == 0) {
-	    return snpack(symon_buf, maxlen, queue, MT_PFQ,
+    for (i = 0; i < pfq_cur; i++) {
+	if (strncmp(pfq_stats[i].qname, st->arg, sizeof(pfq_stats[0].qname)) == 0) {
+	    return snpack(symon_buf, maxlen, st->arg, MT_PFQ,
 			  pfq_stats[i].sent_bytes,
 			  pfq_stats[i].sent_packets,
 			  pfq_stats[i].drop_bytes,
-			  pfq_stats[i].drop_packets);
+			  pfq_stats[i].drop_packets
+		);
 	}
     }
 

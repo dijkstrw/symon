@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.10 2005/03/20 16:17:22 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.11 2005/10/16 15:26:50 dijkstra Exp $
 #
 # Copyright (c) 2001-2005 Willem Dijkstra
 # All rights reserved.
@@ -67,7 +67,9 @@ my $streamitem =
      io     => {total_rxfers => 1, total_wxfers => 2, total_seeks => 3,
 		total_rbytes => 4, total_rbytes => 5 },
      pfq    => {sent_bytes => 1, sent_packets => 2, drop_bytes => 3,
-		drop_packets => 4}};
+		drop_packets => 4}
+     df     => {blocks => 1, bfree => 2, bavail => 3, files => 4, ffree => 5,
+		syncwrites => 6, asyncwrites => 7}};
 sub new {
     my ($class, %arg) = @_;
     my $self;
