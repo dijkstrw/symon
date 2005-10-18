@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.31 2005/10/16 15:27:03 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.32 2005/10/18 19:58:13 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2005 Willem Dijkstra
@@ -126,7 +126,7 @@ Linux)
 	;;
 OpenBSD)
 	DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
-	INTERFACES="an|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
+	INTERFACES="an|ath|awi|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
 	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
 	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
 	partcmd="grep ffs /etc/fstab | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]*[a-z]*\).*,\1,p' | sort -u"

@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.17 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.18 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,7 +35,6 @@
  * symon_buf as
  *
  * total nr of transfers : total seeks : total bytes transferred
- *
  */
 
 #include <sys/param.h>
@@ -135,13 +134,13 @@ gets_io()
 	p++;
     }
 }
-/* Prepare io module for first use */
+
 void
 init_io(struct stream *st)
 {
     info("started module io(%.200s)", st->arg);
 }
-/* Get new io statistics */
+
 int
 get_io(char *symon_buf, int maxlen, struct stream *st)
 {

@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.1 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.2 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer
@@ -60,7 +60,6 @@ static struct statfs *df_stats = NULL;
 static long df_blocksize;
 static int df_parts = 0;
 
-/* Prepare if module for first use */
 void
 init_df(struct stream *st)
 {
@@ -91,7 +90,6 @@ gets_df()
 	(((fsbs) != 0 && (fsbs) < (bs)) ? \
 		(num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
 
-/* Get df statistics */
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
 {

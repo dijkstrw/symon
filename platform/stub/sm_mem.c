@@ -1,11 +1,13 @@
-/* $Id: sm_mem.c,v 1.2 2005/09/30 14:07:22 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.3 2005/10/18 19:58:12 dijkstra Exp $ */
 
 #include <stdlib.h>
 
+#include "sylimits.h"
+#include "data.h"
 #include "error.h"
 
 void
-init_mem(char *s)
+init_mem(struct stream *st)
 {
     fatal("mem module not available");
 }
@@ -15,7 +17,7 @@ gets_mem()
     fatal("mem module not available");
 }
 int
-get_mem(char *symon_buf, int maxlen, char *s)
+get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("mem module not available");
 

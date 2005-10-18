@@ -19,6 +19,10 @@
    - sm_mem for FreeBSD did not clear swap stats between calls (J. Martin
      Petersen)
 
+   - sm_sensor: sensor support was detected, but did not get configured (Eric
+     Dillenseger)
+
+
 19/03/2005 - 2.71
 
    - Ulrich Spörlein updated mem probe for FreeBSD-current and removed some
@@ -417,4 +421,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.46 2005/10/16 15:26:47 dijkstra Exp $
+$Id: CHANGELOG,v 1.47 2005/10/18 19:58:04 dijkstra Exp $

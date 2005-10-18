@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.5 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.6 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -54,14 +54,12 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     fatal("mbuf module requires system upgrade (sysctl.h/KERN_MBSTAT)");
 }
 #else
-/* Prepare if module for first use */
 void
 init_mbuf(struct stream *st)
 {
     info("started module mbuf(%.200s)", st->arg);
 }
 
-/* Get mbuf statistics */
 int
 get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {

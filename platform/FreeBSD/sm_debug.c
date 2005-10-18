@@ -1,4 +1,4 @@
-/* $Id: sm_debug.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c)      2004 Matthew Gream
@@ -35,8 +35,9 @@
  * Get current debug statistics from kernel and return them in symon_buf as
  *
  * debug0 : debug1 : ... : debug19
- *
  */
+
+#include "conf.h"
 
 #include <sys/param.h>
 #include <sys/sysctl.h>
@@ -46,18 +47,16 @@
 #include "error.h"
 #include "symon.h"
 
-#define SYMON_MAXDEBUGID      20/* = CTL_DEBUG_MAXID; depends lib/data.h */
-
 /* Globals for this module start with db_ */
 static int db_mib[] = { CTL_DEBUG, 0 };
 static int db_v[SYMON_MAXDEBUGID];
-/* Prepare if module for first use */
+
 void
 init_debug(struct stream *st)
 {
     info("started module debug(%.200s)", st->arg);
 }
-/* Get debug statistics */
+
 int
 get_debug(char *symon_buf, int maxlen, struct stream *st)
 {

@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.1 2005/09/30 14:05:27 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.2 2005/10/18 19:58:08 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Harm Schotanus
@@ -34,8 +34,6 @@
  * Get current memory statistics in bytes; reports them back in symon_buf as
  *
  * real active : real total : free : [swap used : swap total]
- *
- * This code is not re-entrant.
  */
 
 #include <stdlib.h>
@@ -66,6 +64,7 @@ init_mem(char *s)
 
     info("started module mem(%.200s)", s);
 }
+
 void
 gets_mem()
 {
@@ -128,15 +127,9 @@ get_mem(char *symon_buf, int maxlen, char *s)
     me_stats[3] = ktob(mem_getitem("SwapFree"));
     me_stats[4] = ktob(mem_getitem("SwapTotal"));
 
-    /* swap used = SwapTotal - SwapFree
-     * real total = MemTotal + swap used - Active
-     */
-
     me_stats[3] = me_stats[4] - me_stats[3];
-    me_stats[1] += me_stats[3] - me_stats[0];
 
     return snpack(symon_buf, maxlen, s, MT_MEM,
 		  me_stats[0], me_stats[1], me_stats[2],
 		  me_stats[3], me_stats[4]);
-
 }

@@ -1,9 +1,16 @@
-/* $Id: platform.h,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
+/* $Id: platform.h,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
 
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
 
+#define _NETBSD_SOURCE 1
+
 #include <sys/queue.h>
+#include <sys/sched.h>
+
+#include <net/if.h>
+
+#include "sylimits.h"
 
 #define SYMON_USER      "_symon"
 #define SEM_ARGS        (IPC_W|IPC_R)

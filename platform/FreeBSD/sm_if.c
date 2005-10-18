@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Fredrik Soderblom
@@ -36,7 +36,6 @@
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
- *
  */
 
 #include <sys/types.h>
@@ -61,7 +60,6 @@ static int if_cur = 0;
 static int if_max = 0;
 struct ifmibdata *if_md = NULL;
 
-/* Prepare if module for first use */
 void
 init_if(struct stream *st)
 {
@@ -95,7 +93,6 @@ get_ifmib_general(int row, struct ifmibdata *ifmd)
     return sysctl(name, 6, ifmd, &len, (void *)0, 0);
 }
 
-/* Get interface statistics */
 void
 gets_if()
 {
@@ -121,6 +118,7 @@ gets_if()
 	get_ifmib_general(i, &if_md[i - 1]);
     }
 }
+
 int
 get_if(char *symon_buf, int maxlen, struct stream *st)
 {

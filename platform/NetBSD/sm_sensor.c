@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -34,7 +34,6 @@
  * Get sensor data from the kernel and return in symon_buf as
  *
  * num : value
- *
  */
 
 #include <errno.h>
@@ -58,6 +57,7 @@ privinit_sensor()
 	warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));
     }
 }
+
 void
 init_sensor(struct stream *st)
 {
@@ -65,20 +65,20 @@ init_sensor(struct stream *st)
 	privinit_sensor();
     }
 
-    st->sn = (strtol(st->arg, NULL, 10) & SYMON_SENSORMASK);
+    st->parg.sn = (strtol(st->arg, NULL, 10) & SYMON_SENSORMASK);
 
-    info("started module sensors(%.200s)", s);
+    info("started module sensors(%.200s)", st->arg);
 }
+
 int
 get_sensor(char *symon_buf, int maxlen, struct stream *st)
 {
-    int i;
     double t;
 
     envsys_basic_info_t e_info;
     envsys_tre_data_t e_data;
 
-    e_info.sensor = st->sn;
+    e_info.sensor = st->parg.sn;
     if (ioctl(sn_dev, ENVSYS_GTREINFO, &e_info) == -1) {
 	warning("%s:%d: sensor can't get sensor info %.200s -- %.200s",
 		__FILE__, __LINE__, st->arg, strerror(errno));
@@ -91,7 +91,7 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
 	return 0;
     }
 
-    e_data.sensor = st->sn;
+    e_data.sensor = st->parg.sn;
     if (ioctl(sn_dev, ENVSYS_GTREDATA, &e_data) == -1) {
 	warning("%s:%d: sensor can't get sensor data %.200s -- %.200s",
 		__FILE__, __LINE__, st->arg, strerror(errno));

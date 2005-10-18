@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.20 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.21 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -113,7 +113,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
     /* return the total in case the caller wants to use it */
     return total_change;
 }
-/* Prepare cpu module for use */
+
 void
 init_cpu(struct stream *st)
 {
@@ -128,8 +128,9 @@ init_cpu(struct stream *st)
 void
 gets_cpu()
 {
+    /* EMPTY */
 }
-/* Get new cpu measurements */
+
 int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {

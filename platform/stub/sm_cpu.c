@@ -1,23 +1,23 @@
-/* $Id: sm_cpu.c,v 1.2 2004/08/08 17:21:18 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.3 2005/10/18 19:58:12 dijkstra Exp $ */
 
 #include <stdlib.h>
 
+#include "sylimits.h"
+#include "data.h"
 #include "error.h"
 
 void
-init_cpu(char *s)
+init_cpu(struct stream *st)
 {
     fatal("cpu module not available");
 }
-
 void
-gets_cpu(char *s)
+gets_cpu()
 {
     fatal("cpu module not available");
 }
-
 int
-get_cpu(char *symon_buf, int maxlen, char *s)
+get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("cpu module not available");
 

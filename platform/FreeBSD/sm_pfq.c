@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -33,7 +33,6 @@
 /*
  * Get current altq statistics from pf and return them in symon_buf as
  * sent_bytes : sent_packets : drop_bytes : drop_packets
- *
  */
 
 #include "conf.h"
@@ -68,11 +67,13 @@ privinit_pfq()
 {
     fatal("pf support not available");
 }
+
 void
 init_pfq(struct stream *st)
 {
     fatal("pf support not available");
 }
+
 void
 gets_pfq()
 {
@@ -95,7 +96,7 @@ union class_stats {
 };
 
 /*
- * We don't reuse the data structures from altq/altq_{cbq|hfsc|priq}.h as they
+ * We do not use the data structures from altq/altq_{cbq|hfsc|priq}.h as they
  * are overly complex. For now we only grab the interesting stuff.
  */
 
@@ -237,5 +238,4 @@ get_pfq(char *symon_buf, int maxlen, struct stream *st)
 
     return 0;
 }
-
 #endif

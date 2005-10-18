@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.2 2005/10/16 15:26:58 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -35,9 +35,6 @@
  * symon_buf as
  *
  * total nr of transfers : total seeks : total bytes transferred
- *
- * Non re-entrant code: gets_io messes with globals r/w without a semaphore.
- *
  */
 
 #include <sys/param.h>
@@ -93,11 +90,13 @@ gets_io()
 	      __FILE__, __LINE__);
     }
 }
+
 void
 init_io(struct stream *st)
 {
     info("started module io(%.200s)", st->arg);
 }
+
 int
 get_io(char *symon_buf, int maxlen, struct stream *st)
 {

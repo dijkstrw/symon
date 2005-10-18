@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.14 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.15 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -35,7 +35,6 @@
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
- *
  */
 
 #include <sys/types.h>
@@ -60,7 +59,7 @@
 
 /* Globals for this module start with if_ */
 static int if_s = -1;
-/* Prepare if module for first use */
+
 void
 init_if(struct stream *st)
 {
@@ -76,7 +75,7 @@ init_if(struct stream *st)
 
     info("started module if(%.200s)", st->arg);
 }
-/* Get interface statistics */
+
 void
 gets_if()
 {

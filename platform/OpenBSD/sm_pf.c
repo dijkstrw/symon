@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.10 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.11 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -84,7 +84,6 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
 int pf_dev = -1;
 struct pf_status pf_stat;
 
-/* Privileged init, called before privileges are dropped */
 void
 privinit_pf()
 {
@@ -92,7 +91,7 @@ privinit_pf()
 	warning("could not open \"/dev/pf\", %.200s", strerror(errno));
     }
 }
-/* Prepare if module for first use */
+
 void
 init_pf(struct stream *st)
 {
@@ -102,6 +101,7 @@ init_pf(struct stream *st)
 
     info("started module pf()");
 }
+
 void
 gets_pf()
 {
@@ -117,7 +117,7 @@ gets_pf()
 	return;
     }
 }
-/* Get pf statistics */
+
 int
 get_pf(char *symon_buf, int maxlen, struct stream *st)
 {
@@ -153,5 +153,4 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
 		  pf_stat.counters[5]
 	);
 }
-
-#endif
+#endif /* HAS_PFVAR_H */

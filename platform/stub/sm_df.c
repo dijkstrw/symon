@@ -1,11 +1,13 @@
-/* $Id: sm_df.c,v 1.1 2005/10/16 15:27:00 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.2 2005/10/18 19:58:12 dijkstra Exp $ */
 
 #include <stdlib.h>
 
+#include "sylimits.h"
+#include "data.h"
 #include "error.h"
 
 void
-init_df(char *s)
+init_df(struct stream *st)
 {
     fatal("df module not available");
 }
@@ -15,7 +17,7 @@ gets_df()
     fatal("df module not available");
 }
 int
-get_df(char *symon_buf, int maxlen, char *s)
+get_df(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("df module not available");
 

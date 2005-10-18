@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.6 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.7 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -76,11 +76,12 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
 static int sn_mib[] = {CTL_HW, HW_SENSORS, 0};
 static struct sensor sn_sensor;
 
-/* Prepare if module for first use */
 void
 privinit_sensor()
 {
+    /* EMPTY */
 }
+
 void
 init_sensor(struct stream *st)
 {
@@ -89,7 +90,7 @@ init_sensor(struct stream *st)
 
     info("started module sensors(%.200s)", st->arg);
 }
-/* Get sensor statistics */
+
 int
 get_sensor(char *symon_buf, int maxlen, struct stream *st)
 {

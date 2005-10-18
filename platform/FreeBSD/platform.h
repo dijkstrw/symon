@@ -1,9 +1,17 @@
-/* $Id: platform.h,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: platform.h,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
 
 #ifndef _CONF_FREEBSD_H
 #define _CONF_FREEBSD_H
 
 #include <sys/queue.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/resource.h>
+
+#include <net/if.h>
+#include <net/if_mib.h>
+
+#include "sylimits.h"
 
 #define SYMON_USER      "_symon"
 #define SEM_ARGS        (SEM_A|SEM_R)

@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.4 2005/10/16 15:26:56 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.5 2005/10/18 19:58:08 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -35,7 +35,6 @@
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
- *
  */
 
 #include <sys/types.h>
@@ -74,7 +73,7 @@ struct if_device_stats
     unsigned long   rx_compressed;
     unsigned long   tx_compressed;
 };
-/* Prepare if module for first use */
+
 void
 init_if(char *s)
 {
@@ -85,6 +84,7 @@ init_if(char *s)
 
     info("started module if(%.200s)", s);
 }
+
 void
 gets_if()
 {
@@ -115,7 +115,7 @@ gets_if()
 	warning("could not read if statistics from /proc/net/dev: %.200s", strerror(errno));
     }
 }
-/* Get interface statistics */
+
 int
 get_if(char *symon_buf, int maxlen, char *interface)
 {

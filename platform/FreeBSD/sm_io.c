@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.2 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -32,8 +32,6 @@
 
 /*
  * nr of reads : nr of writes : seeks (zero) : read bytes : written bytes
- *
- * Non re-entrant code
  */
 
 #include "conf.h"
@@ -64,6 +62,7 @@ static int io_numdevs = 0;
 void
 privinit_io()
 {
+    /* EMPTY */
 }
 
 void

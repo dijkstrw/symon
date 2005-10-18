@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.3 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.4 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /* The author of this code is Matthew Gream.
  *
@@ -55,6 +55,8 @@
  *
  * This module uses the sysctl interface and can run as any user.
  */
+
+#include "conf.h"
 
 #include <sys/param.h>
 #include <sys/dkstat.h>
@@ -115,7 +117,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
     /* return the total in case the caller wants to use it */
     return total_change;
 }
-/* Prepare cpu module for use */
+
 void
 init_cpu(struct stream *st)
 {
@@ -132,11 +134,13 @@ init_cpu(struct stream *st)
 
     info("started module cpu(%.200s)", st->arg);
 }
+
 void
 gets_cpu()
 {
+    /* EMPTY */
 }
-/* Get new cpu measurements */
+
 int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {

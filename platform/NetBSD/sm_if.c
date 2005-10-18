@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.3 2005/10/16 15:26:58 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.4 2005/10/18 19:58:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -35,7 +35,6 @@
  *
  * ipackets : opackets : ibytes : obytes : imcasts : omcasts : ierrors :
  * oerrors : colls : drops
- *
  */
 
 #include <sys/types.h>
@@ -72,12 +71,15 @@ init_if(struct stream *st)
 
     info("started module if(%.200s)", st->arg);
 }
+
 void
 gets_if()
 {
+    /* EMPTY */
 }
+
 int
-get_if(char *symon_buf, int maxlen, char *interface)
+get_if(char *symon_buf, int maxlen, struct stream *st)
 {
     const struct if_data* ifi;
 

@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.19 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.20 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -34,7 +34,6 @@
  * Get current memory statistics in bytes; reports them back in symon_buf as
  *
  * real active : real total : free : [swap used : swap total]
- *
  */
 
 #include <sys/param.h>
@@ -62,7 +61,7 @@ static size_t me_vmsize;
 static int me_pagesize;
 static int me_nswap;
 struct swapent *me_swdev = NULL;
-/* Prepare mem module for first use */
+
 void
 init_mem(struct stream *st)
 {
@@ -97,6 +96,7 @@ init_mem(struct stream *st)
 	info("started module mem(%.200s)", st->arg);
     }
 }
+
 void
 gets_mem()
 {
@@ -130,7 +130,7 @@ gets_mem()
 	}
     }
 }
-/* Get memory statistics */
+
 int
 get_mem(char *symon_buf, int maxlen, struct stream *st)
 {

@@ -1,7 +1,9 @@
-/* $Id: sm_pf.c,v 1.1 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.2 2005/10/18 19:58:12 dijkstra Exp $ */
 
 #include <stdlib.h>
 
+#include "sylimits.h"
+#include "data.h"
 #include "error.h"
 
 void
@@ -9,15 +11,18 @@ privinit_pf()
 {
     fatal("pf module not available");
 }
-
 void
-init_pf(char *s)
+init_pf(struct stream *st)
 {
     fatal("pf module not available");
 }
-
+void
+gets_pf()
+{
+    fatal("pf module not available");
+}
 int
-get_pf(char *symon_buf, int maxlen, char *s)
+get_pf(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("pf module not available");
 

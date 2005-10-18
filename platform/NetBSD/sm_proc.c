@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.3 2005/10/16 15:26:58 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.4 2005/10/18 19:58:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -36,7 +36,6 @@
  *
  * number of processes : ticks_user : ticks_system : ticks_interrupt :
  * cpuseconds : procsizes : resident segment sizes
- *
  */
 
 #include <sys/param.h>
@@ -113,10 +112,13 @@ gets_proc()
 	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
+
 void
 privinit_proc()
 {
+    /* EMPTY */
 }
+
 void
 init_proc(struct stream *st)
 {
@@ -141,6 +143,7 @@ init_proc(struct stream *st)
 
     info("started module proc(%.200s)", st->arg);
 }
+
 int
 get_proc(char *symon_buf, int maxlen, struct stream *st)
 {

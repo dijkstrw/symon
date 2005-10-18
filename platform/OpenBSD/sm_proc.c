@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.6 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.7 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -111,10 +111,13 @@ gets_proc()
 	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
+
 void
 privinit_proc()
 {
+    /* EMPTY */
 }
+
 void
 init_proc(struct stream *st)
 {
@@ -139,7 +142,7 @@ init_proc(struct stream *st)
 
     info("started module proc(%.200s)", st->arg);
 }
-/* Get new io statistics */
+
 int
 get_proc(char *symon_buf, int maxlen, struct stream *st)
 {

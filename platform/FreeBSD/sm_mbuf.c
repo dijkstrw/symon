@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.4 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.5 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004 Matthew Gream
@@ -46,7 +46,6 @@ static char mbstat_mib_str[] = "kern.ipc.mbstat";
 static int mbstat_mib[CTL_MAXNAME];
 static size_t mbstat_len = 0;
 
-/* Prepare if module for first use */
 void
 init_mbuf(struct stream *st)
 {
@@ -59,7 +58,6 @@ init_mbuf(struct stream *st)
     info("started module mbuf(%.200s)", st->arg);
 }
 
-/* Get mbuf statistics */
 int
 get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {

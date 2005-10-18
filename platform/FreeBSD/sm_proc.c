@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.6 2005/10/16 15:26:54 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.7 2005/10/18 19:58:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -35,8 +35,6 @@
  *
  * number of processes : ticks_user : ticks_system : ticks_interrupt :
  * cpuseconds : procsizes : resident segment sizes
- *
- * Non re-entrant code: gets_proc messes with globals r/w without a semaphore.
  */
 
 #include "conf.h"
@@ -121,6 +119,7 @@ gets_proc()
 	proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
+
 void
 privinit_proc()
 {
@@ -134,7 +133,6 @@ privinit_proc()
 #endif
 }
 
-/* Prepare io module for first use */
 void
 init_proc(struct stream *st)
 {
@@ -159,7 +157,7 @@ init_proc(struct stream *st)
 
     info("started module proc(%.200s)", st->arg);
 }
-/* Get new io statistics */
+
 int
 get_proc(char *symon_buf, int maxlen, struct stream *st)
 {

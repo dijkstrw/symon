@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.2 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.3 2005/10/18 19:58:11 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -33,7 +33,6 @@
 /*
  * Get current altq statistics from pf and return them in symon_buf as
  * sent_bytes : sent_packets : drop_bytes : drop_packets
- *
  */
 
 #include "conf.h"
@@ -237,5 +236,4 @@ get_pfq(char *symon_buf, int maxlen, struct stream *st)
 
     return 0;
 }
-
 #endif
