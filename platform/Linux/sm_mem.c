@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.2 2005/10/18 19:58:08 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.3 2005/10/19 20:06:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Harm Schotanus
@@ -55,14 +55,14 @@ static int me_maxsize = 0;
 static long me_stats[5];
 
 void
-init_mem(char *s)
+init_mem(struct stream *st)
 {
     if (me_buf == NULL) {
 	me_maxsize = SYMON_MAX_OBJSIZE;
 	me_buf = xmalloc(me_maxsize);
     }
 
-    info("started module mem(%.200s)", s);
+    info("started module mem(%.200s)", st->arg);
 }
 
 void
@@ -119,7 +119,7 @@ mem_getitem(char *name)
 }
 
 int
-get_mem(char *symon_buf, int maxlen, char *s)
+get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
     me_stats[0] = ktob(mem_getitem("Active"));
     me_stats[1] = ktob(mem_getitem("MemTotal"));
@@ -129,7 +129,7 @@ get_mem(char *symon_buf, int maxlen, char *s)
 
     me_stats[3] = me_stats[4] - me_stats[3];
 
-    return snpack(symon_buf, maxlen, s, MT_MEM,
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
 		  me_stats[0], me_stats[1], me_stats[2],
 		  me_stats[3], me_stats[4]);
 }

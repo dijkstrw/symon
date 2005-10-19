@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.5 2005/10/18 19:58:08 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.6 2005/10/19 20:06:05 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,14 +75,14 @@ struct if_device_stats
 };
 
 void
-init_if(char *s)
+init_if(struct stream *st)
 {
     if (if_buf == NULL) {
 	if_maxsize = SYMON_MAX_OBJSIZE;
 	if_buf = xmalloc(if_maxsize);
     }
 
-    info("started module if(%.200s)", s);
+    info("started module if(%.200s)", st->arg);
 }
 
 void
@@ -117,7 +117,7 @@ gets_if()
 }
 
 int
-get_if(char *symon_buf, int maxlen, char *interface)
+get_if(char *symon_buf, int maxlen, struct stream *st)
 {
     char *line;
     struct if_device_stats stats;
@@ -126,12 +126,12 @@ get_if(char *symon_buf, int maxlen, char *interface)
 	return 0;
     }
 
-    if ((line = strstr(if_buf, interface)) == NULL) {
-	warning("could not find interface %s", interface);
+    if ((line = strstr(if_buf, st->arg)) == NULL) {
+	warning("could not find interface %s", st->arg);
 	return 0;
     }
 
-    line += strlen(interface);
+    line += strlen(st->arg);
     bzero(&stats, sizeof(struct if_device_stats));
 
     /* Inter-|   Receive                                                |  Transmit
@@ -142,11 +142,11 @@ get_if(char *symon_buf, int maxlen, char *interface)
 		    &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
 		    &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,
 		    &stats.collisions, &stats.tx_carrier_errors, &stats.tx_compressed)) {
-	warning("could not parse interface statistics for %.200s", interface);
+	warning("could not parse interface statistics for %.200s", st->arg);
 	return 0;
     }
 
-    return snpack(symon_buf, maxlen, interface, MT_IF,
+    return snpack(symon_buf, maxlen, st->arg, MT_IF,
 		  stats.rx_packets,
 		  stats.tx_packets,
 		  stats.rx_bytes,

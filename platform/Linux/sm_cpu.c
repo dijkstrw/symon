@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.2 2005/10/18 19:58:08 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.3 2005/10/19 20:06:05 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
  * The percentages function was written by William LeFebvre and is part
  * of the 'top' utility. His copyright statement is below.
  *
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2005 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,10 +50,6 @@
  * and returns them in symon_buf as
  *
  * user : nice : system : interrupt : idle
- *
- * This code is not re-entrant and UP only.
- *
- * This module uses the sysctl interface and can run as any user.
  */
 
 #include <sys/types.h>
@@ -72,12 +68,6 @@
 #include "symon.h"
 #include "xmalloc.h"
 
-#define CPUSTATES 4
-#define CP_USER 0
-#define CP_NICE 1
-#define CP_SYS  2
-#define CP_IDLE 3
-
 __BEGIN_DECLS
 int percentages(int, int *, long *, long *, long *);
 __END_DECLS
@@ -86,10 +76,6 @@ __END_DECLS
 static void *cp_buf = NULL;
 static int cp_size = 0;
 static int cp_maxsize = 0;
-static long cp_time[SYMON_MAXCPUS][CPUSTATES];
-static long cp_old[SYMON_MAXCPUS][CPUSTATES];
-static long cp_diff[SYMON_MAXCPUS][CPUSTATES];
-static int cp_states[SYMON_MAXCPUS][CPUSTATES];
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -135,7 +121,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 }
 
 void
-init_cpu(char *s)
+init_cpu(struct stream *st)
 {
     char buf[SYMON_MAX_OBJSIZE];
 
@@ -144,10 +130,18 @@ init_cpu(char *s)
 	cp_buf = xmalloc(cp_maxsize);
     }
 
-    gets_cpu();
-    get_cpu(buf, sizeof(buf), s);
+    if (st->arg != NULL && isdigit(*st->arg)) {
+	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu%s", st->arg);
+	st->parg.cp.nr = strtol(st->arg, NULL, 10);
+    } else {
+	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
+	st->parg.cp.nr = 0;
+    }
 
-    info("started module cpu(%.200s)", s);
+    gets_cpu();
+    get_cpu(buf, sizeof(buf), st);
+
+    info("started module cpu(%.200s)", st->arg);
 }
 
 void
@@ -182,44 +176,38 @@ gets_cpu()
 }
 
 int
-get_cpu(char *symon_buf, int maxlen, char *s)
+get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
-    char cpuname[SYMON_MAX_OBJSIZE];
-    int nr = 0;
     char *line;
+    int nr;
 
     if (cp_size <= 0) {
 	return 0;
     }
 
-    bzero(&cpuname, sizeof(cpuname));
-    if (s != NULL && isdigit(*s)) {
-	snprintf(cpuname, sizeof(cpuname), "cpu%s", s);
-	nr = strtol(s, NULL, 10);
-    } else {
-	snprintf(cpuname, sizeof(cpuname), "cpu");
-	nr = 0;
-    }
-
-    if ((line = strstr(cp_buf, cpuname)) == NULL) {
-	warning("could not find %s", &cpuname);
+    if ((line = strstr(cp_buf, st->parg.cp.name)) == NULL) {
+	warning("could not find %s", st->parg.cp.name);
 	return 0;
     }
 
-    line += strlen(cpuname);
+    line += strlen(st->parg.cp.name);
+    nr = st->parg.cp.nr;
     if (4 > sscanf(line, "%lu %lu %lu %lu\n",
-		   &cp_time[nr][CP_USER], &cp_time[nr][CP_NICE],
-		   &cp_time[nr][CP_SYS], &cp_time[nr][CP_IDLE])) {
-	warning("could not parse cpu statistics for %.200s", &cpuname);
+		   &st->parg.cp.time[nr][CP_USER],
+		   &st->parg.cp.time[nr][CP_NICE],
+		   &st->parg.cp.time[nr][CP_SYS],
+		   &st->parg.cp.time[nr][CP_IDLE])) {
+	warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
 	return 0;
     }
 
-    percentages(CPUSTATES, cp_states[nr], cp_time[nr], cp_old[nr], cp_diff[nr]);
+    percentages(CPUSTATES, st->parg.cp.states[nr], st->parg.cp.time[nr],
+		st->parg.cp.old[nr], st->parg.cp.diff[nr]);
 
-    return snpack(symon_buf, maxlen, s, MT_CPU,
-		  (double) (cp_states[nr][CP_USER] / 10.0),
-		  (double) (cp_states[nr][CP_NICE] / 10.0),
-		  (double) (cp_states[nr][CP_SYS] / 10.0),
+    return snpack(symon_buf, maxlen, st->arg, MT_CPU,
+		  (double) (st->parg.cp.states[nr][CP_USER] / 10.0),
+		  (double) (st->parg.cp.states[nr][CP_NICE] / 10.0),
+		  (double) (st->parg.cp.states[nr][CP_SYS] / 10.0),
 		  (double) (0),
-		  (double) (cp_states[nr][CP_IDLE] / 10.0));
+		  (double) (st->parg.cp.states[nr][CP_IDLE] / 10.0));
 }

@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.2 2005/10/18 19:58:12 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.3 2005/10/19 20:06:07 dijkstra Exp $ */
 
 #include <stdlib.h>
 
@@ -11,11 +11,19 @@ init_proc(struct stream *st)
 {
     fatal("proc module not available");
 }
+
 void
 gets_proc()
 {
     fatal("proc module not available");
 }
+
+void
+privinit_proc()
+{
+    fatal("proc module not available");
+}
+
 int
 get_proc(char *symon_buf, int maxlen, struct stream *st)
 {
