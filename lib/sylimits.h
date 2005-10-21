@@ -1,4 +1,4 @@
-/* $Id: sylimits.h,v 1.2 2005/10/18 19:58:05 dijkstra Exp $ */
+/* $Id: sylimits.h,v 1.3 2005/10/21 14:58:42 dijkstra Exp $ */
 
 #ifndef _LIB_LIMITS_H
 #define _LIB_LIMITS_H
@@ -10,7 +10,8 @@
 					 * measurement module */
 #define SYMON_MAX_OBJSIZE      (_POSIX2_LINE_MAX)
 #define SYMON_SENSORMASK       0xFF     /* sensors 0-255 are allowed */
-#define SYMON_MAXCPUS          4
 #define SYMON_MAXDEBUGID       20       /* = CTL_DEBUG_MAXID; depends lib/data.h */
+#define SYMON_DFBLOCKSIZE      512
+#define SYMON_DFNAMESIZE       16
 
 #endif

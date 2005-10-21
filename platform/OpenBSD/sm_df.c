@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.2 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.3 2005/10/21 14:58:46 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer
@@ -57,20 +57,15 @@
 
 /* Globals for this module start with df_ */
 static struct statfs *df_stats = NULL;
-static long df_blocksize;
 static int df_parts = 0;
 
 void
 init_df(struct stream *st)
 {
-    char *bsize;
-    int bsizelen;
-
     strlcpy(st->parg.df.rawdev, "/dev/", sizeof(st->parg.df.rawdev));
     strlcat(st->parg.df.rawdev, st->arg, sizeof(st->parg.df.rawdev));
 
-    bsize = getbsize(&bsizelen, &df_blocksize);
-    info("started module df(%.200s), using %s", st->arg, bsize);
+    info("started module df(%.200s)", st->arg);
 }
 
 void
@@ -96,11 +91,11 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
     int n;
 
     for (n = 0; n < df_parts; n++) {
-	if (!strcmp(df_stats[n].f_mntfromname, st->parg.df.rawdev)) {
+	if (!strncmp(df_stats[n].f_mntfromname, st->parg.df.rawdev, SYMON_DFNAMESIZE)) {
 	    return snpack(symon_buf, maxlen, st->arg, MT_DF,
-			  (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, df_blocksize),
-			  (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, df_blocksize),
-			  (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, df_blocksize),
+			  (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+			  (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+			  (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
 			  (u_int64_t)df_stats[n].f_files,
 			  (u_int64_t)df_stats[n].f_ffree,
 			  (u_int64_t)df_stats[n].f_syncwrites,

@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.3 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.4 2005/10/21 14:58:46 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -94,7 +94,7 @@ union class_stats {
 };
 
 /*
- * We don't reuse the data structures from altq/altq_{cbq|hfsc|priq}.h as they
+ * We do not use the data structures from altq/altq_{cbq|hfsc|priq}.h as they
  * are overly complex. For now we only grab the interesting stuff.
  */
 

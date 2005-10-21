@@ -8,18 +8,19 @@ symux needs read and write access to its rrdfiles.
 symon needs to interface with your kernel. Depending on your host system this
 leads to different privilege requirements:
 
-OpenBSD:  - sysctl: cpu, debug, if, io, mbuf, mem, proc, sensor
+OpenBSD:  - no privs: cpu, debug, df, if, io, mbuf, mem, proc, sensor
           - rw on /dev/pf for pf
 
-NetBSD:   - sysctl: cpu, debug, if, io, mbuf, proc
+NetBSD:   - no privs: cpu, debug, df, if, io, mbuf, proc
           - r on /dev/sysmon for sensor
 
-FreeBSD:  - sysctl: all
+FreeBSD:  - no privs: all
           - non-chroot on FreeBSD 5.x for CPU ticks in proc
           - rw on /dev/pf for pf and pfq
 
 Linux:    - r on /proc/net/dev: if
           - r on /proc/stat: cpu
+          - r on /proc/meminfo: mem
 
 Real quick on OpenBSD
 =====================
@@ -104,5 +105,5 @@ rudimentary support for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.18 2005/03/20 16:17:22 dijkstra Exp $
+$Id: INSTALL,v 1.19 2005/10/21 14:58:41 dijkstra Exp $
 

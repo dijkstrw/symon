@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.3 2005/10/19 20:06:05 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.4 2005/10/21 14:58:44 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -132,10 +132,8 @@ init_cpu(struct stream *st)
 
     if (st->arg != NULL && isdigit(*st->arg)) {
 	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu%s", st->arg);
-	st->parg.cp.nr = strtol(st->arg, NULL, 10);
     } else {
 	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
-	st->parg.cp.nr = 0;
     }
 
     gets_cpu();
@@ -179,7 +177,6 @@ int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
     char *line;
-    int nr;
 
     if (cp_size <= 0) {
 	return 0;
@@ -191,23 +188,22 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     line += strlen(st->parg.cp.name);
-    nr = st->parg.cp.nr;
     if (4 > sscanf(line, "%lu %lu %lu %lu\n",
-		   &st->parg.cp.time[nr][CP_USER],
-		   &st->parg.cp.time[nr][CP_NICE],
-		   &st->parg.cp.time[nr][CP_SYS],
-		   &st->parg.cp.time[nr][CP_IDLE])) {
+		   &st->parg.cp.time[CP_USER],
+		   &st->parg.cp.time[CP_NICE],
+		   &st->parg.cp.time[CP_SYS],
+		   &st->parg.cp.time[CP_IDLE])) {
 	warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
 	return 0;
     }
 
-    percentages(CPUSTATES, st->parg.cp.states[nr], st->parg.cp.time[nr],
-		st->parg.cp.old[nr], st->parg.cp.diff[nr]);
+    percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time,
+		st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
-		  (double) (st->parg.cp.states[nr][CP_USER] / 10.0),
-		  (double) (st->parg.cp.states[nr][CP_NICE] / 10.0),
-		  (double) (st->parg.cp.states[nr][CP_SYS] / 10.0),
+		  (double) (st->parg.cp.states[CP_USER] / 10.0),
+		  (double) (st->parg.cp.states[CP_NICE] / 10.0),
+		  (double) (st->parg.cp.states[CP_SYS] / 10.0),
 		  (double) (0),
-		  (double) (st->parg.cp.states[nr][CP_IDLE] / 10.0));
+		  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

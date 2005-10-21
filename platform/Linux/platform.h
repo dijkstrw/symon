@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.2 2005/10/19 20:06:05 dijkstra Exp $ */
+/* $Id: platform.h,v 1.3 2005/10/21 14:58:44 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -27,12 +27,11 @@ union semun {
 
 union stream_parg {
     struct {
-	long time[SYMON_MAXCPUS][CPUSTATES];
-	long old[SYMON_MAXCPUS][CPUSTATES];
-	long diff[SYMON_MAXCPUS][CPUSTATES];
-	int states[SYMON_MAXCPUS][CPUSTATES];
+	long time[CPUSTATES];
+	long old[CPUSTATES];
+	long diff[CPUSTATES];
+	int states[CPUSTATES];
 	char name[6];
-	int nr;
     } cp;
 };
 

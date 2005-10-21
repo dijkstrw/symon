@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.19 2005/02/16 20:24:51 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.20 2005/10/21 14:58:47 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -58,7 +58,7 @@ get_symon_sockets(struct mux * mux)
 {
     struct source *source;
     struct sockaddr_storage sockaddr;
-    int family, nsocks;
+    int family, nsocks, one = 1;
     nsocks = 0;
 
     /* generate the udp listen socket specified in the mux statement */
@@ -76,6 +76,11 @@ get_symon_sockets(struct mux * mux)
 	/* do we have a socket for this type of family */
 	if (mux->symonsocket[family] <= 0) {
 	    if ((mux->symonsocket[family] = socket(family, SOCK_DGRAM, 0)) != -1) {
+		/* attempt to set reuse, ignore errors */
+		if (setsockopt(mux->symonsocket[family], SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
+		    warning ("could set socket options: %.200s", strerror(errno));
+		}
+
 		/*
 		 * does the mux statement specify a specific destination
 		 * address
@@ -132,7 +137,7 @@ get_client_socket(struct mux * mux)
 	fatal("could not obtain socket: %.200s", strerror(errno));
 
     if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one)) == -1) {
-	fatal ("could set socket options: %.200s", strerror (errno));
+	fatal ("could set socket options: %.200s", strerror(errno));
     }
 
     bzero((void *) &hints, sizeof(struct addrinfo));

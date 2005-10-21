@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.2 2005/10/16 15:26:59 dijkstra Exp $ */
+/* $Id: platform.h,v 1.3 2005/10/21 14:58:46 dijkstra Exp $ */
 
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H
@@ -24,7 +24,7 @@ union stream_parg {
 	int states[CPUSTATES];
     } cp;
     struct {
-	char rawdev[SYMON_PS_ARGLEN + 6]; /* "/dev/xxx" */
+	char rawdev[SYMON_DFNAMESIZE];
     } df;
     struct ifreq ifr;
     int sn;
