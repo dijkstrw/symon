@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.8 2005/10/18 19:58:06 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.9 2006/06/27 18:53:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -131,12 +131,12 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
     }
     for (i = 0; i < vmnswp_dat; i++) {
 	struct xswdev vmiswp_dat;
-	int vmiswp_siz;
+	int vmiswp_siz = sizeof(vmiswp_dat);
 	me_vmiswp_mib_nam[me_vmiswp_mib_len] = i;
 	if (sysctl(me_vmiswp_mib_nam, me_vmiswp_mib_len + 1, &vmiswp_dat, (void *)&vmiswp_siz, NULL, 0) < 0)
 		continue;
-	me_stats[3] += (vmiswp_dat.xsw_used * DEV_BSIZE);
-	me_stats[4] += (vmiswp_dat.xsw_nblks * DEV_BSIZE);
+	me_stats[3] += pagetob(vmiswp_dat.xsw_used);
+	me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
     }
 #endif
 

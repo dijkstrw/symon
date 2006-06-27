@@ -100,10 +100,10 @@ Historical data can be gathered using rrdfetch(1) from symux's rrd files.
 Portability
 ===========
 
-This package was originally built as an OpenBSD application. It now has
-rudimentary support for FreeBSD, NetBSD and Linux.
+This package was originally built as an OpenBSD application. It now has support
+for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.19 2005/10/21 14:58:41 dijkstra Exp $
+$Id: INSTALL,v 1.20 2006/06/27 18:53:57 dijkstra Exp $
 

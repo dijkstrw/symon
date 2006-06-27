@@ -1,4 +1,15 @@
-30/09/2005 - 2.72
+23/06/2006 - 2.74
+
+   - FreeBSD/sm_mem fix for swap in 6/5/4 (Clive Lin)
+
+   - c_smrrds.sh now knows about axe interfaces for OpenBSD (Koen Van Impe)
+
+
+07/01/2006 - 2.73
+
+   - FreeBSD/sm_io updated to reflect devstats api change
+
+23/10/2005 - 2.72
 
    - probes use a new "api" that allows per probe storage of
      precomputed data
@@ -420,4 +431,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.48 2005/10/21 14:58:41 dijkstra Exp $
+$Id: CHANGELOG,v 1.49 2006/06/27 18:53:56 dijkstra Exp $
