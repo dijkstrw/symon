@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.28 2005/10/16 15:26:51 dijkstra Exp $ */
+/* $Id: data.c,v 1.29 2006/06/28 06:44:45 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -136,7 +136,7 @@ u_int32_t
 crc32_table[256];
 
 /* Convert lexical entities to stream entities */
-const int
+int
 token2type(const int token)
 {
     int i;
@@ -152,7 +152,7 @@ token2type(const int token)
     return 0;
 }
 /* Convert stream entities to their ascii representation */
-const char *
+char *
 type2str(const int streamtype)
 {
     int i;

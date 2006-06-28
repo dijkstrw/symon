@@ -1,4 +1,4 @@
-/* $Id: lex.h,v 1.22 2005/10/16 15:26:51 dijkstra Exp $ */
+/* $Id: lex.h,v 1.23 2006/06/28 06:44:45 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -95,7 +95,7 @@ struct lex {
 };
 
 __BEGIN_DECLS
-const char *parse_opcode(int);
+char *parse_opcode(int);
 int lex_nexttoken(struct lex *);
 int parse_token(const char *);
 struct lex *open_lex(const char *);

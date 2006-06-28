@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.26 2005/10/16 15:26:51 dijkstra Exp $ */
+/* $Id: lex.c,v 1.27 2006/06/28 06:44:45 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -111,14 +111,14 @@ parse_token(const char *cp)
     return LXT_BADTOKEN;
 }
 /* Return the ascii representation of an opcode */
-const char *
+char *
 parse_opcode(const int op)
 {
     u_int i;
 
     for (i = 0; keywords[i].name; i++)
 	if (keywords[i].opcode == op)
-	    return keywords[i].name;
+	    return (char *) keywords[i].name;
 
     return NULL;
 }

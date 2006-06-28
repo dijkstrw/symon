@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.27 2005/10/16 15:26:51 dijkstra Exp $ */
+/* $Id: data.h,v 1.28 2006/06/28 06:44:45 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -301,8 +301,8 @@ struct packedstream {
 
 /* prototypes */
 __BEGIN_DECLS
-const char *type2str(const int);
-const int token2type(const int);
+char *type2str(const int);
+int token2type(const int);
 int calculate_churnbuffer(struct sourcelist *);
 int getheader(char *, struct symonpacketheader *);
 int ps2strn(struct packedstream *, char *, int, int);
