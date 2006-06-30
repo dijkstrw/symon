@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.20 2005/10/21 14:58:47 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.21 2006/06/30 08:21:23 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -289,6 +289,9 @@ accept_connection(int sock)
     struct sockaddr_storage sind;
     socklen_t len;
     int clientsock;
+
+    bzero(&sind, sizeof(struct sockaddr_storage));
+    len = 0;
 
     if ((clientsock = accept(sock, (struct sockaddr *) &sind, &len)) < 0)
 	fatal("failed to accept an incoming connection. (%.200s)",
