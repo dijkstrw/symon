@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.21 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.22 2006/09/10 19:50:29 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -51,25 +51,27 @@
  *
  * user : nice : system : interrupt : idle
  *
- * This code is not re-entrant and UP only.
- *
  * This module uses the sysctl interface and can run as any user.
  */
+
+#include "conf.h"
 
 #include <sys/dkstat.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
+#include <errno.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "error.h"
 #include "symon.h"
 
-__BEGIN_DECLS
-int percentages(int, int *, long *, long *, long *);
-__END_DECLS
 
 /* Globals for this module all start with cp_ */
-static int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
 static size_t cp_size;
+
 /*
  *  percentages(cnt, out, new, old, diffs) - calculate percentage change
  *      between array "old" and "new", putting the percentages i "out".
@@ -78,46 +80,77 @@ static size_t cp_size;
  *      The routine assumes modulo arithmetic.  This function is especially
  *      useful on BSD mchines for calculating cpu state percentages.
  */
+#ifdef HAS_KERN_CPTIME2
+int
+percentages(int cnt, int64_t *out, int64_t *new, int64_t *old, int64_t *diffs)
+{
+	int64_t change, total_change, *dp, half_total;
+#else
+static int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
 int
 percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
 {
-    register int i;
-    register long change;
-    register long total_change;
-    register long *dp;
-    long half_total;
+	long change, total_change, *dp, half_total;
+#endif
+	int i;
 
-    /* initialization */
-    total_change = 0;
-    dp = diffs;
 
-    /* calculate changes for each state and the overall change */
-    for (i = 0; i < cnt; i++) {
-	if ((change = *new - *old) < 0) {
-	    /* this only happens when the counter wraps */
-	    change = ((unsigned int) *new - (unsigned int) *old);
+	/* initialization */
+	total_change = 0;
+	dp = diffs;
+
+	/* calculate changes for each state and the overall change */
+	for (i = 0; i < cnt; i++) {
+		if ((change = *new - *old) < 0) {
+			/* this only happens when the counter wraps */
+			change = (*new - *old);
+		}
+		total_change += (*dp++ = change);
+		*old++ = *new++;
 	}
-	total_change += (*dp++ = change);
-	*old++ = *new++;
-    }
 
-    /* avoid divide by zero potential */
-    if (total_change == 0)
-	total_change = 1;
+	/* avoid divide by zero potential */
+	if (total_change == 0)
+		total_change = 1;
 
-    /* calculate percentages based on overall change, rounding up */
-    half_total = total_change / 2l;
-    for (i = 0; i < cnt; i++)
-	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
+	/* calculate percentages based on overall change, rounding up */
+	half_total = total_change / 2l;
+	for (i = 0; i < cnt; i++)
+		*out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
-    /* return the total in case the caller wants to use it */
-    return total_change;
+	/* return the total in case the caller wants to use it */
+	return (total_change);
 }
 
 void
 init_cpu(struct stream *st)
 {
     char buf[SYMON_MAX_OBJSIZE];
+
+#ifdef HAS_KERN_CPTIME2
+    const char *errstr;
+    int mib[2] = {CTL_HW, HW_NCPU};
+    int ncpu;
+    long num;
+
+    size_t size = sizeof(ncpu);
+    if (sysctl(mib, 2, &ncpu, &size, NULL, 0) == -1) {
+        warning("could not determine number of cpus: %.200s", strerror(errno));
+        ncpu = 1;
+    }
+
+    num = strtonum(st->arg, 0, SYMON_MAXCPUID-1, &errstr);
+    if (errstr != NULL) {
+        fatal("cpu(%.200s) is invalid: %.200s", st->arg, errstr);
+    }
+
+    st->parg.cp.mib[0] = CTL_KERN;
+    st->parg.cp.mib[1] = KERN_CPTIME2;
+    st->parg.cp.mib[2] = num;
+    if (st->parg.cp.mib[2] >= ncpu) {
+        fatal("cpu(%d) is not present", st->parg.cp.mib[2]);
+    }
+#endif
 
     cp_size = sizeof(st->parg.cp.time);
     /* Call get_cpu once to fill the cp_old structure */
@@ -136,10 +169,17 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
     int total;
 
+#ifdef HAS_KERN_CPTIME2
+    if (sysctl(st->parg.cp.mib, 3, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
+        warning("%s:%d: sysctl kern.cp_time2 for cpu%d failed", __FILE__, __LINE__, st->parg.cp.mib[2]);
+        return 0;
+    }
+#else
     if (sysctl(cp_time_mib, 2, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
 	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
 	return 0;
     }
+#endif
 
     /* convert cp_time counts to percentages */
     total = percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time, st->parg.cp.old, st->parg.cp.diff);

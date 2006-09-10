@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.6 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.7 2006/09/10 19:50:29 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -35,6 +35,7 @@
 #include <sys/sysctl.h>
 #include <sys/errno.h>
 
+#include <errno.h>
 #include <string.h>
 #include <unistd.h>
 

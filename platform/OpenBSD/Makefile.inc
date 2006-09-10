@@ -1,2 +1,3 @@
-# $Id: Makefile.inc,v 1.2 2005/03/22 07:17:43 dijkstra Exp $
+# $Id: Makefile.inc,v 1.3 2006/09/10 19:50:29 dijkstra Exp $
+LIBS=-L/usr/X11R6/lib -lfontconfig
 MANDIR=man

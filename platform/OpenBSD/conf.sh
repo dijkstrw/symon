@@ -2,6 +2,10 @@ case `grep -csq KERN_MBSTAT /usr/include/sys/sysctl.h` in
 1)	echo "#define HAS_KERN_MBSTAT	1" ;;
 0)	echo "#undef HAS_KERN_MBSTAT" ;;
 esac;
+case `grep -csq KERN_CPTIME2 /usr/include/sys/sysctl.h` in
+1)	echo "#define HAS_KERN_CPTIME2	1" ;;
+0)	echo "#undef HAS_KERN_CPTIME2" ;;
+esac;
 case `grep -csq "struct sensor" /usr/include/sys/sensors.h` in
 1)	echo "#define HAS_SENSORS_H	1" ;;
 0)	echo "#undef HAS_SENSORS_H" ;;
