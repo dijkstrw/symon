@@ -1,5 +1,17 @@
 23/06/2006 - 2.73
 
+   - symon/symon.c now deals correctly with ntp drift and sleeps
+     longer. The previous version did not sleep long enough, which could
+     result in both the alarm and end of sleep issueing a measurement
+     where only one was due.
+
+   - OpenBSD/Makefile.inc now includes fontconfig library needed for
+     gd > 2.0.33
+
+   - OpenBSD/sm_cpu is now smp aware
+
+   - OpenBSD/sm_mbuf needs errno
+
    - symuxnet.c now allows clients to connect in Linux
 
    - Linux/sm_io added
@@ -19,7 +31,7 @@
 
    - Harm Schotanus donated mem probe for linux that works on 2.4/2.6
 
-   - platform/OpenBSD/sm_if.c no longer uses netns (Mitja Muzenic)
+   - OpenBSD/sm_if.c no longer uses netns (Mitja Muzenic)
 
    - symux/share.c now uses a ringbuffer to distribute symon packets to
      connected tcp clients. Clients that can not keep up with the datarate are
@@ -32,7 +44,6 @@
 
    - sm_sensor: sensor support was detected on OpenBSD, but did not get
      configured (Eric Dillenseger)
-
 
 19/03/2005 - 2.71
 
@@ -432,4 +443,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.50 2006/06/30 08:23:42 dijkstra Exp $
+$Id: CHANGELOG,v 1.51 2006/09/10 19:51:32 dijkstra Exp $
