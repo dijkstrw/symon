@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.43 2005/10/16 15:27:01 dijkstra Exp $ */
+/* $Id: symon.c,v 1.44 2006/09/10 19:51:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -273,7 +273,7 @@ main(int argc, char *argv[])
 
     last_update = time(NULL);
     for (;;) {			/* FOREVER */
-	sleep(symon_interval);	/* alarm will interrupt sleep */
+	sleep(symon_interval << 2);	/* alarm will interrupt sleep */
 	now = time(NULL);
 
 	if (flag_hup == 1) {
@@ -304,17 +304,15 @@ main(int argc, char *argv[])
 	    }
 	} else {
 	    /* check timing to catch ntp drifts */
-	    if (now < (last_update + symon_interval)) {
-		if (now < (last_update + symon_interval + symon_interval)) {
-		    debug("last update is very long ago - assuming that system time changed");
-		    last_update = now;
-		} else {
-		    debug("did not sleep %d seconds - skipping a measurement", symon_interval);
-		    continue;
-		}
-	    } else {
-		last_update = now;
-	    }
+            if (now < last_update ||
+                now > last_update + symon_interval + symon_interval) {
+                info("last update seems long ago - assuming system time change");
+                last_update = now;
+            } else if (now < last_update + symon_interval) {
+                debug("did not sleep %d seconds - skipping a measurement", symon_interval);
+                continue;
+            }
+            last_update = now;
 
 	    /* populate for modules that get all their measurements in one go */
 	    for (i = 0; i < MT_EOT; i++)
