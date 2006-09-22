@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.44 2006/09/10 19:51:04 dijkstra Exp $ */
+/* $Id: symon.c,v 1.45 2006/09/22 07:13:19 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -273,7 +273,7 @@ main(int argc, char *argv[])
 
     last_update = time(NULL);
     for (;;) {			/* FOREVER */
-	sleep(symon_interval << 2);	/* alarm will interrupt sleep */
+	sleep(symon_interval * 2);	/* alarm will interrupt sleep */
 	now = time(NULL);
 
 	if (flag_hup == 1) {
