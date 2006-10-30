@@ -1,5 +1,7 @@
 23/06/2006 - 2.73
 
+   - c_smrrds.sh does not add .rrd if it is already there (Ulrich Spörlein)
+
    - symux -l lists rrd files in active configuration
 
    - symon/symon.c now deals correctly with ntp drift and sleeps
@@ -445,4 +447,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.52 2006/10/30 08:34:44 dijkstra Exp $
+$Id: CHANGELOG,v 1.53 2006/10/30 08:40:06 dijkstra Exp $

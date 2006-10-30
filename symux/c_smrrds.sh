@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.33 2006/06/27 18:54:00 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.34 2006/10/30 08:40:07 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2005 Willem Dijkstra
@@ -188,14 +188,14 @@ fi
 for i in $args
 do
 # add if_*.rrd if it is an interface
-if [ `echo $i | egrep -e "^($INTERFACES)$"` ]; then i=if_$i.rrd; fi
-if [ `echo $i | egrep -e "^($VIRTUALINTERFACES)$"` ]; then i=if_$i.rrd; fi
+if echo $i | egrep -qe "^($INTERFACES)$"; then i=if_$i.rrd; fi
+if echo $i | egrep -qe "^($VIRTUALINTERFACES)$"; then i=if_$i.rrd; fi
 # add io_*.rrd if it is a disk
-if [ `echo $i | egrep -e "^($DISKS)$"` ]; then i=io_$i.rrd; fi
+if echo $i | egrep -qe "^($DISKS)$"; then i=io_$i.rrd; fi
 # add io_*.rrd if it is a disk
-if [ `echo $i | egrep -e "^($DISKS)[a-z]$"` ]; then i=df_$i.rrd; fi
-# add .rrd if it is a cpu, etc.
-if [ `echo $i | egrep -e "^(cpu[0-9]$|mem$|pf$|pfq_|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"` ]; then i=$i.rrd; fi
+if echo $i | egrep -qe "^($DISKS)[a-z]$"; then i=df_$i.rrd; fi
+# add .rrd if it is a cpu, etc. don't duplicate the '.rrd' at the end of proc_, pfq_ and io1_
+if echo $i | egrep -qe "^(cpu[0-9]$|mem$|pf$|pfq_|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"; then i=${i%.rrd}.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
