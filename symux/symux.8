@@ -35,7 +35,7 @@
 .Nd symon stream multiplexer
 .Sh SYNOPSIS
 .Nm
-.Op Fl vd
+.Op Fl dlv
 .Op Fl f Ar filename
 .Pp
 .Sh DESCRIPTION
@@ -71,8 +71,6 @@ the rrd files. It should be run as
 .Lp
 The options:
 .Bl -tag -width Ds
-.It Fl v
-Show version.
 .It Fl d
 Stop
 .Nm
@@ -84,6 +82,10 @@ Read configuration from
 .Ar filename
 instead of
 .Pa /etc/symux.conf .
+.It Fl l
+List rrd files found in active configuration.
+.It Fl v
+Show version.
 .El
 .Sh CONFIGURATION
 .Nm

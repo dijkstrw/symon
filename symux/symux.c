@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.34 2005/10/16 15:27:03 dijkstra Exp $ */
+/* $Id: symux.c,v 1.35 2006/10/30 08:34:58 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -108,10 +108,12 @@ main(int argc, char *argv[])
     char *arg_ra[4];
     struct stream *stream;
     struct source *source;
+    struct sourcelist *sol;
     struct mux *mux;
     FILE *f;
     int ch;
     int churnbuflen;
+    int flag_list;
     int offset;
     int slot;
     time_t timestamp;
@@ -121,67 +123,97 @@ main(int argc, char *argv[])
     /* reset flags */
     flag_debug = 0;
     flag_daemon = 0;
+    flag_list = 0;
+
     cfgfile = SYMUX_CONFIG_FILE;
 
-    while ((ch = getopt(argc, argv, "dvf:")) != -1) {
-	switch (ch) {
-	case 'd':
-	    flag_debug = 1;
-	    break;
-	case 'f':
-	    if (optarg && optarg[0] != '/') {
-		/* cfg path needs to be absolute, we will be a daemon soon */
-		cfgpath = xmalloc(MAXPATHLEN);
-		if ((cfgpath = getcwd(cfgpath, MAXPATHLEN)) == NULL)
-		    fatal("could not get working directory");
+    while ((ch = getopt(argc, argv, "df:lv")) != -1) {
+        switch (ch) {
+        case 'd':
+            flag_debug = 1;
+            break;
+        case 'f':
+            if (optarg && optarg[0] != '/') {
+                /* cfg path needs to be absolute, we will be a daemon soon */
+                cfgpath = xmalloc(MAXPATHLEN);
+                if ((cfgpath = getcwd(cfgpath, MAXPATHLEN)) == NULL)
+                    fatal("could not get working directory");
 
-		maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
-		cfgfile = xmalloc(maxstringlen);
-		strncpy(cfgfile, cfgpath, maxstringlen);
-		stringptr = cfgfile + strlen(cfgpath);
-		stringptr[0] = '/';
-		stringptr++;
-		strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
-		cfgfile[maxstringlen] = '\0';
+                maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
+                cfgfile = xmalloc(maxstringlen);
+                strncpy(cfgfile, cfgpath, maxstringlen);
+                stringptr = cfgfile + strlen(cfgpath);
+                stringptr[0] = '/';
+                stringptr++;
+                strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
+                cfgfile[maxstringlen] = '\0';
 
-		free(cfgpath);
-	    } else
-		cfgfile = xstrdup(optarg);
+                free(cfgpath);
+            } else
+                cfgfile = xstrdup(optarg);
 
-	    break;
-	case 'v':
-	    info("symux version %s", SYMUX_VERSION);
-	default:
-	    info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
-	    exit(EX_USAGE);
-	}
+            break;
+        case 'l':
+            flag_list = 1;
+            break;
+        case 'v':
+            info("symux version %s", SYMUX_VERSION);
+        default:
+            info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
+            exit(EX_USAGE);
+        }
     }
 
     /* parse configuration file */
     if (!read_config_file(&mul, cfgfile))
-	fatal("configuration contained errors; quitting");
+        fatal("configuration contained errors; quitting");
+
+    if (flag_list == 1) {
+        mux = SLIST_FIRST(&mul);
+        if (mux == NULL) {
+            fatal("%s:%d: mux not found", __FILE__, __LINE__);
+        }
+
+        sol = &mux->sol;
+
+        if (sol == NULL) {
+            fatal("%s:%d: sourcelist not found", __FILE__, __LINE__);
+        }
+
+        SLIST_FOREACH(source, sol, sources) {
+            info("# %.200s", source->addr);
+            if (! SLIST_EMPTY(&source->sl)) {
+                SLIST_FOREACH(stream, &source->sl, streams) {
+                    if (stream->file != NULL) {
+                        info("%.200s", stream->file);
+                    }
+                }
+            }
+        }
+        return (EX_OK);
+    }
 
     setegid(getgid());
     setgid(getgid());
 
     if (flag_debug != 1) {
-	if (daemon(0, 0) != 0)
-	    fatal("daemonize failed");
+        if (daemon(0, 0) != 0)
+            fatal("daemonize failed");
 
-	flag_daemon = 1;
+        flag_daemon = 1;
 
-	/* record pid */
-	f = fopen(SYMUX_PID_FILE, "w");
-	if (f) {
-	    fprintf(f, "%u\n", (u_int) getpid());
-	    fclose(f);
-	}
+        /* record pid */
+        f = fopen(SYMUX_PID_FILE, "w");
+        if (f) {
+            fprintf(f, "%u\n", (u_int) getpid());
+            fclose(f);
+        }
     }
 
     info("symux version %s", SYMUX_VERSION);
 
     if (flag_debug == 1)
-	info("program id=%d", (u_int) getpid());
+        info("program id=%d", (u_int) getpid());
 
     mux = SLIST_FIRST(&mul);
 
@@ -201,121 +233,121 @@ main(int argc, char *argv[])
 
     /* prepare sockets */
     if (get_symon_sockets(mux) == 0)
-	fatal("no sockets could be opened for incoming symon traffic");
+        fatal("no sockets could be opened for incoming symon traffic");
     if (get_client_socket(mux) == 0)
-	fatal("socket for client connections could not be opened");
+        fatal("socket for client connections could not be opened");
 
     /* main loop */
-    for (;;) {			/* FOREVER */
-	wait_for_traffic(mux, &source, &packet);
+    for (;;) {                  /* FOREVER */
+        wait_for_traffic(mux, &source, &packet);
 
-	if (flag_hup == 1) {
-	    flag_hup = 0;
+        if (flag_hup == 1) {
+            flag_hup = 0;
 
-	    SLIST_INIT(&newmul);
+            SLIST_INIT(&newmul);
 
-	    if (!read_config_file(&newmul, cfgfile)) {
-		info("new configuration contains errors; keeping old configuration");
-		free_muxlist(&newmul);
-	    } else {
-		info("read configuration file '%.100s' successfully", cfgfile);
-		free_muxlist(&mul);
-		mul = newmul;
-		mux = SLIST_FIRST(&mul);
-		get_symon_sockets(mux);
-		get_client_socket(mux);
-	    }
-	} else {
+            if (!read_config_file(&newmul, cfgfile)) {
+                info("new configuration contains errors; keeping old configuration");
+                free_muxlist(&newmul);
+            } else {
+                info("read configuration file '%.100s' successfully", cfgfile);
+                free_muxlist(&mul);
+                mul = newmul;
+                mux = SLIST_FIRST(&mul);
+                get_symon_sockets(mux);
+                get_client_socket(mux);
+            }
+        } else {
 
-	    /*
-	     * Put information from packet into stringbuf (shared region).
-	     * Note that the stringbuf is used twice: 1) to update the
-	     * rrdfile and 2) to collect all the data from a single packet
-	     * that needs to shared to the clients. This is the reason for
-	     * the hasseling with stringptr.
-	     */
+            /*
+             * Put information from packet into stringbuf (shared region).
+             * Note that the stringbuf is used twice: 1) to update the
+             * rrdfile and 2) to collect all the data from a single packet
+             * that needs to shared to the clients. This is the reason for
+             * the hasseling with stringptr.
+             */
 
-	    offset = mux->offset;
-	    maxstringlen = shared_getmaxlen();
-	    /* put time:ip: into shared region */
-	    slot = master_forbidread();
-	    timestamp = (time_t) packet.header.timestamp;
-	    stringbuf = shared_getmem(slot);
-	    debug("stringbuf = 0x%8x", stringbuf);
-	    snprintf(stringbuf, maxstringlen, "%s;", source->addr);
+            offset = mux->offset;
+            maxstringlen = shared_getmaxlen();
+            /* put time:ip: into shared region */
+            slot = master_forbidread();
+            timestamp = (time_t) packet.header.timestamp;
+            stringbuf = shared_getmem(slot);
+            debug("stringbuf = 0x%8x", stringbuf);
+            snprintf(stringbuf, maxstringlen, "%s;", source->addr);
 
-	    /* hide this string region from rrd update */
-	    maxstringlen -= strlen(stringbuf);
-	    stringptr = stringbuf + strlen(stringbuf);
+            /* hide this string region from rrd update */
+            maxstringlen -= strlen(stringbuf);
+            stringptr = stringbuf + strlen(stringbuf);
 
-	    while (offset < packet.header.length) {
-		bzero(&ps, sizeof(struct packedstream));
-		offset += sunpack(packet.data + offset, &ps);
+            while (offset < packet.header.length) {
+                bzero(&ps, sizeof(struct packedstream));
+                offset += sunpack(packet.data + offset, &ps);
 
-		/* find stream in source */
-		stream = find_source_stream(source, ps.type, ps.arg);
+                /* find stream in source */
+                stream = find_source_stream(source, ps.type, ps.arg);
 
-		if (stream != NULL) {
-		    /* put type and arg in and hide from rrd */
-		    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.arg);
-		    maxstringlen -= strlen(stringptr);
-		    stringptr += strlen(stringptr);
-		    /* put timestamp in and show to rrd */
-		    snprintf(stringptr, maxstringlen, "%u", (unsigned int)timestamp);
-		    arg_ra[3] = stringptr;
-		    maxstringlen -= strlen(stringptr);
-		    stringptr += strlen(stringptr);
+                if (stream != NULL) {
+                    /* put type and arg in and hide from rrd */
+                    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.arg);
+                    maxstringlen -= strlen(stringptr);
+                    stringptr += strlen(stringptr);
+                    /* put timestamp in and show to rrd */
+                    snprintf(stringptr, maxstringlen, "%u", (unsigned int)timestamp);
+                    arg_ra[3] = stringptr;
+                    maxstringlen -= strlen(stringptr);
+                    stringptr += strlen(stringptr);
 
-		    /* put measurements in */
-		    ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
+                    /* put measurements in */
+                    ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
 
-		    if (stream->file != NULL) {
-			/* clear optind for getopt call by rrdupdate */
-			optind = 0;
-			/* save if file specified */
-			arg_ra[0] = "rrdupdate";
-			arg_ra[1] = "--";
-			arg_ra[2] = stream->file;
+                    if (stream->file != NULL) {
+                        /* clear optind for getopt call by rrdupdate */
+                        optind = 0;
+                        /* save if file specified */
+                        arg_ra[0] = "rrdupdate";
+                        arg_ra[1] = "--";
+                        arg_ra[2] = stream->file;
 
-			/*
-			 * This call will cost a lot (symux will become
-			 * unresponsive and eat up massive amounts of cpu) if
-			 * the rrdfile is out of sync.
-			 */
-			rrd_update(4, arg_ra);
+                        /*
+                         * This call will cost a lot (symux will become
+                         * unresponsive and eat up massive amounts of cpu) if
+                         * the rrdfile is out of sync.
+                         */
+                        rrd_update(4, arg_ra);
 
-			if (rrd_test_error()) {
-			    warning("rrd_update:%.200s", rrd_get_error());
-			    warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
-				    arg_ra[2], arg_ra[3]);
-			    rrd_clear_error();
-			} else {
-			    if (flag_debug == 1)
-				debug("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
-				      arg_ra[2], arg_ra[3]);
-			}
-		    }
-		    maxstringlen -= strlen(stringptr);
-		    stringptr += strlen(stringptr);
-		    snprintf(stringptr, maxstringlen, ";");
-		    maxstringlen -= strlen(stringptr);
-		    stringptr += strlen(stringptr);
-		} else {
-		    debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
-			  ((ps.arg == NULL) ? "0" : ps.arg), source->addr);
-		}
-	    }
-	    /*
-	     * packet = parsed and in ascii in shared region -> copy to
-	     * clients
-	     */
-	    snprintf(stringptr, maxstringlen, "\n");
-	    stringptr += strlen(stringptr);
-	    shared_setlen(slot, (stringptr - stringbuf));
-	    debug("churnbuffer used: %d", (stringptr - stringbuf));
-	    master_permitread();
-	}			/* flag_hup == 0 */
-    }				/* forever */
+                        if (rrd_test_error()) {
+                            warning("rrd_update:%.200s", rrd_get_error());
+                            warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
+                                    arg_ra[2], arg_ra[3]);
+                            rrd_clear_error();
+                        } else {
+                            if (flag_debug == 1)
+                                debug("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
+                                      arg_ra[2], arg_ra[3]);
+                        }
+                    }
+                    maxstringlen -= strlen(stringptr);
+                    stringptr += strlen(stringptr);
+                    snprintf(stringptr, maxstringlen, ";");
+                    maxstringlen -= strlen(stringptr);
+                    stringptr += strlen(stringptr);
+                } else {
+                    debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
+                          ((ps.arg == NULL) ? "0" : ps.arg), source->addr);
+                }
+            }
+            /*
+             * packet = parsed and in ascii in shared region -> copy to
+             * clients
+             */
+            snprintf(stringptr, maxstringlen, "\n");
+            stringptr += strlen(stringptr);
+            shared_setlen(slot, (stringptr - stringbuf));
+            debug("churnbuffer used: %d", (stringptr - stringbuf));
+            master_permitread();
+        }                       /* flag_hup == 0 */
+    }                           /* forever */
 
     /* NOT REACHED */
     return (EX_SOFTWARE);
