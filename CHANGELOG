@@ -1,5 +1,7 @@
 23/06/2006 - 2.73
 
+   - symux -l lists rrd files in active configuration
+
    - symon/symon.c now deals correctly with ntp drift and sleeps
      longer. The previous version did not sleep long enough, which could
      result in both the alarm and end of sleep issueing a measurement
@@ -443,4 +445,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.51 2006/09/10 19:51:32 dijkstra Exp $
+$Id: CHANGELOG,v 1.52 2006/10/30 08:34:44 dijkstra Exp $
