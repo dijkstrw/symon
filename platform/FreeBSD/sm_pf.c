@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.4 2005/10/18 19:58:06 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.5 2006/11/07 08:00:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -69,6 +69,12 @@ privinit_pf()
 
 void
 init_pf(struct stream *st)
+{
+    fatal("pf support not available");
+}
+
+void
+gets_pf()
 {
     fatal("pf support not available");
 }

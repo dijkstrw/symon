@@ -1,11 +1,13 @@
-/* $Id: platform.h,v 1.4 2005/10/21 14:58:43 dijkstra Exp $ */
+/* $Id: platform.h,v 1.5 2006/11/07 08:00:18 dijkstra Exp $ */
 
 #ifndef _CONF_FREEBSD_H
 #define _CONF_FREEBSD_H
 
 #include <sys/queue.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/dkstat.h>
 #include <sys/resource.h>
 
 #include <net/if.h>

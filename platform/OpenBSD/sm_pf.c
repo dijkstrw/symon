@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.11 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.12 2006/11/07 08:00:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -76,6 +76,11 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
 {
     fatal("pf support not available");
     return 0;
+}
+void
+gets_pf()
+{
+    fatal("pf support not available");
 }
 
 #else

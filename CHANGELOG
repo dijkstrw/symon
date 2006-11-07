@@ -1,4 +1,9 @@
 23/06/2006 - 2.73
+   - FreeBSD/platform.h now also includes sys/socket.h and sys/dkstat.h, which
+     makes the FreeBSD probes compile on 4/5/6.
+
+   - FreeBSD/sm_pf and OpenBSD/sm_pf were broken when pf was not available
+     (Ulrich Spörlein)
 
    - c_smrrds.sh does not add .rrd if it is already there (Ulrich Spörlein)
 
@@ -447,4 +452,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.53 2006/10/30 08:40:06 dijkstra Exp $
+$Id: CHANGELOG,v 1.54 2006/11/07 08:00:16 dijkstra Exp $
