@@ -70,8 +70,9 @@ Less quick, but all OSes
   configurations for both in $PREFIX/$SHRDIR.
 
 - Create the rrd files where the incoming symon data is to be
-  stored. $PREFIX/$SHRDIR/c_smrrds.sh is your friend. Note that syweb expects
-  an '.../machine/*.rrd' style directory structure somewhere under /var/www.
+  stored. $PREFIX/$SHRDIR/c_smrrds.sh and symux -l are your friends. Note that
+  syweb expects an '.../machine/*.rrd' style directory structure somewhere
+  under /var/www.
 
 - Both symon and symux will daemonize if started normally. Start them with
   debugging on initially to iron out any configuration problems:
@@ -105,5 +106,5 @@ for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.20 2006/06/27 18:53:57 dijkstra Exp $
+$Id: INSTALL,v 1.21 2006/12/19 22:37:11 dijkstra Exp $
 
