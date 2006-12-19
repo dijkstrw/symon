@@ -1,23 +1,30 @@
-23/06/2006 - 2.73
+19/12/2006 - 2.73
+   - NetBSD compiles on 2.1 after addition of rrd.h location in
+     NetBSD/Makefile.inc
+
    - FreeBSD/platform.h now also includes sys/socket.h and sys/dkstat.h, which
      makes the FreeBSD probes compile on 4/5/6.
 
    - FreeBSD/sm_pf and OpenBSD/sm_pf were broken when pf was not available
      (Ulrich Spörlein)
 
-   - c_smrrds.sh does not add .rrd if it is already there (Ulrich Spörlein)
+   - c_smrrds.sh now accepts filenames, not descriptions. Intended use is now
+     c_smrrds.sh `symux -l`.
 
-   - symux -l lists rrd files in active configuration
+   - symux -l lists rrd files in active configuration.
 
    - symon/symon.c now deals correctly with ntp drift and sleeps
      longer. The previous version did not sleep long enough, which could
      result in both the alarm and end of sleep issueing a measurement
      where only one was due.
 
-   - OpenBSD/Makefile.inc now includes fontconfig library needed for
-     gd > 2.0.33
+   - Library deps now split between symon and symux. Not all libraries are
+     needed on a host if only symon/symux is compiled.
 
-   - OpenBSD/sm_cpu is now smp aware
+   - OpenBSD/Makefile.inc now includes fontconfig library needed for
+     gd > 2.0.33. This breaks symux compilation for OpenBSD < 3.9.
+
+   - OpenBSD/sm_cpu is smp aware
 
    - OpenBSD/sm_mbuf needs errno
 
@@ -26,8 +33,6 @@
    - Linux/sm_io added
 
    - FreeBSD/sm_mem fix for swap in 6/5/4 (Clive Lin)
-
-   - c_smrrds.sh now knows about axe interfaces for OpenBSD (Koen Van Impe)
 
    - FreeBSD/sm_io updated to reflect devstats api change
 
@@ -452,4 +457,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.54 2006/11/07 08:00:16 dijkstra Exp $
+$Id: CHANGELOG,v 1.55 2006/12/19 22:31:38 dijkstra Exp $

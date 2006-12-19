@@ -1,1 +1,2 @@
-# $Id: Makefile.inc,v 1.3 2005/10/21 14:58:45 dijkstra Exp $
+# $Id: Makefile.inc,v 1.4 2006/12/19 22:31:42 dijkstra Exp $
+RRDDIR=/usr/pkg
