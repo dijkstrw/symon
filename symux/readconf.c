@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.28 2005/10/16 15:27:03 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.29 2006/12/19 22:30:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -46,7 +46,7 @@
 
 __BEGIN_DECLS
 int read_mux(struct muxlist * mul, struct lex *);
-int read_source(struct sourcelist * sol, struct lex *);
+int read_source(struct sourcelist * sol, struct lex *, int);
 int insert_filename(char *, int, int, char *);
 __END_DECLS
 
@@ -163,12 +163,11 @@ read_mux(struct muxlist * mul, struct lex * l)
     if (rename_mux(mul, mux, muxname) == NULL)
 	fatal("%s:%d: internal error: dual mux", __FILE__, __LINE__);
 
-
     return 1;
 }
 /* source <host> { accept ... | write ... | datadir ... } */
 int
-read_source(struct sourcelist * sol, struct lex * l)
+read_source(struct sourcelist * sol, struct lex * l, int filecheck)
 {
     struct source *source;
     struct stream *stream;
@@ -268,20 +267,22 @@ read_source(struct sourcelist * sol, struct lex * l)
 		return 0;
 	    }
 
-	    /* make sure that directory exists */
-	    bzero(&sb, sizeof(struct stat));
+            if (filecheck) {
+                /* make sure that directory exists */
+                bzero(&sb, sizeof(struct stat));
 
-	    if (stat(l->token, &sb) == 0) {
-		if (!(sb.st_mode & S_IFDIR)) {
-		    warning("%.200s:%d: datadir path '%.200s' is not a directory",
-			    l->filename, l->cline, l->token);
-		    return 0;
-		}
-	    } else {
-		warning("%.200s:%d: could not stat datadir path '%.200s'",
-			l->filename, l->cline, l->token);
-		return 0;
-	    }
+                if (stat(l->token, &sb) == 0) {
+                    if (!(sb.st_mode & S_IFDIR)) {
+                        warning("%.200s:%d: datadir path '%.200s' is not a directory",
+                                l->filename, l->cline, l->token);
+                        return 0;
+                    }
+                } else {
+                    warning("%.200s:%d: could not stat datadir path '%.200s'",
+                            l->filename, l->cline, l->token);
+                    return 0;
+                }
+            }
 
 	    strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
 	    path[_POSIX2_LINE_MAX - 1] = '\0';
@@ -316,15 +317,19 @@ read_source(struct sourcelist * sol, struct lex * l)
 			return 0;
 		    }
 
-		    /* try filename */
-		    if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			/* warn, but allow */
-			warning("%.200s:%d: file '%.200s', guessed by datadir,  cannot be opened",
-				l->filename, l->cline, path);
-		    } else {
-			close(fd);
-			stream->file = xstrdup(path);
-		    }
+                    if (filecheck) {
+                        /* try filename */
+                        if ((fd = open(path, O_RDWR | O_NONBLOCK, 0)) == -1) {
+                            /* warn, but allow */
+                            warning("%.200s:%d: file '%.200s', guessed by datadir,  cannot be opened",
+                                    l->filename, l->cline, path);
+                        } else {
+                            close(fd);
+                            stream->file = xstrdup(path);
+                        }
+                    } else {
+                        stream->file = xstrdup(path);
+                    }
 		}
 	    }
 	    break;		/* LXT_DATADIR */
@@ -382,22 +387,26 @@ read_source(struct sourcelist * sol, struct lex * l)
 			return 0;
 		    }
 		} else {
-		    /* try filename */
-		    if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
-			warning("%.200s:%d: file '%.200s' cannot be opened",
-				l->filename, l->cline, l->token);
-			return 0;
-		    } else {
-			close(fd);
+                    if (filecheck) {
+                        /* try filename */
+                        if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
+                            warning("%.200s:%d: file '%.200s' cannot be opened",
+                                    l->filename, l->cline, l->token);
+                            return 0;
+                        } else {
+                            close(fd);
 
-			if (stream->file != NULL) {
-			    warning("%.200s:%d: file '%.200s' overwrites previous definition '%.200s'",
-			     l->filename, l->cline, l->token, stream->file);
-			    xfree(stream->file);
-			}
+                            if (stream->file != NULL) {
+                                warning("%.200s:%d: file '%.200s' overwrites previous definition '%.200s'",
+                                        l->filename, l->cline, l->token, stream->file);
+                                xfree(stream->file);
+                            }
 
-			stream->file = xstrdup(l->token);
-		    }
+                            stream->file = xstrdup(l->token);
+                        }
+                    } else {
+                        stream->file = xstrdup(l->token);
+                    }
 		}
 		break;		/* LXT_CPU/IF/IO/IO1/MEM/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
 	    default:
@@ -421,7 +430,7 @@ read_source(struct sourcelist * sol, struct lex * l)
 }
 /* Read symux.conf */
 int
-read_config_file(struct muxlist * mul, const char *filename)
+read_config_file(struct muxlist * mul, const char *filename, int filechecks)
 {
     struct lex *l;
     struct source *source;
@@ -444,7 +453,7 @@ read_config_file(struct muxlist * mul, const char *filename)
 	    }
 	    break;
 	case LXT_SOURCE:
-	    if (!read_source(&sol, l)) {
+	    if (!read_source(&sol, l, filechecks)) {
 		free_sourcelist(&sol);
 		return 0;
 	    }

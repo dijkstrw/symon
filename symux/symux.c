@@ -1,7 +1,7 @@
-/* $Id: symux.c,v 1.35 2006/10/30 08:34:58 dijkstra Exp $ */
+/* $Id: symux.c,v 1.36 2006/12/19 22:30:48 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2006 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,6 +115,7 @@ main(int argc, char *argv[])
     int churnbuflen;
     int flag_list;
     int offset;
+    int result;
     int slot;
     time_t timestamp;
 
@@ -159,16 +160,18 @@ main(int argc, char *argv[])
         case 'v':
             info("symux version %s", SYMUX_VERSION);
         default:
-            info("usage: %s [-d] [-v] [-f cfgfile]", __progname);
+            info("usage: %s [-d] [-l] [-v] [-f cfgfile]", __progname);
             exit(EX_USAGE);
         }
     }
 
-    /* parse configuration file */
-    if (!read_config_file(&mul, cfgfile))
-        fatal("configuration contained errors; quitting");
-
     if (flag_list == 1) {
+        /* read configuration without file checks */
+        result = read_config_file(&mul, cfgfile, 0);
+        if (!result) {
+            fatal("configuration contained errors; quitting");
+        }
+
         mux = SLIST_FIRST(&mul);
         if (mux == NULL) {
             fatal("%s:%d: mux not found", __FILE__, __LINE__);
@@ -181,7 +184,6 @@ main(int argc, char *argv[])
         }
 
         SLIST_FOREACH(source, sol, sources) {
-            info("# %.200s", source->addr);
             if (! SLIST_EMPTY(&source->sl)) {
                 SLIST_FOREACH(stream, &source->sl, streams) {
                     if (stream->file != NULL) {
@@ -191,7 +193,14 @@ main(int argc, char *argv[])
             }
         }
         return (EX_OK);
+    } else {
+        /* read configuration file with file access checks */
+        result = read_config_file(&mul, cfgfile, 1);
+        if (!result) {
+            fatal("configuration contained errors; quitting");
+        }
     }
+
 
     setegid(getgid());
     setgid(getgid());
@@ -246,7 +255,7 @@ main(int argc, char *argv[])
 
             SLIST_INIT(&newmul);
 
-            if (!read_config_file(&newmul, cfgfile)) {
+            if (!read_config_file(&newmul, cfgfile, 1)) {
                 info("new configuration contains errors; keeping old configuration");
                 free_muxlist(&newmul);
             } else {

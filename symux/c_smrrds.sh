@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.34 2006/10/30 08:40:07 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.35 2006/12/19 22:30:47 dijkstra Exp $
 
 #
-# Copyright (c) 2001-2005 Willem Dijkstra
+# Copyright (c) 2001-2006 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,19 +31,25 @@
 
 # --- user configuration starts here
 INTERVAL=${INTERVAL:-5}
+# default RRA setup:
+# - 2   days of  5 second  samples = 34560 x 5 second samples
+# - 14  days of 30 minutes samples = 672 x 360 x 5 second samples
+# - 50  days of  2 hour    samples = 600 x 1440 x 5 second samples
+# - 600 days of  1 day     samples = 600 x 17280 x 5 second samples
+RRA_SETUP=${RRA_SETUP:-"
+	    RRA:AVERAGE:0.5:1:34560
+	    RRA:AVERAGE:0.5:360:672
+	    RRA:AVERAGE:0.5:1440:600
+	    RRA:AVERAGE:0.5:17280:600
+	    RRA:MAX:0.5:1:34560
+	    RRA:MAX:0.5:360:672
+	    RRA:MAX:0.5:1440:600
+	    RRA:MAX:0.5:17280:600
+	    RRA:MIN:0.5:1:34560
+	    RRA:MIN:0.5:360:672
+	    RRA:MIN:0.5:1440:600
+	    RRA:MIN:0.5:17280:600"}
 # --- user configuration ends here
-OS=`uname -s`
-# addsuffix adds a suffix to each entry of a list (item|item|...)
-addsuffix() {
-    list=$1'|'
-    suffix=$2
-    while [ `echo $list | grep '|'` ]; do
-	newlist=$newlist'|'`echo $list | cut -f1 -d\|`$suffix
-	list=`echo $list | cut -f2- -d\|`
-    done
-    echo $newlist | cut -b2-
-}
-
 create_rrd() {
     file=$1
     shift
@@ -88,147 +94,39 @@ oneday)
 esac
 done
 
-if [ X"$RRA_SETUP" = "X" ]; then
-# default RRA setup:
-# - 2   days of  5 second  samples = 34560 x 5 second samples
-# - 14  days of 30 minutes samples = 672 x 360 x 5 second samples
-# - 50  days of  2 hour    samples = 600 x 1440 x 5 second samples
-# - 600 days of  1 day     samples = 600 x 17280 x 5 second samples
-RRA_SETUP=" RRA:AVERAGE:0.5:1:34560
-	    RRA:AVERAGE:0.5:360:672
-	    RRA:AVERAGE:0.5:1440:600
-	    RRA:AVERAGE:0.5:17280:600
-	    RRA:MAX:0.5:1:34560
-	    RRA:MAX:0.5:360:672
-	    RRA:MAX:0.5:1440:600
-	    RRA:MAX:0.5:17280:600
-	    RRA:MIN:0.5:1:34560
-	    RRA:MIN:0.5:360:672
-	    RRA:MIN:0.5:1440:600
-	    RRA:MIN:0.5:17280:600"
-fi
-
-# All interfaces and disks
-case ${OS} in
-FreeBSD)
-	DISKS="ad|acd|afd|ast|sa|da|ar|cd|ch|md"
-	INTERFACES="an|ar|ath|aue|awi|axe|bfe|bge|cm|cnw|cs|cue|dc|de|ed|el|em|ep|ex|fe|fwe|fxp|gem|gx|hme|ie|kue|lge|lnc|my|nge|pcn|ray|re|rl|rue|sf|sis|sk|sn|snc|ste|ti|tl|tx|txp|vge|vr|vx|wb|wi|xe|xl";
-	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sl|sppp|strip|tun|vlan";
-	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
-	interfacecmd="ifconfig -l | sed 's/lo0//'"
-	;;
-Linux)
-	DISKS="hda|hdb|hdc|hdd|sda|sdb|sdc|sdd"
-	INTERFACES="eth"
-	VIRTUALINTERFACES="sit"
-	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
-	interfacecmd="ifconfig -a| egrep -e \"^(\$INTERFACES) \" | cut -f1 -d\  | sort -u"
-	;;
-OpenBSD)
-	DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
-	INTERFACES="an|ath|awi|axe|be|bge|bm|cnw|dc|de|ec|ef|eg|el|em|ep|ex|fea|fpa|fxp|gem|gm|gre|hme|ie|kue|lc|le|lge|lmc|lo|ne|nge|ray|rl|qe|sf|sis|sk|sl|sm|ste|stge|ti|tl|tr|tx|txp|vme|vr|wb|we|wi|wx|xe|xl"
-	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|strip|tun|vlan";
-	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
-	partcmd="grep ffs /etc/fstab | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]*[a-z]*\).*,\1,p' | sort -u"
-	interfacecmd="ifconfig -a| egrep -e \"^(\$INTERFACES):\" | cut -f1 -d\:  | sort -u"
-	;;
-NetBSD)
-	DISKS="sd|cd|ch|rd|raid|ss|uk|vnc|wd"
-	INTERFACES="ai|an|ate|ath|atw|awi|bce|bge|bicc|cnw|com|cs|depca|ec|ef|eg|el|elmc|en|ep|epic|esh|ex|fea|fmv|fpa|fxp|gsip|hme|ipw|iwi|ix|iy|lc|le|lmc|mbe|mhzc|mtd|ne|nele|ntwoc|pcn|ray|re|rtk|sf|sip|sk|skc|sm|ste|stge|ti|tl|tlp|tr|vge|vr|we|wi|wm|xi|xirc"
-	VIRTUALINTERFACES="bridge|carp|enc|faith|gif|ppp|sppp|sl|strip|tun|vlan";
-	diskcmd="mount | sed -n '/^\/dev/ s,/dev/\([a-z]*[0-9]\).*,\1,p' | sort -u"
-	interfacecmd="ifconfig -l | sed 's/lo0//'"
-	;;
-esac
-DISKS=`addsuffix $DISKS [0-9]`
-INTERFACES=`addsuffix $INTERFACES [0-9]`
-VIRTUALINTERFACES=`addsuffix $VIRTUALINTERFACES \\.\\*`
-
 this=$0
 if [ X"$1$2$3$4$5$6$7$8$9" = "X" ]; then
     cat <<EOF
 Create rrd files for symux.
 
-Usage: `basename $0` [oneday] [interval <seconds>] all | cpu0 | mem |
-		   pf | pfq_<queue> | mbuf | debug | proc_<process> |
-		   <if> | <io> | sensor[0-25]
+Usage: `basename $0` [oneday] [interval <seconds>] [all] \
+		     <rrd files>
 
 Where:
-oneday  = modify rrds to only contain one day of information
-seconds = modify rrds for non standard monitoring interval
-process = the name of a process as specified in sy{mon,mux}.conf
-	  e.g. proc(httpd) -> proc_httpd
-queue = the name of a queue as specified in sy{mon,mux}.conf
-	  e.g. pfq(root) -> pfq_root
-
-if=	`echo $INTERFACES|
-   awk 'BEGIN  {FS="|"}
-	   {for (i=1; i<=NF; i++) {
-	       printf("%s|",$i);
-	       if ((i%6)==0) {
-		  printf("%s","\n\t")
-	       }
-	   }
-	   print " ";}'`
-io=	`echo $DISKS|
-   awk 'BEGIN  {FS="|"}
-		{for (i=1; i<=NF; i++) {
-		    printf("%s|",$i);
-		    if ((i%6)==0) {
-			printf("%s","\n\t")
-		    }
-		}
-		print " ";}'`
-
-OpenBSD pre-3.5 disk statistics are available via the io1_<disk> argument.
+oneday       = modify rrds to only contain one day of information
+seconds      = modify rrds for non standard monitoring interval
+all          = run symux -l to determine current configured rrd
+	       files
+<rrd files>  = files ending in rrd that follow symux naming
 EOF
     exit 1;
 fi
 
+RRD_ARGS="--step=$INTERVAL --start=0"
+
 for i in $args
 do
-# add if_*.rrd if it is an interface
-if echo $i | egrep -qe "^($INTERFACES)$"; then i=if_$i.rrd; fi
-if echo $i | egrep -qe "^($VIRTUALINTERFACES)$"; then i=if_$i.rrd; fi
-# add io_*.rrd if it is a disk
-if echo $i | egrep -qe "^($DISKS)$"; then i=io_$i.rrd; fi
-# add io_*.rrd if it is a disk
-if echo $i | egrep -qe "^($DISKS)[a-z]$"; then i=df_$i.rrd; fi
-# add .rrd if it is a cpu, etc. don't duplicate the '.rrd' at the end of proc_, pfq_ and io1_
-if echo $i | egrep -qe "^(cpu[0-9]$|mem$|pf$|pfq_|mbuf$|debug$|proc_|sensor[0-9]$|sensor[0-9][0-9]$|io1_)"; then i=${i%.rrd}.rrd; fi
 
 if [ -f $i ]; then
     echo "$i exists - ignoring"
     i="done"
 fi
 
-RRD_ARGS="--step=$INTERVAL --start=0"
-
-case $i in
+j=`basename $i`
+case $j in
 
 all)
-    echo "Creating rrd files for {cpu0|df|mem|disks|interfaces|pf|mbuf}"
-    sh $this interval $INTERVAL child $config cpu0 mem
-    sh $this interval $INTERVAL child $config interfaces
-    sh $this interval $INTERVAL child $config disks
-    sh $this interval $INTERVAL child $config pf
-    sh $this interval $INTERVAL child $config mbuf
-    sh $this interval $INTERVAL child $config df
-    ;;
-
-if|interfaces)
-    # obtain all network cards
-    sh $this child $config `eval $interfacecmd`
-    ;;
-
-io|disks)
-    # obtain all disks
-    sh $this child $config `eval $diskcmd`
-    ;;
-
-df)
-    # obtain all ffs partitions
-    sh $this child $config `eval $partcmd`
+    sh $this interval $INTERVAL child $config `symux -l`
     ;;
 
 cpu[0-9].rrd)
@@ -324,13 +222,13 @@ pf.rrd)
     ;;
 
 pfq_*.rrd)
-	# Build pfq file
-	create_rrd $i \
-	    DS:sent_bytes:COUNTER:$INTERVAL:0:U \
-	    DS:sent_packets:COUNTER:$INTERVAL:0:U \
-	    DS:drop_bytes:COUNTER:$INTERVAL:0:U \
-	    DS:drop_packets:COUNTER:$INTERVAL:0:U
-	;;
+    # Build pfq file
+    create_rrd $i \
+	DS:sent_bytes:COUNTER:$INTERVAL:0:U \
+	DS:sent_packets:COUNTER:$INTERVAL:0:U \
+	DS:drop_bytes:COUNTER:$INTERVAL:0:U \
+	DS:drop_packets:COUNTER:$INTERVAL:0:U
+    ;;
 
 mbuf.rrd)
     # Build mbuf file
@@ -368,7 +266,7 @@ io1_*.rrd)
     ;;
 *)
     # Default match
-    echo $i - unknown
+    echo $i - cannot determine filetype from filename
     ;;
 esac
 done

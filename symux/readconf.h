@@ -1,4 +1,4 @@
-/* $Id: readconf.h,v 1.8 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: readconf.h,v 1.9 2006/12/19 22:30:48 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -37,7 +37,7 @@
 #include "data.h"
 
 __BEGIN_DECLS
-int read_config_file(struct muxlist *, const char *);
+int read_config_file(struct muxlist *, const char *, int);
 __END_DECLS
 
 #endif				/* _SYMUX_READCONF_H */
