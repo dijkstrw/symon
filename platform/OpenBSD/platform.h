@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.4 2006/09/10 19:50:29 dijkstra Exp $ */
+/* $Id: platform.h,v 1.5 2007/01/19 21:37:27 dijkstra Exp $ */
 
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H
@@ -8,6 +8,7 @@
 #include <sys/dkstat.h>
 #include <sys/queue.h>
 #include <sys/types.h>
+#include <sys/sensors.h>
 #include <sys/socket.h>
 #include <net/if.h>
 
@@ -39,7 +40,13 @@ union stream_parg {
         char rawdev[SYMON_DFNAMESIZE];
     } df;
     struct ifreq ifr;
-    int sn;
+    struct {
+#ifndef HAS_SENSORDEV
+        int mib[3];
+#else
+        int mib[5];
+#endif
+    } sn;
 };
 
 #endif
