@@ -1,4 +1,18 @@
+19/01/2007 - 2.74
+
+   - OpenBSD sm_sensor upgrade to sensor_dev (Constantine A. Murenin)
+
+   - symux queues rrd values for a particular time. Cheers to Jean-Gérard
+     Pailloncy for the suggestion.
+
+   - NetBSD can use OpenBSD sm_pf, sm_mem and sm_pfq with little modifications
+     (Jean-Yves Moulin)
+
+
 19/12/2006 - 2.73
+   - symux stops reporting rrd errors after 5 messages to counter logspam
+     (Henning Brauer)
+
    - NetBSD compiles on 2.1 after addition of rrd.h location in
      NetBSD/Makefile.inc
 
@@ -457,4 +471,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.55 2006/12/19 22:31:38 dijkstra Exp $
+$Id: CHANGELOG,v 1.56 2007/01/19 21:38:35 dijkstra Exp $
