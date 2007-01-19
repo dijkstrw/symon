@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.20 2005/06/26 12:35:41 dijkstra Exp $ */
+/* $Id: symux.h,v 1.21 2007/01/19 21:35:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -47,5 +47,8 @@
 
 /* Number of data slots for clients in shared memory */
 #define SYMUX_SHARESLOTS  20
+
+/* Number of rrd errors logged before smothering sets in */
+#define SYMUX_MAXRRDERRORS 5
 
 #endif				/* _SYMUX_SYMUX_H */

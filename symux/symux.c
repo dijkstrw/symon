@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.36 2006/12/19 22:30:48 dijkstra Exp $ */
+/* $Id: symux.c,v 1.37 2007/01/19 21:35:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
@@ -116,6 +116,7 @@ main(int argc, char *argv[])
     int flag_list;
     int offset;
     int result;
+    unsigned int rrderrors;
     int slot;
     time_t timestamp;
 
@@ -246,6 +247,7 @@ main(int argc, char *argv[])
     if (get_client_socket(mux) == 0)
         fatal("socket for client connections could not be opened");
 
+    rrderrors = 0;
     /* main loop */
     for (;;) {                  /* FOREVER */
         wait_for_traffic(mux, &source, &packet);
@@ -326,9 +328,15 @@ main(int argc, char *argv[])
                         rrd_update(4, arg_ra);
 
                         if (rrd_test_error()) {
-                            warning("rrd_update:%.200s", rrd_get_error());
-                            warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
-                                    arg_ra[2], arg_ra[3]);
+                            if (rrderrors < SYMUX_MAXRRDERRORS) {
+                                rrderrors++;
+                                warning("rrd_update:%.200s", rrd_get_error());
+                                warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
+                                        arg_ra[2], arg_ra[3]);
+                                if (rrderrors == SYMUX_MAXRRDERRORS) {
+                                    warning("maximum rrd errors reached - will stop reporting them");
+                                }
+                            }
                             rrd_clear_error();
                         } else {
                             if (flag_debug == 1)
