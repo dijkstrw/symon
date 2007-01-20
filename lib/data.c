@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.29 2006/06/28 06:44:45 dijkstra Exp $ */
+/* $Id: data.c,v 1.30 2007/01/20 12:52:46 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -307,7 +307,43 @@ getheader(char *buf, struct symonpacketheader *hph)
 int
 snpack(char *buf, int maxlen, char *id, int type,...)
 {
+    int result;
     va_list ap;
+
+    /* default to v2 packets */
+    va_start(ap, type);
+    result = snpackx(SYMON_PS_ARGLENV2, buf, maxlen, id, type, ap);
+    va_end(ap);
+
+    return result;
+}
+int
+snpack1(char *buf, int maxlen, char *id, int type, ...)
+{
+    int result;
+    va_list ap;
+
+    va_start(ap, type);
+    result = snpackx(SYMON_PS_ARGLENV1, buf, maxlen, id, type, ap);
+    va_end(ap);
+
+    return result;
+}
+int
+snpack2(char *buf, int maxlen, char *id, int type, ...)
+{
+    int result;
+    va_list ap;
+
+    va_start(ap, type);
+    result = snpackx(SYMON_PS_ARGLENV2, buf, maxlen, id, type, ap);
+    va_end(ap);
+
+    return result;
+}
+int
+snpackx(size_t maxarglen, char *buf, int maxlen, char *id, int type, va_list ap)
+{
     u_int16_t b;
     u_int16_t s;
     u_int16_t c;
@@ -331,7 +367,7 @@ snpack(char *buf, int maxlen, char *id, int type,...)
     }
 
     if (id) {
-	arglen = MIN(strlen(id), SYMON_PS_ARGLEN - 1);
+	arglen = MIN(strlen(id), SYMON_PS_ARGLENV2 - 1);
     } else {
 	id = "\0";
 	arglen = 1;
@@ -344,7 +380,6 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	offset += arglen + 1;
     }
 
-    va_start(ap, type);
     while (streamform[type].form[i] != '\0') {
 	if (checklen(maxlen, offset, bytelenvar(streamform[type].form[i])))
 	    return offset;
@@ -406,7 +441,6 @@ snpack(char *buf, int maxlen, char *id, int type,...)
 	}
 	i++;
     }
-    va_end(ap);
 
     return offset;
 }
@@ -419,7 +453,23 @@ snpack(char *buf, int maxlen, char *id, int type,...)
  * description corresponds to the amount of bytes that will fit inside the
  * packedstream structure.  */
 int
-sunpack(char *buf, struct packedstream * ps)
+sunpack(char *buf, struct packedstream *ps)
+{
+    /* default to version 2 */
+    return sunpackx(SYMON_PS_ARGLENV2, buf, ps);
+}
+int
+sunpack1(char *buf, struct packedstream *ps)
+{
+    return sunpackx(SYMON_PS_ARGLENV1, buf, ps);
+}
+int
+sunpack2(char *buf, struct packedstream *ps)
+{
+    return sunpackx(SYMON_PS_ARGLENV2, buf, ps);
+}
+int
+sunpackx(size_t arglen, char *buf, struct packedstream *ps)
 {
     char *in, *out;
     int i = 0;
@@ -442,8 +492,8 @@ sunpack(char *buf, struct packedstream * ps)
     type = ps->type = (*in);
     in++;
     if ((*in) != '\0') {
-	strncpy(ps->arg, in, sizeof(ps->arg));
-	ps->arg[sizeof(ps->arg) - 1] = '\0';
+	strncpy(ps->arg, in, arglen);
+	ps->arg[arglen - 1] = '\0';
 	in += strlen(ps->arg) + 1;
     } else {
 	ps->arg[0] = '\0';

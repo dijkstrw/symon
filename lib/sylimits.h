@@ -1,10 +1,11 @@
-/* $Id: sylimits.h,v 1.4 2006/09/10 19:51:32 dijkstra Exp $ */
+/* $Id: sylimits.h,v 1.5 2007/01/20 12:52:46 dijkstra Exp $ */
 
 #ifndef _LIB_LIMITS_H
 #define _LIB_LIMITS_H
 
-#define SYMON_PS_ARGLEN        16       /* maximum argument length */
-#define SYMON_PS_ARGLENSTR     "15"     /* maximum number of chars in an argument, as str */
+#define SYMON_PS_ARGLENV1      16       /* maximum argument length in a v1 packet */
+#define SYMON_PS_ARGLENV2      64       /* maximum argument length in a v2 packet */
+#define SYMON_PS_ARGLENSTRV2   "63"     /* maximum number of chars in an v2 argument, as str */
 #define SYMON_WARN_SENDERR     50       /* warn every x errors */
 #define SYMON_MAX_DOBJECTS     10000    /* max dynamic allocation; local limit per
 					 * measurement module */

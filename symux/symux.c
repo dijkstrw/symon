@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.37 2007/01/19 21:35:50 dijkstra Exp $ */
+/* $Id: symux.c,v 1.38 2007/01/20 12:52:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
@@ -284,7 +284,7 @@ main(int argc, char *argv[])
             slot = master_forbidread();
             timestamp = (time_t) packet.header.timestamp;
             stringbuf = shared_getmem(slot);
-            debug("stringbuf = 0x%8x", stringbuf);
+            debug("stringbuf = 0x%08x", stringbuf);
             snprintf(stringbuf, maxstringlen, "%s;", source->addr);
 
             /* hide this string region from rrd update */
@@ -293,7 +293,14 @@ main(int argc, char *argv[])
 
             while (offset < packet.header.length) {
                 bzero(&ps, sizeof(struct packedstream));
-                offset += sunpack(packet.data + offset, &ps);
+                if (packet.header.symon_version == 1) {
+                    offset += sunpack1(packet.data + offset, &ps);
+                } else if (packet.header.symon_version == 2) {
+                    offset += sunpack2(packet.data + offset, &ps);
+                } else {
+                    debug("unsupported packet version - ignoring data");
+                    ps.type = MT_EOT;
+                }
 
                 /* find stream in source */
                 stream = find_source_stream(source, ps.type, ps.arg);

@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.5 2004/08/07 14:50:24 dijkstra Exp $ */
+/* $Id: npack.c,v 1.6 2007/01/20 12:52:48 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 		  (double) 0.0 , (double) 100.0, (double) 0, (double) 12.34,
 		  /* test b, u_int8_t */
 		  (int) 0, (int) 0xff, (int) 0, (int) 0x12);
-    olen = sunpack(buffer, ps);
+    olen = sunpack2(buffer, ps);
 
     if (argc > 1) {
 	printf("buffer=\n");
@@ -66,11 +66,11 @@ int main(int argc, char **argv)
 	hexline((char *)ps, olen, 16);
 	printf("ps-pretty=\n");
 	ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
-	printf("test(%s) = '%s'\n", ps->args, str);
+	printf("test(%s) = '%s'\n", ps->arg, str);
     }
 
     assert(ilen == olen);
-    assert(strcmp("123456789012345", ps->args) == 0);
+    assert(strcmp("123456789012345678901234567890", ps->arg) == 0);
     assert(ps->data.ps_test.L[0] == 0);
     assert(ps->data.ps_test.L[1] == 0xffffffffffffffffLL);
     assert(ps->data.ps_test.L[2] == 0);

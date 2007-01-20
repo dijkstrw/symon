@@ -1,4 +1,4 @@
-/* $Id: symuxnet.c,v 1.21 2006/06/30 08:21:23 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.22 2007/01/20 12:52:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -271,8 +271,8 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
 	    return 0;
 	}
 	/* check packet version */
-	if (packet->header.symon_version != SYMON_PACKET_VER) {
-	    warning("ignored packet with wrong version %d from %.200s:%.200s",
+	if (packet->header.symon_version <= SYMON_PACKET_VER) {
+	    warning("ignored packet with unsupported version %d from %.200s:%.200s",
 		    packet->header.symon_version, res_host, res_service);
 	    return 0;
 	} else {

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.29 2006/12/19 22:30:48 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.30 2007/01/20 12:52:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -233,11 +233,11 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
 			sa[0] = '\0';
 		    }
 
-		    if (strlen(sa) > (SYMON_PS_ARGLEN - 1)) {
+		    if (strlen(sa) > (SYMON_PS_ARGLENV2 - 1)) {
 			warning("%.200s:%d: argument '%.200s' too long for network format, "
-				"will accept initial " SYMON_PS_ARGLENSTR " chars only",
+				"will accept initial " SYMON_PS_ARGLENSTRV2 " chars only",
 				l->filename, l->cline, sa);
-			sa[SYMON_PS_ARGLEN-1]='\0';
+			sa[SYMON_PS_ARGLENV2 - 1] = '\0';
 		    }
 
 		    if ((stream = add_source_stream(source, st, sa)) == NULL) {

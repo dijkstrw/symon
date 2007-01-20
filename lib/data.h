@@ -1,7 +1,7 @@
-/* $Id: data.h,v 1.28 2006/06/28 06:44:45 dijkstra Exp $ */
+/* $Id: data.h,v 1.29 2007/01/20 12:52:46 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,14 +70,15 @@ static inline u_int64_t
 #endif /* ntohq */
 
 /* Symon packet version
- * version 1:
+ * version 1 and 2:
  * symon_version:timestamp:length:crc:n*packedstream
+ * packedstream = type:arg[<SYMON_PS_ARGLENVx]:data
  *
- * Note that the data portion is limited. The current (31/03/2002) largest
- * streamtype (if) needs 42 bytes without arguments. My _POSIX2_LINE_MAX is 2k,
- * so that works out to about 38 packedstreams in a single symon packet.
+ * Note that the data portion is limited. The current (20/01/2007) largest
+ * streamtype (pf) needs 88 bytes without arguments. _POSIX2_LINE_MAX is 2k, so
+ * that works out to about 23 packedstreams in a single symon packet.
  */
-#define SYMON_PACKET_VER  1
+#define SYMON_PACKET_VER  2
 #define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
 
 /* Sending structures over the network is dangerous as the compiler might have
@@ -166,7 +167,7 @@ SLIST_HEAD(muxlist, mux);
 struct packedstream {
     int type;
     int padding;
-    char arg[SYMON_PS_ARGLEN];
+    char arg[SYMON_PS_ARGLENV2]; /* V2 > V1 */
     union {
 	struct symonpacketheader header;
 	struct {
@@ -307,9 +308,14 @@ int calculate_churnbuffer(struct sourcelist *);
 int getheader(char *, struct symonpacketheader *);
 int ps2strn(struct packedstream *, char *, int, int);
 int setheader(char *, struct symonpacketheader *);
-int snpack(char *, int, char *, int,...);
+int snpack(char *, int, char *, int, ...);
+int snpack1(char *, int, char *, int, ...);
+int snpack2(char *, int, char *, int, ...);
+int snpackx(size_t, char *, int, char *, int, va_list);
 int strlentype(int);
-int sunpack(char *, struct packedstream *);
+int sunpack1(char *, struct packedstream *);
+int sunpack2(char *, struct packedstream *);
+int sunpackx(size_t, char *, struct packedstream *);
 struct mux *add_mux(struct muxlist *, char *);
 struct mux *find_mux(struct muxlist *, char *);
 struct mux *rename_mux(struct muxlist *, struct mux *, char *);
