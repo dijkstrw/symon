@@ -1,4 +1,4 @@
-/* $Id: symux.h,v 1.21 2007/01/19 21:35:50 dijkstra Exp $ */
+/* $Id: symux.h,v 1.22 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -51,4 +51,4 @@
 /* Number of rrd errors logged before smothering sets in */
 #define SYMUX_MAXRRDERRORS 5
 
-#endif				/* _SYMUX_SYMUX_H */
+#endif                          /* _SYMUX_SYMUX_H */

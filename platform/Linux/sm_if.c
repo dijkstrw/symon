@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.6 2005/10/19 20:06:05 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.7 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -78,8 +78,8 @@ void
 init_if(struct stream *st)
 {
     if (if_buf == NULL) {
-	if_maxsize = SYMON_MAX_OBJSIZE;
-	if_buf = xmalloc(if_maxsize);
+        if_maxsize = SYMON_MAX_OBJSIZE;
+        if_buf = xmalloc(if_maxsize);
     }
 
     info("started module if(%.200s)", st->arg);
@@ -91,8 +91,8 @@ gets_if()
     int fd;
 
     if ((fd = open("/proc/net/dev", O_RDONLY)) < 0) {
-	warning("cannot access /proc/net/dev: %.200s", strerror(errno));
-	return;
+        warning("cannot access /proc/net/dev: %.200s", strerror(errno));
+        return;
     }
 
     bzero(if_buf, if_maxsize);
@@ -100,19 +100,19 @@ gets_if()
     close(fd);
 
     if (if_size == if_maxsize) {
-	/* buffer is too small to hold all interface data */
-	if_maxsize += SYMON_MAX_OBJSIZE;
-	if (if_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for if data",
-		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
-	}
-	if_buf = xrealloc(if_buf, if_maxsize);
-	gets_if();
-	return;
+        /* buffer is too small to hold all interface data */
+        if_maxsize += SYMON_MAX_OBJSIZE;
+        if (if_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for if data",
+                  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+        }
+        if_buf = xrealloc(if_buf, if_maxsize);
+        gets_if();
+        return;
     }
 
     if (if_size == -1) {
-	warning("could not read if statistics from /proc/net/dev: %.200s", strerror(errno));
+        warning("could not read if statistics from /proc/net/dev: %.200s", strerror(errno));
     }
 }
 
@@ -123,12 +123,12 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     struct if_device_stats stats;
 
     if (if_size <= 0) {
-	return 0;
+        return 0;
     }
 
     if ((line = strstr(if_buf, st->arg)) == NULL) {
-	warning("could not find interface %s", st->arg);
-	return 0;
+        warning("could not find interface %s", st->arg);
+        return 0;
     }
 
     line += strlen(st->arg);
@@ -138,23 +138,23 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
      *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
      */
     if (16 > sscanf(line, ":%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
-		    &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
-		    &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
-		    &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,
-		    &stats.collisions, &stats.tx_carrier_errors, &stats.tx_compressed)) {
-	warning("could not parse interface statistics for %.200s", st->arg);
-	return 0;
+                    &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
+                    &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
+                    &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,
+                    &stats.collisions, &stats.tx_carrier_errors, &stats.tx_compressed)) {
+        warning("could not parse interface statistics for %.200s", st->arg);
+        return 0;
     }
 
     return snpack(symon_buf, maxlen, st->arg, MT_IF,
-		  stats.rx_packets,
-		  stats.tx_packets,
-		  stats.rx_bytes,
-		  stats.tx_bytes,
-		  stats.multicast,
-		  0,
-		  (stats.rx_errors + stats.rx_fifo_errors + stats.rx_frame_errors),
-		  (stats.tx_errors + stats.tx_fifo_errors + stats.tx_carrier_errors),
-		  stats.collisions,
-		  (stats.rx_dropped + stats.tx_dropped));
+                  stats.rx_packets,
+                  stats.tx_packets,
+                  stats.rx_bytes,
+                  stats.tx_bytes,
+                  stats.multicast,
+                  0,
+                  (stats.rx_errors + stats.rx_fifo_errors + stats.rx_frame_errors),
+                  (stats.tx_errors + stats.tx_fifo_errors + stats.tx_carrier_errors),
+                  stats.collisions,
+                  (stats.rx_dropped + stats.tx_dropped));
 }

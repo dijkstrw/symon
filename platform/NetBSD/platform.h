@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.4 2005/10/21 14:58:45 dijkstra Exp $ */
+/* $Id: platform.h,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
@@ -18,18 +18,18 @@
 #define SS_LEN(x)       ((x)->ss_len)
 
 union semun {
-	int val;
+        int val;
 };
 
 union stream_parg {
     struct {
-	u_int64_t time[CPUSTATES];
-	u_int64_t old[CPUSTATES];
-	u_int64_t diff[CPUSTATES];
-	int states[CPUSTATES];
+        u_int64_t time[CPUSTATES];
+        u_int64_t old[CPUSTATES];
+        u_int64_t diff[CPUSTATES];
+        int states[CPUSTATES];
     } cp;
     struct {
-	char rawdev[SYMON_DFNAMESIZE];
+        char rawdev[SYMON_DFNAMESIZE];
     } df;
     struct ifdatareq ifr;
     int sn;

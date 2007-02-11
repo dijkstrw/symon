@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2005 Willem Dijkstra
+.\" Copyright (c) 2001-2007 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,9 @@
 .Pp
 .Sh DESCRIPTION
 .Nm
-is a lightweight system monitor that measures cpu, memory, debug,
-process, interface and disk statistics every 5 seconds. This information
-is then spooled to
+is a lightweight system monitor that measures cpu, filesystem, interface, disk,
+memory, pf, pf queues, mbuf, proc and sensor statistics every 5 seconds. This
+information is then spooled to
 .Xr symux 8
 for further processing.
 .Pp
@@ -102,7 +102,7 @@ newlines and text behind '#' are ignored. The format in BNF:
 .Pp
 .nf
 monitor-rule = "monitor" "{" resources "}" [every]
-               "stream" ["to"] host [ port ]
+               "stream" ["from" host] ["to"] host [ port ]
 resources    = resource ["(" argument ")"] [ ","|" " resources ]
 argument     = number | interfacename | diskname
 resource     = "cpu" | "mem" | "if" | "io" | "pf" | "pfq" |
@@ -173,7 +173,7 @@ exist.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier helped to port to big-endian
 architectures. Matthew Gream helped to port symon to other BSD platforms.
-
+.Pp
 Port contributors: Marc Balmer, Matthew Gream, Daniel Hartmeier, J. Martin
 Petersen, Fredrik Soderblom and Harm Schotanus.
 .Sh SEE ALSO

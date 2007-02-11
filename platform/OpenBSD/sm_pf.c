@@ -1,4 +1,4 @@
-/* $Id: sm_pf.c,v 1.12 2006/11/07 08:00:20 dijkstra Exp $ */
+/* $Id: sm_pf.c,v 1.13 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2002 Daniel Hartmeier
@@ -93,7 +93,7 @@ void
 privinit_pf()
 {
     if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1) {
-	warning("could not open \"/dev/pf\", %.200s", strerror(errno));
+        warning("could not open \"/dev/pf\", %.200s", strerror(errno));
     }
 }
 
@@ -101,7 +101,7 @@ void
 init_pf(struct stream *st)
 {
     if (pf_dev == -1) {
-	privinit_pf();
+        privinit_pf();
     }
 
     info("started module pf()");
@@ -111,15 +111,15 @@ void
 gets_pf()
 {
     if (pf_dev == -1) {
-	warning("could not get pf stats (dev == -1)");
-	pf_stat.running = 0;
-	return;
+        warning("could not get pf stats (dev == -1)");
+        pf_stat.running = 0;
+        return;
     }
 
     if (ioctl(pf_dev, DIOCGETSTATUS, &pf_stat)) {
-	warning("could not get pf stats (ioctl error)");
-	pf_stat.running = 0;
-	return;
+        warning("could not get pf stats (ioctl error)");
+        pf_stat.running = 0;
+        return;
     }
 }
 
@@ -129,33 +129,33 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
     u_int64_t n;
 
     if (!pf_stat.running) {
-	return 0;
+        return 0;
     }
 
     n = pf_stat.states;
     return snpack(symon_buf, maxlen, st->arg, MT_PF,
-		  pf_stat.bcounters[0][0],
-		  pf_stat.bcounters[0][1],
-		  pf_stat.bcounters[1][0],
-		  pf_stat.bcounters[1][1],
-		  pf_stat.pcounters[0][0][PF_PASS],
-		  pf_stat.pcounters[0][0][PF_DROP],
-		  pf_stat.pcounters[0][1][PF_PASS],
-		  pf_stat.pcounters[0][1][PF_DROP],
-		  pf_stat.pcounters[1][0][PF_PASS],
-		  pf_stat.pcounters[1][0][PF_DROP],
-		  pf_stat.pcounters[1][1][PF_PASS],
-		  pf_stat.pcounters[1][1][PF_DROP],
-		  n,
-		  pf_stat.fcounters[0],
-		  pf_stat.fcounters[1],
-		  pf_stat.fcounters[2],
-		  pf_stat.counters[0],
-		  pf_stat.counters[1],
-		  pf_stat.counters[2],
-		  pf_stat.counters[3],
-		  pf_stat.counters[4],
-		  pf_stat.counters[5]
-	);
+                  pf_stat.bcounters[0][0],
+                  pf_stat.bcounters[0][1],
+                  pf_stat.bcounters[1][0],
+                  pf_stat.bcounters[1][1],
+                  pf_stat.pcounters[0][0][PF_PASS],
+                  pf_stat.pcounters[0][0][PF_DROP],
+                  pf_stat.pcounters[0][1][PF_PASS],
+                  pf_stat.pcounters[0][1][PF_DROP],
+                  pf_stat.pcounters[1][0][PF_PASS],
+                  pf_stat.pcounters[1][0][PF_DROP],
+                  pf_stat.pcounters[1][1][PF_PASS],
+                  pf_stat.pcounters[1][1][PF_DROP],
+                  n,
+                  pf_stat.fcounters[0],
+                  pf_stat.fcounters[1],
+                  pf_stat.fcounters[2],
+                  pf_stat.counters[0],
+                  pf_stat.counters[1],
+                  pf_stat.counters[2],
+                  pf_stat.counters[3],
+                  pf_stat.counters[4],
+                  pf_stat.counters[5]
+        );
 }
 #endif /* HAS_PFVAR_H */

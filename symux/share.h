@@ -1,4 +1,4 @@
-/* $Id: share.h,v 1.9 2005/06/26 12:35:40 dijkstra Exp $ */
+/* $Id: share.h,v 1.10 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -44,7 +44,7 @@ struct sharedregion {
     long seqnr;
     long slotlen;
     long ctlen[SYMUX_SHARESLOTS]; /* amount of content in buffer n, assert(<
-				   * size) */
+                                   * size) */
     char *data;
 };
 
@@ -60,4 +60,4 @@ void shared_setlen(int, long);
 pid_t spawn_client(int);
 __END_DECLS
 
-#endif				/* _SYMUX_SHARE_H */
+#endif                          /* _SYMUX_SHARE_H */

@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.4 2005/10/18 19:58:09 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /* The author of this code is Matthew Gream.
  *
@@ -94,22 +94,22 @@ percentages(int cnt, int *out, register u_int64_t *new, register u_int64_t *old,
 
     /* calculate changes for each state and the overall change */
     for (i = 0; i < cnt; i++) {
-	if (*new < *old)
-	    change = (ULLONG_MAX - *old) + *new;
-	else
-	    change = *new - *old;
-	total_change += (*dp++ = change);
-	*old++ = *new++;
+        if (*new < *old)
+            change = (ULLONG_MAX - *old) + *new;
+        else
+            change = *new - *old;
+        total_change += (*dp++ = change);
+        *old++ = *new++;
     }
 
     /* avoid divide by zero potential */
     if (total_change == 0)
-	total_change = 1;
+        total_change = 1;
 
     /* calculate percentages based on overall change, rounding up */
     half_total = total_change / 2;
     for (i = 0; i < cnt; i++)
-	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
+        *out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
     /* return the total in case the caller wants to use it */
     return total_change;
@@ -136,17 +136,17 @@ int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
     if (sysctl(cp_time_mib, 2, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
-	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
-	return 0;
+        warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
+        return 0;
     }
 
     /* convert cp_time counts to percentages */
     (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time, st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
-		  (double) (st->parg.cp.states[CP_USER] / 10.0),
-		  (double) (st->parg.cp.states[CP_NICE] / 10.0),
-		  (double) (st->parg.cp.states[CP_SYS] / 10.0),
-		  (double) (st->parg.cp.states[CP_INTR] / 10.0),
-		  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
+                  (double) (st->parg.cp.states[CP_USER] / 10.0),
+                  (double) (st->parg.cp.states[CP_NICE] / 10.0),
+                  (double) (st->parg.cp.states[CP_SYS] / 10.0),
+                  (double) (st->parg.cp.states[CP_INTR] / 10.0),
+                  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

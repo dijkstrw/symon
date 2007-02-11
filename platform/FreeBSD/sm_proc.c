@@ -1,4 +1,4 @@
-/* $Id: sm_proc.c,v 1.7 2005/10/18 19:58:06 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.8 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -84,20 +84,20 @@ gets_proc()
     mib[1] = KERN_MAXPROC;
     size = sizeof(procs);
     if (sysctl(mib, 2, &procs, &size, NULL, 0) < 0) {
-	fatal("%s:%d: sysctl failed: can't get kern.nproc",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: sysctl failed: can't get kern.nproc",
+              __FILE__, __LINE__);
     }
 
     /* increase buffers if necessary */
     if (procs > proc_max) {
-	proc_max = (procs * 5) / 4;
+        proc_max = (procs * 5) / 4;
 
-	if (proc_max > SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for kinfo_proc structures",
-		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
-	}
+        if (proc_max > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for kinfo_proc structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
 
-	proc_ps = xrealloc(proc_ps, proc_max * sizeof(struct kinfo_proc));
+        proc_ps = xrealloc(proc_ps, proc_max * sizeof(struct kinfo_proc));
     }
 
     /* read data in anger */
@@ -106,17 +106,17 @@ gets_proc()
     mib[2] = KERN_PROC_ALL;
     size = proc_max * sizeof(struct kinfo_proc);
     if (sysctl(mib, 3, proc_ps, &size, NULL, 0) < 0) {
-	warning("proc probe cannot get processes");
-	proc_cur = 0;
-	return;
+        warning("proc probe cannot get processes");
+        proc_cur = 0;
+        return;
     }
 
     if (size % sizeof(struct kinfo_proc) != 0) {
-	warning("proc size mismatch: got %d bytes, not dividable by sizeof(kinfo_proc) %d",
-		size, sizeof(struct kinfo_proc));
-	proc_cur = 0;
+        warning("proc size mismatch: got %d bytes, not dividable by sizeof(kinfo_proc) %d",
+                size, sizeof(struct kinfo_proc));
+        proc_cur = 0;
     } else {
-	proc_cur = size / sizeof(struct kinfo_proc);
+        proc_cur = size / sizeof(struct kinfo_proc);
     }
 }
 
@@ -128,7 +128,7 @@ privinit_proc()
 
     proc_kd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
     if (proc_kd == NULL) {
-	warning("while opening kvm (chrooted?): %s", errbuf);
+        warning("while opening kvm (chrooted?): %s", errbuf);
     }
 #endif
 }
@@ -142,7 +142,7 @@ init_proc(struct stream *st)
 
     /* get clockrate */
     if (sysctl(mib, 2, &cinf, &size, NULL, 0) == -1) {
-	fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
+        fatal("%s:%d: could not get clockrate", __FILE__, __LINE__);
     }
 
     proc_stathz = cinf.stathz;
@@ -151,8 +151,8 @@ init_proc(struct stream *st)
     proc_pagesize = sysconf(_SC_PAGESIZE);
     proc_pageshift = 0;
     while (proc_pagesize > 1) {
-	proc_pageshift++;
-	proc_pagesize >>= 1;
+        proc_pageshift++;
+        proc_pagesize >>= 1;
     }
 
     info("started module proc(%.200s)", st->arg);
@@ -179,50 +179,50 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
 #ifdef HAS_KI_PADDR
-	if (strncmp(st->arg, pp->ki_comm, strlen(st->arg)) == 0) {
-	    /* cpu time - accumulated */
-	    if (proc_kd) {
-		if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
-			     sizeof(pproc)) == sizeof(pproc)) {
+        if (strncmp(st->arg, pp->ki_comm, strlen(st->arg)) == 0) {
+            /* cpu time - accumulated */
+            if (proc_kd) {
+                if (kvm_read(proc_kd, (unsigned long)pp->ki_paddr, &pproc,
+                             sizeof(pproc)) == sizeof(pproc)) {
 #ifdef HAS_RUSAGE_EXT
-		    cpu_uticks += pproc.p_rux.rux_uticks;  /* user */
-		    cpu_sticks += pproc.p_rux.rux_sticks;  /* sys  */
-		    cpu_iticks += pproc.p_rux.rux_iticks;  /* int  */
+                    cpu_uticks += pproc.p_rux.rux_uticks;  /* user */
+                    cpu_sticks += pproc.p_rux.rux_sticks;  /* sys  */
+                    cpu_iticks += pproc.p_rux.rux_iticks;  /* int  */
 #else
-		    cpu_uticks += pproc.p_uticks;  /* user */
-		    cpu_sticks += pproc.p_sticks;  /* sys  */
-		    cpu_iticks += pproc.p_iticks;  /* int  */
+                    cpu_uticks += pproc.p_uticks;  /* user */
+                    cpu_sticks += pproc.p_sticks;  /* sys  */
+                    cpu_iticks += pproc.p_iticks;  /* int  */
 #endif
-		} else {
-		    warning("while reading kvm: %s", kvm_geterr(proc_kd));
-		}
-	    }
-	    /* cpu time - percentage since last measurement */
-	    cpu_pct = pctdouble(pp->ki_pctcpu) * 100.0;
-	    cpu_pcti += cpu_pct;
-	    /* memory size - shared pages are counted multiple times */
-	    mem_procsize += pagetob(pp->ki_tsize + /* text pages */
-				    pp->ki_dsize + /* data */
-				    pp->ki_ssize); /* stack */
-	    mem_rss += pagetob(pp->ki_rssize);     /* rss  */
+                } else {
+                    warning("while reading kvm: %s", kvm_geterr(proc_kd));
+                }
+            }
+            /* cpu time - percentage since last measurement */
+            cpu_pct = pctdouble(pp->ki_pctcpu) * 100.0;
+            cpu_pcti += cpu_pct;
+            /* memory size - shared pages are counted multiple times */
+            mem_procsize += pagetob(pp->ki_tsize + /* text pages */
+                                    pp->ki_dsize + /* data */
+                                    pp->ki_ssize); /* stack */
+            mem_rss += pagetob(pp->ki_rssize);     /* rss  */
 #else
-	if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
-	    /* cpu time - accumulated */
-	    cpu_uticks += pp->kp_proc.p_uticks;  /* user */
-	    cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
-	    cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
+        if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
+            /* cpu time - accumulated */
+            cpu_uticks += pp->kp_proc.p_uticks;  /* user */
+            cpu_sticks += pp->kp_proc.p_sticks;  /* sys  */
+            cpu_iticks += pp->kp_proc.p_iticks;  /* int  */
 
-	    /* cpu time - percentage since last measurement */
-	    cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
-	    cpu_pcti += cpu_pct;
-	    /* memory size - shared pages are counted multiple times */
-	    mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
-				    pp->kp_eproc.e_vm.vm_dsize + /* data */
-				    pp->kp_eproc.e_vm.vm_ssize); /* stack */
-	    mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+            /* cpu time - percentage since last measurement */
+            cpu_pct = pctdouble(pp->kp_proc.p_pctcpu) * 100.0;
+            cpu_pcti += cpu_pct;
+            /* memory size - shared pages are counted multiple times */
+            mem_procsize += pagetob(pp->kp_eproc.e_vm.vm_tsize + /* text pages */
+                                    pp->kp_eproc.e_vm.vm_dsize + /* data */
+                                    pp->kp_eproc.e_vm.vm_ssize); /* stack */
+            mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
 #endif
-	    n++;
-	}
+            n++;
+        }
     }
 
     /* calc total cpu_secs spent */
@@ -230,7 +230,7 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
     cpu_secs = cpu_ticks / proc_stathz;
 
     return snpack(symon_buf, maxlen, st->arg, MT_PROC,
-		  n,
-		  cpu_uticks, cpu_sticks, cpu_iticks, cpu_secs, cpu_pcti,
-		  mem_procsize, mem_rss );
+                  n,
+                  cpu_uticks, cpu_sticks, cpu_iticks, cpu_secs, cpu_pcti,
+                  mem_procsize, mem_rss );
 }

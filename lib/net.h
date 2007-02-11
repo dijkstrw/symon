@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.14 2005/02/16 20:24:51 dijkstra Exp $ */
+/* $Id: net.h,v 1.15 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -37,7 +37,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define SYMUX_PORT  "2100"	/* default symux port */
+#define SYMUX_PORT  "2100"      /* default symux port */
 
 extern char res_host[];
 extern char res_service[];
@@ -50,9 +50,9 @@ int getaddr(char *, char *, int, int);
 int getip(char *, int);
 int lookup(char *);
 void cpysock(struct sockaddr *, struct sockaddr_storage *);
-void get_inaddrany_sockaddr(struct sockaddr_storage *, int, int, char *);
+void get_sockaddr(struct sockaddr_storage *, int, int, int, char*, char *);
 void get_mux_sockaddr(struct mux *, int);
 int get_source_sockaddr(struct source *, int);
 __END_DECLS
 
-#endif				/* _SYMON_LIB_NET_H */
+#endif                          /* _SYMON_LIB_NET_H */

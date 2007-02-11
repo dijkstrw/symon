@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.5 2006/11/07 08:00:18 dijkstra Exp $ */
+/* $Id: platform.h,v 1.6 2007/02/11 20:07:31 dijkstra Exp $ */
 
 #ifndef _CONF_FREEBSD_H
 #define _CONF_FREEBSD_H
@@ -22,13 +22,13 @@
 
 union stream_parg {
     struct {
-	long time[CPUSTATES];
-	long old[CPUSTATES];
-	long diff[CPUSTATES];
-	int states[CPUSTATES];
+        long time[CPUSTATES];
+        long old[CPUSTATES];
+        long diff[CPUSTATES];
+        int states[CPUSTATES];
     } cp;
     struct {
-	char rawdev[SYMON_DFNAMESIZE];
+        char rawdev[SYMON_DFNAMESIZE];
     } df;
     struct ifreq ifr;
     int sn;

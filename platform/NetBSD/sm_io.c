@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -66,28 +66,28 @@ gets_io()
     mib[2] = sizeof (struct disk_sysctl);
     size = 0;
     if (sysctl(mib, 3, NULL, &size, NULL, 0) < 0) {
-	fatal("%s:%d: io can't get hw.diskstats"
-	      __FILE__, __LINE__);
+        fatal("%s:%d: io can't get hw.diskstats"
+              __FILE__, __LINE__);
     }
     io_dks = size / sizeof (struct disk_sysctl);
 
     /* adjust buffer if necessary */
     if (io_dks > io_maxdks) {
-	io_maxdks = io_dks;
+        io_maxdks = io_dks;
 
-	if (io_maxdks > SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
-		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
-	}
+        if (io_maxdks > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
 
-	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct disk_sysctl));
+        io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct disk_sysctl));
     }
 
     /* read structure  */
     size = io_maxdks * sizeof(struct disk_sysctl);
     if (sysctl(mib, 3, io_dkstats, &size, NULL, 0) < 0) {
-	fatal("%s:%d: io can't get hw.diskstats"
-	      __FILE__, __LINE__);
+        fatal("%s:%d: io can't get hw.diskstats"
+              __FILE__, __LINE__);
     }
 }
 
@@ -103,14 +103,14 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
     int i;
 
     for (i = 0; i < io_maxdks; i++)
-	if (strncmp(io_dkstats[i].dk_name, st->arg,
-		    sizeof(io_dkstats[i].dk_name)) == 0)
-	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-			  io_dkstats[i].dk_rxfer,
-			  io_dkstats[i].dk_wxfer,
-			  io_dkstats[i].dk_seek,
-			  io_dkstats[i].dk_rbytes,
-			  io_dkstats[i].dk_wbytes);
+        if (strncmp(io_dkstats[i].dk_name, st->arg,
+                    sizeof(io_dkstats[i].dk_name)) == 0)
+            return snpack(symon_buf, maxlen, st->arg, MT_IO2,
+                          io_dkstats[i].dk_rxfer,
+                          io_dkstats[i].dk_wxfer,
+                          io_dkstats[i].dk_seek,
+                          io_dkstats[i].dk_rbytes,
+                          io_dkstats[i].dk_wbytes);
 
     return 0;
 }

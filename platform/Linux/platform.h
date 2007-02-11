@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.3 2005/10/21 14:58:44 dijkstra Exp $ */
+/* $Id: platform.h,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -16,7 +16,7 @@
 #define strlcpy(x,y,z)  snprintf((x),(z),"%s", (y))
 
 union semun {
-	int val;
+        int val;
 };
 
 #define CPUSTATES 4
@@ -27,11 +27,11 @@ union semun {
 
 union stream_parg {
     struct {
-	long time[CPUSTATES];
-	long old[CPUSTATES];
-	long diff[CPUSTATES];
-	int states[CPUSTATES];
-	char name[6];
+        long time[CPUSTATES];
+        long old[CPUSTATES];
+        long diff[CPUSTATES];
+        int states[CPUSTATES];
+        char name[6];
     } cp;
 };
 

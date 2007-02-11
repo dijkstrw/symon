@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.1 2007/01/19 21:36:37 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.2 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -68,8 +68,8 @@ init_mem(struct stream *st)
     me_pagesize = sysconf(_SC_PAGESIZE);
     me_pageshift = 0;
     while (me_pagesize > 1) {
-	me_pageshift++;
-	me_pagesize >>= 1;
+        me_pageshift++;
+        me_pagesize >>= 1;
     }
 
     /* get total -- systemwide main memory usage structure */
@@ -79,21 +79,21 @@ init_mem(struct stream *st)
     me_nswap = swapctl(SWAP_NSWAP, 0, 0);
 
     if (me_swdev) {
-	xfree(me_swdev);
+        xfree(me_swdev);
     }
 
     if (me_nswap != 0) {
-	me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
+        me_swdev = xmalloc(me_nswap * sizeof(*me_swdev));
     } else {
-	me_swdev = NULL;
+        me_swdev = NULL;
     }
 
     if (me_swdev == NULL && me_nswap != 0) {
-	me_nswap = 0;
+        me_nswap = 0;
     }
 
     if (st != NULL) {
-	info("started module mem(%.200s)", st->arg);
+        info("started module mem(%.200s)", st->arg);
     }
 }
 
@@ -103,8 +103,8 @@ gets_mem()
     int i, rnswap;
 
     if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
-	warning("%s:%d: sysctl failed", __FILE__, __LINE__);
-	bzero(&me_vmtotal, sizeof(me_vmtotal));
+        warning("%s:%d: sysctl failed", __FILE__, __LINE__);
+        bzero(&me_vmtotal, sizeof(me_vmtotal));
     }
 
     /* convert memory stats to Kbytes */
@@ -114,20 +114,20 @@ gets_mem()
 
     rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
     if (rnswap == -1) {
-	/* A swap device may have been added; increase and retry */
-	init_mem(NULL);
-	rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
+        /* A swap device may have been added; increase and retry */
+        init_mem(NULL);
+        rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
     }
 
     me_stats[3] = me_stats[4] = 0;
-    if (rnswap == me_nswap) {	/* Read swap successfully */
-	/* Total things up */
-	for (i = 0; i < me_nswap; i++) {
-	    if (me_swdev[i].se_flags & SWF_ENABLE) {
-		me_stats[3] += (me_swdev[i].se_inuse * DEV_BSIZE);
-		me_stats[4] += (me_swdev[i].se_nblks * DEV_BSIZE);
-	    }
-	}
+    if (rnswap == me_nswap) {   /* Read swap successfully */
+        /* Total things up */
+        for (i = 0; i < me_nswap; i++) {
+            if (me_swdev[i].se_flags & SWF_ENABLE) {
+                me_stats[3] += (me_swdev[i].se_inuse * DEV_BSIZE);
+                me_stats[4] += (me_swdev[i].se_nblks * DEV_BSIZE);
+            }
+        }
     }
 }
 
@@ -135,6 +135,6 @@ int
 get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
     return snpack(symon_buf, maxlen, st->arg, MT_MEM,
-		  me_stats[0], me_stats[1], me_stats[2],
-		  me_stats[3], me_stats[4]);
+                  me_stats[0], me_stats[1], me_stats[2],
+                  me_stats[3], me_stats[4]);
 }

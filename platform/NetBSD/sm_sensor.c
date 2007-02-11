@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -54,7 +54,7 @@ void
 privinit_sensor()
 {
     if (sn_dev == -1 && (sn_dev = open("/dev/sysmon", O_RDONLY)) == -1) {
-	warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));
+        warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));
     }
 }
 
@@ -62,7 +62,7 @@ void
 init_sensor(struct stream *st)
 {
     if (sn_dev == -1) {
-	privinit_sensor();
+        privinit_sensor();
     }
 
     st->parg.sn = (strtol(st->arg, NULL, 10) & SYMON_SENSORMASK);
@@ -80,46 +80,46 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
 
     e_info.sensor = st->parg.sn;
     if (ioctl(sn_dev, ENVSYS_GTREINFO, &e_info) == -1) {
-	warning("%s:%d: sensor can't get sensor info %.200s -- %.200s",
-		__FILE__, __LINE__, st->arg, strerror(errno));
-	return 0;
+        warning("%s:%d: sensor can't get sensor info %.200s -- %.200s",
+                __FILE__, __LINE__, st->arg, strerror(errno));
+        return 0;
     }
 
     if (!(e_info.validflags & ENVSYS_FVALID)) {
-	warning("%s:%d: sensor info is invalid %.200s -- %.200s",
-		__FILE__, __LINE__, st->arg, strerror(errno));
-	return 0;
+        warning("%s:%d: sensor info is invalid %.200s -- %.200s",
+                __FILE__, __LINE__, st->arg, strerror(errno));
+        return 0;
     }
 
     e_data.sensor = st->parg.sn;
     if (ioctl(sn_dev, ENVSYS_GTREDATA, &e_data) == -1) {
-	warning("%s:%d: sensor can't get sensor data %.200s -- %.200s",
-		__FILE__, __LINE__, st->arg, strerror(errno));
-	return 0;
+        warning("%s:%d: sensor can't get sensor data %.200s -- %.200s",
+                __FILE__, __LINE__, st->arg, strerror(errno));
+        return 0;
     }
 
     if (!(e_data.validflags & ENVSYS_FCURVALID)) {
-	warning("%s:%d: sensor data is invalid %.200s -- %.200s",
-		__FILE__, __LINE__, st->arg, strerror(errno));
-	return 0;
+        warning("%s:%d: sensor data is invalid %.200s -- %.200s",
+                __FILE__, __LINE__, st->arg, strerror(errno));
+        return 0;
     }
 
     switch (e_data.units) {
-	case ENVSYS_INDICATOR:
-	    t = (double) (e_data.cur.data_us ? 1.0 : 0.0);
-	    break;
-	case ENVSYS_INTEGER:
-	    t = (double) (e_data.cur.data_s);
-	    break;
-	case ENVSYS_STEMP:
-	    t = (double) (e_data.cur.data_s / 1000.0 / 1000.0) - 273.16;
-	    break;
-	case ENVSYS_SFANRPM:
-	    t = (double) (e_data.cur.data_us);
-	    break;
-	default: /* generic - includes volts/etc */
-	    t = (double) (e_data.cur.data_s / 1000.0 / 1000.0);
-	    break;
+        case ENVSYS_INDICATOR:
+            t = (double) (e_data.cur.data_us ? 1.0 : 0.0);
+            break;
+        case ENVSYS_INTEGER:
+            t = (double) (e_data.cur.data_s);
+            break;
+        case ENVSYS_STEMP:
+            t = (double) (e_data.cur.data_s / 1000.0 / 1000.0) - 273.16;
+            break;
+        case ENVSYS_SFANRPM:
+            t = (double) (e_data.cur.data_us);
+            break;
+        default: /* generic - includes volts/etc */
+            t = (double) (e_data.cur.data_s / 1000.0 / 1000.0);
+            break;
     }
 
     return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);

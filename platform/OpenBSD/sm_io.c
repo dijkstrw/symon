@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.18 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.19 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -71,44 +71,44 @@ gets_io()
     mib[1] = HW_DISKCOUNT;
     size = sizeof(dks);
     if (sysctl(mib, 2, &dks, &size, NULL, 0) < 0) {
-	fatal("%s:%d: sysctl failed: can't get hw.diskcount",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: sysctl failed: can't get hw.diskcount",
+              __FILE__, __LINE__);
     }
 
     mib[0] = CTL_HW;
     mib[1] = HW_DISKNAMES;
     strsize = 0;
     if (sysctl(mib, 2, NULL, &strsize, NULL, 0) < 0) {
-	fatal("%s:%d: sysctl failed: can't get hw.disknames",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: sysctl failed: can't get hw.disknames",
+              __FILE__, __LINE__);
     }
 
     /* increase buffers if necessary */
     if (dks > io_maxdks || strsize > io_maxstr) {
-	io_maxdks = dks;
-	io_maxstr = strsize;
+        io_maxdks = dks;
+        io_maxstr = strsize;
 
-	if (io_maxdks > SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
-		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
-	}
+        if (io_maxdks > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for diskstat structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
 
-	if (io_maxstr > SYMON_MAX_OBJSIZE) {
-	    fatal("%s:%d: string size exceeded (%d)",
-		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE);
-	}
+        if (io_maxstr > SYMON_MAX_OBJSIZE) {
+            fatal("%s:%d: string size exceeded (%d)",
+                  __FILE__, __LINE__, SYMON_MAX_OBJSIZE);
+        }
 
-	io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct diskstats));
-	io_dknames = xrealloc(io_dknames, io_maxdks * sizeof(char *));
-	io_dkstr = xrealloc(io_dkstr, io_maxstr + 1);
+        io_dkstats = xrealloc(io_dkstats, io_maxdks * sizeof(struct diskstats));
+        io_dknames = xrealloc(io_dknames, io_maxdks * sizeof(char *));
+        io_dkstr = xrealloc(io_dkstr, io_maxstr + 1);
     }
 
     /* read data in anger */
     mib[0] = CTL_HW;
     mib[1] = HW_DISKNAMES;
     if (sysctl(mib, 2, io_dkstr, &io_maxstr, NULL, 0) < 0) {
-	fatal("%s:%d: io can't get hw.disknames"
-	      __FILE__, __LINE__);
+        fatal("%s:%d: io can't get hw.disknames"
+              __FILE__, __LINE__);
     }
     io_dkstr[io_maxstr] = '\0';
 
@@ -116,8 +116,8 @@ gets_io()
     mib[1] = HW_DISKSTATS;
     size = io_maxdks * sizeof(struct diskstats);
     if (sysctl(mib, 2, io_dkstats, &size, NULL, 0) < 0) {
-	fatal("%s:%d: io can't get hw.diskstats"
-	      __FILE__, __LINE__);
+        fatal("%s:%d: io can't get hw.diskstats"
+              __FILE__, __LINE__);
     }
 
     p = io_dkstr;
@@ -126,12 +126,12 @@ gets_io()
     io_dknames[io_dks] = p;
 
     while ((*p != '\0') && ((p - io_dkstr) < io_maxstr)) {
-	if ((*p == ',') && (*p+1 != '\0')) {
-	    *p = '\0';
-	    io_dks++; p++;
-	    io_dknames[io_dks] = p;
-	}
-	p++;
+        if ((*p == ',') && (*p+1 != '\0')) {
+            *p = '\0';
+            io_dks++; p++;
+            io_dknames[io_dks] = p;
+        }
+        p++;
     }
 }
 
@@ -148,20 +148,20 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
 
     /* look for disk */
     for (i = 0; i <= io_dks; i++) {
-	if (strncmp(io_dknames[i], st->arg,
-		    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
+        if (strncmp(io_dknames[i], st->arg,
+                    (io_dkstr + io_maxstr - io_dknames[i])) == 0)
 #ifdef HAS_IO2
-	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-			  io_dkstats[i].ds_rxfer,
-			  io_dkstats[i].ds_wxfer,
-			  io_dkstats[i].ds_seek,
-			  io_dkstats[i].ds_rbytes,
-			  io_dkstats[i].ds_wbytes);
+            return snpack(symon_buf, maxlen, st->arg, MT_IO2,
+                          io_dkstats[i].ds_rxfer,
+                          io_dkstats[i].ds_wxfer,
+                          io_dkstats[i].ds_seek,
+                          io_dkstats[i].ds_rbytes,
+                          io_dkstats[i].ds_wbytes);
 #else
-	    return snpack(symon_buf, maxlen, st->arg, MT_IO1,
-			  io_dkstats[i].ds_xfer,
-			  io_dkstats[i].ds_seek,
-			  io_dkstats[i].ds_bytes);
+            return snpack(symon_buf, maxlen, st->arg, MT_IO1,
+                          io_dkstats[i].ds_xfer,
+                          io_dkstats[i].ds_seek,
+                          io_dkstats[i].ds_bytes);
 #endif
     }
 

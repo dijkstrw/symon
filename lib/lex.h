@@ -1,7 +1,7 @@
-/* $Id: lex.h,v 1.23 2006/06/28 06:44:45 dijkstra Exp $ */
+/* $Id: lex.h,v 1.24 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,44 +54,45 @@
 #define LXT_DF         8
 #define LXT_END        9
 #define LXT_EVERY     10
-#define LXT_IF        11
-#define LXT_IN        12
-#define LXT_IO        13
-#define LXT_IO1       14
-#define LXT_MBUF      15
-#define LXT_MEM       16
-#define LXT_MONITOR   17
-#define LXT_MUX       18
-#define LXT_OPEN      19
-#define LXT_PF        20
-#define LXT_PFQ       21
-#define LXT_PORT      22
-#define LXT_PROC      23
-#define LXT_SECOND    24
-#define LXT_SECONDS   25
-#define LXT_SENSOR    26
-#define LXT_SOURCE    27
-#define LXT_STREAM    28
-#define LXT_TO        29
-#define LXT_WRITE     30
+#define LXT_FROM      11
+#define LXT_IF        12
+#define LXT_IN        13
+#define LXT_IO        14
+#define LXT_IO1       15
+#define LXT_MBUF      16
+#define LXT_MEM       17
+#define LXT_MONITOR   18
+#define LXT_MUX       19
+#define LXT_OPEN      20
+#define LXT_PF        21
+#define LXT_PFQ       22
+#define LXT_PORT      23
+#define LXT_PROC      24
+#define LXT_SECOND    25
+#define LXT_SECONDS   26
+#define LXT_SENSOR    27
+#define LXT_SOURCE    28
+#define LXT_STREAM    29
+#define LXT_TO        30
+#define LXT_WRITE     31
 
 struct lex {
-    char *buffer;		/* current line(s) */
+    char *buffer;               /* current line(s) */
     const char *filename;
     int fh;
-    char *token;		/* last token seen */
-    long value;			/* value of last token seen, if num */
-    int bsize;			/* size of buffer  */
-    int cline;			/* current lineno */
-    int curpos;			/* current position in buffer */
-    int endpos;			/* current maxpos in buffer */
-    int op;			/* opcode of token, if string */
-    int unget;			/* bool; token pushed back */
-    int tokpos;			/* current position in token buffer */
+    char *token;                /* last token seen */
+    long value;                 /* value of last token seen, if num */
+    int bsize;                  /* size of buffer  */
+    int cline;                  /* current lineno */
+    int curpos;                 /* current position in buffer */
+    int endpos;                 /* current maxpos in buffer */
+    int op;                     /* opcode of token, if string */
+    int unget;                  /* bool; token pushed back */
+    int tokpos;                 /* current position in token buffer */
     enum {
-	LXY_STRING, LXY_NUMBER, LXY_UNKNOWN
+        LXY_STRING, LXY_NUMBER, LXY_UNKNOWN
     }
-	 type;			/* type of token in buffer */
+         type;                  /* type of token in buffer */
 };
 
 __BEGIN_DECLS
@@ -108,11 +109,11 @@ __END_DECLS
 
 /* EXPECT(l,x) = next token in l must be opcode x or error.  */
 #define EXPECT(l, x)    do {                      \
-	lex_nexttoken((l));                       \
-	if ((l)->op != (x)) {                     \
-	    parse_error((l), parse_opcode((x)));  \
-	    return 0;                             \
-	}                                         \
+        lex_nexttoken((l));                       \
+        if ((l)->op != (x)) {                     \
+            parse_error((l), parse_opcode((x)));  \
+            return 0;                             \
+        }                                         \
     } while (0);
 
-#endif				/* _SYMON_LIB_LEX_H */
+#endif                          /* _SYMON_LIB_LEX_H */

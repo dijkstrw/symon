@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.3 2005/10/21 14:58:46 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Marc Balmer
@@ -72,7 +72,7 @@ void
 gets_df()
 {
     if ((df_parts = getmntinfo(&df_stats, MNT_NOWAIT)) == 0) {
-	warning("df failed");
+        warning("df failed");
     }
 }
 
@@ -82,8 +82,8 @@ gets_df()
  * Attempts to avoid overflow for large filesystems.
  */
 #define fsbtoblk(num, fsbs, bs) \
-	(((fsbs) != 0 && (fsbs) < (bs)) ? \
-		(num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
+        (((fsbs) != 0 && (fsbs) < (bs)) ? \
+                (num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
 
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
@@ -91,16 +91,16 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
     int n;
 
     for (n = 0; n < df_parts; n++) {
-	if (!strncmp(df_stats[n].f_mntfromname, st->parg.df.rawdev, SYMON_DFNAMESIZE)) {
-	    return snpack(symon_buf, maxlen, st->arg, MT_DF,
-			  (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-			  (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-			  (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-			  (u_int64_t)df_stats[n].f_files,
-			  (u_int64_t)df_stats[n].f_ffree,
-			  (u_int64_t)df_stats[n].f_syncwrites,
-			  (u_int64_t)df_stats[n].f_asyncwrites);
-	}
+        if (!strncmp(df_stats[n].f_mntfromname, st->parg.df.rawdev, SYMON_DFNAMESIZE)) {
+            return snpack(symon_buf, maxlen, st->arg, MT_DF,
+                          (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+                          (u_int64_t)df_stats[n].f_files,
+                          (u_int64_t)df_stats[n].f_ffree,
+                          (u_int64_t)df_stats[n].f_syncwrites,
+                          (u_int64_t)df_stats[n].f_asyncwrites);
+        }
     }
 
     warning("df(%.200s) failed (no such device)", st->arg);

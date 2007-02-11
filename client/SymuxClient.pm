@@ -1,6 +1,6 @@
-# $Id: SymuxClient.pm,v 1.12 2007/01/27 13:01:01 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.13 2007/02/11 20:07:31 dijkstra Exp $
 #
-# Copyright (c) 2001-2005 Willem Dijkstra
+# Copyright (c) 2001-2007 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -149,7 +149,7 @@ sub parse {
 
     @streams = split(/;/, $self->{rawdata});
     croak "error: expected a symux dataline with ';' delimited streams"
-	if ($#streams < 2);
+	if ($#streams < 1);
 
     $self->{datasource} = shift @streams;
 
@@ -157,7 +157,7 @@ sub parse {
 	($name, $arg, @data) = split(':', $stream);
 
 	croak "error: expected a symux stream with ':' delimited values"
-	    if ($#data < 2);
+	    if ($#data < 1);
 
 	$name .= '('.$arg.')' if ($arg ne '');
 
@@ -252,7 +252,7 @@ and data it receives from that connection. Arguments are:
 Arguments marked with * are optional.
 
 Example:
-    $sc = new SymuxClient(host => 127.0.0.1,
+    $sc = new SymuxClient(host => '127.0.0.1',
 			  port => 2100);
 
 =back

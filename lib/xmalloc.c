@@ -1,4 +1,4 @@
-/* $Id: xmalloc.c,v 1.7 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: xmalloc.c,v 1.8 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -27,12 +27,12 @@ xmalloc(size_t size)
     void *ptr;
 
     if (size == 0)
-	fatal("xmalloc: zero size");
+        fatal("xmalloc: zero size");
 
     ptr = malloc(size);
 
     if (ptr == NULL)
-	fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
+        fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
 
     return ptr;
 }
@@ -43,15 +43,15 @@ xrealloc(void *ptr, size_t new_size)
     void *new_ptr;
 
     if (new_size == 0)
-	fatal("xrealloc: zero size");
+        fatal("xrealloc: zero size");
 
     if (ptr == NULL)
-	new_ptr = malloc(new_size);
+        new_ptr = malloc(new_size);
     else
-	new_ptr = realloc(ptr, new_size);
+        new_ptr = realloc(ptr, new_size);
 
     if (new_ptr == NULL)
-	fatal("xrealloc: out of memory (new_size %lu bytes)", (u_long) new_size);
+        fatal("xrealloc: out of memory (new_size %lu bytes)", (u_long) new_size);
 
     return new_ptr;
 }
@@ -60,7 +60,7 @@ void
 xfree(void *ptr)
 {
     if (ptr == NULL)
-	fatal("xfree: NULL pointer given as argument");
+        fatal("xfree: NULL pointer given as argument");
 
     free(ptr);
 }
@@ -72,7 +72,7 @@ char
     char *cp;
 
     if (len == 0)
-	fatal("xstrdup: zero size");
+        fatal("xstrdup: zero size");
 
     cp = xmalloc(len);
     strlcpy(cp, str, len);

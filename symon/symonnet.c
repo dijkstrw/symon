@@ -1,4 +1,4 @@
-/* $Id: symonnet.c,v 1.15 2005/10/16 15:27:01 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.16 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -58,13 +58,13 @@ connect2mux(struct mux * mux)
     get_mux_sockaddr(mux, SOCK_DGRAM);
     family = mux->sockaddr.ss_family;
 
-    get_inaddrany_sockaddr(&sockaddr, family, SOCK_DGRAM, "0");
+    get_sockaddr(&sockaddr, family, SOCK_DGRAM, AI_PASSIVE, mux->localaddr, "0");
 
     if ((mux->symuxsocket = socket(family, SOCK_DGRAM, 0)) == -1)
-	fatal("could not obtain socket: %.200s", strerror(errno));
+        fatal("could not obtain socket: %.200s", strerror(errno));
 
     if (bind(mux->symuxsocket, (struct sockaddr *) & sockaddr, SS_LEN(&sockaddr)) == -1)
-	fatal("could not bind socket: %.200s", strerror(errno));
+        fatal("could not bind socket: %.200s", strerror(errno));
 
     info("sending packets to udp %.200s", mux->name);
 }
@@ -73,16 +73,16 @@ void
 send_packet(struct mux * mux)
 {
     if (sendto(mux->symuxsocket, (void *) &mux->packet.data,
-	       mux->offset, 0, (struct sockaddr *) & mux->sockaddr,
-	       SS_LEN(&mux->sockaddr))
-	!= mux->offset) {
-	mux->senderr++;
+               mux->offset, 0, (struct sockaddr *) & mux->sockaddr,
+               SS_LEN(&mux->sockaddr))
+        != mux->offset) {
+        mux->senderr++;
     }
 
     if (mux->senderr >= SYMON_WARN_SENDERR) {
-	warning("%d updates to mux(%.200s) lost due to send errors",
-		mux->senderr, mux->name);
-	mux->senderr = 0;
+        warning("%d updates to mux(%.200s) lost due to send errors",
+                mux->senderr, mux->name);
+        mux->senderr = 0;
     }
 }
 /* Prepare a packet for data */
@@ -97,17 +97,17 @@ prepare_packet(struct mux * mux)
 
     /* symonpacketheader is always first stream */
     mux->offset =
-	setheader((char *) &mux->packet.data,
-		  &mux->packet.header);
+        setheader((char *) &mux->packet.data,
+                  &mux->packet.header);
 }
 /* Put a stream into the packet for a mux */
 void
 stream_in_packet(struct stream * stream, struct mux * mux)
 {
     mux->offset +=
-    (streamfunc[stream->type].get)	/* call getter of stream */
-    (&mux->packet.data[mux->offset],	/* packet buffer */
-     sizeof(mux->packet.data) - mux->offset,	/* maxlen */
+    (streamfunc[stream->type].get)      /* call getter of stream */
+    (&mux->packet.data[mux->offset],    /* packet buffer */
+     sizeof(mux->packet.data) - mux->offset,    /* maxlen */
      stream);
 }
 /* Ready a packet for transmission, set length and crc */

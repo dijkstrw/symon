@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.15 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.16 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -64,10 +64,10 @@ void
 init_if(struct stream *st)
 {
     if (if_s == -1) {
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-	    fatal("%s:%d: socket failed, %.200",
-		  __FILE__, __LINE__, strerror(errno));
-	}
+        if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+            fatal("%s:%d: socket failed, %.200",
+                  __FILE__, __LINE__, strerror(errno));
+        }
     }
 
     strncpy(st->parg.ifr.ifr_name, st->arg, IFNAMSIZ - 1);
@@ -88,19 +88,19 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     st->parg.ifr.ifr_data = (caddr_t) &ifdata;
 
     if (ioctl(if_s, SIOCGIFDATA, &st->parg.ifr)) {
-	warning("if(%.200s) failed (ioctl error)", st->arg);
-	return 0;
+        warning("if(%.200s) failed (ioctl error)", st->arg);
+        return 0;
     }
 
     return snpack(symon_buf, maxlen, st->arg, MT_IF,
-		  ifdata.ifi_ipackets,
-		  ifdata.ifi_opackets,
-		  ifdata.ifi_ibytes,
-		  ifdata.ifi_obytes,
-		  ifdata.ifi_imcasts,
-		  ifdata.ifi_omcasts,
-		  ifdata.ifi_ierrors,
-		  ifdata.ifi_oerrors,
-		  ifdata.ifi_collisions,
-		  ifdata.ifi_iqdrops);
+                  ifdata.ifi_ipackets,
+                  ifdata.ifi_opackets,
+                  ifdata.ifi_ibytes,
+                  ifdata.ifi_obytes,
+                  ifdata.ifi_imcasts,
+                  ifdata.ifi_omcasts,
+                  ifdata.ifi_ierrors,
+                  ifdata.ifi_oerrors,
+                  ifdata.ifi_collisions,
+                  ifdata.ifi_iqdrops);
 }

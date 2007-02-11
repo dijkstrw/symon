@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2005 Willem Dijkstra
+.\" Copyright (c) 2001-2007 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -40,9 +40,9 @@
 .Pp
 .Sh DESCRIPTION
 .Xr symon 8
-is a lightweight system monitor that measures cpu, memory, mbuf, debug,
-process, interface and disk statistics every 5 seconds. This information
-is then spooled to
+is a lightweight system monitor that measures cpu, filesystem, interface, disk,
+memory, pf, pf queues, mbuf, proc and sensor statistics every 5 seconds. This
+information is then spooled to
 .Nm
 for further processing.
 .Pp
@@ -164,7 +164,7 @@ source 127.0.0.1 {
 	     io(wd0), io(wd1), io(wd2),
 	     io(wd3), io(cd0), io(cd1),
 	     df(sd0a), df(sd0d), df(sd0e) }
-
+.Pp
     datadir "/var/www/symon/rrds/localhost"
 }
 .fi
@@ -179,7 +179,7 @@ nexus:~/project/symon$ telnet 10.0.0.1 2100
 Trying 10.0.0.1...
 Connected to 10.0.0.1.
 Escape character is '^]'.
-
+.Pp
 10.0.0.1;mem::1077662160:7630848:53850112:469417984:0:25600;cpu:0:
 1077662160:0.00:0.00:0.30:0.20:99.50;io:wd0:1077662160:2074:12759:
 0:30736384:131780608;
@@ -192,7 +192,7 @@ Escape character is '^]'.
 0;if:xl0:1077658247:284267:452077:150620236:273265863:372:89478:0:
 0:0:0;if:de0:1077658247:1813721:1197722:729054136:568900227:101:2:
 0:0:198:0;
-
+.Pp
 ^]
 telnet> close
 Connection closed.
@@ -216,9 +216,12 @@ Data formats:
 .It cpu
 Time spent in ( user, nice, system, interrupt, idle ). Total time is 100, data
 is offered with precision 2.
-.It mem
-Memory in ( real_active, real_total, free, swap_used, swap_total ). All values
-are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers.
+.It debug
+Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32
+bit unsigned integers.
+.It df
+Disk free statistics ( blocks : bfree : bavail : files :
+ffree : synwrites : asyncwrites). Values are 64 bit unsigned integers.
 .It if
 Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
 multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
@@ -231,6 +234,13 @@ Pre OpenBSD 3.5 io/disk counters ( total_transfers, total_seeks, total_bytes
 .It io2
 Io/disk counters ( total_rxfer, total_wxfer, total_seeks, total_rbytes,
 total_wbytes). Values are 64 bit unsigned integers.
+.It mbuf
+Mbuf statistics ( totmbufs : mt_data : mt_oobdata : mt_control :
+mt_header : mt_ftable : mt_soname : mt_soopts : pgused : pgtotal :
+totmem : totpct : m_drops : m_wait : m_drain ).
+.It mem
+Memory in ( real_active, real_total, free, swap_used, swap_total ). All values
+are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
 bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
@@ -239,25 +249,15 @@ packets_v6_out_pass : packets_v6_out_drop : states_entries : states_searches :
 states_inserts : states_removals : counters_match : counters_badoffset :
 counters_fragment : counters_short : counters_normalize : counters_memory
 ). Values are 64 bit unsigned integers.
-.It debug
-Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32
-bit unsigned integers.
-.It proc
-Process statistics ( number : uticks : sticks : iticks : cpusec : cpupct :
-procsz : rsssz ).
-.It mbuf
-Mbuf statistics ( totmbufs : mt_data : mt_oobdata : mt_control :
-mt_header : mt_ftable : mt_soname : mt_soopts : pgused : pgtotal :
-totmem : totpct : m_drops : m_wait : m_drain ).
-.It sensor
-Single sensor measurement offered with 7.6 precision. Value depends on sensor
-type.
 .It pfq
 pf/altq queue statistics ( sent_bytes : sent_packets : drop_bytes :
 drop_packets ). Values are 64 bit unsigned integers.
-.It df
-Disk free statistics ( blocks : bfree : bavail : files :
-ffree : synwrites : asyncwrites). Values are 64 bit unsigned integers.
+.It proc
+Process statistics ( number : uticks : sticks : iticks : cpusec : cpupct :
+procsz : rsssz ).
+.It sensor
+Single sensor measurement offered with 7.6 precision. Value depends on sensor
+type.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds
@@ -333,7 +333,7 @@ will be unresponsive during this process.
 .Sh AUTHOR
 Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier helped to port to big-endian
 architectures. Matthew Gream helped to port symon to other BSD platforms.
-
+.Pp
 Port contributors: Marc Balmer, Matthew Gream, Daniel Hartmeier, J. Martin
 Petersen, Fredrik Soderblom and Harm Schotanus.
 .Sh SEE ALSO

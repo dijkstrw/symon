@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.8 2007/01/19 21:37:27 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.9 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -106,56 +106,56 @@ init_sensor(struct stream *st)
 
     bufpo = strdup(st->arg);
     if (bufpo == NULL)
-	fatal("%s:%d: sensor(%.200s): out of memory",
-	      __FILE__, __LINE__, st->arg);
+        fatal("%s:%d: sensor(%.200s): out of memory",
+              __FILE__, __LINE__, st->arg);
     bufp = bufpo;
 
     if ((devname = strsep(&bufp, ".")) == NULL)
-	fatal("%s:%d: sensor(%.200s): incomplete specification",
-	      __FILE__, __LINE__, st->arg);
+        fatal("%s:%d: sensor(%.200s): incomplete specification",
+              __FILE__, __LINE__, st->arg);
 
     /* convert sensor device string to an integer */
     for (dev = 0; dev < MAXSENSORDEVICES; dev++) {
-	st->parg.sn.mib[2] = dev;
-	if (sysctl(st->parg.sn.mib, 3, &sensordev, &sdlen, NULL, 0) == -1)
-	    continue;
-	if (strcmp(devname, sensordev.xname) == 0)
-	    break;
+        st->parg.sn.mib[2] = dev;
+        if (sysctl(st->parg.sn.mib, 3, &sensordev, &sdlen, NULL, 0) == -1)
+            continue;
+        if (strcmp(devname, sensordev.xname) == 0)
+            break;
     }
     if (strcmp(devname, sensordev.xname) != 0)
-	fatal("sensor(%.200s): device not found: %.200s",
-	      st->arg, devname);
+        fatal("sensor(%.200s): device not found: %.200s",
+              st->arg, devname);
 
     /* convert sensor_type string to an integer */
     if ((typename = strsep(&bufp, ".")) == NULL)
-	fatal("%s:%d: sensor(%.200s): incomplete specification",
-	      __FILE__, __LINE__, st->arg);
+        fatal("%s:%d: sensor(%.200s): incomplete specification",
+              __FILE__, __LINE__, st->arg);
     numt = -1;
     for (i = 0; typename[i] != '\0'; i++)
-	if (isdigit(typename[i])) {
-	    numt = atoi(&typename[i]);
-	    typename[i] = '\0';
-	    break;
-	}
+        if (isdigit(typename[i])) {
+            numt = atoi(&typename[i]);
+            typename[i] = '\0';
+            break;
+        }
     for (type = 0; type < SENSOR_MAX_TYPES; type++)
-	if (strcmp(typename, sensor_type_s[type]) == 0)
-	    break;
+        if (strcmp(typename, sensor_type_s[type]) == 0)
+            break;
     if (type == SENSOR_MAX_TYPES)
-	fatal("sensor(%.200s): sensor type not recognised: %.200s",
-	      st->arg, typename);
+        fatal("sensor(%.200s): sensor type not recognised: %.200s",
+              st->arg, typename);
     if (sensordev.maxnumt[type] == 0)
-	fatal("sensor(%.200s): no sensors of such type on this device: %.200s",
-	      st->arg, typename);
+        fatal("sensor(%.200s): no sensors of such type on this device: %.200s",
+              st->arg, typename);
     st->parg.sn.mib[3] = type;
 
     if (numt == -1) {
-	warning("sensor(%.200s): sensor number not specified, using 0",
-		st->arg);
-	numt = 0;
+        warning("sensor(%.200s): sensor number not specified, using 0",
+                st->arg);
+        numt = 0;
     }
     if (!(numt < sensordev.maxnumt[type]))
-	fatal("sensor(%.200s): no such sensor attached to this device: %.200s%i",
-	      st->arg, typename, numt);
+        fatal("sensor(%.200s): no such sensor attached to this device: %.200s%i",
+              st->arg, typename, numt);
     st->parg.sn.mib[4] = numt;
 
     free(bufpo);
@@ -172,32 +172,32 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
     double t;
 
     if (sysctl(st->parg.sn.mib,
-	       sizeof(st->parg.sn.mib)/sizeof(st->parg.sn.mib[0]),
-	       &sn_sensor, &len, NULL, 0) == -1) {
-	if (errno != ENOENT)
-	    warning("%s:%d: sensor(%.200s): sysctl error: %.200s",
-		    __FILE__, __LINE__, st->arg, strerror(errno));
-	else
-	    warning("sensor(%.200s): sensor not found",
-		    st->arg);
+               sizeof(st->parg.sn.mib)/sizeof(st->parg.sn.mib[0]),
+               &sn_sensor, &len, NULL, 0) == -1) {
+        if (errno != ENOENT)
+            warning("%s:%d: sensor(%.200s): sysctl error: %.200s",
+                    __FILE__, __LINE__, st->arg, strerror(errno));
+        else
+            warning("sensor(%.200s): sensor not found",
+                    st->arg);
 
-	return 0;
+        return 0;
     } else {
-	switch (sn_sensor.type) {
-	case SENSOR_TEMP:
-	    t = (double) (sn_sensor.value / 1000.0 / 1000.0) - 273.15;
-	    break;
-	case SENSOR_FANRPM:
-	    t = (double) sn_sensor.value;
-	    break;
-	case SENSOR_VOLTS_DC:
-	    t = (double) (sn_sensor.value / 1000.0 / 1000.0);
-	    break;
-	default:
-	    t = (double) sn_sensor.value;
-	}
+        switch (sn_sensor.type) {
+        case SENSOR_TEMP:
+            t = (double) (sn_sensor.value / 1000.0 / 1000.0) - 273.15;
+            break;
+        case SENSOR_FANRPM:
+            t = (double) sn_sensor.value;
+            break;
+        case SENSOR_VOLTS_DC:
+            t = (double) (sn_sensor.value / 1000.0 / 1000.0);
+            break;
+        default:
+            t = (double) sn_sensor.value;
+        }
 
-	return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);
+        return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);
     }
 }
 

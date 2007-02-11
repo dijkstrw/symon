@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.45 2006/09/22 07:13:19 dijkstra Exp $ */
+/* $Id: symon.c,v 1.46 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -92,12 +92,12 @@ set_stream_use(struct muxlist *mul)
     int i;
 
     for (i = 0; i < MT_EOT; i++)
-	streamfunc[i].used = 0;
+        streamfunc[i].used = 0;
 
 
     SLIST_FOREACH(mux, mul, muxes) {
-	SLIST_FOREACH(stream, &mux->sl, streams)
-	    streamfunc[stream->type].used = 1;
+        SLIST_FOREACH(stream, &mux->sl, streams)
+            streamfunc[stream->type].used = 1;
     }
 }
 void
@@ -106,34 +106,34 @@ drop_privileges(int unsecure)
     struct passwd *pw;
 
     if (unsecure) {
-	if (setegid(getgid()) || setgid(getgid()) ||
-	    seteuid(getuid()) || setuid(getuid()))
-	    fatal("can't drop privileges: %.200s", strerror(errno));
+        if (setegid(getgid()) || setgid(getgid()) ||
+            seteuid(getuid()) || setuid(getuid()))
+            fatal("can't drop privileges: %.200s", strerror(errno));
     } else {
-	if ((pw = getpwnam(SYMON_USER)) == NULL)
-	    fatal("could not get user information for user '%.200s': %.200s",
-		  SYMON_USER, strerror(errno));
+        if ((pw = getpwnam(SYMON_USER)) == NULL)
+            fatal("could not get user information for user '%.200s': %.200s",
+                  SYMON_USER, strerror(errno));
 
-	if (chroot(pw->pw_dir) < 0)
-	    fatal("chroot failed: %.200s", strerror(errno));
+        if (chroot(pw->pw_dir) < 0)
+            fatal("chroot failed: %.200s", strerror(errno));
 
-	if (chdir("/") < 0)
-	    fatal("chdir / failed: %.200s", strerror(errno));
+        if (chdir("/") < 0)
+            fatal("chdir / failed: %.200s", strerror(errno));
 
-	if (setgroups(1, &pw->pw_gid))
-	    fatal("can't setgroups: %.200s", strerror(errno));
+        if (setgroups(1, &pw->pw_gid))
+            fatal("can't setgroups: %.200s", strerror(errno));
 
-	if (setgid(pw->pw_gid))
-	    fatal("can't set group id: %.200s", strerror(errno));
+        if (setgid(pw->pw_gid))
+            fatal("can't set group id: %.200s", strerror(errno));
 
-	if (setegid(pw->pw_gid))
-	    fatal("can't set effective group id: %.200s", strerror(errno));
+        if (setegid(pw->pw_gid))
+            fatal("can't set effective group id: %.200s", strerror(errno));
 
-	if (setuid(pw->pw_uid))
-	    fatal("can't set user id: %.200s", strerror(errno));
+        if (setuid(pw->pw_uid))
+            fatal("can't set user id: %.200s", strerror(errno));
 
-	if (seteuid(pw->pw_uid))
-	    fatal("can't set effective user id: %.200s", strerror(errno));
+        if (seteuid(pw->pw_uid))
+            fatal("can't set effective user id: %.200s", strerror(errno));
     }
 }
 /* alarmhandler that gets called every symon_interval */
@@ -188,59 +188,59 @@ main(int argc, char *argv[])
     cfgpath = SYMON_CONFIG_FILE;
 
     while ((ch = getopt(argc, argv, "dvuf:")) != -1) {
-	switch (ch) {
-	case 'd':
-	    flag_debug = 1;
-	    break;
+        switch (ch) {
+        case 'd':
+            flag_debug = 1;
+            break;
 
-	case 'f':
-	    cfgpath = xstrdup(optarg);
-	    break;
+        case 'f':
+            cfgpath = xstrdup(optarg);
+            break;
 
-	case 'u':
-	    flag_unsecure = 1;
-	    break;
+        case 'u':
+            flag_unsecure = 1;
+            break;
 
-	case 'v':
-	    info("symon version %s", SYMON_VERSION);
-	default:
-	    info("usage: %s [-d] [-u] [-v] [-f cfgfile]", __progname);
-	    exit(EX_USAGE);
-	}
+        case 'v':
+            info("symon version %s", SYMON_VERSION);
+        default:
+            info("usage: %s [-d] [-u] [-v] [-f cfgfile]", __progname);
+            exit(EX_USAGE);
+        }
     }
 
     if (!read_config_file(&mul, cfgpath))
-	fatal("configuration file contained errors - aborting");
+        fatal("configuration file contained errors - aborting");
 
     set_stream_use(&mul);
 
     /* open resources that might not be available after privilege drop */
     for (i = 0; i < MT_EOT; i++)
-	if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
-	    (streamfunc[i].privinit) ();
+        if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
+            (streamfunc[i].privinit) ();
 
     if ((pidfile = fopen(SYMON_PID_FILE, "w")) == NULL)
-	warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,
-		strerror(errno));
+        warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,
+                strerror(errno));
 
     drop_privileges(flag_unsecure);
 
     if (flag_debug != 1) {
-	if (daemon(0, 0) != 0)
-	    fatal("daemonize failed: %.200s", strerror(errno));
+        if (daemon(0, 0) != 0)
+            fatal("daemonize failed: %.200s", strerror(errno));
 
-	flag_daemon = 1;
+        flag_daemon = 1;
 
-	if (pidfile) {
-	    fprintf(pidfile, "%u\n", (u_int) getpid());
-	    fclose(pidfile);
-	}
+        if (pidfile) {
+            fprintf(pidfile, "%u\n", (u_int) getpid());
+            fclose(pidfile);
+        }
     }
 
     info("symon version %s", SYMON_VERSION);
 
     if (flag_debug == 1)
-	info("program id=%d", (u_int) getpid());
+        info("program id=%d", (u_int) getpid());
 
     /* setup signal handlers */
     signal(SIGALRM, alarmhandler);
@@ -254,10 +254,10 @@ main(int argc, char *argv[])
 
     /* init modules */
     SLIST_FOREACH(mux, &mul, muxes) {
-	connect2mux(mux);
-	SLIST_FOREACH(stream, &mux->sl, streams) {
-	    (streamfunc[stream->type].init) (stream);
-	}
+        connect2mux(mux);
+        SLIST_FOREACH(stream, &mux->sl, streams) {
+            (streamfunc[stream->type].init) (stream);
+        }
     }
     set_stream_use(&mul);
 
@@ -265,45 +265,45 @@ main(int argc, char *argv[])
     timerclear(&alarminterval.it_interval);
     timerclear(&alarminterval.it_value);
     alarminterval.it_interval.tv_sec =
-	alarminterval.it_value.tv_sec = symon_interval;
+        alarminterval.it_value.tv_sec = symon_interval;
 
     if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
-	fatal("alarm setup failed: %.200s", strerror(errno));
+        fatal("alarm setup failed: %.200s", strerror(errno));
     }
 
     last_update = time(NULL);
-    for (;;) {			/* FOREVER */
-	sleep(symon_interval * 2);	/* alarm will interrupt sleep */
-	now = time(NULL);
+    for (;;) {                  /* FOREVER */
+        sleep(symon_interval * 2);      /* alarm will interrupt sleep */
+        now = time(NULL);
 
-	if (flag_hup == 1) {
-	    flag_hup = 0;
+        if (flag_hup == 1) {
+            flag_hup = 0;
 
-	    SLIST_INIT(&newmul);
+            SLIST_INIT(&newmul);
 
-	    if (flag_unsecure) {
-		if (!read_config_file(&newmul, cfgpath)) {
-		    info("new configuration contains errors; keeping old configuration");
-		    free_muxlist(&newmul);
-		} else {
-		    free_muxlist(&mul);
-		    mul = newmul;
-		    info("read configuration file '%.200s' successfully", cfgpath);
+            if (flag_unsecure) {
+                if (!read_config_file(&newmul, cfgpath)) {
+                    info("new configuration contains errors; keeping old configuration");
+                    free_muxlist(&newmul);
+                } else {
+                    free_muxlist(&mul);
+                    mul = newmul;
+                    info("read configuration file '%.200s' successfully", cfgpath);
 
-		    /* init modules */
-		    SLIST_FOREACH(mux, &mul, muxes) {
-			connect2mux(mux);
-			SLIST_FOREACH(stream, &mux->sl, streams) {
-			    (streamfunc[stream->type].init) (stream);
-			}
-		    }
-		    set_stream_use(&mul);
-		}
-	    } else {
-		info("configuration unreachable because of privsep; keeping old configuration");
-	    }
-	} else {
-	    /* check timing to catch ntp drifts */
+                    /* init modules */
+                    SLIST_FOREACH(mux, &mul, muxes) {
+                        connect2mux(mux);
+                        SLIST_FOREACH(stream, &mux->sl, streams) {
+                            (streamfunc[stream->type].init) (stream);
+                        }
+                    }
+                    set_stream_use(&mul);
+                }
+            } else {
+                info("configuration unreachable because of privsep; keeping old configuration");
+            }
+        } else {
+            /* check timing to catch ntp drifts */
             if (now < last_update ||
                 now > last_update + symon_interval + symon_interval) {
                 info("last update seems long ago - assuming system time change");
@@ -314,22 +314,22 @@ main(int argc, char *argv[])
             }
             last_update = now;
 
-	    /* populate for modules that get all their measurements in one go */
-	    for (i = 0; i < MT_EOT; i++)
-		if (streamfunc[i].used && (streamfunc[i].gets != NULL))
-		    (streamfunc[i].gets) ();
+            /* populate for modules that get all their measurements in one go */
+            for (i = 0; i < MT_EOT; i++)
+                if (streamfunc[i].used && (streamfunc[i].gets != NULL))
+                    (streamfunc[i].gets) ();
 
-	    SLIST_FOREACH(mux, &mul, muxes) {
-		prepare_packet(mux);
+            SLIST_FOREACH(mux, &mul, muxes) {
+                prepare_packet(mux);
 
-		SLIST_FOREACH(stream, &mux->sl, streams)
-		    stream_in_packet(stream, mux);
+                SLIST_FOREACH(stream, &mux->sl, streams)
+                    stream_in_packet(stream, mux);
 
-		finish_packet(mux);
+                finish_packet(mux);
 
-		send_packet(mux);
-	    }
-	}
+                send_packet(mux);
+            }
+        }
     }
 
     return (EX_SOFTWARE);     /* NOTREACHED */

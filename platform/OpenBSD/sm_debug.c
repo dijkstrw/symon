@@ -1,4 +1,4 @@
-/* $Id: sm_debug.c,v 1.7 2005/10/18 19:58:11 dijkstra Exp $ */
+/* $Id: sm_debug.c,v 1.8 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -65,14 +65,14 @@ get_debug(char *symon_buf, int maxlen, struct stream *st)
     len = sizeof(int);
 
     for (i = 0; i < SYMON_MAXDEBUGID; i++) {
-	db_mib[1] = i;
+        db_mib[1] = i;
 
-	sysctl(db_mib, sizeof(db_mib)/sizeof(int), &db_v[i], &len, NULL, 0);
+        sysctl(db_mib, sizeof(db_mib)/sizeof(int), &db_v[i], &len, NULL, 0);
     }
 
     return snpack(symon_buf, maxlen, st->arg, MT_DEBUG,
-		  db_v[0], db_v[1], db_v[2], db_v[3], db_v[4], db_v[5], db_v[6],
-		  db_v[7], db_v[8], db_v[9], db_v[10], db_v[11], db_v[12], db_v[13],
-		  db_v[14], db_v[15], db_v[16], db_v[17], db_v[18], db_v[19]);
+                  db_v[0], db_v[1], db_v[2], db_v[3], db_v[4], db_v[5], db_v[6],
+                  db_v[7], db_v[8], db_v[9], db_v[10], db_v[11], db_v[12], db_v[13],
+                  db_v[14], db_v[15], db_v[16], db_v[17], db_v[18], db_v[19]);
 
 }

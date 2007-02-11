@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.4 2005/10/21 14:58:46 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -115,7 +115,7 @@ void
 privinit_pfq()
 {
     if ((pfq_dev = open("/dev/pf", O_RDONLY)) == -1) {
-	warning("pfq: could not open \"/dev/pf\", %.200s", strerror(errno));
+        warning("pfq: could not open \"/dev/pf\", %.200s", strerror(errno));
     }
 }
 
@@ -123,7 +123,7 @@ void
 init_pfq(struct stream *st)
 {
     if (pfq_dev == -1) {
-	privinit_pfq();
+        privinit_pfq();
     }
 
     info("started module pfq(%.200s)", st->arg);
@@ -143,78 +143,78 @@ gets_pfq()
     bzero(&q, sizeof(q));
 
     if (ioctl(pfq_dev, DIOCGETALTQS, &qs)) {
-	fatal("pfq: DIOCGETALTQS failed");
+        fatal("pfq: DIOCGETALTQS failed");
     }
     nqs = qs.nr;
 
     /* Allocate memory for info for the nqs queues */
     if (nqs > pfq_max) {
-	if (pfq_stats) {
-	    xfree(pfq_stats);
-	}
+        if (pfq_stats) {
+            xfree(pfq_stats);
+        }
 
-	pfq_max = 2 * nqs;
+        pfq_max = 2 * nqs;
 
-	if (pfq_max > SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for pf queue structures",
-		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
-	}
+        if (pfq_max > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for pf queue structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
 
-	pfq_stats = xmalloc(pfq_max * sizeof(struct altq_stats));
+        pfq_stats = xmalloc(pfq_max * sizeof(struct altq_stats));
     }
 
     pfq_cur = 0;
 
     /* Loop through the queues, copy info */
     for (i = 0; i < nqs; i++) {
-	qs.nr = i;
-	if (ioctl(pfq_dev, DIOCGETALTQ, &qs)) {
-	    fatal("pfq: DIOCGETALTQ failed");
-	}
+        qs.nr = i;
+        if (ioctl(pfq_dev, DIOCGETALTQ, &qs)) {
+            fatal("pfq: DIOCGETALTQ failed");
+        }
 
-	/* only process the non-empty queues */
-	if (qs.altq.qid > 0) {
-	    stats.nr = qs.nr;
-	    stats.ticket = qs.ticket;
-	    stats.buf = &q;
-	    stats.nbytes = sizeof(q);
+        /* only process the non-empty queues */
+        if (qs.altq.qid > 0) {
+            stats.nr = qs.nr;
+            stats.ticket = qs.ticket;
+            stats.buf = &q;
+            stats.nbytes = sizeof(q);
 
-	    if (ioctl(pfq_dev, DIOCGETQSTATS, &stats)) {
-		fatal("pfq: DIOCGETQSTATS failed");
-	    }
+            if (ioctl(pfq_dev, DIOCGETQSTATS, &stats)) {
+                fatal("pfq: DIOCGETQSTATS failed");
+            }
 
-	    /* We're now ready to copy the data we want. */
-	    snprintf(pfq_stats[pfq_cur].qname, sizeof(pfq_stats[0].qname),
-		     "%s/%s", qs.altq.ifname, qs.altq.qname);
+            /* We're now ready to copy the data we want. */
+            snprintf(pfq_stats[pfq_cur].qname, sizeof(pfq_stats[0].qname),
+                     "%s/%s", qs.altq.ifname, qs.altq.qname);
 
-	    switch (qs.altq.scheduler) {
-	    case ALTQT_CBQ:
-		pfq_stats[pfq_cur].sent_bytes = q.cbq.xmit_cnt.bytes;
-		pfq_stats[pfq_cur].sent_packets = q.cbq.xmit_cnt.packets;
-		pfq_stats[pfq_cur].drop_bytes = q.cbq.drop_cnt.bytes;
-		pfq_stats[pfq_cur].drop_packets = q.cbq.drop_cnt.packets;
-		break;
+            switch (qs.altq.scheduler) {
+            case ALTQT_CBQ:
+                pfq_stats[pfq_cur].sent_bytes = q.cbq.xmit_cnt.bytes;
+                pfq_stats[pfq_cur].sent_packets = q.cbq.xmit_cnt.packets;
+                pfq_stats[pfq_cur].drop_bytes = q.cbq.drop_cnt.bytes;
+                pfq_stats[pfq_cur].drop_packets = q.cbq.drop_cnt.packets;
+                break;
 
-	    case ALTQT_PRIQ:
-		pfq_stats[pfq_cur].sent_bytes = q.priq.xmitcnt.bytes;
-		pfq_stats[pfq_cur].sent_packets = q.priq.xmitcnt.packets;
-		pfq_stats[pfq_cur].drop_bytes = q.priq.dropcnt.bytes;
-		pfq_stats[pfq_cur].drop_packets = q.priq.dropcnt.packets;
-		break;
+            case ALTQT_PRIQ:
+                pfq_stats[pfq_cur].sent_bytes = q.priq.xmitcnt.bytes;
+                pfq_stats[pfq_cur].sent_packets = q.priq.xmitcnt.packets;
+                pfq_stats[pfq_cur].drop_bytes = q.priq.dropcnt.bytes;
+                pfq_stats[pfq_cur].drop_packets = q.priq.dropcnt.packets;
+                break;
 
-	    case ALTQT_HFSC:
-		pfq_stats[pfq_cur].sent_bytes = q.hfsc.xmit_cnt.bytes;
-		pfq_stats[pfq_cur].sent_packets = q.hfsc.xmit_cnt.packets;
-		pfq_stats[pfq_cur].drop_bytes = q.hfsc.drop_cnt.bytes;
-		pfq_stats[pfq_cur].drop_packets = q.hfsc.drop_cnt.packets;
-		break;
+            case ALTQT_HFSC:
+                pfq_stats[pfq_cur].sent_bytes = q.hfsc.xmit_cnt.bytes;
+                pfq_stats[pfq_cur].sent_packets = q.hfsc.xmit_cnt.packets;
+                pfq_stats[pfq_cur].drop_bytes = q.hfsc.drop_cnt.bytes;
+                pfq_stats[pfq_cur].drop_packets = q.hfsc.drop_cnt.packets;
+                break;
 
-	    default:
-		warning("pfq: unknown altq scheduler type encountered");
-		break;
-	    }
-	    pfq_cur++;
-	}
+            default:
+                warning("pfq: unknown altq scheduler type encountered");
+                break;
+            }
+            pfq_cur++;
+        }
     }
 }
 
@@ -224,14 +224,14 @@ get_pfq(char *symon_buf, int maxlen, struct stream *st)
     unsigned int i;
 
     for (i = 0; i < pfq_cur; i++) {
-	if (strncmp(pfq_stats[i].qname, st->arg, sizeof(pfq_stats[0].qname)) == 0) {
-	    return snpack(symon_buf, maxlen, st->arg, MT_PFQ,
-			  pfq_stats[i].sent_bytes,
-			  pfq_stats[i].sent_packets,
-			  pfq_stats[i].drop_bytes,
-			  pfq_stats[i].drop_packets
-		);
-	}
+        if (strncmp(pfq_stats[i].qname, st->arg, sizeof(pfq_stats[0].qname)) == 0) {
+            return snpack(symon_buf, maxlen, st->arg, MT_PFQ,
+                          pfq_stats[i].sent_bytes,
+                          pfq_stats[i].sent_packets,
+                          pfq_stats[i].drop_bytes,
+                          pfq_stats[i].drop_packets
+                );
+        }
     }
 
     return 0;

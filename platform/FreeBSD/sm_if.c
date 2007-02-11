@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.3 2005/10/18 19:58:06 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Fredrik Soderblom
@@ -76,9 +76,9 @@ get_ifcount(void)
     len = sizeof(int);
 
     if (sysctl(name, 5, &count, &len, NULL, 0) != -1) {
-	return count;
+        return count;
     } else {
-	return -1;
+        return -1;
     }
 }
 
@@ -103,19 +103,19 @@ gets_if()
 
     /* increase buffers if necessary */
     if (if_cur > if_max) {
-	if_max = if_cur;
+        if_max = if_cur;
 
-	if (if_max > SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for ifmibdata structures",
-		  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
-	}
+        if (if_max > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for ifmibdata structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
 
-	if_md = xrealloc(if_md, if_max * sizeof(struct ifmibdata));
+        if_md = xrealloc(if_md, if_max * sizeof(struct ifmibdata));
     }
 
     /* read data */
     for (i = 1; i <= if_cur; i++) {
-	get_ifmib_general(i, &if_md[i - 1]);
+        get_ifmib_general(i, &if_md[i - 1]);
     }
 }
 
@@ -126,20 +126,20 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     struct if_data ifdata;
 
     for (i = 1; i <= if_cur; i++) {
-	if (!strcmp(if_md[i - 1].ifmd_name, st->arg)) {
-	    ifdata = if_md[i - 1].ifmd_data;
-	    return snpack(symon_buf, maxlen, st->arg, MT_IF,
-			  ifdata.ifi_ipackets,
-			  ifdata.ifi_opackets,
-			  ifdata.ifi_ibytes,
-			  ifdata.ifi_obytes,
-			  ifdata.ifi_imcasts,
-			  ifdata.ifi_omcasts,
-			  ifdata.ifi_ierrors,
-			  ifdata.ifi_oerrors,
-			  ifdata.ifi_collisions,
-			  ifdata.ifi_iqdrops);
-	}
+        if (!strcmp(if_md[i - 1].ifmd_name, st->arg)) {
+            ifdata = if_md[i - 1].ifmd_data;
+            return snpack(symon_buf, maxlen, st->arg, MT_IF,
+                          ifdata.ifi_ipackets,
+                          ifdata.ifi_opackets,
+                          ifdata.ifi_ibytes,
+                          ifdata.ifi_obytes,
+                          ifdata.ifi_imcasts,
+                          ifdata.ifi_omcasts,
+                          ifdata.ifi_ierrors,
+                          ifdata.ifi_oerrors,
+                          ifdata.ifi_collisions,
+                          ifdata.ifi_iqdrops);
+        }
     }
 
     return 0;

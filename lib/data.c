@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.30 2007/01/20 12:52:46 dijkstra Exp $ */
+/* $Id: data.c,v 1.31 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -142,11 +142,11 @@ token2type(const int token)
     int i;
 
     for (i = 0; streamtoken[i].type < MT_EOT; i++)
-	if (streamtoken[i].token == token)
-	    return streamtoken[i].type;
+        if (streamtoken[i].token == token)
+            return streamtoken[i].type;
 
     fatal("%s:%d: internal error: token (%d) could not be translated into a stream type",
-	  __FILE__, __LINE__, token);
+          __FILE__, __LINE__, token);
 
     /* NOT REACHED */
     return 0;
@@ -158,11 +158,11 @@ type2str(const int streamtype)
     int i;
 
     for (i = 0; streamtoken[i].type < MT_EOT; i++)
-	if (streamtoken[i].type == streamtype)
-	    return parse_opcode(streamtoken[i].token);
+        if (streamtoken[i].type == streamtype)
+            return parse_opcode(streamtoken[i].token);
 
     fatal("%s:%d: internal error: type (%d) could not be translated into ascii representation",
-	  __FILE__, __LINE__, streamtype);
+          __FILE__, __LINE__, streamtype);
 
     /* NOT REACHED */
     return 0;
@@ -175,7 +175,7 @@ strlentype(int type)
     int sum = 0;
 
     while (streamform[type].form[i])
-	sum += strlenvar(streamform[type].form[i++]);
+        sum += strlenvar(streamform[type].form[i++]);
 
     return sum;
 }
@@ -186,11 +186,11 @@ strlenvar(char var)
     int i;
 
     for (i = 0; streamvar[i].type > '\0'; i++)
-	if (streamvar[i].type == var)
-	    return streamvar[i].strlen;
+        if (streamvar[i].type == var)
+            return streamvar[i].strlen;
 
     fatal("%s:%d: internal error: type spefication for stream var '%c' not found",
-	  __FILE__, __LINE__, var);
+          __FILE__, __LINE__, var);
 
     /* NOT REACHED */
     return 0;
@@ -202,11 +202,11 @@ bytelenvar(char var)
     int i;
 
     for (i = 0; streamvar[i].type > '\0'; i++)
-	if (streamvar[i].type == var)
-	    return streamvar[i].bytelen;
+        if (streamvar[i].type == var)
+            return streamvar[i].bytelen;
 
     fatal("%s:%d: internal error: type spefication for stream var '%c' not found",
-	  __FILE__, __LINE__, var);
+          __FILE__, __LINE__, var);
 
     /* NOT REACHED */
     return 0;
@@ -218,11 +218,11 @@ formatstrvar(char var)
     int i;
 
     for (i = 0; streamvar[i].type > '\0'; i++)
-	if (streamvar[i].type == var)
-	    return streamvar[i].strformat;
+        if (streamvar[i].type == var)
+            return streamvar[i].strformat;
 
     fatal("%s:%d: internal error: type spefication for stream var '%c' not found",
-	  __FILE__, __LINE__, var);
+          __FILE__, __LINE__, var);
 
     /* NOT REACHED */
     return "";
@@ -234,8 +234,8 @@ rrdstrvar(char var)
     int i;
 
     for (i = 0; streamvar[i].type > '\0'; i++)
-	if (streamvar[i].type == var)
-	    return streamvar[i].rrdformat;
+        if (streamvar[i].type == var)
+            return streamvar[i].rrdformat;
 
     fatal("internal error: type spefication for stream var '%c' not found", var);
 
@@ -247,11 +247,11 @@ int
 checklen(int maxlen, int current, int extra)
 {
     if ((current + extra) < maxlen) {
-	return 0;
+        return 0;
     } else {
-	warning("buffer overflow: max=%d, current=%d, extra=%d",
-		maxlen, current, extra);
-	return 1;
+        warning("buffer overflow: max=%d, current=%d, extra=%d",
+                maxlen, current, extra);
+        return 1;
     }
 }
 int
@@ -356,90 +356,90 @@ snpackx(size_t maxarglen, char *buf, int maxlen, char *id, int type, va_list ap)
     int arglen = 0;
 
     if (type > MT_EOT) {
-	warning("stream type (%d) out of range", type);
-	return 0;
+        warning("stream type (%d) out of range", type);
+        return 0;
     }
 
     if (maxlen < 2) {
-	fatal("%s:%d: maxlen too small", __FILE__, __LINE__);
+        fatal("%s:%d: maxlen too small", __FILE__, __LINE__);
     } else {
-	buf[offset++] = type & 0xff;
+        buf[offset++] = type & 0xff;
     }
 
     if (id) {
-	arglen = MIN(strlen(id), SYMON_PS_ARGLENV2 - 1);
+        arglen = MIN(strlen(id), SYMON_PS_ARGLENV2 - 1);
     } else {
-	id = "\0";
-	arglen = 1;
+        id = "\0";
+        arglen = 1;
     }
 
     if (checklen(maxlen, offset, arglen)) {
-	return offset;
+        return offset;
     } else {
-	strncpy(&buf[offset], id, arglen);
-	offset += arglen + 1;
+        strncpy(&buf[offset], id, arglen);
+        offset += arglen + 1;
     }
 
     while (streamform[type].form[i] != '\0') {
-	if (checklen(maxlen, offset, bytelenvar(streamform[type].form[i])))
-	    return offset;
+        if (checklen(maxlen, offset, bytelenvar(streamform[type].form[i])))
+            return offset;
 
-	/*
-	 * all values smaller than 32 bytes are transferred using ints on the
-	 * stack. This is to ensure that we get the correct value, if the
-	 * compiler decided to upgrade our short to a 32bit int. -- cheers
-	 * dhartmei@openbsd.org
-	 */
-	switch (streamform[type].form[i]) {
-	case 'b':
-	    b = va_arg(ap, int);
-	    buf[offset++] = b;
-	    break;
+        /*
+         * all values smaller than 32 bytes are transferred using ints on the
+         * stack. This is to ensure that we get the correct value, if the
+         * compiler decided to upgrade our short to a 32bit int. -- cheers
+         * dhartmei@openbsd.org
+         */
+        switch (streamform[type].form[i]) {
+        case 'b':
+            b = va_arg(ap, int);
+            buf[offset++] = b;
+            break;
 
-	case 'c':
-	    D = va_arg(ap, double);
-	    c = (u_int16_t) (D * 100.0);
-	    c = htons(c);
-	    bcopy(&c, buf + offset, sizeof(u_int16_t));
-	    offset += sizeof(u_int16_t);
-	    break;
+        case 'c':
+            D = va_arg(ap, double);
+            c = (u_int16_t) (D * 100.0);
+            c = htons(c);
+            bcopy(&c, buf + offset, sizeof(u_int16_t));
+            offset += sizeof(u_int16_t);
+            break;
 
-	case 's':
-	    s = va_arg(ap, int);
-	    s = htons(s);
-	    bcopy(&s, buf + offset, sizeof(u_int16_t));
-	    offset += sizeof(u_int16_t);
-	    break;
+        case 's':
+            s = va_arg(ap, int);
+            s = htons(s);
+            bcopy(&s, buf + offset, sizeof(u_int16_t));
+            offset += sizeof(u_int16_t);
+            break;
 
-	case 'l':
-	    l = va_arg(ap, u_int32_t);
-	    l = htonl(l);
-	    bcopy(&l, buf + offset, sizeof(u_int32_t));
-	    offset += sizeof(u_int32_t);
-	    break;
+        case 'l':
+            l = va_arg(ap, u_int32_t);
+            l = htonl(l);
+            bcopy(&l, buf + offset, sizeof(u_int32_t));
+            offset += sizeof(u_int32_t);
+            break;
 
-	case 'L':
-	    q = va_arg(ap, u_int64_t);
-	    q = htonq(q);
-	    bcopy(&q, buf + offset, sizeof(u_int64_t));
-	    offset += sizeof(u_int64_t);
-	    break;
+        case 'L':
+            q = va_arg(ap, u_int64_t);
+            q = htonq(q);
+            bcopy(&q, buf + offset, sizeof(u_int64_t));
+            offset += sizeof(u_int64_t);
+            break;
 
-	case 'D':
-	    D = va_arg(ap, double);
-	    d = (int64_t) (D * 1000 * 1000);
-	    d = htonq(d);
-	    bcopy(&d, buf + offset, sizeof(int64_t));
-	    offset += sizeof(int64_t);
-	    break;
+        case 'D':
+            D = va_arg(ap, double);
+            d = (int64_t) (D * 1000 * 1000);
+            d = htonq(d);
+            bcopy(&d, buf + offset, sizeof(int64_t));
+            offset += sizeof(int64_t);
+            break;
 
-	default:
-	    warning("unknown stream format identifier %c in type %d",
-		    streamform[type].form[i],
-		    type);
-	    return 0;
-	}
-	i++;
+        default:
+            warning("unknown stream format identifier %c in type %d",
+                    streamform[type].form[i],
+                    type);
+            return 0;
+        }
+        i++;
     }
 
     return offset;
@@ -485,78 +485,78 @@ sunpackx(size_t arglen, char *buf, struct packedstream *ps)
     in = buf;
 
     if ((*in) > MT_EOT) {
-	warning("unpack failure: stream type (%d) out of range", (*in));
-	return -1;
+        warning("unpack failure: stream type (%d) out of range", (*in));
+        return -1;
     }
 
     type = ps->type = (*in);
     in++;
     if ((*in) != '\0') {
-	strncpy(ps->arg, in, arglen);
-	ps->arg[arglen - 1] = '\0';
-	in += strlen(ps->arg) + 1;
+        strncpy(ps->arg, in, arglen);
+        ps->arg[arglen - 1] = '\0';
+        in += strlen(ps->arg) + 1;
     } else {
-	ps->arg[0] = '\0';
-	in++;
+        ps->arg[0] = '\0';
+        in++;
     }
 
     out = (char *) (&ps->data);
 
     while (streamform[type].form[i] != '\0') {
-	switch (streamform[type].form[i]) {
-	case 'b':
-	    bcopy((void *) in, (void *) out, sizeof(u_int8_t));
-	    in++;
-	    out++;
-	    break;
+        switch (streamform[type].form[i]) {
+        case 'b':
+            bcopy((void *) in, (void *) out, sizeof(u_int8_t));
+            in++;
+            out++;
+            break;
 
-	case 'c':
-	    bcopy((void *) in, &c, sizeof(u_int16_t));
-	    c = ntohs(c);
-	    bcopy(&c, (void *) out, sizeof(u_int16_t));
-	    in += sizeof(u_int16_t);
-	    out += sizeof(u_int16_t);
-	    break;
+        case 'c':
+            bcopy((void *) in, &c, sizeof(u_int16_t));
+            c = ntohs(c);
+            bcopy(&c, (void *) out, sizeof(u_int16_t));
+            in += sizeof(u_int16_t);
+            out += sizeof(u_int16_t);
+            break;
 
-	case 's':
-	    bcopy((void *) in, &s, sizeof(u_int16_t));
-	    s = ntohs(s);
-	    bcopy(&s, (void *) out, sizeof(u_int16_t));
-	    in += sizeof(u_int16_t);
-	    out += sizeof(u_int16_t);
-	    break;
+        case 's':
+            bcopy((void *) in, &s, sizeof(u_int16_t));
+            s = ntohs(s);
+            bcopy(&s, (void *) out, sizeof(u_int16_t));
+            in += sizeof(u_int16_t);
+            out += sizeof(u_int16_t);
+            break;
 
-	case 'l':
-	    bcopy((void *) in, &l, sizeof(u_int32_t));
-	    l = ntohl(l);
-	    bcopy(&l, (void *) out, sizeof(u_int32_t));
-	    in += sizeof(u_int32_t);
-	    out += sizeof(u_int32_t);
-	    break;
+        case 'l':
+            bcopy((void *) in, &l, sizeof(u_int32_t));
+            l = ntohl(l);
+            bcopy(&l, (void *) out, sizeof(u_int32_t));
+            in += sizeof(u_int32_t);
+            out += sizeof(u_int32_t);
+            break;
 
-	case 'L':
-	    bcopy((void *) in, &q, sizeof(u_int64_t));
-	    q = ntohq(q);
-	    bcopy(&q, (void *) out, sizeof(u_int64_t));
-	    in += sizeof(u_int64_t);
-	    out += sizeof(u_int64_t);
-	    break;
+        case 'L':
+            bcopy((void *) in, &q, sizeof(u_int64_t));
+            q = ntohq(q);
+            bcopy(&q, (void *) out, sizeof(u_int64_t));
+            in += sizeof(u_int64_t);
+            out += sizeof(u_int64_t);
+            break;
 
-	case 'D':
-	    bcopy((void *) in, &d, sizeof(int64_t));
-	    d = ntohq(d);
-	    bcopy(&d, (void *) out, sizeof(int64_t));
-	    in += sizeof(int64_t);
-	    out += sizeof(int64_t);
-	    break;
+        case 'D':
+            bcopy((void *) in, &d, sizeof(int64_t));
+            d = ntohq(d);
+            bcopy(&d, (void *) out, sizeof(int64_t));
+            in += sizeof(int64_t);
+            out += sizeof(int64_t);
+            break;
 
-	default:
-	    warning("unknown stream format identifier %c in type %d",
-		    streamform[type].form[i],
-		    type);
-	    return 0;
-	}
-	i++;
+        default:
+            warning("unknown stream format identifier %c in type %d",
+                    streamform[type].form[i],
+                    type);
+            return 0;
+        }
+        i++;
     }
     return (in - buf);
 }
@@ -580,68 +580,68 @@ ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
     out = (char *) buf;
 
     while ((vartype = streamform[ps->type].form[i]) != '\0') {
-	/* check buffer overflow */
-	if (checklen(maxlen, (out - buf), strlenvar(vartype)))
-	    return 0;
+        /* check buffer overflow */
+        if (checklen(maxlen, (out - buf), strlenvar(vartype)))
+            return 0;
 
-	switch (pretty) {
-	case PS2STR_PRETTY:
-	    formatstr = formatstrvar(vartype);
-	    break;
-	case PS2STR_RRD:
-	    formatstr = rrdstrvar(vartype);
-	    break;
-	default:
-	    warning("%s:%d: unknown pretty identifier", __FILE__, __LINE__);
-	    return 0;
-	}
+        switch (pretty) {
+        case PS2STR_PRETTY:
+            formatstr = formatstrvar(vartype);
+            break;
+        case PS2STR_RRD:
+            formatstr = rrdstrvar(vartype);
+            break;
+        default:
+            warning("%s:%d: unknown pretty identifier", __FILE__, __LINE__);
+            return 0;
+        }
 
-	switch (vartype) {
-	case 'b':
-	    bcopy(in, &b, sizeof(u_int8_t));
-	    snprintf(out, strlenvar(vartype), formatstr, b);
-	    in++;
-	    break;
+        switch (vartype) {
+        case 'b':
+            bcopy(in, &b, sizeof(u_int8_t));
+            snprintf(out, strlenvar(vartype), formatstr, b);
+            in++;
+            break;
 
-	case 'c':
-	    bcopy(in, &c, sizeof(u_int16_t));
-	    D = (double) c / 100.0;
-	    snprintf(out, strlenvar(vartype), formatstr, D);
-	    in += sizeof(u_int16_t);
-	    break;
+        case 'c':
+            bcopy(in, &c, sizeof(u_int16_t));
+            D = (double) c / 100.0;
+            snprintf(out, strlenvar(vartype), formatstr, D);
+            in += sizeof(u_int16_t);
+            break;
 
-	case 's':
-	    bcopy(in, &s, sizeof(u_int16_t));
-	    snprintf(out, strlenvar(vartype), formatstr, s);
-	    in += sizeof(u_int16_t);
-	    break;
+        case 's':
+            bcopy(in, &s, sizeof(u_int16_t));
+            snprintf(out, strlenvar(vartype), formatstr, s);
+            in += sizeof(u_int16_t);
+            break;
 
-	case 'l':
-	    bcopy(in, &l, sizeof(u_int32_t));
-	    snprintf(out, strlenvar(vartype), formatstr, l);
-	    in += sizeof(u_int32_t);
-	    break;
+        case 'l':
+            bcopy(in, &l, sizeof(u_int32_t));
+            snprintf(out, strlenvar(vartype), formatstr, l);
+            in += sizeof(u_int32_t);
+            break;
 
-	case 'L':
-	    bcopy(in, &q, sizeof(u_int64_t));
-	    snprintf(out, strlenvar(vartype), formatstr, q);
-	    in += sizeof(u_int64_t);
-	    break;
+        case 'L':
+            bcopy(in, &q, sizeof(u_int64_t));
+            snprintf(out, strlenvar(vartype), formatstr, q);
+            in += sizeof(u_int64_t);
+            break;
 
-	case 'D':
-	    bcopy(in, &d, sizeof(int64_t));
-	    D = (double) (d / 1000.0 / 1000.0);
-	    snprintf(out, strlenvar(vartype), formatstr, D);
-	    in += sizeof(int64_t);
-	    break;
+        case 'D':
+            bcopy(in, &d, sizeof(int64_t));
+            D = (double) (d / 1000.0 / 1000.0);
+            snprintf(out, strlenvar(vartype), formatstr, D);
+            in += sizeof(int64_t);
+            break;
 
 
-	default:
-	    warning("unknown stream format identifier %c", vartype);
-	    return 0;
-	}
-	out += strlen(out);
-	i++;
+        default:
+            warning("unknown stream format identifier %c", vartype);
+            return 0;
+        }
+        out += strlen(out);
+        i++;
     }
     return (out - buf);
 }
@@ -651,14 +651,14 @@ create_stream(int type, char *args)
     struct stream *p;
 
     if (type < 0 || type >= MT_EOT)
-	fatal("%s:%d: internal error: stream type unknown", __FILE__, __LINE__);
+        fatal("%s:%d: internal error: stream type unknown", __FILE__, __LINE__);
 
     p = (struct stream *) xmalloc(sizeof(struct stream));
     bzero(p, sizeof(struct stream));
     p->type = type;
 
     if (args != NULL)
-	p->arg = xstrdup(args);
+        p->arg = xstrdup(args);
 
     return p;
 }
@@ -669,13 +669,13 @@ find_source_stream(struct source * source, int type, char *args)
     struct stream *p;
 
     if (source == NULL || args == NULL)
-	return NULL;
+        return NULL;
 
     SLIST_FOREACH(p, &source->sl, streams) {
-	if (((void *) p != NULL) && (p->type == type)
-	    && (((void *) args != (void *) p)
-		&& strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
-	    return p;
+        if (((void *) p != NULL) && (p->type == type)
+            && (((void *) args != (void *) p)
+                && strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
+            return p;
     }
 
     return NULL;
@@ -687,10 +687,10 @@ add_source_stream(struct source * source, int type, char *args)
     struct stream *p;
 
     if (source == NULL)
-	return NULL;
+        return NULL;
 
     if (find_source_stream(source, type, args) != NULL)
-	return NULL;
+        return NULL;
 
     p = create_stream(type, args);
 
@@ -705,13 +705,13 @@ find_mux_stream(struct mux * mux, int type, char *args)
     struct stream *p;
 
     if (mux == NULL || args == NULL)
-	return NULL;
+        return NULL;
 
     SLIST_FOREACH(p, &mux->sl, streams) {
-	if (((void *) p != NULL) && (p->type == type)
-	    && (((void *) args != (void *) p)
-		&& strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
-	    return p;
+        if (((void *) p != NULL) && (p->type == type)
+            && (((void *) args != (void *) p)
+                && strncmp(args, p->arg, _POSIX2_LINE_MAX) == 0))
+            return p;
     }
 
     return NULL;
@@ -723,10 +723,10 @@ add_mux_stream(struct mux * mux, int type, char *args)
     struct stream *p;
 
     if (mux == NULL)
-	return NULL;
+        return NULL;
 
     if (find_mux_stream(mux, type, args) != NULL)
-	return NULL;
+        return NULL;
 
     p = create_stream(type, args);
 
@@ -741,12 +741,12 @@ find_source(struct sourcelist * sol, char *name)
     struct source *p;
 
     if (sol == NULL || SLIST_EMPTY(sol) || name == NULL)
-	return NULL;
+        return NULL;
 
     SLIST_FOREACH(p, sol, sources) {
-	if (((void *) p != NULL) && ((void *) name != (void *) p)
-	    && strncmp(name, p->addr, _POSIX2_LINE_MAX) == 0)
-	    return p;
+        if (((void *) p != NULL) && ((void *) name != (void *) p)
+            && strncmp(name, p->addr, _POSIX2_LINE_MAX) == 0)
+            return p;
     }
 
     return NULL;
@@ -758,11 +758,11 @@ find_source_sockaddr(struct sourcelist * sol, struct sockaddr * addr)
     struct source *p;
 
     if (sol == NULL || SLIST_EMPTY(sol))
-	return NULL;
+        return NULL;
 
     SLIST_FOREACH(p, sol, sources) {
-	if (cmpsock_addr((struct sockaddr *) & p->sockaddr, addr))
-	    return p;
+        if (cmpsock_addr((struct sockaddr *) & p->sockaddr, addr))
+            return p;
     }
 
     return NULL;
@@ -774,10 +774,10 @@ add_source(struct sourcelist * sol, char *name)
     struct source *p;
 
     if (sol == NULL)
-	return NULL;
+        return NULL;
 
     if (find_source(sol, name) != NULL)
-	return NULL;
+        return NULL;
 
     p = (struct source *) xmalloc(sizeof(struct source));
     bzero(p, sizeof(struct source));
@@ -794,12 +794,12 @@ find_mux(struct muxlist * mul, char *name)
     struct mux *p;
 
     if (mul == NULL || SLIST_EMPTY(mul) || name == NULL)
-	return NULL;
+        return NULL;
 
     SLIST_FOREACH(p, mul, muxes) {
-	if (((void *) p != NULL) && ((void *) name != (void *) p)
-	    && strncmp(name, p->name, _POSIX2_LINE_MAX) == 0)
-	    return p;
+        if (((void *) p != NULL) && ((void *) name != (void *) p)
+            && strncmp(name, p->name, _POSIX2_LINE_MAX) == 0)
+            return p;
     }
 
     return NULL;
@@ -811,10 +811,10 @@ add_mux(struct muxlist * mul, char *name)
     struct mux *p;
 
     if (mul == NULL)
-	return NULL;
+        return NULL;
 
     if (find_mux(mul, name) != NULL)
-	return NULL;
+        return NULL;
 
     p = (struct mux *) xmalloc(sizeof(struct mux));
     bzero(p, sizeof(struct mux));
@@ -829,13 +829,13 @@ struct mux *
 rename_mux(struct muxlist * mul, struct mux * mux, char *name)
 {
     if (mul == NULL || mux == NULL)
-	return NULL;
+        return NULL;
 
     if (find_mux(mul, name) != NULL)
-	return NULL;
+        return NULL;
 
     if (mux->name != NULL)
-	xfree(mux->name);
+        xfree(mux->name);
 
     mux->name = xstrdup(name);
 
@@ -848,31 +848,31 @@ free_muxlist(struct muxlist * mul)
     int i;
 
     if (mul == NULL || SLIST_EMPTY(mul))
-	return;
+        return;
 
     p = SLIST_FIRST(mul);
 
     while (p) {
-	np = SLIST_NEXT(p, muxes);
+        np = SLIST_NEXT(p, muxes);
 
-	if (p->name != NULL)
-	    xfree(p->name);
-	if (p->addr != NULL)
-	    xfree(p->addr);
-	if (p->port != NULL)
-	    xfree(p->port);
+        if (p->name != NULL)
+            xfree(p->name);
+        if (p->addr != NULL)
+            xfree(p->addr);
+        if (p->port != NULL)
+            xfree(p->port);
 
-	close(p->clientsocket);
-	close(p->symuxsocket);
-	for (i = 0; i < AF_MAX; i++)
-	    if (p->symonsocket[i])
-		close(p->symonsocket[i]);
+        close(p->clientsocket);
+        close(p->symuxsocket);
+        for (i = 0; i < AF_MAX; i++)
+            if (p->symonsocket[i])
+                close(p->symonsocket[i]);
 
-	free_streamlist(&p->sl);
-	free_sourcelist(&p->sol);
-	xfree(p);
+        free_streamlist(&p->sl);
+        free_sourcelist(&p->sol);
+        xfree(p);
 
-	p = np;
+        p = np;
     }
 }
 void
@@ -881,20 +881,20 @@ free_streamlist(struct streamlist * sl)
     struct stream *p, *np;
 
     if (sl == NULL || SLIST_EMPTY(sl))
-	return;
+        return;
 
     p = SLIST_FIRST(sl);
 
     while (p) {
-	np = SLIST_NEXT(p, streams);
+        np = SLIST_NEXT(p, streams);
 
-	if (p->arg != NULL)
-	    xfree(p->arg);
-	if (p->file != NULL)
-	    xfree(p->file);
-	xfree(p);
+        if (p->arg != NULL)
+            xfree(p->arg);
+        if (p->file != NULL)
+            xfree(p->file);
+        xfree(p);
 
-	p = np;
+        p = np;
     }
 }
 void
@@ -903,20 +903,20 @@ free_sourcelist(struct sourcelist * sol)
     struct source *p, *np;
 
     if (sol == NULL || SLIST_EMPTY(sol))
-	return;
+        return;
 
     p = SLIST_FIRST(sol);
 
     while (p) {
-	np = SLIST_NEXT(p, sources);
+        np = SLIST_NEXT(p, sources);
 
-	if (p->addr != NULL)
-	    xfree(p->addr);
+        if (p->addr != NULL)
+            xfree(p->addr);
 
-	free_streamlist(&p->sl);
-	xfree(p);
+        free_streamlist(&p->sl);
+        xfree(p);
 
-	p = np;
+        p = np;
     }
 }
 /* Calculate maximum buffer space needed for a single symon hit */
@@ -937,16 +937,16 @@ calculate_churnbuffer(struct sourcelist * sol)
 
     /* determine maximum string size for a single source */
     SLIST_FOREACH(source, sol, sources) {
-	len = snprintf(&buf[0], _POSIX2_LINE_MAX, "%s;", source->addr);
-	SLIST_FOREACH(stream, &source->sl, streams) {
-	    len += strlen(type2str(stream->type)) + strlen(":");
-	    len += strlen(stream->arg) + strlen(":");
-	    len += (sizeof(time_t) * 3) + strlen(":"); /* 3 > ln(255) / ln(10) */
-	    len += strlentype(stream->type);
-	    n++;
-	}
-	if (len > maxlen)
-	    maxlen = len;
+        len = snprintf(&buf[0], _POSIX2_LINE_MAX, "%s;", source->addr);
+        SLIST_FOREACH(stream, &source->sl, streams) {
+            len += strlen(type2str(stream->type)) + strlen(":");
+            len += strlen(stream->arg) + strlen(":");
+            len += (sizeof(time_t) * 3) + strlen(":"); /* 3 > ln(255) / ln(10) */
+            len += strlentype(stream->type);
+            n++;
+        }
+        if (len > maxlen)
+            maxlen = len;
     }
     return maxlen;
 }
@@ -959,7 +959,7 @@ crc32(const void *buf, unsigned int len)
 
     crc = 0xffffffff;
     for (p = (u_int8_t *) buf; len > 0; ++p, --len)
-	crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
+        crc = (crc << 8) ^ crc32_table[(crc >> 24) ^ *p];
 
     return ~crc;
 }
@@ -971,9 +971,9 @@ init_crc32()
     u_int32_t c;
 
     for (i = 0; i < 256; ++i) {
-	c = i << 24;
-	for (j = 8; j > 0; --j)
-	    c = c & 0x80000000 ? (c << 1) ^ SYMON_CRCPOLY : (c << 1);
-	crc32_table[i] = c;
+        c = i << 24;
+        for (j = 8; j > 0; --j)
+            c = c & 0x80000000 ? (c << 1) ^ SYMON_CRCPOLY : (c << 1);
+        crc32_table[i] = c;
     }
 }

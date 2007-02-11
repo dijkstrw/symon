@@ -1,4 +1,4 @@
-/* $Id: sylimits.h,v 1.5 2007/01/20 12:52:46 dijkstra Exp $ */
+/* $Id: sylimits.h,v 1.6 2007/02/11 20:07:31 dijkstra Exp $ */
 
 #ifndef _LIB_LIMITS_H
 #define _LIB_LIMITS_H
@@ -8,7 +8,7 @@
 #define SYMON_PS_ARGLENSTRV2   "63"     /* maximum number of chars in an v2 argument, as str */
 #define SYMON_WARN_SENDERR     50       /* warn every x errors */
 #define SYMON_MAX_DOBJECTS     10000    /* max dynamic allocation; local limit per
-					 * measurement module */
+                                         * measurement module */
 #define SYMON_MAX_OBJSIZE      (_POSIX2_LINE_MAX)
 #define SYMON_SENSORMASK       0xFF     /* sensors 0-255 are allowed */
 #define SYMON_MAXDEBUGID       20       /* = CTL_DEBUG_MAXID; depends lib/data.h */

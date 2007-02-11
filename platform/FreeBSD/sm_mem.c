@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.9 2006/06/27 18:53:58 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.10 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -79,20 +79,20 @@ init_mem(struct stream *st)
     me_pagesize = sysconf(_SC_PAGESIZE);
     me_pageshift = 0;
     while (me_pagesize > 1) {
-	me_pageshift++;
-	me_pagesize >>= 1;
+        me_pageshift++;
+        me_pagesize >>= 1;
     }
 
     me_vmnswp_mib_len = CTL_MAXNAME;
     if (sysctlnametomib(me_vmnswp_mib_str, me_vmnswp_mib_nam, &me_vmnswp_mib_len) < 0) {
-	warning("sysctlnametomib for nswapdev failed");
-	me_vmnswp_mib_len = 0;
+        warning("sysctlnametomib for nswapdev failed");
+        me_vmnswp_mib_len = 0;
     }
 
     me_vmiswp_mib_len = CTL_MAXNAME;
     if (sysctlnametomib(me_vmiswp_mib_str, me_vmiswp_mib_nam, &me_vmiswp_mib_len) < 0) {
-	warning("sysctlnametomib for swap_info failed");
-	me_vmiswp_mib_len = 0;
+        warning("sysctlnametomib for swap_info failed");
+        me_vmiswp_mib_len = 0;
     }
 
     info("started module mem(%.200s)", st->arg);
@@ -113,8 +113,8 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
 #endif
 
     if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
-	warning("%s:%d: sysctl failed", __FILE__, __LINE__);
-	bzero(&me_vmtotal, sizeof(me_vmtotal));
+        warning("%s:%d: sysctl failed", __FILE__, __LINE__);
+        bzero(&me_vmtotal, sizeof(me_vmtotal));
     }
 
     /* convert memory stats to Kbytes */
@@ -126,21 +126,21 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
 #ifdef HAS_XSWDEV
     vmnswp_siz = sizeof (int);
     if (sysctl(me_vmnswp_mib_nam, me_vmnswp_mib_len, &vmnswp_dat, (void *)&vmnswp_siz, NULL, 0) < 0) {
-	warning("%s:%d: sysctl nswapdev failed", __FILE__, __LINE__);
-	vmnswp_dat = 0;
+        warning("%s:%d: sysctl nswapdev failed", __FILE__, __LINE__);
+        vmnswp_dat = 0;
     }
     for (i = 0; i < vmnswp_dat; i++) {
-	struct xswdev vmiswp_dat;
-	int vmiswp_siz = sizeof(vmiswp_dat);
-	me_vmiswp_mib_nam[me_vmiswp_mib_len] = i;
-	if (sysctl(me_vmiswp_mib_nam, me_vmiswp_mib_len + 1, &vmiswp_dat, (void *)&vmiswp_siz, NULL, 0) < 0)
-		continue;
-	me_stats[3] += pagetob(vmiswp_dat.xsw_used);
-	me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
+        struct xswdev vmiswp_dat;
+        int vmiswp_siz = sizeof(vmiswp_dat);
+        me_vmiswp_mib_nam[me_vmiswp_mib_len] = i;
+        if (sysctl(me_vmiswp_mib_nam, me_vmiswp_mib_len + 1, &vmiswp_dat, (void *)&vmiswp_siz, NULL, 0) < 0)
+                continue;
+        me_stats[3] += pagetob(vmiswp_dat.xsw_used);
+        me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
     }
 #endif
 
     return snpack(symon_buf, maxlen, st->arg, MT_MEM,
-		  me_stats[0], me_stats[1], me_stats[2],
-		  me_stats[3], me_stats[4]);
+                  me_stats[0], me_stats[1], me_stats[2],
+                  me_stats[3], me_stats[4]);
 }

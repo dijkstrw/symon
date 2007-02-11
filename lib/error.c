@@ -1,4 +1,4 @@
-/* $Id: error.c,v 1.13 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: error.c,v 1.14 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -81,29 +81,29 @@ output_message(int level, char *fmt, va_list args)
     int loglevel;
 
     if (level == SYMON_LOG_DEBUG && flag_debug == 0)
-	return;
+        return;
 
     vsnprintf(msgbuf, sizeof(msgbuf), fmt, args);
 
     for (loglevel = 0; logmapping[loglevel].type != -1; loglevel++) {
-	if (logmapping[loglevel].type == level)
-	    break;
+        if (logmapping[loglevel].type == level)
+            break;
     }
 
     if (logmapping[loglevel].type == -1)
-	fatal("%s:%d:internal error: illegal loglevel encountered",
-	      __FILE__, __LINE__);
+        fatal("%s:%d:internal error: illegal loglevel encountered",
+              __FILE__, __LINE__);
 
     if (flag_daemon) {
-	syslog(logmapping[loglevel].priority, msgbuf);
+        syslog(logmapping[loglevel].priority, msgbuf);
     } else {
-	if (strlen(logmapping[loglevel].errtxt) > 0) {
-	    fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s: %.200s\n",
-		    logmapping[loglevel].errtxt, msgbuf);
-	} else
-	    fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s\n", msgbuf);
+        if (strlen(logmapping[loglevel].errtxt) > 0) {
+            fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s: %.200s\n",
+                    logmapping[loglevel].errtxt, msgbuf);
+        } else
+            fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s\n", msgbuf);
 
-	fflush(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout);
+        fflush(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout);
     }
 }
 /* Output error and exit */

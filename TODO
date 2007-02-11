@@ -1,6 +1,9 @@
 TODO:
 
 == current problems / short term
+   - symux queues rrd values for a particular time. Cheers to Jean-Gérard
+     Pailloncy for the suggestion.
+
 - rewrite sm_proc.c, don't count shared pages twice
 - remove mon packet limit
 - check shared memory for hackable bugs. (master should only write, clients
@@ -11,4 +14,4 @@ TODO:
 - write a muxer that supports unix pipes
 - test framework
 
-$Id: TODO,v 1.27 2004/08/07 12:21:36 dijkstra Exp $
+$Id: TODO,v 1.28 2007/02/11 20:07:31 dijkstra Exp $

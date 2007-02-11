@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.3 2005/10/19 20:06:05 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Harm Schotanus
@@ -58,8 +58,8 @@ void
 init_mem(struct stream *st)
 {
     if (me_buf == NULL) {
-	me_maxsize = SYMON_MAX_OBJSIZE;
-	me_buf = xmalloc(me_maxsize);
+        me_maxsize = SYMON_MAX_OBJSIZE;
+        me_buf = xmalloc(me_maxsize);
     }
 
     info("started module mem(%.200s)", st->arg);
@@ -70,7 +70,7 @@ gets_mem()
 {
    int fd;
    if ((fd = open("/proc/meminfo", O_RDONLY)) < 0) {
-	warning("cannot access /proc/meminfo: %.200s", strerror(errno));
+        warning("cannot access /proc/meminfo: %.200s", strerror(errno));
    }
 
    bzero(me_buf, me_maxsize);
@@ -78,15 +78,15 @@ gets_mem()
    close(fd);
 
    if (me_size == me_maxsize) {
-	/* buffer is too small to hold all memory data */
-	me_maxsize += SYMON_MAX_OBJSIZE;
-	if (me_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for cp data",
-		__FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
-	}
-	me_buf = xrealloc(me_buf, me_maxsize);
-	gets_mem();
-	return;
+        /* buffer is too small to hold all memory data */
+        me_maxsize += SYMON_MAX_OBJSIZE;
+        if (me_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for cp data",
+                __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+        }
+        me_buf = xrealloc(me_buf, me_maxsize);
+        gets_mem();
+        return;
     }
 
    if (me_size == -1) {
@@ -101,20 +101,20 @@ mem_getitem(char *name)
     char *line;
 
     if (me_size <= 0) {
-	return 0;
+        return 0;
     }
 
     if ((line = strstr(me_buf, name)) == NULL) {
-	warning("could not find %s in /proc/meminfo", name);
-	return 0;
+        warning("could not find %s in /proc/meminfo", name);
+        return 0;
     }
 
     line += strlen(name);
     if (1 < sscanf(line, ": %lu Kb", &stat)) {
-	warning("could not parse memory statistics");
-	return 0;
+        warning("could not parse memory statistics");
+        return 0;
     } else {
-	return stat;
+        return stat;
     }
 }
 
@@ -130,6 +130,6 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
     me_stats[3] = me_stats[4] - me_stats[3];
 
     return snpack(symon_buf, maxlen, st->arg, MT_MEM,
-		  me_stats[0], me_stats[1], me_stats[2],
-		  me_stats[3], me_stats[4]);
+                  me_stats[0], me_stats[1], me_stats[2],
+                  me_stats[3], me_stats[4]);
 }

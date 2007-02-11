@@ -1,4 +1,4 @@
-/* $Id: npack.c,v 1.6 2007/01/20 12:52:48 dijkstra Exp $ */
+/* $Id: npack.c,v 1.7 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /* Regression test to test marshalling and demarshalling
  *
@@ -17,19 +17,19 @@ void hexline(char *buf, int size, int width) {
     int offset = 0;
 
     while (offset < size) {
-	printf("%06x ", offset);
+        printf("%06x ", offset);
 
-	for (i=0; i < width; i++) {
-	    printf("%02x ", (buf[offset+i] & 0xff));
-	}
+        for (i=0; i < width; i++) {
+            printf("%02x ", (buf[offset+i] & 0xff));
+        }
 
-	for (i=0; i < width; i++) {
-	    printf("%c ", ((buf[offset+i] > 32)?buf[offset+i]:'.'));
-	}
+        for (i=0; i < width; i++) {
+            printf("%c ", ((buf[offset+i] > 32)?buf[offset+i]:'.'));
+        }
 
-	printf("\n");
+        printf("\n");
 
-	offset += width;
+        offset += width;
     }
 }
 
@@ -45,28 +45,28 @@ int main(int argc, char **argv)
     ps = xmalloc(sizeof(struct packedstream));
 
     ilen = snpack(buffer, _POSIX2_LINE_MAX, "123456789012345678901234567890", MT_TEST,
-		  /* test L, u_int64_t */
-		  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffffLL, (u_int64_t) 0, (u_int64_t) 0xffffff,
-		  /* test D, double */
-		  (double) 0, (double) 100000, (double) -100000, (double) -12.05,
-		  /* test l, u_int32_t */
-		  (u_int32_t) 0, (u_int32_t) 0xffffffff, (u_int32_t) 0, (u_int32_t) 0x12345678,
-		  /* test s, u_int16_t */
-		  (int) 0, (int) 0xffff, (int) 0, (int) 0x8765,
-		  /* test c, float */
-		  (double) 0.0 , (double) 100.0, (double) 0, (double) 12.34,
-		  /* test b, u_int8_t */
-		  (int) 0, (int) 0xff, (int) 0, (int) 0x12);
+                  /* test L, u_int64_t */
+                  (u_int64_t) 0, (u_int64_t) 0xffffffffffffffffLL, (u_int64_t) 0, (u_int64_t) 0xffffff,
+                  /* test D, double */
+                  (double) 0, (double) 100000, (double) -100000, (double) -12.05,
+                  /* test l, u_int32_t */
+                  (u_int32_t) 0, (u_int32_t) 0xffffffff, (u_int32_t) 0, (u_int32_t) 0x12345678,
+                  /* test s, u_int16_t */
+                  (int) 0, (int) 0xffff, (int) 0, (int) 0x8765,
+                  /* test c, float */
+                  (double) 0.0 , (double) 100.0, (double) 0, (double) 12.34,
+                  /* test b, u_int8_t */
+                  (int) 0, (int) 0xff, (int) 0, (int) 0x12);
     olen = sunpack2(buffer, ps);
 
     if (argc > 1) {
-	printf("buffer=\n");
-	hexline(buffer, ilen, 16);
-	printf("ps=\n");
-	hexline((char *)ps, olen, 16);
-	printf("ps-pretty=\n");
-	ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
-	printf("test(%s) = '%s'\n", ps->arg, str);
+        printf("buffer=\n");
+        hexline(buffer, ilen, 16);
+        printf("ps=\n");
+        hexline((char *)ps, olen, 16);
+        printf("ps-pretty=\n");
+        ps2strn(ps, str, _POSIX2_LINE_MAX, PS2STR_PRETTY);
+        printf("test(%s) = '%s'\n", ps->arg, str);
     }
 
     assert(ilen == olen);

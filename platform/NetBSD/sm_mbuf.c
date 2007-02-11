@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.3 2005/10/18 19:58:09 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2003 Daniel Hartmeier
@@ -70,8 +70,8 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     mib[2] = MBUF_STATS;
     size = sizeof(mbstat);
     if (sysctl(mib, 3, &mbstat, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-	return (0);
+        warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+        return (0);
     }
 
 #ifdef KERN_POOL
@@ -80,50 +80,50 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     mib[2] = KERN_POOL_NPOOLS;
     size = sizeof(npools);
     if (sysctl(mib, 3, &npools, &size, NULL, 0) < 0) {
-	warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-	return (0);
+        warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+        return (0);
     }
 
     for (i = 1; npools; ++i) {
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_POOL;
-	mib[2] = KERN_POOL_POOL;
-	mib[3] = i;
-	size = sizeof(pool);
-	if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-	    return (0);
-	}
-	npools--;
-	mib[2] = KERN_POOL_NAME;
-	size = sizeof(name);
-	if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
-	    warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-	    return (0);
-	}
-	if (!strcmp(name, "mbpl")) {
-	    bcopy(&pool, &mbpool, sizeof(pool));
-	    flag |= 1;
-	} else if (!strcmp(name, "mclpl")) {
-	    bcopy(&pool, &mclpool, sizeof(pool));
-	    flag |= 2;
-	}
-	if (flag == 3)
-	    break;
+        mib[0] = CTL_KERN;
+        mib[1] = KERN_POOL;
+        mib[2] = KERN_POOL_POOL;
+        mib[3] = i;
+        size = sizeof(pool);
+        if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
+            warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+            return (0);
+        }
+        npools--;
+        mib[2] = KERN_POOL_NAME;
+        size = sizeof(name);
+        if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
+            warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+            return (0);
+        }
+        if (!strcmp(name, "mbpl")) {
+            bcopy(&pool, &mbpool, sizeof(pool));
+            flag |= 1;
+        } else if (!strcmp(name, "mclpl")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            flag |= 2;
+        }
+        if (flag == 3)
+            break;
     }
     if (flag != 3) {
-	warning("mbuf(%.200s) failed (flag != 3)", st->arg);
-	return (0);
+        warning("mbuf(%.200s) failed (flag != 3)", st->arg);
+        return (0);
     }
 #endif
 
     totmbufs = 0;
     for (i = 0; i < nmbtypes; ++i)
-	totmbufs += mbstat.m_mtypes[i];
+        totmbufs += mbstat.m_mtypes[i];
 #ifdef KERN_POOL
     totmem = (mbpool.pr_npages + mclpool.pr_npages) * page_size;
     totused = (mbpool.pr_nget - mbpool.pr_nput) * mbpool.pr_size +
-	(mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+        (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
 #else
     totmem = 0;
     totused = 0;
@@ -152,19 +152,19 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     stats[14] = mbstat.m_drain;
 
     return snpack(symon_buf, maxlen, st->arg, MT_MBUF,
-		  stats[0],
-		  stats[1],
-		  stats[2],
-		  stats[3],
-		  stats[4],
-		  stats[5],
-		  stats[6],
-		  stats[7],
-		  stats[8],
-		  stats[9],
-		  stats[10],
-		  stats[11],
-		  stats[12],
-		  stats[13],
-		  stats[14]);
+                  stats[0],
+                  stats[1],
+                  stats[2],
+                  stats[3],
+                  stats[4],
+                  stats[5],
+                  stats[6],
+                  stats[7],
+                  stats[8],
+                  stats[9],
+                  stats[10],
+                  stats[11],
+                  stats[12],
+                  stats[13],
+                  stats[14]);
 }

@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.30 2007/01/20 12:52:50 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.31 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -62,63 +62,63 @@ insert_filename(char *path, int maxlen, int type, char *args)
 
     switch (type) {
     case MT_CPU:
-	ts = "cpu";
-	ta = args;
-	break;
+        ts = "cpu";
+        ta = args;
+        break;
     case MT_DF:
-	ts = "df_";
-	ta = args;
-	break;
+        ts = "df_";
+        ta = args;
+        break;
     case MT_IF:
-	ts = "if_";
-	ta = args;
-	break;
+        ts = "if_";
+        ta = args;
+        break;
     case MT_IO2:
-	ts = "io_";
-	ta = args;
-	break;
+        ts = "io_";
+        ta = args;
+        break;
     case MT_IO1:
-	ts = "io1_";
-	ta = args;
-	break;
+        ts = "io1_";
+        ta = args;
+        break;
     case MT_MEM:
-	ts = "mem";
-	ta = "";
-	break;
+        ts = "mem";
+        ta = "";
+        break;
     case MT_PF:
-	ts = "pf";
-	ta = "";
-	break;
+        ts = "pf";
+        ta = "";
+        break;
     case MT_PFQ:
-	ts  = "pfq_";
-	ta = args;
-	break;
+        ts  = "pfq_";
+        ta = args;
+        break;
     case MT_MBUF:
-	ts = "mbuf";
-	ta = "";
-	break;
+        ts = "mbuf";
+        ta = "";
+        break;
     case MT_DEBUG:
-	ts = "debug";
-	ta = "";
-	break;
+        ts = "debug";
+        ta = "";
+        break;
     case MT_PROC:
-	ts = "proc_";
-	ta = args;
-	break;
+        ts = "proc_";
+        ta = args;
+        break;
     case MT_SENSOR:
-	ts = "sensor";
-	ta = args;
-	break;
+        ts = "sensor";
+        ta = args;
+        break;
     default:
-	warning("%.200s:%d: internal error: type (%d) unknown",
-		__FILE__, __LINE__, type);
-	return 0;
+        warning("%.200s:%d: internal error: type (%d) unknown",
+                __FILE__, __LINE__, type);
+        return 0;
     }
 
     if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen) {
-	return 0;
+        return 0;
     } else {
-	return 1;
+        return 1;
     }
 }
 /* mux <host> (port|,| ) <number> */
@@ -129,16 +129,16 @@ read_mux(struct muxlist * mul, struct lex * l)
     struct mux *mux;
 
     if (!SLIST_EMPTY(mul)) {
-	warning("%.200s:%d: only one mux statement allowed",
-		l->filename, l->cline);
-	return 0;
+        warning("%.200s:%d: only one mux statement allowed",
+                l->filename, l->cline);
+        return 0;
     }
 
     lex_nexttoken(l);
     if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
-	warning("%.200s:%d: could not resolve '%s'",
-		l->filename, l->cline, l->token);
-	return 0;
+        warning("%.200s:%d: could not resolve '%s'",
+                l->filename, l->cline, l->token);
+        return 0;
     }
 
     mux = add_mux(mul, SYMON_UNKMUX);
@@ -148,20 +148,20 @@ read_mux(struct muxlist * mul, struct lex * l)
     lex_nexttoken(l);
 
     if (l->op == LXT_PORT || l->op == LXT_COMMA)
-	lex_nexttoken(l);
+        lex_nexttoken(l);
 
     if (l->type != LXY_NUMBER) {
-	lex_ungettoken(l);
-	mux->port = xstrdup(default_symux_port);
+        lex_ungettoken(l);
+        mux->port = xstrdup(default_symux_port);
     } else {
-	mux->port = xstrdup((const char *) l->token);
+        mux->port = xstrdup((const char *) l->token);
     }
 
     bzero(&muxname, sizeof(muxname));
     snprintf(&muxname[0], sizeof(muxname), "%s %s", mux->addr, mux->port);
 
     if (rename_mux(mul, mux, muxname) == NULL)
-	fatal("%s:%d: internal error: dual mux", __FILE__, __LINE__);
+        fatal("%s:%d: internal error: dual mux", __FILE__, __LINE__);
 
     return 1;
 }
@@ -182,90 +182,90 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
     /* get hostname */
     lex_nexttoken(l);
     if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
-	warning("%.200s:%d: could not resolve '%s'",
-		l->filename, l->cline, l->token);
-	return 0;
+        warning("%.200s:%d: could not resolve '%s'",
+                l->filename, l->cline, l->token);
+        return 0;
     }
 
     source = add_source(sol, res_host);
 
     EXPECT(l, LXT_BEGIN);
     while (lex_nexttoken(l)) {
-	switch (l->op) {
-	    /* accept { cpu(x), ... } */
-	case LXT_ACCEPT:
-	    EXPECT(l, LXT_BEGIN);
-	    while (lex_nexttoken(l) && l->op != LXT_END) {
-		switch (l->op) {
-		case LXT_CPU:
-		case LXT_DF:
-		case LXT_IF:
-		case LXT_IO:
-		case LXT_IO1:
-		case LXT_MEM:
-		case LXT_PF:
-		case LXT_PFQ:
-		case LXT_MBUF:
-		case LXT_DEBUG:
-		case LXT_PROC:
-		case LXT_SENSOR:
-		    st = token2type(l->op);
-		    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
+        switch (l->op) {
+            /* accept { cpu(x), ... } */
+        case LXT_ACCEPT:
+            EXPECT(l, LXT_BEGIN);
+            while (lex_nexttoken(l) && l->op != LXT_END) {
+                switch (l->op) {
+                case LXT_CPU:
+                case LXT_DF:
+                case LXT_IF:
+                case LXT_IO:
+                case LXT_IO1:
+                case LXT_MEM:
+                case LXT_PF:
+                case LXT_PFQ:
+                case LXT_MBUF:
+                case LXT_DEBUG:
+                case LXT_PROC:
+                case LXT_SENSOR:
+                    st = token2type(l->op);
+                    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
-		    /* parse arg */
-		    lex_nexttoken(l);
-		    if (l->op == LXT_OPEN) {
-			lex_nexttoken(l);
-			if (l->op == LXT_CLOSE) {
-			    parse_error(l, "<stream argument>");
-			    return 0;
-			}
+                    /* parse arg */
+                    lex_nexttoken(l);
+                    if (l->op == LXT_OPEN) {
+                        lex_nexttoken(l);
+                        if (l->op == LXT_CLOSE) {
+                            parse_error(l, "<stream argument>");
+                            return 0;
+                        }
 
-			strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
-			lex_nexttoken(l);
+                        strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
+                        lex_nexttoken(l);
 
-			if (l->op != LXT_CLOSE) {
-			    parse_error(l, ")");
-			    return 0;
-			}
-		    } else {
-			lex_ungettoken(l);
-			sa[0] = '\0';
-		    }
+                        if (l->op != LXT_CLOSE) {
+                            parse_error(l, ")");
+                            return 0;
+                        }
+                    } else {
+                        lex_ungettoken(l);
+                        sa[0] = '\0';
+                    }
 
-		    if (strlen(sa) > (SYMON_PS_ARGLENV2 - 1)) {
-			warning("%.200s:%d: argument '%.200s' too long for network format, "
-				"will accept initial " SYMON_PS_ARGLENSTRV2 " chars only",
-				l->filename, l->cline, sa);
-			sa[SYMON_PS_ARGLENV2 - 1] = '\0';
-		    }
+                    if (strlen(sa) > (SYMON_PS_ARGLENV2 - 1)) {
+                        warning("%.200s:%d: argument '%.200s' too long for network format, "
+                                "will accept initial " SYMON_PS_ARGLENSTRV2 " chars only",
+                                l->filename, l->cline, sa);
+                        sa[SYMON_PS_ARGLENV2 - 1] = '\0';
+                    }
 
-		    if ((stream = add_source_stream(source, st, sa)) == NULL) {
-			warning("%.200s:%d: stream %.200s(%.200s) redefined",
-				l->filename, l->cline, sn, sa);
-			return 0;
-		    }
+                    if ((stream = add_source_stream(source, st, sa)) == NULL) {
+                        warning("%.200s:%d: stream %.200s(%.200s) redefined",
+                                l->filename, l->cline, sn, sa);
+                        return 0;
+                    }
 
-		    break;	/* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC */
-		case LXT_COMMA:
-		    break;
-		default:
-		    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor}");
-		    return 0;
+                    break;      /* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC */
+                case LXT_COMMA:
+                    break;
+                default:
+                    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor}");
+                    return 0;
 
-		    break;
-		}
-	    }
-	    break;		/* LXT_ACCEPT */
-	    /* datadir "path" */
-	case LXT_DATADIR:
-	    lex_nexttoken(l);
-	    /* is path absolute */
-	    if (l->token && l->token[0] != '/') {
-		warning("%.200s:%d: datadir path '%.200s' is not absolute",
-			l->filename, l->cline, l->token);
-		return 0;
-	    }
+                    break;
+                }
+            }
+            break;              /* LXT_ACCEPT */
+            /* datadir "path" */
+        case LXT_DATADIR:
+            lex_nexttoken(l);
+            /* is path absolute */
+            if (l->token && l->token[0] != '/') {
+                warning("%.200s:%d: datadir path '%.200s' is not absolute",
+                        l->filename, l->cline, l->token);
+                return 0;
+            }
 
             if (filecheck) {
                 /* make sure that directory exists */
@@ -284,38 +284,38 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 }
             }
 
-	    strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
-	    path[_POSIX2_LINE_MAX - 1] = '\0';
+            strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
+            path[_POSIX2_LINE_MAX - 1] = '\0';
 
-	    pc = strlen(path);
+            pc = strlen(path);
 
-	    if (path[pc - 1] == '/') {
-		path[pc - 1] = '\0';
-		pc--;
-	    }
+            if (path[pc - 1] == '/') {
+                path[pc - 1] = '\0';
+                pc--;
+            }
 
-	    /* add path to empty streams */
-	    SLIST_FOREACH(stream, &source->sl, streams) {
-		if (stream->file == NULL) {
-		    if (!(insert_filename(&path[pc],
-					  _POSIX2_LINE_MAX - pc,
-					  stream->type,
-					  stream->arg))) {
-			if (stream->arg && strlen(stream->arg)) {
-			    warning("%.200s:%d: failed to construct stream "
-				    "%.200s(%.200s) filename using datadir '%.200s'",
-				    l->filename, l->cline,
-				    type2str(stream->type),
-				    stream->arg, l->token);
-			} else {
-			    warning("%.200s:%d: failed to construct stream "
-				    "%.200s) filename using datadir '%.200s'",
-				    l->filename, l->cline,
-				    type2str(stream->type),
-				    l->token);
-			}
-			return 0;
-		    }
+            /* add path to empty streams */
+            SLIST_FOREACH(stream, &source->sl, streams) {
+                if (stream->file == NULL) {
+                    if (!(insert_filename(&path[pc],
+                                          _POSIX2_LINE_MAX - pc,
+                                          stream->type,
+                                          stream->arg))) {
+                        if (stream->arg && strlen(stream->arg)) {
+                            warning("%.200s:%d: failed to construct stream "
+                                    "%.200s(%.200s) filename using datadir '%.200s'",
+                                    l->filename, l->cline,
+                                    type2str(stream->type),
+                                    stream->arg, l->token);
+                        } else {
+                            warning("%.200s:%d: failed to construct stream "
+                                    "%.200s) filename using datadir '%.200s'",
+                                    l->filename, l->cline,
+                                    type2str(stream->type),
+                                    l->token);
+                        }
+                        return 0;
+                    }
 
                     if (filecheck) {
                         /* try filename */
@@ -330,63 +330,63 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                     } else {
                         stream->file = xstrdup(path);
                     }
-		}
-	    }
-	    break;		/* LXT_DATADIR */
-	    /* write cpu(0) in "filename" */
-	case LXT_WRITE:
-	    lex_nexttoken(l);
-	    switch (l->op) {
-	    case LXT_CPU:
-	    case LXT_DF:
-	    case LXT_IF:
-	    case LXT_IO:
-	    case LXT_IO1:
-	    case LXT_MEM:
-	    case LXT_PF:
-	    case LXT_PFQ:
-	    case LXT_MBUF:
-	    case LXT_DEBUG:
-	    case LXT_PROC:
-	    case LXT_SENSOR:
-		st = token2type(l->op);
-		strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
+                }
+            }
+            break;              /* LXT_DATADIR */
+            /* write cpu(0) in "filename" */
+        case LXT_WRITE:
+            lex_nexttoken(l);
+            switch (l->op) {
+            case LXT_CPU:
+            case LXT_DF:
+            case LXT_IF:
+            case LXT_IO:
+            case LXT_IO1:
+            case LXT_MEM:
+            case LXT_PF:
+            case LXT_PFQ:
+            case LXT_MBUF:
+            case LXT_DEBUG:
+            case LXT_PROC:
+            case LXT_SENSOR:
+                st = token2type(l->op);
+                strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
-		/* parse arg */
-		lex_nexttoken(l);
-		if (l->op == LXT_OPEN) {
-		    lex_nexttoken(l);
-		    if (l->op == LXT_CLOSE) {
-			parse_error(l, "<stream argument>");
-			return 0;
-		    }
+                /* parse arg */
+                lex_nexttoken(l);
+                if (l->op == LXT_OPEN) {
+                    lex_nexttoken(l);
+                    if (l->op == LXT_CLOSE) {
+                        parse_error(l, "<stream argument>");
+                        return 0;
+                    }
 
-		    strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
-		    lex_nexttoken(l);
-		    if (l->op != LXT_CLOSE) {
-			parse_error(l, ")");
-			return 0;
-		    }
-		} else {
-		    lex_ungettoken(l);
-		    sa[0] = '\0';
-		}
+                    strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
+                    lex_nexttoken(l);
+                    if (l->op != LXT_CLOSE) {
+                        parse_error(l, ")");
+                        return 0;
+                    }
+                } else {
+                    lex_ungettoken(l);
+                    sa[0] = '\0';
+                }
 
-		EXPECT(l, LXT_IN);
+                EXPECT(l, LXT_IN);
 
-		lex_nexttoken(l);
+                lex_nexttoken(l);
 
-		if ((stream = find_source_stream(source, st, sa)) == NULL) {
-		    if (strlen(sa)) {
-			warning("%.200s:%d: stream %.200s(%.200s) is not accepted for %.200s",
-				l->filename, l->cline, sn, sa, source->addr);
-			return 0;
-		    } else {
-			warning("%.200s:%d: stream %.200s is not accepted for %.200s",
-				l->filename, l->cline, sn, source->addr);
-			return 0;
-		    }
-		} else {
+                if ((stream = find_source_stream(source, st, sa)) == NULL) {
+                    if (strlen(sa)) {
+                        warning("%.200s:%d: stream %.200s(%.200s) is not accepted for %.200s",
+                                l->filename, l->cline, sn, sa, source->addr);
+                        return 0;
+                    } else {
+                        warning("%.200s:%d: stream %.200s is not accepted for %.200s",
+                                l->filename, l->cline, sn, source->addr);
+                        return 0;
+                    }
+                } else {
                     if (filecheck) {
                         /* try filename */
                         if ((fd = open(l->token, O_RDWR | O_NONBLOCK, 0)) == -1) {
@@ -407,24 +407,24 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                     } else {
                         stream->file = xstrdup(l->token);
                     }
-		}
-		break;		/* LXT_CPU/IF/IO/IO1/MEM/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
-	    default:
-		parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
-		return 0;
-		break;
-	    }
-	    break;		/* LXT_WRITE */
-	case LXT_END:
-	    return 1;
-	default:
-	    parse_error(l, "accept|datadir|write");
-	    return 0;
-	}
+                }
+                break;          /* LXT_CPU/IF/IO/IO1/MEM/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
+            default:
+                parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
+                return 0;
+                break;
+            }
+            break;              /* LXT_WRITE */
+        case LXT_END:
+            return 1;
+        default:
+            parse_error(l, "accept|datadir|write");
+            return 0;
+        }
     }
 
     warning("%.200s:%d: missing close brace on source statement",
-	    l->filename, l->cline);
+            l->filename, l->cline);
 
     return 0;
 }
@@ -441,66 +441,66 @@ read_config_file(struct muxlist * mul, const char *filename, int filechecks)
     SLIST_INIT(&sol);
 
     if ((l = open_lex(filename)) == NULL)
-	return 0;
+        return 0;
 
     while (lex_nexttoken(l)) {
-	/* expecting keyword now */
-	switch (l->op) {
-	case LXT_MUX:
-	    if (!read_mux(mul, l)) {
-		free_sourcelist(&sol);
-		return 0;
-	    }
-	    break;
-	case LXT_SOURCE:
-	    if (!read_source(&sol, l, filechecks)) {
-		free_sourcelist(&sol);
-		return 0;
-	    }
-	    break;
-	default:
-	    parse_error(l, "mux|source");
-	    free_sourcelist(&sol);
-	    return 0;
-	    break;
-	}
+        /* expecting keyword now */
+        switch (l->op) {
+        case LXT_MUX:
+            if (!read_mux(mul, l)) {
+                free_sourcelist(&sol);
+                return 0;
+            }
+            break;
+        case LXT_SOURCE:
+            if (!read_source(&sol, l, filechecks)) {
+                free_sourcelist(&sol);
+                return 0;
+            }
+            break;
+        default:
+            parse_error(l, "mux|source");
+            free_sourcelist(&sol);
+            return 0;
+            break;
+        }
     }
 
     /* sanity checks */
     if (SLIST_EMPTY(mul)) {
-	free_sourcelist(&sol);
-	warning("%.200s: no mux statement seen",
-		l->filename);
-	return 0;
+        free_sourcelist(&sol);
+        warning("%.200s: no mux statement seen",
+                l->filename);
+        return 0;
     } else {
-	mux = SLIST_FIRST(mul);
-	mux->sol = sol;
-	if (strncmp(SYMON_UNKMUX, mux->name, sizeof(SYMON_UNKMUX)) == 0) {
-	    /* mux was not initialised for some reason */
-	    return 0;
-	}
+        mux = SLIST_FIRST(mul);
+        mux->sol = sol;
+        if (strncmp(SYMON_UNKMUX, mux->name, sizeof(SYMON_UNKMUX)) == 0) {
+            /* mux was not initialised for some reason */
+            return 0;
+        }
     }
 
     if (SLIST_EMPTY(&sol)) {
-	warning("%.200s: no source section seen",
-		l->filename);
-	return 0;
+        warning("%.200s: no source section seen",
+                l->filename);
+        return 0;
     } else {
-	SLIST_FOREACH(source, &sol, sources) {
-	    if (SLIST_EMPTY(&source->sl)) {
-		warning("%.200s: no streams accepted for source '%.200s'",
-			l->filename, source->addr);
-		return 0;
-	    } else {
-		SLIST_FOREACH(stream, &source->sl, streams) {
-		    if (stream->file == NULL) {
-			/* warn, but allow */
-			warning("%.200s: no filename specified for stream '%.200s(%.200s)' in source '%.200s'",
-				l->filename, type2str(stream->type), stream->arg, source->addr);
-		    }
-		}
-	    }
-	}
+        SLIST_FOREACH(source, &sol, sources) {
+            if (SLIST_EMPTY(&source->sl)) {
+                warning("%.200s: no streams accepted for source '%.200s'",
+                        l->filename, source->addr);
+                return 0;
+            } else {
+                SLIST_FOREACH(stream, &source->sl, streams) {
+                    if (stream->file == NULL) {
+                        /* warn, but allow */
+                        warning("%.200s: no filename specified for stream '%.200s(%.200s)' in source '%.200s'",
+                                l->filename, type2str(stream->type), stream->arg, source->addr);
+                    }
+                }
+            }
+        }
     }
 
     close_lex(l);

@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.4 2005/10/21 14:58:44 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -99,22 +99,22 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
 
     /* calculate changes for each state and the overall change */
     for (i = 0; i < cnt; i++) {
-	if ((change = *new - *old) < 0) {
-	    /* this only happens when the counter wraps */
-	    change = ((unsigned int) *new - (unsigned int) *old);
-	}
-	total_change += (*dp++ = change);
-	*old++ = *new++;
+        if ((change = *new - *old) < 0) {
+            /* this only happens when the counter wraps */
+            change = ((unsigned int) *new - (unsigned int) *old);
+        }
+        total_change += (*dp++ = change);
+        *old++ = *new++;
     }
 
     /* avoid divide by zero potential */
     if (total_change == 0)
-	total_change = 1;
+        total_change = 1;
 
     /* calculate percentages based on overall change, rounding up */
     half_total = total_change / 2l;
     for (i = 0; i < cnt; i++)
-	*out++ = ((*diffs++ * 1000 + half_total) / total_change);
+        *out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
     /* return the total in case the caller wants to use it */
     return total_change;
@@ -126,14 +126,14 @@ init_cpu(struct stream *st)
     char buf[SYMON_MAX_OBJSIZE];
 
     if (cp_buf == NULL) {
-	cp_maxsize = SYMON_MAX_OBJSIZE;
-	cp_buf = xmalloc(cp_maxsize);
+        cp_maxsize = SYMON_MAX_OBJSIZE;
+        cp_buf = xmalloc(cp_maxsize);
     }
 
     if (st->arg != NULL && isdigit(*st->arg)) {
-	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu%s", st->arg);
+        snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu%s", st->arg);
     } else {
-	snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
+        snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
     }
 
     gets_cpu();
@@ -148,8 +148,8 @@ gets_cpu()
     int fd;
 
     if ((fd = open("/proc/stat", O_RDONLY)) < 0) {
-	warning("cannot access /proc/stat: %.200s", strerror(errno));
-	return;
+        warning("cannot access /proc/stat: %.200s", strerror(errno));
+        return;
     }
 
     bzero(cp_buf, cp_maxsize);
@@ -157,19 +157,19 @@ gets_cpu()
     close(fd);
 
     if (cp_size == cp_maxsize) {
-	/* buffer is too small to hold all interface data */
-	cp_maxsize += SYMON_MAX_OBJSIZE;
-	if (cp_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for cp data",
-		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
-	}
-	cp_buf = xrealloc(cp_buf, cp_maxsize);
-	gets_cpu();
-	return;
+        /* buffer is too small to hold all interface data */
+        cp_maxsize += SYMON_MAX_OBJSIZE;
+        if (cp_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for cp data",
+                  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+        }
+        cp_buf = xrealloc(cp_buf, cp_maxsize);
+        gets_cpu();
+        return;
     }
 
     if (cp_size == -1) {
-	warning("could not read if statistics from /proc/stat: %.200s", strerror(errno));
+        warning("could not read if statistics from /proc/stat: %.200s", strerror(errno));
     }
 }
 
@@ -179,31 +179,31 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     char *line;
 
     if (cp_size <= 0) {
-	return 0;
+        return 0;
     }
 
     if ((line = strstr(cp_buf, st->parg.cp.name)) == NULL) {
-	warning("could not find %s", st->parg.cp.name);
-	return 0;
+        warning("could not find %s", st->parg.cp.name);
+        return 0;
     }
 
     line += strlen(st->parg.cp.name);
     if (4 > sscanf(line, "%lu %lu %lu %lu\n",
-		   &st->parg.cp.time[CP_USER],
-		   &st->parg.cp.time[CP_NICE],
-		   &st->parg.cp.time[CP_SYS],
-		   &st->parg.cp.time[CP_IDLE])) {
-	warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
-	return 0;
+                   &st->parg.cp.time[CP_USER],
+                   &st->parg.cp.time[CP_NICE],
+                   &st->parg.cp.time[CP_SYS],
+                   &st->parg.cp.time[CP_IDLE])) {
+        warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
+        return 0;
     }
 
     percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time,
-		st->parg.cp.old, st->parg.cp.diff);
+                st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
-		  (double) (st->parg.cp.states[CP_USER] / 10.0),
-		  (double) (st->parg.cp.states[CP_NICE] / 10.0),
-		  (double) (st->parg.cp.states[CP_SYS] / 10.0),
-		  (double) (0),
-		  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
+                  (double) (st->parg.cp.states[CP_USER] / 10.0),
+                  (double) (st->parg.cp.states[CP_NICE] / 10.0),
+                  (double) (st->parg.cp.states[CP_SYS] / 10.0),
+                  (double) (0),
+                  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

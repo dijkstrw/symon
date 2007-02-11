@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.4 2006/06/27 18:53:58 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -70,7 +70,7 @@ init_io(struct stream *st)
 {
     io_stats.dinfo = malloc(sizeof(struct devinfo));
     if (io_stats.dinfo == NULL) {
-	fatal("io: could not allocate memory");
+        fatal("io: could not allocate memory");
     }
 
     io_stats.dinfo->mem_ptr = NULL;
@@ -87,11 +87,11 @@ gets_io()
 #endif
 
     if (io_numdevs == -1) {
-	fatal("io: numdevs error");
+        fatal("io: numdevs error");
     }
 
     if (io_stats.dinfo->mem_ptr != NULL) {
-	free(io_stats.dinfo->mem_ptr);
+        free(io_stats.dinfo->mem_ptr);
     }
 
     /* clear the devinfo struct, as getdevs expects it to be all zeroes */
@@ -111,29 +111,29 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
     struct devstat *ds;
 
     for (i=0; i < io_numdevs; i++) {
-	ds = &io_stats.dinfo->devices[i];
+        ds = &io_stats.dinfo->devices[i];
 
-	if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&
-	    strlen(ds->device_name) < strlen(st->arg) &&
-	    isdigit(st->arg[strlen(ds->device_name)]) &&
-	    atoi(&st->arg[strlen(ds->device_name)]) == ds->unit_number) {
+        if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&
+            strlen(ds->device_name) < strlen(st->arg) &&
+            isdigit(st->arg[strlen(ds->device_name)]) &&
+            atoi(&st->arg[strlen(ds->device_name)]) == ds->unit_number) {
 #if DEVSTAT_USER_API_VER >= 5
-	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-			  ds->operations[DEVSTAT_READ],
-			  ds->operations[DEVSTAT_WRITE],
-			  (uint64_t) 0, /* don't know how to find #seeks */
-			  ds->bytes[DEVSTAT_READ],
-			  ds->bytes[DEVSTAT_WRITE]);
+            return snpack(symon_buf, maxlen, st->arg, MT_IO2,
+                          ds->operations[DEVSTAT_READ],
+                          ds->operations[DEVSTAT_WRITE],
+                          (uint64_t) 0, /* don't know how to find #seeks */
+                          ds->bytes[DEVSTAT_READ],
+                          ds->bytes[DEVSTAT_WRITE]);
 
 #else
-	    return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-			  ds->num_reads,
-			  ds->num_writes,
-			  (uint64_t) 0, /* don't know how to find #seeks */
-			  ds->bytes_read,
-			  ds->bytes_written);
+            return snpack(symon_buf, maxlen, st->arg, MT_IO2,
+                          ds->num_reads,
+                          ds->num_writes,
+                          (uint64_t) 0, /* don't know how to find #seeks */
+                          ds->bytes_read,
+                          ds->bytes_written);
 #endif
-	}
+        }
     }
 
     return 0;

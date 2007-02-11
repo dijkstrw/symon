@@ -1,4 +1,4 @@
-/* $Id: symuxnet.h,v 1.11 2004/02/26 22:48:08 dijkstra Exp $ */
+/* $Id: symuxnet.h,v 1.12 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -43,4 +43,4 @@ int accept_connection(int);
 int recv_symon_packet(struct mux *, int, struct source **, struct symonpacket *);
 void wait_for_traffic(struct mux *, struct source **, struct symonpacket *);
 __END_DECLS
-#endif				/* _SYMUX_SYMUXNET_H */
+#endif                          /* _SYMUX_SYMUXNET_H */

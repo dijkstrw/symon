@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.22 2006/09/10 19:50:29 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.23 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -84,42 +84,42 @@ static size_t cp_size;
 int
 percentages(int cnt, int64_t *out, int64_t *new, int64_t *old, int64_t *diffs)
 {
-	int64_t change, total_change, *dp, half_total;
+        int64_t change, total_change, *dp, half_total;
 #else
 static int cp_time_mib[] = {CTL_KERN, KERN_CPTIME};
 int
 percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
 {
-	long change, total_change, *dp, half_total;
+        long change, total_change, *dp, half_total;
 #endif
-	int i;
+        int i;
 
 
-	/* initialization */
-	total_change = 0;
-	dp = diffs;
+        /* initialization */
+        total_change = 0;
+        dp = diffs;
 
-	/* calculate changes for each state and the overall change */
-	for (i = 0; i < cnt; i++) {
-		if ((change = *new - *old) < 0) {
-			/* this only happens when the counter wraps */
-			change = (*new - *old);
-		}
-		total_change += (*dp++ = change);
-		*old++ = *new++;
-	}
+        /* calculate changes for each state and the overall change */
+        for (i = 0; i < cnt; i++) {
+                if ((change = *new - *old) < 0) {
+                        /* this only happens when the counter wraps */
+                        change = (*new - *old);
+                }
+                total_change += (*dp++ = change);
+                *old++ = *new++;
+        }
 
-	/* avoid divide by zero potential */
-	if (total_change == 0)
-		total_change = 1;
+        /* avoid divide by zero potential */
+        if (total_change == 0)
+                total_change = 1;
 
-	/* calculate percentages based on overall change, rounding up */
-	half_total = total_change / 2l;
-	for (i = 0; i < cnt; i++)
-		*out++ = ((*diffs++ * 1000 + half_total) / total_change);
+        /* calculate percentages based on overall change, rounding up */
+        half_total = total_change / 2l;
+        for (i = 0; i < cnt; i++)
+                *out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
-	/* return the total in case the caller wants to use it */
-	return (total_change);
+        /* return the total in case the caller wants to use it */
+        return (total_change);
 }
 
 void
@@ -176,8 +176,8 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 #else
     if (sysctl(cp_time_mib, 2, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
-	warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
-	return 0;
+        warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
+        return 0;
     }
 #endif
 
@@ -185,9 +185,9 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     total = percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time, st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
-		  (double) (st->parg.cp.states[CP_USER] / 10.0),
-		  (double) (st->parg.cp.states[CP_NICE] / 10.0),
-		  (double) (st->parg.cp.states[CP_SYS] / 10.0),
-		  (double) (st->parg.cp.states[CP_INTR] / 10.0),
-		  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
+                  (double) (st->parg.cp.states[CP_USER] / 10.0),
+                  (double) (st->parg.cp.states[CP_NICE] / 10.0),
+                  (double) (st->parg.cp.states[CP_SYS] / 10.0),
+                  (double) (st->parg.cp.states[CP_INTR] / 10.0),
+                  (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

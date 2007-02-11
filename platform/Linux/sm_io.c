@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.1 2006/06/30 08:21:23 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.2 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
@@ -82,8 +82,8 @@ void
 init_io(struct stream *st)
 {
     if (io_buf == NULL) {
-	io_maxsize = SYMON_MAX_OBJSIZE;
-	io_buf = xmalloc(io_maxsize);
+        io_maxsize = SYMON_MAX_OBJSIZE;
+        io_buf = xmalloc(io_maxsize);
     }
 
     info("started module io(%.200s)", st->arg);
@@ -94,8 +94,8 @@ gets_io()
 {
     int fd;
     if ((fd = open(io_filename, O_RDONLY)) < 0) {
-	warning("cannot access %.200s: %.200s", io_filename, strerror(errno));
-	return;
+        warning("cannot access %.200s: %.200s", io_filename, strerror(errno));
+        return;
     }
 
     bzero(io_buf, io_maxsize);
@@ -103,19 +103,19 @@ gets_io()
     close(fd);
 
     if (io_size == io_maxsize) {
-	/* buffer is too small to hold all interface data */
-	io_maxsize += SYMON_MAX_OBJSIZE;
-	if (io_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
-	    fatal("%s:%d: dynamic object limit (%d) exceeded for io data",
-		  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
-	}
-	io_buf = xrealloc(io_buf, io_maxsize);
-	gets_io();
-	return;
+        /* buffer is too small to hold all interface data */
+        io_maxsize += SYMON_MAX_OBJSIZE;
+        if (io_maxsize > SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for io data",
+                  __FILE__, __LINE__, SYMON_MAX_OBJSIZE * SYMON_MAX_DOBJECTS);
+        }
+        io_buf = xrealloc(io_buf, io_maxsize);
+        gets_io();
+        return;
     }
 
     if (io_size == -1) {
-	warning("could not read io statistics from %.200s: %.200s", io_filename, strerror(errno));
+        warning("could not read io statistics from %.200s: %.200s", io_filename, strerror(errno));
     }
 }
 
@@ -126,44 +126,44 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
     struct io_device_stats stats;
 
     if (io_size <= 0) {
-	return 0;
+        return 0;
     }
 
     if ((line = strstr(io_buf, st->arg)) == NULL) {
-	warning("could not find disk %s", st->arg);
-	return 0;
+        warning("could not find disk %s", st->arg);
+        return 0;
     }
 
     line += strlen(st->arg);
     bzero(&stats, sizeof(struct io_device_stats));
 
     if (11 > sscanf(line, " %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
-		    &stats.read_issued, &stats.read_merged,
-		    &stats.read_sectors, &stats.read_milliseconds,
-		    &stats.write_issued, &stats.write_merged,
-		    &stats.write_sectors, &stats.write_milliseconds,
-		    &stats.progress_ios, &stats.progress_milliseconds,
-		    &stats.progress_weight)) {
+                    &stats.read_issued, &stats.read_merged,
+                    &stats.read_sectors, &stats.read_milliseconds,
+                    &stats.write_issued, &stats.write_merged,
+                    &stats.write_sectors, &stats.write_milliseconds,
+                    &stats.progress_ios, &stats.progress_milliseconds,
+                    &stats.progress_weight)) {
 #ifdef HAS_PROC_DISKSTATS
-	if (4 > sscanf(line, " %llu %llu %llu %llu\n",
-		       &stats.read_issued, &stats.read_sectors,
-		       &stats.write_issued, &stats.write_sectors)) {
-	    warning("could not parse disk statistics for %.200s", st->arg);
-	    return 0;
-	}
+        if (4 > sscanf(line, " %llu %llu %llu %llu\n",
+                       &stats.read_issued, &stats.read_sectors,
+                       &stats.write_issued, &stats.write_sectors)) {
+            warning("could not parse disk statistics for %.200s", st->arg);
+            return 0;
+        }
     }
 #else
-	warning("could not parse disk statistics for %.200s", st->arg);
-	return 0;
+        warning("could not parse disk statistics for %.200s", st->arg);
+        return 0;
     }
 #endif
 
     return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-		  (stats.read_issued + stats.read_merged),
-		  (stats.write_issued + stats.write_merged),
-		  (uint64_t) 0,
-		  (uint64_t)(stats.read_sectors * DEV_BSIZE),
-		  (uint64_t)(stats.write_sectors * DEV_BSIZE));
+                  (stats.read_issued + stats.read_merged),
+                  (stats.write_issued + stats.write_merged),
+                  (uint64_t) 0,
+                  (uint64_t)(stats.read_sectors * DEV_BSIZE),
+                  (uint64_t)(stats.write_sectors * DEV_BSIZE));
 }
 #else
 void

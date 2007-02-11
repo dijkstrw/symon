@@ -1,4 +1,4 @@
-/* $Id: xmalloc.h,v 1.6 2002/11/29 10:50:29 dijkstra Exp $ */
+/* $Id: xmalloc.h,v 1.7 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
@@ -26,4 +26,4 @@ void *xrealloc(void *, size_t);
 void xfree(void *);
 char *xstrdup(const char *);
 __END_DECLS
-#endif				/* _SYMON_LIB_XMALLOC_H */
+#endif                          /* _SYMON_LIB_XMALLOC_H */

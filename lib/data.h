@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.29 2007/01/20 12:52:46 dijkstra Exp $ */
+/* $Id: data.h,v 1.30 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -42,6 +42,7 @@
 
 #include "platform.h"
 
+#include <stdarg.h>
 #include <netinet/in.h>
 #include <limits.h>
 
@@ -79,7 +80,7 @@ static inline u_int64_t
  * that works out to about 23 packedstreams in a single symon packet.
  */
 #define SYMON_PACKET_VER  2
-#define SYMON_UNKMUX   "<unknown mux>"	/* mux nodes without host addr */
+#define SYMON_UNKMUX   "<unknown mux>"  /* mux nodes without host addr */
 
 /* Sending structures over the network is dangerous as the compiler might have
  * added extra padding between items. symonpacketheader below is therefore also
@@ -126,11 +127,12 @@ struct mux {
     char *name;
     char *addr;
     char *port;
+    char *localaddr;
     struct sourcelist sol;
     int offset;
-    int clientsocket;		/* symux; incoming tcp connections */
-    int symonsocket[AF_MAX];	/* symux; incoming symon data */
-    int symuxsocket;		/* symon; outgoing data to mux */
+    int clientsocket;           /* symux; incoming tcp connections */
+    int symonsocket[AF_MAX];    /* symux; incoming symon data */
+    int symuxsocket;            /* symon; outgoing data to mux */
     struct symonpacket packet;
     struct sockaddr_storage sockaddr;
     struct streamlist sl;
@@ -155,7 +157,7 @@ SLIST_HEAD(muxlist, mux);
 #define MT_SENSOR 8
 #define MT_IO2    9
 #define MT_PFQ    10
-#define MT_DF	  11
+#define MT_DF     11
 #define MT_TEST   12
 #define MT_EOT    13
 
@@ -169,134 +171,134 @@ struct packedstream {
     int padding;
     char arg[SYMON_PS_ARGLENV2]; /* V2 > V1 */
     union {
-	struct symonpacketheader header;
-	struct {
-	    u_int64_t mtotal_transfers;
-	    u_int64_t mtotal_seeks;
-	    u_int64_t mtotal_bytes;
-	}      ps_io;
-	struct {
-	    u_int16_t muser;
-	    u_int16_t mnice;
-	    u_int16_t msystem;
-	    u_int16_t minterrupt;
-	    u_int16_t midle;
-	}      ps_cpu;
-	struct {
-	    u_int32_t mreal_active;
-	    u_int32_t mreal_total;
-	    u_int32_t mfree;
-	    u_int32_t mswap_used;
-	    u_int32_t mswap_total;
-	}      ps_mem;
-	struct {
-	    u_int32_t mipackets;
-	    u_int32_t mopackets;
-	    u_int32_t mibytes;
-	    u_int32_t mobytes;
-	    u_int32_t mimcasts;
-	    u_int32_t momcasts;
-	    u_int32_t mierrors;
-	    u_int32_t moerrors;
-	    u_int32_t mcolls;
-	    u_int32_t mdrops;
-	}      ps_if;
-	struct {
-	    u_int64_t bytes_v4_in;
-	    u_int64_t bytes_v4_out;
-	    u_int64_t bytes_v6_in;
-	    u_int64_t bytes_v6_out;
-	    u_int64_t packets_v4_in_pass;
-	    u_int64_t packets_v4_in_drop;
-	    u_int64_t packets_v4_out_pass;
-	    u_int64_t packets_v4_out_drop;
-	    u_int64_t packets_v6_in_pass;
-	    u_int64_t packets_v6_in_drop;
-	    u_int64_t packets_v6_out_pass;
-	    u_int64_t packets_v6_out_drop;
-	    u_int64_t states_entries;
-	    u_int64_t states_searches;
-	    u_int64_t states_inserts;
-	    u_int64_t states_removals;
-	    u_int64_t counters_match;
-	    u_int64_t counters_badoffset;
-	    u_int64_t counters_fragment;
-	    u_int64_t counters_short;
-	    u_int64_t counters_normalize;
-	    u_int64_t counters_memory;
-	}      ps_pf;
-	struct {
-	    u_int32_t debug0;
-	    u_int32_t debug1;
-	    u_int32_t debug2;
-	    u_int32_t debug3;
-	    u_int32_t debug4;
-	    u_int32_t debug5;
-	    u_int32_t debug6;
-	    u_int32_t debug7;
-	    u_int32_t debug8;
-	    u_int32_t debug9;
-	    u_int32_t debug10;
-	    u_int32_t debug11;
-	    u_int32_t debug12;
-	    u_int32_t debug13;
-	    u_int32_t debug14;
-	    u_int32_t debug15;
-	    u_int32_t debug16;
-	    u_int32_t debug17;
-	    u_int32_t debug18;
-	    u_int32_t debug19;
-	}      ps_debug;
-	struct {
-	    u_int32_t totmbufs;
-	    u_int32_t mt_data;
-	    u_int32_t mt_oobdata;
-	    u_int32_t mt_control;
-	    u_int32_t mt_header;
-	    u_int32_t mt_ftable;
-	    u_int32_t mt_soname;
-	    u_int32_t mt_soopts;
-	    u_int32_t pgused;
-	    u_int32_t pgtotal;
-	    u_int32_t totmem;
-	    u_int32_t totpct;
-	    u_int32_t m_drops;
-	    u_int32_t m_wait;
-	    u_int32_t m_drain;
-	}      ps_mbuf;
-	struct {
-	    int64_t value;
-	}      ps_sensor;
-	struct {
-	    u_int64_t mtotal_rtransfers;
-	    u_int64_t mtotal_wtransfers;
-	    u_int64_t mtotal_seeks2;
-	    u_int64_t mtotal_rbytes;
-	    u_int64_t mtotal_wbytes;
-	}      ps_io2;
-	struct {
-	    u_int64_t sent_bytes;
-	    u_int64_t sent_packets;
-	    u_int64_t drop_bytes;
-	    u_int64_t drop_packets;
-	}      ps_pfq;
-	struct {
-	    u_int64_t L[4];
-	    int64_t D[4];
-	    u_int32_t l[4];
-	    u_int16_t s[4];
-	    u_int16_t c[4];
-	    u_int8_t b[4];
-	}      ps_test;
-	struct {
-	    u_int64_t blocks;
-	    u_int64_t bfree;
-	    u_int64_t bavail;
-	    u_int64_t files;
-	    u_int64_t ffree;
-	    u_int64_t syncwrites;
-	    u_int64_t asyncwrites;
-	}      ps_df;
+        struct symonpacketheader header;
+        struct {
+            u_int64_t mtotal_transfers;
+            u_int64_t mtotal_seeks;
+            u_int64_t mtotal_bytes;
+        }      ps_io;
+        struct {
+            u_int16_t muser;
+            u_int16_t mnice;
+            u_int16_t msystem;
+            u_int16_t minterrupt;
+            u_int16_t midle;
+        }      ps_cpu;
+        struct {
+            u_int32_t mreal_active;
+            u_int32_t mreal_total;
+            u_int32_t mfree;
+            u_int32_t mswap_used;
+            u_int32_t mswap_total;
+        }      ps_mem;
+        struct {
+            u_int32_t mipackets;
+            u_int32_t mopackets;
+            u_int32_t mibytes;
+            u_int32_t mobytes;
+            u_int32_t mimcasts;
+            u_int32_t momcasts;
+            u_int32_t mierrors;
+            u_int32_t moerrors;
+            u_int32_t mcolls;
+            u_int32_t mdrops;
+        }      ps_if;
+        struct {
+            u_int64_t bytes_v4_in;
+            u_int64_t bytes_v4_out;
+            u_int64_t bytes_v6_in;
+            u_int64_t bytes_v6_out;
+            u_int64_t packets_v4_in_pass;
+            u_int64_t packets_v4_in_drop;
+            u_int64_t packets_v4_out_pass;
+            u_int64_t packets_v4_out_drop;
+            u_int64_t packets_v6_in_pass;
+            u_int64_t packets_v6_in_drop;
+            u_int64_t packets_v6_out_pass;
+            u_int64_t packets_v6_out_drop;
+            u_int64_t states_entries;
+            u_int64_t states_searches;
+            u_int64_t states_inserts;
+            u_int64_t states_removals;
+            u_int64_t counters_match;
+            u_int64_t counters_badoffset;
+            u_int64_t counters_fragment;
+            u_int64_t counters_short;
+            u_int64_t counters_normalize;
+            u_int64_t counters_memory;
+        }      ps_pf;
+        struct {
+            u_int32_t debug0;
+            u_int32_t debug1;
+            u_int32_t debug2;
+            u_int32_t debug3;
+            u_int32_t debug4;
+            u_int32_t debug5;
+            u_int32_t debug6;
+            u_int32_t debug7;
+            u_int32_t debug8;
+            u_int32_t debug9;
+            u_int32_t debug10;
+            u_int32_t debug11;
+            u_int32_t debug12;
+            u_int32_t debug13;
+            u_int32_t debug14;
+            u_int32_t debug15;
+            u_int32_t debug16;
+            u_int32_t debug17;
+            u_int32_t debug18;
+            u_int32_t debug19;
+        }      ps_debug;
+        struct {
+            u_int32_t totmbufs;
+            u_int32_t mt_data;
+            u_int32_t mt_oobdata;
+            u_int32_t mt_control;
+            u_int32_t mt_header;
+            u_int32_t mt_ftable;
+            u_int32_t mt_soname;
+            u_int32_t mt_soopts;
+            u_int32_t pgused;
+            u_int32_t pgtotal;
+            u_int32_t totmem;
+            u_int32_t totpct;
+            u_int32_t m_drops;
+            u_int32_t m_wait;
+            u_int32_t m_drain;
+        }      ps_mbuf;
+        struct {
+            int64_t value;
+        }      ps_sensor;
+        struct {
+            u_int64_t mtotal_rtransfers;
+            u_int64_t mtotal_wtransfers;
+            u_int64_t mtotal_seeks2;
+            u_int64_t mtotal_rbytes;
+            u_int64_t mtotal_wbytes;
+        }      ps_io2;
+        struct {
+            u_int64_t sent_bytes;
+            u_int64_t sent_packets;
+            u_int64_t drop_bytes;
+            u_int64_t drop_packets;
+        }      ps_pfq;
+        struct {
+            u_int64_t L[4];
+            int64_t D[4];
+            u_int32_t l[4];
+            u_int16_t s[4];
+            u_int16_t c[4];
+            u_int8_t b[4];
+        }      ps_test;
+        struct {
+            u_int64_t blocks;
+            u_int64_t bfree;
+            u_int64_t bavail;
+            u_int64_t files;
+            u_int64_t ffree;
+            u_int64_t syncwrites;
+            u_int64_t asyncwrites;
+        }      ps_df;
     }     data;
 };
 
@@ -332,4 +334,4 @@ void free_sourcelist(struct sourcelist *);
 void free_streamlist(struct streamlist *);
 void init_crc32();
 __END_DECLS
-#endif				/* _SYMON_LIB_DATA_H */
+#endif                          /* _SYMON_LIB_DATA_H */

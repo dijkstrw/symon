@@ -1,4 +1,4 @@
-/* $Id: share.c,v 1.20 2005/09/30 14:04:43 dijkstra Exp $ */
+/* $Id: share.c,v 1.21 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -89,10 +89,10 @@ void master_resetsem(int);
 void reap_clients();
 __END_DECLS
 
-int realclients;		/* number of clients active */
+int realclients;                /* number of clients active */
 int newclients;
-int master;			/* is current process master or child */
-int clientsock;			/* connected client */
+int master;                     /* is current process master or child */
+int clientsock;                 /* connected client */
 pid_t clientpid;
 
 enum ipcstat {
@@ -124,9 +124,9 @@ void
 shared_setlen(int slot, long length)
 {
     if (length > shm->slotlen)
-	fatal("%s:%d: internal error:"
-	      "set_length of shared region called with value larger than actual size",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: internal error:"
+              "set_length of shared region called with value larger than actual size",
+              __FILE__, __LINE__);
 
     shm->ctlen[slot % SYMUX_SHARESLOTS] = length;
 }
@@ -141,8 +141,8 @@ void
 check_sem()
 {
     if (semstat != SIPC_KEYED)
-	fatal("%s:%d: internal error: semaphore not available",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: internal error: semaphore not available",
+              __FILE__, __LINE__);
 }
 
 /* Check whether process is the master process */
@@ -150,8 +150,8 @@ void
 check_master()
 {
     if (master == 0)
-	fatal("%s:%d: internal error: child process tried to access master routines",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: internal error: child process tried to access master routines",
+              __FILE__, __LINE__);
 }
 
 /* Reset semaphores before each distribution cycle */
@@ -166,8 +166,8 @@ master_resetsem(int semnum)
     check_master();
 
     if ((semctl(semid, semnum, SETVAL, semarg) != 0))
-	fatal("%s:%d: internal error: cannot reset semaphore %d",
-	      __FILE__, __LINE__, semnum);
+        fatal("%s:%d: internal error: cannot reset semaphore %d",
+              __FILE__, __LINE__, semnum);
 }
 /* Prepare for writing to shm */
 int
@@ -183,11 +183,11 @@ master_forbidread()
     /* prepare for a new read */
     semarg.val = 0;
     if ((stalledclients = semctl(semid, slot, GETVAL, semarg)) < 0) {
-	fatal("%s:%d: internal error: cannot read semaphore",
-	      __FILE__, __LINE__);
+        fatal("%s:%d: internal error: cannot read semaphore",
+              __FILE__, __LINE__);
     } else {
-	reap_clients();
-	debug("realclients = %d; stalledclients = %d", realclients, stalledclients);
+        reap_clients();
+        debug("realclients = %d; stalledclients = %d", realclients, stalledclients);
     }
 
     /* add new clients */
@@ -207,8 +207,8 @@ master_permitread()
     semarg.val = realclients;
 
     if (semctl(semid, slot, SETVAL, semarg) != 0)
-	fatal("%s:%d: internal error: cannot set semaphore %d",
-	      __FILE__, __LINE__, slot);
+        fatal("%s:%d: internal error: cannot set semaphore %d",
+              __FILE__, __LINE__, slot);
 }
 /* Make clients wait until master signals */
 int
@@ -218,9 +218,9 @@ client_waitread()
     struct sembuf sops;
 
     if (seqnr < (shm->seqnr - SYMUX_SHARESLOTS - 1)) {
-	close(clientsock);
-	fatal("%s:%d: client(%d) lagging behind (%d, %d) = high load?",
-	      __FILE__, __LINE__, clientpid, seqnr, shm->seqnr);
+        close(clientsock);
+        fatal("%s:%d: client(%d) lagging behind (%d, %d) = high load?",
+              __FILE__, __LINE__, clientpid, seqnr, shm->seqnr);
     }
 
     check_sem();
@@ -230,8 +230,8 @@ client_waitread()
     sops.sem_flg = 0;
 
     if (semop(semid, &sops, 1) != 0)
-	fatal("%s:%d: internal error: client(%d): cannot obtain semaphore (%.200s)",
-	      __FILE__, __LINE__, clientpid, strerror(errno));
+        fatal("%s:%d: internal error: client(%d): cannot obtain semaphore (%.200s)",
+              __FILE__, __LINE__, clientpid, strerror(errno));
 
     return slot;
 }
@@ -269,12 +269,12 @@ initshare(int bufsize)
     atexit(exitmaster);
 
     if ((shmid = shmget(IPC_PRIVATE, totalsize, SHM_R | SHM_W)) < 0)
-	fatal("could not get a shared memory identifier");
+        fatal("could not get a shared memory identifier");
 
     shmstat = SIPC_KEYED;
 
     if ((shm = (struct sharedregion *) shmat(shmid, 0, 0)) == (void *) (-1))
-	fatal("could not attach shared memory");
+        fatal("could not attach shared memory");
 
     shmstat = SIPC_ATTACHED;
     bzero(shm, totalsize);
@@ -283,12 +283,12 @@ initshare(int bufsize)
 
     /* allocate semaphores */
     if ((semid = semget(IPC_PRIVATE, SYMUX_SHARESLOTS, SEM_ARGS)) < 0)
-	fatal("could not get a semaphore");
+        fatal("could not get a semaphore");
 
     semstat = SIPC_KEYED;
 
     for (i = 0; i < SYMUX_SHARESLOTS; i++)
-	master_resetsem(i);
+        master_resetsem(i);
 }
 /* Spawn off a new client */
 pid_t
@@ -305,36 +305,36 @@ spawn_client(int sock)
 #endif
 
     if ((pid = fork())) {
-	/* server */
-	if (pid == -1) {
-	    info("could not fork client process");
-	} else {
-	    newclients++;
-	    info("forked client(%d) for incoming connection from %.200s:%.200s",
-		 pid, res_host, res_service);
-	}
+        /* server */
+        if (pid == -1) {
+            info("could not fork client process");
+        } else {
+            newclients++;
+            info("forked client(%d) for incoming connection from %.200s:%.200s",
+                 pid, res_host, res_service);
+        }
 
-	close(clientsock);
+        close(clientsock);
 
-	return pid;
+        return pid;
     } else {
-	/* client */
-	master = 0;
-	seqnr = shm->seqnr;
+        /* client */
+        master = 0;
+        seqnr = shm->seqnr;
 
-	/* catch signals */
-	signal(SIGHUP, client_signalhandler);
-	signal(SIGINT, client_signalhandler);
-	signal(SIGQUIT, client_signalhandler);
-	signal(SIGTERM, client_signalhandler);
-	signal(SIGTERM, client_signalhandler);
-	signal(SIGPIPE, client_signalhandler);
+        /* catch signals */
+        signal(SIGHUP, client_signalhandler);
+        signal(SIGINT, client_signalhandler);
+        signal(SIGQUIT, client_signalhandler);
+        signal(SIGTERM, client_signalhandler);
+        signal(SIGTERM, client_signalhandler);
+        signal(SIGPIPE, client_signalhandler);
 
-	clientpid = getpid();
-	client_loop();
+        clientpid = getpid();
+        client_loop();
 
-	/* NOT REACHED */
-	return 0;
+        /* NOT REACHED */
+        return 0;
     }
 }
 /* Reap exit/stopped clients */
@@ -349,19 +349,19 @@ reap_clients()
     /* Reap all children that died */
     while (((int) (pid = wait4(-1, &status, WNOHANG, NULL)) > 0) && realclients >= 0) {
 
-	/*
-	 * wait4 is supposed to return 0 if there is no status to report, but
-	 * it also reports -1 on OpenBSD 2.9
-	 */
+        /*
+         * wait4 is supposed to return 0 if there is no status to report, but
+         * it also reports -1 on OpenBSD 2.9
+         */
 
-	if (WIFEXITED(status))
-	    info("client process %d exited", pid, status);
-	if (WIFSIGNALED(status))
-	    info("client process %d killed with signal %d", pid, WTERMSIG(status));
-	if (WIFSTOPPED(status))
-	    info("client process %d stopped with signal %d", pid, WSTOPSIG(status));
+        if (WIFEXITED(status))
+            info("client process %d exited", pid, status);
+        if (WIFSIGNALED(status))
+            info("client process %d killed with signal %d", pid, WTERMSIG(status));
+        if (WIFSTOPPED(status))
+            info("client process %d stopped with signal %d", pid, WSTOPSIG(status));
 
-	realclients--;
+        realclients--;
     }
 }
 /* Remove shared memory and semaphores at exit */
@@ -371,41 +371,41 @@ exitmaster()
     union semun semarg;
 
     if (master == 0)
-	return;
+        return;
 
     switch (shmstat) {
     case SIPC_ATTACHED:
-	if (shmdt(shm))
-	    warning("%s:%d: internal error: control region could not be detached",
-		    __FILE__, __LINE__);
+        if (shmdt(shm))
+            warning("%s:%d: internal error: control region could not be detached",
+                    __FILE__, __LINE__);
 
-	/* no break */
+        /* no break */
     case SIPC_KEYED:
-	if (shmctl(shmid, IPC_RMID, NULL))
-	    warning("%s:%d: internal error: could remove control region %d",
-		    __FILE__, __LINE__, shmid);
-	/* no break */
+        if (shmctl(shmid, IPC_RMID, NULL))
+            warning("%s:%d: internal error: could remove control region %d",
+                    __FILE__, __LINE__, shmid);
+        /* no break */
     case SIPC_FREE:
-	break;
+        break;
 
     default:
-	warning("%s:%d: internal error: control region is in an unknown state",
-		__FILE__, __LINE__);
+        warning("%s:%d: internal error: control region is in an unknown state",
+                __FILE__, __LINE__);
     }
 
     switch (semstat) {
     case SIPC_KEYED:
-	semarg.val = 0;
-	if (semctl(semid, 0, IPC_RMID, semarg) != 0)
-	    warning("%s:%d: internal error: could not remove semaphore %d",
-		    __FILE__, __LINE__, semid);
-	/* no break */
+        semarg.val = 0;
+        if (semctl(semid, 0, IPC_RMID, semarg) != 0)
+            warning("%s:%d: internal error: could not remove semaphore %d",
+                    __FILE__, __LINE__, semid);
+        /* no break */
     case SIPC_FREE:
-	break;
+        break;
 
     default:
-	warning("%s:%d: internal error: semaphore is in an unknown state",
-		__FILE__, __LINE__);
+        warning("%s:%d: internal error: semaphore is in an unknown state",
+                __FILE__, __LINE__);
     }
 }
 void
@@ -416,22 +416,22 @@ client_loop()
     int sent;
     int written;
 
-    for (;;) {			/* FOREVER */
+    for (;;) {                  /* FOREVER */
 
-	slot = client_waitread();
-	total = shared_getlen(slot);
-	sent = 0;
+        slot = client_waitread();
+        total = shared_getlen(slot);
+        sent = 0;
 
-	while (sent < total) {
+        while (sent < total) {
 
-	    if ((written = write(clientsock, (char *) (shared_getmem(slot) + sent), total - sent)) == -1) {
-		info("client(%d): write error. Client will quit.", clientpid);
-		exit(1);
-	    }
+            if ((written = write(clientsock, (char *) (shared_getmem(slot) + sent), total - sent)) == -1) {
+                info("client(%d): write error. Client will quit.", clientpid);
+                exit(1);
+            }
 
-	    sent += written;
+            sent += written;
 
-	    debug("client(%d): written %d bytes of %d total from slot %d", clientpid, sent, total, slot);
-	}
+            debug("client(%d): written %d bytes of %d total from slot %d", clientpid, sent, total, slot);
+        }
     }
 }

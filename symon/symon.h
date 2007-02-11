@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.35 2005/10/16 15:27:01 dijkstra Exp $ */
+/* $Id: symon.h,v 1.36 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -37,7 +37,7 @@
 #include "data.h"
 
 #define SYMON_PID_FILE "/var/run/symon.pid"
-#define SYMON_DEFAULT_INTERVAL 5	/* measurement interval */
+#define SYMON_DEFAULT_INTERVAL 5        /* measurement interval */
 
 /* funcmap holds functions to be called for the individual monitors:
  *
@@ -118,4 +118,4 @@ extern void gets_df();
 extern int get_df(char *, int, struct stream *);
 __END_DECLS
 
-#endif				/* _SYMON_SYMON_H */
+#endif                          /* _SYMON_SYMON_H */

@@ -1,4 +1,4 @@
-/* $Id: error.h,v 1.10 2004/08/07 12:21:36 dijkstra Exp $ */
+/* $Id: error.h,v 1.11 2007/02/11 20:07:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2004 Willem Dijkstra
@@ -46,4 +46,4 @@ void info(char *,...);
 void debug(char *,...);
 __END_DECLS
 
-#endif				/* _SYMON_LIB_ERROR_H */
+#endif                          /* _SYMON_LIB_ERROR_H */

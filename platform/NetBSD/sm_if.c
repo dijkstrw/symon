@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.4 2005/10/18 19:58:09 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -61,10 +61,10 @@ void
 init_if(struct stream *st)
 {
     if (if_s == -1) {
-	if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-	    fatal("%s:%d: socket failed, %.200",
-		  __FILE__, __LINE__, strerror(errno));
-	}
+        if ((if_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+            fatal("%s:%d: socket failed, %.200",
+                  __FILE__, __LINE__, strerror(errno));
+        }
     }
 
     strncpy(st->parg.ifr.ifdr_name, st->arg, sizeof(st->parg.ifr.ifdr_name));
@@ -84,20 +84,20 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     const struct if_data* ifi;
 
     if (ioctl(if_s, SIOCGIFDATA, (caddr_t)&st->parg.ifr)) {
-	warning("if(%.200s) failed (ioctl error)", st->arg);
-	return 0;
+        warning("if(%.200s) failed (ioctl error)", st->arg);
+        return 0;
     }
     ifi = &st->parg.ifr.ifdr_data;
 
     return snpack(symon_buf, maxlen, st->arg, MT_IF,
-		  (u_int32_t) ifi->ifi_ipackets,
-		  (u_int32_t) ifi->ifi_opackets,
-		  (u_int32_t) ifi->ifi_ibytes,
-		  (u_int32_t) ifi->ifi_obytes,
-		  (u_int32_t) ifi->ifi_imcasts,
-		  (u_int32_t) ifi->ifi_omcasts,
-		  (u_int32_t) ifi->ifi_ierrors,
-		  (u_int32_t) ifi->ifi_oerrors,
-		  (u_int32_t) ifi->ifi_collisions,
-		  (u_int32_t) ifi->ifi_iqdrops);
+                  (u_int32_t) ifi->ifi_ipackets,
+                  (u_int32_t) ifi->ifi_opackets,
+                  (u_int32_t) ifi->ifi_ibytes,
+                  (u_int32_t) ifi->ifi_obytes,
+                  (u_int32_t) ifi->ifi_imcasts,
+                  (u_int32_t) ifi->ifi_omcasts,
+                  (u_int32_t) ifi->ifi_ierrors,
+                  (u_int32_t) ifi->ifi_oerrors,
+                  (u_int32_t) ifi->ifi_collisions,
+                  (u_int32_t) ifi->ifi_iqdrops);
 }
