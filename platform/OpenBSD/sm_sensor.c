@@ -1,4 +1,4 @@
-/* $Id: sm_sensor.c,v 1.9 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.10 2007/02/11 20:26:56 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -104,15 +104,11 @@ init_sensor(struct stream *st)
     st->parg.sn.mib[0] = CTL_HW;
     st->parg.sn.mib[1] = HW_SENSORS;
 
-    bufpo = strdup(st->arg);
-    if (bufpo == NULL)
-        fatal("%s:%d: sensor(%.200s): out of memory",
-              __FILE__, __LINE__, st->arg);
+    bufpo = xstrdup(st->arg);
     bufp = bufpo;
 
     if ((devname = strsep(&bufp, ".")) == NULL)
-        fatal("%s:%d: sensor(%.200s): incomplete specification",
-              __FILE__, __LINE__, st->arg);
+        fatal("sensor(%.200s): incomplete specification", st->arg);
 
     /* convert sensor device string to an integer */
     for (dev = 0; dev < MAXSENSORDEVICES; dev++) {
@@ -128,8 +124,8 @@ init_sensor(struct stream *st)
 
     /* convert sensor_type string to an integer */
     if ((typename = strsep(&bufp, ".")) == NULL)
-        fatal("%s:%d: sensor(%.200s): incomplete specification",
-              __FILE__, __LINE__, st->arg);
+        fatal("sensor(%.200s): incomplete specification", st->arg);
+
     numt = -1;
     for (i = 0; typename[i] != '\0'; i++)
         if (isdigit(typename[i])) {
@@ -143,9 +139,11 @@ init_sensor(struct stream *st)
     if (type == SENSOR_MAX_TYPES)
         fatal("sensor(%.200s): sensor type not recognised: %.200s",
               st->arg, typename);
+
     if (sensordev.maxnumt[type] == 0)
         fatal("sensor(%.200s): no sensors of such type on this device: %.200s",
               st->arg, typename);
+
     st->parg.sn.mib[3] = type;
 
     if (numt == -1) {
@@ -156,9 +154,10 @@ init_sensor(struct stream *st)
     if (!(numt < sensordev.maxnumt[type]))
         fatal("sensor(%.200s): no such sensor attached to this device: %.200s%i",
               st->arg, typename, numt);
+
     st->parg.sn.mib[4] = numt;
 
-    free(bufpo);
+    xfree(bufpo);
 
 #endif /* !HAS_SENSORDEV */
 
