@@ -13,6 +13,7 @@
      characters.
 
 19/12/2006 - 2.73
+
    - symux stops reporting rrd errors after 5 messages to counter logspam
      (Henning Brauer)
 
@@ -474,4 +475,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.57 2007/02/11 20:07:31 dijkstra Exp $
+$Id: CHANGELOG,v 1.58 2007/02/11 20:12:15 dijkstra Exp $
