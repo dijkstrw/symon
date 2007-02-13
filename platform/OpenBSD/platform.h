@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.5 2007/01/19 21:37:27 dijkstra Exp $ */
+/* $Id: platform.h,v 1.6 2007/02/13 19:12:26 dijkstra Exp $ */
 
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H

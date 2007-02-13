@@ -1,8 +1,8 @@
-/* $Id: sm_sensor.c,v 1.10 2007/02/11 20:26:56 dijkstra Exp $ */
+/* $Id: sm_sensor.c,v 1.11 2007/02/13 19:12:26 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
- * Copyright (c) 2006-2007 Constantine A. Murenin
+ * Copyright (c) 2006/2007 Constantine A. Murenin
  *                         <cnst+symon@bugmail.mojo.ru>
  * All rights reserved.
  *
@@ -42,6 +42,7 @@
 #include "conf.h"
 
 #include <sys/param.h>
+#include <sys/sensors.h>
 #include <sys/sysctl.h>
 
 #include <errno.h>
@@ -52,31 +53,11 @@
 
 #include "error.h"
 #include "symon.h"
+#include "xmalloc.h"
 
 /* Globals for this module start with sn_ */
 static struct sensor sn_sensor;
 
-#ifndef HAS_SENSORS_H
-void
-privinit_sensor()
-{
-    fatal("sensor support not available");
-}
-void
-init_sensor(struct stream *st)
-{
-    fatal("sensor support not available");
-}
-int
-get_sensor(char *symon_buf, int maxlen, struct stream *st)
-{
-    fatal("sensor support not available");
-    return 0;
-}
-
-#else
-
-#include <sys/sensors.h>
 void
 privinit_sensor()
 {
@@ -108,7 +89,8 @@ init_sensor(struct stream *st)
     bufp = bufpo;
 
     if ((devname = strsep(&bufp, ".")) == NULL)
-        fatal("sensor(%.200s): incomplete specification", st->arg);
+        fatal("%s:%d: sensor(%.200s): incomplete specification",
+              __FILE__, __LINE__, st->arg);
 
     /* convert sensor device string to an integer */
     for (dev = 0; dev < MAXSENSORDEVICES; dev++) {
@@ -124,8 +106,8 @@ init_sensor(struct stream *st)
 
     /* convert sensor_type string to an integer */
     if ((typename = strsep(&bufp, ".")) == NULL)
-        fatal("sensor(%.200s): incomplete specification", st->arg);
-
+        fatal("%s:%d: sensor(%.200s): incomplete specification",
+              __FILE__, __LINE__, st->arg);
     numt = -1;
     for (i = 0; typename[i] != '\0'; i++)
         if (isdigit(typename[i])) {
@@ -139,11 +121,9 @@ init_sensor(struct stream *st)
     if (type == SENSOR_MAX_TYPES)
         fatal("sensor(%.200s): sensor type not recognised: %.200s",
               st->arg, typename);
-
     if (sensordev.maxnumt[type] == 0)
         fatal("sensor(%.200s): no sensors of such type on this device: %.200s",
               st->arg, typename);
-
     st->parg.sn.mib[3] = type;
 
     if (numt == -1) {
@@ -154,7 +134,6 @@ init_sensor(struct stream *st)
     if (!(numt < sensordev.maxnumt[type]))
         fatal("sensor(%.200s): no such sensor attached to this device: %.200s%i",
               st->arg, typename, numt);
-
     st->parg.sn.mib[4] = numt;
 
     xfree(bufpo);
@@ -199,5 +178,3 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
         return snpack(symon_buf, maxlen, st->arg, MT_SENSOR, t);
     }
 }
-
-#endif /* HAS_SENSORS_H */
