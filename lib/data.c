@@ -1,7 +1,7 @@
-/* $Id: data.c,v 1.31 2007/02/11 20:07:31 dijkstra Exp $ */
+/* $Id: data.c,v 1.32 2007/04/20 18:53:22 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the
@@ -861,9 +861,11 @@ free_muxlist(struct muxlist * mul)
             xfree(p->addr);
         if (p->port != NULL)
             xfree(p->port);
+        if (p->clientsocket)
+		close(p->clientsocket);
+        if (p->symuxsocket)
+		close(p->symuxsocket);
 
-        close(p->clientsocket);
-        close(p->symuxsocket);
         for (i = 0; i < AF_MAX; i++)
             if (p->symonsocket[i])
                 close(p->symonsocket[i]);

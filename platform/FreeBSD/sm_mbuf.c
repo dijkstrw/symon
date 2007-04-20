@@ -1,4 +1,4 @@
-/* $Id: sm_mbuf.c,v 1.6 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_mbuf.c,v 1.7 2007/04/20 18:53:24 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004 Matthew Gream
@@ -73,7 +73,7 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     int totmem, totused, totmbufs, totpct;
     u_int32_t stats[15];
 
-    if (!mbstat_len)
+    if (mbstat_len == 0)
         return 0;
 
     size = sizeof(mbstat);

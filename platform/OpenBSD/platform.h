@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.6 2007/02/13 19:12:26 dijkstra Exp $ */
+/* $Id: platform.h,v 1.7 2007/04/20 18:53:25 dijkstra Exp $ */
 
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H
@@ -8,7 +8,6 @@
 #include <sys/dkstat.h>
 #include <sys/queue.h>
 #include <sys/types.h>
-#include <sys/sensors.h>
 #include <sys/socket.h>
 #include <net/if.h>
 

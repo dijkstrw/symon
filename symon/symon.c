@@ -1,7 +1,7 @@
-/* $Id: symon.c,v 1.46 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: symon.c,v 1.47 2007/04/20 18:53:27 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -223,8 +223,6 @@ main(int argc, char *argv[])
         warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,
                 strerror(errno));
 
-    drop_privileges(flag_unsecure);
-
     if (flag_debug != 1) {
         if (daemon(0, 0) != 0)
             fatal("daemonize failed: %.200s", strerror(errno));
@@ -236,6 +234,8 @@ main(int argc, char *argv[])
             fclose(pidfile);
         }
     }
+
+    drop_privileges(flag_unsecure);
 
     info("symon version %s", SYMON_VERSION);
 
@@ -259,7 +259,6 @@ main(int argc, char *argv[])
             (streamfunc[stream->type].init) (stream);
         }
     }
-    set_stream_use(&mul);
 
     /* setup alarm */
     timerclear(&alarminterval.it_interval);
