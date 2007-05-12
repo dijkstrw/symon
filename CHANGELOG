@@ -6,6 +6,9 @@
    - data.c/free_muxlist closed fd 0 at HUP. This makes symux unresponsive on
      OpenBSD and makes it stop on FreeBSD. (Marco Pfatschbacher).
 
+   - platform/OpenBSD/sm_cpu fixed to call CPTIME2 only for machines with more
+     than one cpu. (Henning Brauer)
+
 13/02/2007 - 2.75
 
    - OpenBSD sensors missed includes (Constantine A. Murenin)
@@ -489,4 +492,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.60 2007/04/20 19:32:17 dijkstra Exp $
+$Id: CHANGELOG,v 1.61 2007/05/12 16:46:27 dijkstra Exp $

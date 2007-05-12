@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.7 2007/04/20 18:53:25 dijkstra Exp $ */
+/* $Id: platform.h,v 1.8 2007/05/12 16:46:27 dijkstra Exp $ */
 
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H
@@ -19,22 +19,15 @@
 #define SS_LEN(x)       ((x)->ss_len)
 
 union stream_parg {
-#ifdef HAS_KERN_CPTIME2
     struct {
-        int64_t time[CPUSTATES];
+        long time1[CPUSTATES];
+        int64_t time2[CPUSTATES];
         int64_t old[CPUSTATES];
         int64_t diff[CPUSTATES];
         int64_t states[CPUSTATES];
         int mib[3];
+        int miblen;
     } cp;
-#else
-    struct {
-        long time[CPUSTATES];
-        long old[CPUSTATES];
-        long diff[CPUSTATES];
-        int states[CPUSTATES];
-    } cp;
-#endif
     struct {
         char rawdev[SYMON_DFNAMESIZE];
     } df;
