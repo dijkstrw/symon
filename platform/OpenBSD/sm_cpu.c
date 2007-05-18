@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.24 2007/05/12 16:46:27 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.25 2007/05/18 19:52:09 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -112,18 +112,19 @@ void
 init_cpu(struct stream *st)
 {
     char buf[SYMON_MAX_OBJSIZE];
+#ifdef HAS_KERN_CPTIME2
+    const char *errstr;
+    int mib[2] = {CTL_HW, HW_NCPU};
+    int ncpu;
+    long num;
+    size_t size = sizeof(ncpu);
+#endif
 
     st->parg.cp.mib[0] = CTL_KERN;
     st->parg.cp.mib[1] = KERN_CPTIME;
     st->parg.cp.miblen = 2;
 
 #ifdef HAS_KERN_CPTIME2
-    const char *errstr;
-    int mib[2] = {CTL_HW, HW_NCPU};
-    int ncpu;
-    long num;
-
-    size_t size = sizeof(ncpu);
     if (sysctl(mib, 2, &ncpu, &size, NULL, 0) == -1) {
         warning("could not determine number of cpus: %.200s", strerror(errno));
         ncpu = 1;
@@ -142,7 +143,6 @@ init_cpu(struct stream *st)
         if (st->parg.cp.mib[2] >= ncpu) {
             fatal("cpu(%d) is not present", st->parg.cp.mib[2]);
         }
-    } else {
     }
 #endif
 
@@ -151,6 +151,7 @@ init_cpu(struct stream *st)
 
     info("started module cpu(%.200s)", st->arg);
 }
+
 void
 gets_cpu()
 {
