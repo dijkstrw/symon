@@ -1,4 +1,4 @@
-/* $Id: sm_pfq.c,v 1.3 2007/07/05 14:20:06 dijkstra Exp $ */
+/* $Id: sm_pfq.c,v 1.4 2007/07/05 14:33:40 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 J. Martin Petersen
@@ -90,8 +90,13 @@ get_pfq(char *b, int l, struct stream *st)
 
 union class_stats {
     class_stats_t cbq;
+#ifdef HAS_ALTQ_BASICSTATS
+    struct priq_basic_class_stats priq;
+    struct hfsc_basic_class_stats hfsc;
+#else
     struct priq_classstats priq;
     struct hfsc_classstats hfsc;
+#endif
 };
 
 /*

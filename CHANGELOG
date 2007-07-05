@@ -1,5 +1,9 @@
 05/07/2007 - 2.76
 
+   - platform/NetBSD/sm_io understands new iostat_sysctl of NetBSD4
+
+   - platform/NetBSD/sm_pfq understands NetBSD3/4 altq stat names.
+
    - symux/c_smrrds.sh now searches for rrdtool and symux in {$RRDTOOL,
      $SYMUX}, $PATH and in the installation dirs.
 
@@ -497,4 +501,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.63 2007/07/05 12:16:07 dijkstra Exp $
+$Id: CHANGELOG,v 1.64 2007/07/05 14:33:40 dijkstra Exp $
