@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.35 2006/12/19 22:30:47 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.36 2007/07/05 12:16:07 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2006 Willem Dijkstra
@@ -53,14 +53,25 @@ RRA_SETUP=${RRA_SETUP:-"
 create_rrd() {
     file=$1
     shift
-    rrdtool create $file $RRD_ARGS $* $RRA_SETUP
+    $RRDTOOL create $file $RRD_ARGS $* $RRA_SETUP
     if [ "$?" = "0" -a -f $file ]; then
 	echo "$file created"
     else
 	echo "could not create $file"
     fi
 }
-
+find_exec() {
+    alternatives=$1`echo :$PATH:$2: | sed "s@:@/$3:@g"`
+    echo $alternatives  | tr ':' '\n' | (
+        while read f; do
+            if [ -n "$f" -a -x "$f" ]; then
+                echo $f
+                return
+            fi
+        done)
+}
+# find rrdtool
+RRDTOOL=`find_exec "$RRDTOOL" /usr/local/bin rrdtool`
 # get arguments
 select_interval=""
 for i
@@ -126,7 +137,8 @@ j=`basename $i`
 case $j in
 
 all)
-    sh $this interval $INTERVAL child $config `symux -l`
+    SYMUX=`find_exec "$SYMUX" /usr/libexec:/usr/local/libexec symux`
+    sh $this interval $INTERVAL child $config `$SYMUX -l`
     ;;
 
 cpu[0-9].rrd)
