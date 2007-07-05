@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.16 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.17 2007/07/05 08:34:52 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,6 @@
 #include <net/if_types.h>
 #include <netinet/in.h>
 #include <netinet/in_var.h>
-#include <netipx/ipx.h>
-#include <netipx/ipx_if.h>
 
 #include <errno.h>
 #include <limits.h>

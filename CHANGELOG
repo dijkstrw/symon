@@ -1,3 +1,7 @@
+05/07/2007 - 2.77
+
+   - platform/OpenBSD/sm_if removed obselete netipx includes
+
 27/02/2007 - 2.76
 
    - Daemon needs to be able to bind /dev/null - drop privileges after daemon
@@ -492,4 +496,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.61 2007/05/12 16:46:27 dijkstra Exp $
+$Id: CHANGELOG,v 1.62 2007/07/05 08:34:52 dijkstra Exp $
