@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: platform.h,v 1.6 2007/07/05 13:14:05 dijkstra Exp $ */
 
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
@@ -7,6 +7,7 @@
 
 #include <sys/queue.h>
 #include <sys/sched.h>
+#include <sys/types.h>
 
 #include <net/if.h>
 

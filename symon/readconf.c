@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.25 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.26 2007/07/05 13:14:05 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -29,6 +29,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#include <sys/types.h>
 
 #include <string.h>
 
