@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.6 2007/07/09 12:54:18 dijkstra Exp $ */
+/* $Id: platform.h,v 1.7 2007/07/09 13:19:46 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -23,7 +23,7 @@ union semun {
 #define QUAD_MAX LONG_LONG_MAX
 #endif
 #ifndef QUAD_MAX
-#define QUAD_MAX     (0x7fffffffffffffffL)
+#define QUAD_MAX     (0x7fffffffffffffffLL)
 #endif
 
 #define CPUSTATES    8
