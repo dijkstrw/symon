@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.5 2007/07/09 11:16:37 dijkstra Exp $ */
+/* $Id: platform.h,v 1.6 2007/07/09 12:54:18 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -19,6 +19,13 @@ union semun {
         int val;
 };
 
+#ifdef LONG_LONG_MAX
+#define QUAD_MAX LONG_LONG_MAX
+#endif
+#ifndef QUAD_MAX
+#define QUAD_MAX     (0x7fffffffffffffffL)
+#endif
+
 #define CPUSTATES    8
 #define CP_USER      0
 #define CP_NICE      1
@@ -31,10 +38,10 @@ union semun {
 
 union stream_parg {
     struct {
-        long time[CPUSTATES];
-        long old[CPUSTATES];
-        long diff[CPUSTATES];
-        int states[CPUSTATES];
+        int64_t time[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
         char name[6];
     } cp;
 };

@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.6 2007/07/09 11:16:37 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.7 2007/07/09 12:54:18 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -69,7 +69,7 @@
 #include "xmalloc.h"
 
 __BEGIN_DECLS
-int percentages(int, int *, long *, long *, long *);
+int percentages(int, int64_t *, int64_t *, int64_t *, int64_t *);
 __END_DECLS
 
 /* Globals for this module all start with cp_ */
@@ -85,13 +85,10 @@ static int cp_maxsize = 0;
  *      useful on BSD mchines for calculating cpu state percentages.
  */
 int
-percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
+percentages(int cnt, int64_t *out, int64_t *new, int64_t *old, int64_t *diffs)
 {
-    register int i;
-    register long change;
-    register long total_change;
-    register long *dp;
-    long half_total;
+    int64_t change, total_change, *dp, half_total;
+    int i;
 
     /* initialization */
     total_change = 0;
@@ -101,7 +98,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
     for (i = 0; i < cnt; i++) {
         if ((change = *new - *old) < 0) {
             /* this only happens when the counter wraps */
-            change = ((unsigned int) *new - (unsigned int) *old);
+            change = (QUAD_MAX - *old) + *new;
         }
         total_change += (*dp++ = change);
         *old++ = *new++;
@@ -117,7 +114,7 @@ percentages(int cnt, int *out, register long *new, register long *old, long *dif
         *out++ = ((*diffs++ * 1000 + half_total) / total_change);
 
     /* return the total in case the caller wants to use it */
-    return total_change;
+    return (total_change);
 }
 
 void
@@ -188,7 +185,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     line += strlen(st->parg.cp.name);
-    if (CPUSTATES > sscanf(line, "%lu %lu %lu %lu %lu %lu %lu %lu\n",
+    if (CPUSTATES > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu %llu\n",
                            &st->parg.cp.time[CP_USER],
                            &st->parg.cp.time[CP_NICE],
                            &st->parg.cp.time[CP_SYS],

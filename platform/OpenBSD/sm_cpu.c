@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.25 2007/05/18 19:52:09 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.26 2007/07/09 12:54:18 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -89,7 +89,7 @@ percentages(int cnt, int64_t *out, int64_t *new, int64_t *old, int64_t *diffs)
     for (i = 0; i < cnt; i++) {
         if ((change = *new - *old) < 0) {
             /* this only happens when the counter wraps */
-            change = (*new - *old);
+            change = (QUAD_MAX - *old) + *new;
         }
         total_change += (*dp++ = change);
         *old++ = *new++;
