@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.26 2007/07/05 13:14:05 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.27 2007/07/09 11:43:13 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -203,12 +203,13 @@ read_monitor(struct muxlist * mul, struct lex * l)
 
     if (l->op == LXT_FROM) {
         lex_nexttoken(l);
+        /* check to see host is resolvable, result is discarded */
         if (!getip(l->token, AF_INET) && !getip(l->token, AF_INET6)) {
             warning("%.200s:%d: could not resolve '%.200s'",
                 l->filename, l->cline, l->token);
             return 0;
         }
-        mux->localaddr = xstrdup((const char *) &res_host);
+        mux->localaddr = xstrdup(l->token);
         lex_nexttoken(l);
     }
 
