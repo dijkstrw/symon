@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.38 2007/01/20 12:52:50 dijkstra Exp $ */
+/* $Id: symux.c,v 1.39 2007/07/09 11:18:01 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
@@ -141,19 +141,18 @@ main(int argc, char *argv[])
                 if ((cfgpath = getcwd(cfgpath, MAXPATHLEN)) == NULL)
                     fatal("could not get working directory");
 
-                maxstringlen = strlen(cfgpath) + strlen(optarg) + 1;
+                maxstringlen = strlen(cfgpath) + 1 + strlen(optarg) + 1;
                 cfgfile = xmalloc(maxstringlen);
-                strncpy(cfgfile, cfgpath, maxstringlen);
+                strncpy(cfgfile, cfgpath, maxstringlen - 1);
                 stringptr = cfgfile + strlen(cfgpath);
                 stringptr[0] = '/';
                 stringptr++;
-                strncpy(stringptr, optarg, maxstringlen - (cfgfile - stringptr));
-                cfgfile[maxstringlen] = '\0';
+                strncpy(stringptr, optarg, maxstringlen - 1 - (stringptr - cfgfile));
+                cfgfile[maxstringlen - 1] = '\0';
 
-                free(cfgpath);
+                xfree(cfgpath);
             } else
                 cfgfile = xstrdup(optarg);
-
             break;
         case 'l':
             flag_list = 1;
