@@ -1,11 +1,11 @@
-/* $Id: sm_cpu.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.6 2007/07/09 11:16:37 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
  * The percentages function was written by William LeFebvre and is part
  * of the 'top' utility. His copyright statement is below.
  *
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -188,11 +188,15 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     line += strlen(st->parg.cp.name);
-    if (4 > sscanf(line, "%lu %lu %lu %lu\n",
-                   &st->parg.cp.time[CP_USER],
-                   &st->parg.cp.time[CP_NICE],
-                   &st->parg.cp.time[CP_SYS],
-                   &st->parg.cp.time[CP_IDLE])) {
+    if (CPUSTATES > sscanf(line, "%lu %lu %lu %lu %lu %lu %lu %lu\n",
+                           &st->parg.cp.time[CP_USER],
+                           &st->parg.cp.time[CP_NICE],
+                           &st->parg.cp.time[CP_SYS],
+                           &st->parg.cp.time[CP_IDLE],
+                           &st->parg.cp.time[CP_IOWAIT],
+                           &st->parg.cp.time[CP_HARDIRQ],
+                           &st->parg.cp.time[CP_SOFTIRQ],
+                           &st->parg.cp.time[CP_STEAL])) {
         warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
         return 0;
     }
@@ -204,6 +208,9 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
                   (double) (st->parg.cp.states[CP_USER] / 10.0),
                   (double) (st->parg.cp.states[CP_NICE] / 10.0),
                   (double) (st->parg.cp.states[CP_SYS] / 10.0),
-                  (double) (0),
+                  (double) (st->parg.cp.states[CP_IOWAIT] +
+                            st->parg.cp.states[CP_HARDIRQ] +
+                            st->parg.cp.states[CP_SOFTIRQ] +
+                            st->parg.cp.states[CP_STEAL]) / 10.0,
                   (double) (st->parg.cp.states[CP_IDLE] / 10.0));
 }

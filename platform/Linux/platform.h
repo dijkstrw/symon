@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: platform.h,v 1.5 2007/07/09 11:16:37 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -19,11 +19,15 @@ union semun {
         int val;
 };
 
-#define CPUSTATES 4
-#define CP_USER 0
-#define CP_NICE 1
-#define CP_SYS  2
-#define CP_IDLE 3
+#define CPUSTATES    8
+#define CP_USER      0
+#define CP_NICE      1
+#define CP_SYS       2
+#define CP_IDLE      3
+#define CP_IOWAIT    4
+#define CP_HARDIRQ   5
+#define CP_SOFTIRQ   6
+#define CP_STEAL     7
 
 union stream_parg {
     struct {
