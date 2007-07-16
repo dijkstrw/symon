@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.7 2007/07/09 13:19:46 dijkstra Exp $ */
+/* $Id: platform.h,v 1.8 2007/07/16 07:37:11 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -36,6 +36,8 @@ union semun {
 #define CP_SOFTIRQ   6
 #define CP_STEAL     7
 
+#define MAX_PATH_LEN 1024
+
 union stream_parg {
     struct {
         int64_t time[CPUSTATES];
@@ -44,6 +46,9 @@ union stream_parg {
         int64_t states[CPUSTATES];
         char name[6];
     } cp;
+    struct {
+        char mountpath[MAX_PATH_LEN];
+    } df;
 };
 
 #endif
