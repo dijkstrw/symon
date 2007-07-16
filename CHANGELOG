@@ -1,3 +1,7 @@
+16/07/2007 - 2.77
+
+   - Martin van der Werff donated the Linux/sm_df probe.
+
 05/07/2007 - 2.76
 
    - symux/readconf.c resolve from host, but discard result. (Henning Brauer)
@@ -511,4 +515,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.66 2007/07/09 11:46:00 dijkstra Exp $
+$Id: CHANGELOG,v 1.67 2007/07/16 07:50:09 dijkstra Exp $

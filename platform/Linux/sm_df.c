@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.1 2007/07/16 07:37:11 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.2 2007/07/16 07:50:09 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2007 Martin van der Werff
@@ -52,15 +52,11 @@ void
 init_df(struct stream *st)
 {
     FILE * fp = setmntent("/etc/mtab", "r");
+    struct mntent *mount;
 
-    struct mntent * mount;
-
-    while( (mount = getmntent(fp)) )
-    {
-	if( strncmp(mount->mnt_fsname, "/dev/", 5) == 0 )
-	{
-            if( strcmp(mount->mnt_fsname + 5, st->arg) == 0 )
-            {
+    while ((mount = getmntent(fp))) {
+	if (strncmp(mount->mnt_fsname, "/dev/", 5) == 0) {
+            if (strcmp(mount->mnt_fsname + 5, st->arg) == 0) {
                 strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
                 info("started module df(%.200s) --> %.200s", st->arg, st->parg.df.mountpath);
                 endmntent(fp);
@@ -95,8 +91,7 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
 {
     struct statfs buf;
 
-    if( statfs(st->parg.df.mountpath, &buf) == 0 )
-    {
+    if (statfs(st->parg.df.mountpath, &buf) == 0 ) {
         return snpack(symon_buf, maxlen, st->arg, MT_DF,
                       (u_int64_t)fsbtoblk(buf.f_blocks, buf.f_bsize, SYMON_DFBLOCKSIZE),
                       (u_int64_t)fsbtoblk(buf.f_bfree, buf.f_bsize, SYMON_DFBLOCKSIZE),
