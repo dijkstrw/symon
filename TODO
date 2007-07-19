@@ -9,9 +9,12 @@ TODO:
 - check shared memory for hackable bugs. (master should only write, clients
   should only read. clients should check incoming data for sanity.)
 
+- check for availability of rrd before compilation
+- make user/group part of makefile.inc
+
 == longer term
 - change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
 - test framework
 
-$Id: TODO,v 1.28 2007/02/11 20:07:31 dijkstra Exp $
+$Id: TODO,v 1.29 2007/07/19 07:55:20 dijkstra Exp $

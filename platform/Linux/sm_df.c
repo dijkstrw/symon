@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.2 2007/07/16 07:50:09 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.3 2007/07/19 07:55:20 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2007 Martin van der Werff
@@ -98,8 +98,8 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
                       (u_int64_t)fsbtoblk(buf.f_bavail, buf.f_bsize, SYMON_DFBLOCKSIZE),
                       (u_int64_t)buf.f_files,
                       (u_int64_t)buf.f_ffree,
-                      0,
-                      0);
+                      (u_int64_t)0,
+                      (u_int64_t)0);
     }
 
     warning("df(%.200s) failed", st->arg);
