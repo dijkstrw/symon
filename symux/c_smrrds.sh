@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.36 2007/07/05 12:16:07 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.37 2007/09/25 14:33:21 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2006 Willem Dijkstra
@@ -163,7 +163,7 @@ df_*.rrd)
 	DS:asyncwrites:COUNTER:$INTERVAL:U:U
     ;;
 
-sensor*.rrd)
+sensor_*.rrd)
     # Build sensor file
     create_rrd $i \
 	DS:value:GAUGE:$INTERVAL:-U:U

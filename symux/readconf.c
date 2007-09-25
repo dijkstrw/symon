@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.31 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.32 2007/09/25 14:33:21 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -106,7 +106,7 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ta = args;
         break;
     case MT_SENSOR:
-        ts = "sensor";
+        ts = "sensor_";
         ta = args;
         break;
     default:

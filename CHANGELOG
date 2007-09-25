@@ -2,6 +2,10 @@
 
    - Martin van der Werff donated the Linux/sm_df probe.
 
+   - symux/c_smrrds.sh/syweb now all think sensor probes are called
+     sensor_*. (Daniel Spizak, Evgeniy Sudyr)
+
+
 05/07/2007 - 2.76
 
    - symux/readconf.c resolve from host, but discard result. (Henning Brauer)
@@ -515,4 +519,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.67 2007/07/16 07:50:09 dijkstra Exp $
+$Id: CHANGELOG,v 1.68 2007/09/25 14:33:19 dijkstra Exp $
