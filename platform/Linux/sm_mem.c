@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.5 2007/10/29 16:14:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Harm Schotanus
@@ -124,6 +124,7 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
     me_stats[0] = ktob(mem_getitem("Active"));
     me_stats[1] = ktob(mem_getitem("MemTotal"));
     me_stats[2] = ktob(mem_getitem("MemFree"));
+    me_stats[1] -= me_stats[2];
     me_stats[3] = ktob(mem_getitem("SwapFree"));
     me_stats[4] = ktob(mem_getitem("SwapTotal"));
 

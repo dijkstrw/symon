@@ -8,6 +8,9 @@
    - pfq probes must be specified as pfq(interface/queue) in symon and are
      treated as pfq_interface_symon.rrd by symux.
 
+   - platform/Linux/sm_mem modified to better reflect OpenBSD's idea of the
+     vm_meter stats.
+
 05/07/2007 - 2.76
 
    - symux/readconf.c resolve from host, but discard result. (Henning Brauer)
@@ -521,4 +524,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.69 2007/10/29 14:59:42 dijkstra Exp $
+$Id: CHANGELOG,v 1.70 2007/10/29 16:14:37 dijkstra Exp $
