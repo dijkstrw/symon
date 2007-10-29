@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.32 2007/09/25 14:33:21 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.33 2007/10/29 14:59:43 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,10 +55,12 @@ const char *default_symux_port = SYMUX_PORT;
 int
 insert_filename(char *path, int maxlen, int type, char *args)
 {
+    int i, result;
     char *ts;
     char *ta;
+    char *fta;
 
-    ts = ta = NULL;
+    fta = ts = ta = NULL;
 
     switch (type) {
     case MT_CPU:
@@ -115,11 +117,21 @@ insert_filename(char *path, int maxlen, int type, char *args)
         return 0;
     }
 
-    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, ta)) >= maxlen) {
-        return 0;
-    } else {
-        return 1;
+    /* ensure that no '/' remain in args */
+    fta = xstrdup(ta);
+
+    for (i = 0; i < strlen(fta); i++) {
+        if (fta[i] == '/') fta[i] = '_';
     }
+
+    if ((snprintf(path, maxlen, "/%s%s.rrd", ts, fta)) >= maxlen) {
+        result = 0;
+    } else {
+        result = 1;
+    }
+
+    xfree(fta);
+    return result;
 }
 /* mux <host> (port|,| ) <number> */
 int

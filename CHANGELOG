@@ -5,6 +5,8 @@
    - symux/c_smrrds.sh/syweb now all think sensor probes are called
      sensor_*. (Daniel Spizak, Evgeniy Sudyr)
 
+   - pfq probes must be specified as pfq(interface/queue) in symon and are
+     treated as pfq_interface_symon.rrd by symux.
 
 05/07/2007 - 2.76
 
@@ -519,4 +521,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.68 2007/09/25 14:33:19 dijkstra Exp $
+$Id: CHANGELOG,v 1.69 2007/10/29 14:59:42 dijkstra Exp $

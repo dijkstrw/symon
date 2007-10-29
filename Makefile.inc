@@ -1,4 +1,4 @@
-# $Id: Makefile.inc,v 1.37 2007/09/25 14:33:19 dijkstra Exp $
+# $Id: Makefile.inc,v 1.38 2007/10/29 14:59:43 dijkstra Exp $
 
 V=2.77
 OS!=uname -s
@@ -6,7 +6,7 @@ OS!=uname -s
 AR?=	ar
 CC?=	cc
 .ifdef DEBUG
-CFLAGS+=-g -Wall
+CFLAGS=-g -Wall
 .else
 CFLAGS+=-Wall
 .endif
