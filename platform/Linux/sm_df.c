@@ -1,4 +1,4 @@
-/* $Id: sm_df.c,v 1.3 2007/07/19 07:55:20 dijkstra Exp $ */
+/* $Id: sm_df.c,v 1.4 2007/11/29 07:47:51 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2007 Martin van der Werff
@@ -82,9 +82,13 @@ gets_df()
  * Convert statfs returned filesystem size into BLOCKSIZE units.
  * Attempts to avoid overflow for large filesystems.
  */
-#define fsbtoblk(num, fsbs, bs) \
-        (((fsbs) != 0 && (fsbs) < (bs)) ? \
-                (num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
+u_int64_t
+fsbtoblk(u_int64_t num, u_int64_t fsbs, u_int64_t bs)
+{
+    return (((fsbs) != 0 && (fsbs) < (bs)) ? 
+        (num) / ((bs) / (fsbs)) : 
+        (num) * ((fsbs) / (bs)));
+}
 
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
