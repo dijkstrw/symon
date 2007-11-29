@@ -1,7 +1,7 @@
-/* $Id: symonnet.c,v 1.16 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: symonnet.c,v 1.17 2007/11/29 13:13:18 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,10 +72,10 @@ connect2mux(struct mux * mux)
 void
 send_packet(struct mux * mux)
 {
-    if (sendto(mux->symuxsocket, (void *) &mux->packet.data,
-               mux->offset, 0, (struct sockaddr *) & mux->sockaddr,
+    if (sendto(mux->symuxsocket, mux->packet.data,
+               mux->packet.offset, 0, (struct sockaddr *) & mux->sockaddr,
                SS_LEN(&mux->sockaddr))
-        != mux->offset) {
+        != mux->packet.offset) {
         mux->senderr++;
     }
 
@@ -91,36 +91,36 @@ prepare_packet(struct mux * mux)
 {
     time_t t = time(NULL);
 
-    bzero(&mux->packet, sizeof(mux->packet));
+    bzero(mux->packet.data, mux->packet.size);
     mux->packet.header.symon_version = SYMON_PACKET_VER;
     mux->packet.header.timestamp = t;
 
     /* symonpacketheader is always first stream */
-    mux->offset =
-        setheader((char *) &mux->packet.data,
+    mux->packet.offset =
+        setheader(mux->packet.data,
                   &mux->packet.header);
 }
 /* Put a stream into the packet for a mux */
 void
 stream_in_packet(struct stream * stream, struct mux * mux)
 {
-    mux->offset +=
-    (streamfunc[stream->type].get)      /* call getter of stream */
-    (&mux->packet.data[mux->offset],    /* packet buffer */
-     sizeof(mux->packet.data) - mux->offset,    /* maxlen */
-     stream);
+    mux->packet.offset +=
+        (streamfunc[stream->type].get)      /* call getter of stream */
+        (mux->packet.data + mux->packet.offset,    /* packet buffer */
+         mux->packet.size - mux->packet.offset,    /* maxlen */
+         stream);
 }
 /* Ready a packet for transmission, set length and crc */
 void
 finish_packet(struct mux * mux)
 {
-    mux->packet.header.length = mux->offset;
+    mux->packet.header.length = mux->packet.offset;
     mux->packet.header.crc = 0;
 
     /* fill in correct header with crc = 0 */
-    setheader((char *) &mux->packet.data, &mux->packet.header);
+    setheader(mux->packet.data, &mux->packet.header);
 
     /* fill in correct header with crc */
-    mux->packet.header.crc = crc32(&mux->packet.data, mux->offset);
-    setheader((char *) &mux->packet.data, &mux->packet.header);
+    mux->packet.header.crc = crc32(mux->packet.data, mux->packet.offset);
+    setheader(mux->packet.data, &mux->packet.header);
 }

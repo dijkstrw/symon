@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.30 2007/02/11 20:07:31 dijkstra Exp $ */
+/* $Id: data.h,v 1.31 2007/11/29 13:13:17 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -97,9 +97,10 @@ struct symonpacketheader {
 
 struct symonpacket {
     struct symonpacketheader header;
-    char data[_POSIX2_LINE_MAX];
+    u_int32_t offset;
+    u_int32_t size;
+    char *data;
 };
-
 /* The difference between a stream and a packed stream:
  * - A stream ties stream information to a file.
  * - A packed stream is the measured data itself
@@ -129,7 +130,6 @@ struct mux {
     char *port;
     char *localaddr;
     struct sourcelist sol;
-    int offset;
     int clientsocket;           /* symux; incoming tcp connections */
     int symonsocket[AF_MAX];    /* symux; incoming symon data */
     int symuxsocket;            /* symon; outgoing data to mux */
@@ -305,8 +305,8 @@ struct packedstream {
 /* prototypes */
 __BEGIN_DECLS
 char *type2str(const int);
-int token2type(const int);
-int calculate_churnbuffer(struct sourcelist *);
+int bytelen_sourcelist(struct sourcelist *);
+int bytelen_streamlist(struct streamlist *);
 int getheader(char *, struct symonpacketheader *);
 int ps2strn(struct packedstream *, char *, int, int);
 int setheader(char *, struct symonpacketheader *);
@@ -314,10 +314,12 @@ int snpack(char *, int, char *, int, ...);
 int snpack1(char *, int, char *, int, ...);
 int snpack2(char *, int, char *, int, ...);
 int snpackx(size_t, char *, int, char *, int, va_list);
+int strlen_sourcelist(struct sourcelist *);
 int strlentype(int);
 int sunpack1(char *, struct packedstream *);
 int sunpack2(char *, struct packedstream *);
 int sunpackx(size_t, char *, struct packedstream *);
+int token2type(const int);
 struct mux *add_mux(struct muxlist *, char *);
 struct mux *find_mux(struct muxlist *, char *);
 struct mux *rename_mux(struct muxlist *, struct mux *, char *);
@@ -333,5 +335,7 @@ void free_muxlist(struct muxlist *);
 void free_sourcelist(struct sourcelist *);
 void free_streamlist(struct streamlist *);
 void init_crc32();
+void init_symon_packet(struct mux *);
+void init_symux_packet(struct mux *);
 __END_DECLS
 #endif                          /* _SYMON_LIB_DATA_H */

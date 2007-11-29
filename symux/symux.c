@@ -1,7 +1,7 @@
-/* $Id: symux.c,v 1.39 2007/07/09 11:18:01 dijkstra Exp $ */
+/* $Id: symux.c,v 1.40 2007/11/29 13:13:18 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2006 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,6 @@ huphandler(int s)
 int
 main(int argc, char *argv[])
 {
-    struct symonpacket packet;
     struct packedstream ps;
     char *cfgfile;
     char *cfgpath;
@@ -201,7 +200,6 @@ main(int argc, char *argv[])
         }
     }
 
-
     setegid(getgid());
     setgid(getgid());
 
@@ -226,9 +224,10 @@ main(int argc, char *argv[])
 
     mux = SLIST_FIRST(&mul);
 
-    churnbuflen = calculate_churnbuffer(&mux->sol);
+    churnbuflen = strlen_sourcelist(&mux->sol);
     debug("size of churnbuffer = %d", churnbuflen);
     initshare(churnbuflen);
+    init_symux_packet(mux);
 
     /* catch signals */
     signal(SIGHUP, huphandler);
@@ -249,7 +248,7 @@ main(int argc, char *argv[])
     rrderrors = 0;
     /* main loop */
     for (;;) {                  /* FOREVER */
-        wait_for_traffic(mux, &source, &packet);
+        wait_for_traffic(mux, &source);
 
         if (flag_hup == 1) {
             flag_hup = 0;
@@ -266,6 +265,7 @@ main(int argc, char *argv[])
                 mux = SLIST_FIRST(&mul);
                 get_symon_sockets(mux);
                 get_client_socket(mux);
+                init_symux_packet(mux);
             }
         } else {
 
@@ -277,11 +277,11 @@ main(int argc, char *argv[])
              * the hasseling with stringptr.
              */
 
-            offset = mux->offset;
+            offset = mux->packet.offset;
             maxstringlen = shared_getmaxlen();
             /* put time:ip: into shared region */
             slot = master_forbidread();
-            timestamp = (time_t) packet.header.timestamp;
+            timestamp = (time_t) mux->packet.header.timestamp;
             stringbuf = shared_getmem(slot);
             debug("stringbuf = 0x%08x", stringbuf);
             snprintf(stringbuf, maxstringlen, "%s;", source->addr);
@@ -290,12 +290,12 @@ main(int argc, char *argv[])
             maxstringlen -= strlen(stringbuf);
             stringptr = stringbuf + strlen(stringbuf);
 
-            while (offset < packet.header.length) {
+            while (offset < mux->packet.header.length) {
                 bzero(&ps, sizeof(struct packedstream));
-                if (packet.header.symon_version == 1) {
-                    offset += sunpack1(packet.data + offset, &ps);
-                } else if (packet.header.symon_version == 2) {
-                    offset += sunpack2(packet.data + offset, &ps);
+                if (mux->packet.header.symon_version == 1) {
+                    offset += sunpack1(mux->packet.data + offset, &ps);
+                } else if (mux->packet.header.symon_version == 2) {
+                    offset += sunpack2(mux->packet.data + offset, &ps);
                 } else {
                     debug("unsupported packet version - ignoring data");
                     ps.type = MT_EOT;

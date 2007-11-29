@@ -1,7 +1,7 @@
-/* $Id: symuxnet.c,v 1.23 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: symuxnet.c,v 1.24 2007/11/29 13:13:18 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -172,8 +172,7 @@ get_client_socket(struct mux * mux)
  * Silently forks off clienthandlers
  */
 void
-wait_for_traffic(struct mux * mux, struct source ** source,
-                 struct symonpacket * packet)
+wait_for_traffic(struct mux * mux, struct source ** source)
 {
     fd_set readset;
     int i;
@@ -205,7 +204,7 @@ wait_for_traffic(struct mux * mux, struct source ** source,
 
             for (i = 0; i < AF_MAX; i++)
                 if (FD_ISSET(mux->symonsocket[i], &readset)) {
-                    if (recv_symon_packet(mux, i, source, packet))
+                    if (recv_symon_packet(mux, i, source))
                         return;
                 }
         } else {
@@ -218,8 +217,7 @@ wait_for_traffic(struct mux * mux, struct source ** source,
  * return 0 if no valid packet found
  */
 int
-recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
-                  struct symonpacket * packet)
+recv_symon_packet(struct mux * mux, int socknr, struct source ** source)
 {
     struct sockaddr_storage sind;
     socklen_t sl;
@@ -234,8 +232,8 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
         sl = sizeof(sind);
 
         size = recvfrom(mux->symonsocket[socknr],
-                        (void *) (packet->data + received),
-                        sizeof(struct symonpacket) - received,
+                        (mux->packet.data + received),
+                        (mux->packet.size - received),
                         0, (struct sockaddr *) &sind, &sl);
         if (size > 0)
             received += size;
@@ -244,7 +242,7 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
     } while ((size == -1) &&
              (errno == EAGAIN || errno == EINTR) &&
              (tries < SYMUX_MAXREADTRIES) &&
-             (received < sizeof(packet->data)));
+             (received < mux->packet.size));
 
     if ((size == -1) &&
         errno)
@@ -259,21 +257,25 @@ recv_symon_packet(struct mux * mux, int socknr, struct source ** source,
         return 0;
     } else {
         /* get header stream */
-        mux->offset = getheader(packet->data, &packet->header);
+        mux->packet.offset = getheader(mux->packet.data, &mux->packet.header);
         /* check crc */
-        crc = packet->header.crc;
-        packet->header.crc = 0;
-        setheader(packet->data, &packet->header);
-        crc ^= crc32(packet->data, received);
+        crc = mux->packet.header.crc;
+        mux->packet.header.crc = 0;
+        setheader(mux->packet.data, &mux->packet.header);
+        crc ^= crc32(mux->packet.data, received);
         if (crc != 0) {
-            warning("ignored packet with bad crc from %.200s:%.200s",
-                    res_host, res_service);
+            if (mux->packet.header.length > mux->packet.size)
+                warning("ignored oversized packet from %.200s:%.200s; client and server have different stream configurations",
+                        res_host, res_service);
+            else
+                warning("ignored packet with bad crc from %.200s:%.200s",
+                        res_host, res_service);
             return 0;
         }
         /* check packet version */
-        if (packet->header.symon_version > SYMON_PACKET_VER) {
+        if (mux->packet.header.symon_version > SYMON_PACKET_VER) {
             warning("ignored packet with unsupported version %d from %.200s:%.200s",
-                    packet->header.symon_version, res_host, res_service);
+                    mux->packet.header.symon_version, res_host, res_service);
             return 0;
         } else {
             if (flag_debug) {

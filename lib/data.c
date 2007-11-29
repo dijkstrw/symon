@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.32 2007/04/20 18:53:22 dijkstra Exp $ */
+/* $Id: data.c,v 1.33 2007/11/29 13:13:17 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -862,9 +862,11 @@ free_muxlist(struct muxlist * mul)
         if (p->port != NULL)
             xfree(p->port);
         if (p->clientsocket)
-		close(p->clientsocket);
+            close(p->clientsocket);
         if (p->symuxsocket)
-		close(p->symuxsocket);
+            close(p->symuxsocket);
+        if (p->packet.data)
+            xfree(p->packet.data);
 
         for (i = 0; i < AF_MAX; i++)
             if (p->symonsocket[i])
@@ -921,9 +923,48 @@ free_sourcelist(struct sourcelist * sol)
         p = np;
     }
 }
-/* Calculate maximum buffer space needed for a single symon hit */
+/* Calculate maximum buffer space needed for a single symon measurement run,
+ * excluding the packet header
+ */
 int
-calculate_churnbuffer(struct sourcelist * sol)
+bytelen_streamlist(struct streamlist * sl)
+{
+    struct stream *stream;
+    int len = 0;
+    int i;
+
+    SLIST_FOREACH(stream, sl, streams) {
+        len += 1; /* type */
+        len += strlen(stream->arg) + 1; /* arg */
+        for (i = 0; streamform[stream->type].form[i] != 0; i++) /* packedstream */
+            len += bytelenvar(streamform[stream->type].form[i]);
+    }
+
+    return len;
+}
+/* Calculate maximum buffer symux space needed for a single symon hit,
+ * excluding the packet header
+ */
+int
+bytelen_sourcelist(struct sourcelist * sol)
+{
+    struct source *source;
+    int maxlen;
+    int len;
+
+    len = maxlen = 0;
+
+    /* determine maximum packet size for a single source */
+    SLIST_FOREACH(source, sol, sources) {
+        len = bytelen_streamlist(&source->sl);
+        if (len > maxlen)
+            maxlen = len;
+    }
+    return maxlen;
+}
+/* Calculate maximum buffer symux space needed for a single symon hit */
+int
+strlen_sourcelist(struct sourcelist * sol)
 {
     char buf[_POSIX2_LINE_MAX];
     struct source *source;
@@ -951,6 +992,49 @@ calculate_churnbuffer(struct sourcelist * sol)
             maxlen = len;
     }
     return maxlen;
+}
+void
+init_symon_packet(struct mux * mux)
+{
+    if (mux->packet.data)
+        xfree(mux->packet.data);
+
+    mux->packet.size = sizeof(struct symonpacketheader) +
+        bytelen_streamlist(&mux->sl);
+    if (mux->packet.size > SYMON_MAXPACKET) {
+        warning("transport max packet size is not enough to transport all streams");
+        mux->packet.size = SYMON_MAXPACKET;
+    }
+    mux->packet.data = xmalloc(mux->packet.size);
+    bzero(mux->packet.data, mux->packet.size);
+
+    debug("symon packet size=%d", mux->packet.size);
+}
+void
+init_symux_packet(struct mux * mux)
+{
+    if (mux->packet.data)
+        xfree(mux->packet.data);
+
+    /* determine optimal packet size */
+    mux->packet.size = sizeof(struct symonpacketheader) +
+        bytelen_sourcelist(&mux->sol);
+    if (mux->packet.size > SYMON_MAXPACKET) {
+        warning("transport max packet size is not enough to transport all streams");
+        mux->packet.size = SYMON_MAXPACKET;
+    }
+
+    /* multiply by 2 to allow users to detect symon.conf/symux.conf stream
+     * configuration differences
+     */
+    mux->packet.size = ((mux->packet.size << 2) > SYMON_MAXPACKET)?
+        SYMON_MAXPACKET:
+        mux->packet.size << 2;
+
+    mux->packet.data = xmalloc(mux->packet.size);
+    bzero(mux->packet.data, mux->packet.size);
+
+    debug("symux packet size=%d", mux->packet.size);
 }
 /* Big endian CRC32 */
 u_int32_t

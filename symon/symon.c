@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.47 2007/04/20 18:53:27 dijkstra Exp $ */
+/* $Id: symon.c,v 1.48 2007/11/29 13:13:18 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -214,6 +214,8 @@ main(int argc, char *argv[])
 
     set_stream_use(&mul);
 
+    /* allocate memory for packet buffer */
+    
     /* open resources that might not be available after privilege drop */
     for (i = 0; i < MT_EOT; i++)
         if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
@@ -254,6 +256,7 @@ main(int argc, char *argv[])
 
     /* init modules */
     SLIST_FOREACH(mux, &mul, muxes) {
+        init_symon_packet(mux);
         connect2mux(mux);
         SLIST_FOREACH(stream, &mux->sl, streams) {
             (streamfunc[stream->type].init) (stream);
@@ -291,6 +294,7 @@ main(int argc, char *argv[])
 
                     /* init modules */
                     SLIST_FOREACH(mux, &mul, muxes) {
+                        init_symon_packet(mux);
                         connect2mux(mux);
                         SLIST_FOREACH(stream, &mux->sl, streams) {
                             (streamfunc[stream->type].init) (stream);
