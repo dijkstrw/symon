@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.48 2007/11/29 13:13:18 dijkstra Exp $ */
+/* $Id: symon.c,v 1.49 2007/11/29 13:55:30 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -65,6 +65,7 @@ __END_DECLS
 
 int flag_unsecure = 0;
 int flag_hup = 0;
+int flag_testconf = 0;
 int symon_interval = SYMON_DEFAULT_INTERVAL;
 
 /* map stream types to inits and getters */
@@ -187,7 +188,7 @@ main(int argc, char *argv[])
 
     cfgpath = SYMON_CONFIG_FILE;
 
-    while ((ch = getopt(argc, argv, "dvuf:")) != -1) {
+    while ((ch = getopt(argc, argv, "df:tuv")) != -1) {
         switch (ch) {
         case 'd':
             flag_debug = 1;
@@ -197,6 +198,10 @@ main(int argc, char *argv[])
             cfgpath = xstrdup(optarg);
             break;
 
+        case 't':
+            flag_testconf = 1;
+            break;
+
         case 'u':
             flag_unsecure = 1;
             break;
@@ -204,7 +209,7 @@ main(int argc, char *argv[])
         case 'v':
             info("symon version %s", SYMON_VERSION);
         default:
-            info("usage: %s [-d] [-u] [-v] [-f cfgfile]", __progname);
+            info("usage: %s [-d] [-t] [-u] [-v] [-f cfgfile]", __progname);
             exit(EX_USAGE);
         }
     }
@@ -212,10 +217,13 @@ main(int argc, char *argv[])
     if (!read_config_file(&mul, cfgpath))
         fatal("configuration file contained errors - aborting");
 
+    if (flag_testconf) {
+        info("%s: ok", cfgpath);
+        exit(EX_OK);
+    }
+
     set_stream_use(&mul);
 
-    /* allocate memory for packet buffer */
-    
     /* open resources that might not be available after privilege drop */
     for (i = 0; i < MT_EOT; i++)
         if (streamfunc[i].used && (streamfunc[i].privinit != NULL))

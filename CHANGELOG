@@ -1,5 +1,8 @@
 29/11/2007 - 2.77
 
+   - symon/symux -t can now be used to check configuration files before running
+     in anger.
+
    - symon now also calculates maximum message size; with symux using twice the
      calculated value to ensure that configuration errors between
      sy[mon|mux].conf are detected in the logs. Both enforce maximum message =
@@ -529,4 +532,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.71 2007/11/29 13:13:17 dijkstra Exp $
+$Id: CHANGELOG,v 1.72 2007/11/29 13:55:30 dijkstra Exp $

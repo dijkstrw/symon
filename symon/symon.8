@@ -35,7 +35,7 @@
 .Nd system monitor
 .Sh SYNOPSIS
 .Nm
-.Op Fl duv
+.Op Fl dtuv
 .Op Fl f Ar filename
 .Pp
 .Sh DESCRIPTION
@@ -77,6 +77,8 @@ Read configuration from
 .Ar filename
 instead of
 .Pa /etc/symon.conf .
+.It Fl t
+Test configuration file and exit.
 .It Fl u
 By default
 .Nm
@@ -171,11 +173,11 @@ does not check whether resources mentioned in
 exist.
 .Pp
 .Sh AUTHOR
-Willem Dijkstra <wpd@xs4all.nl>. Daniel Hartmeier helped to port to big-endian
-architectures. Matthew Gream helped to port symon to other BSD platforms.
+Willem Dijkstra <wpd@xs4all.nl>. \%Daniel \%Hartmeier helped to port to big-endian
+architectures. \%Matthew \%Gream helped to port symon to other BSD platforms.
 .Pp
-Port contributors: Marc Balmer, Matthew Gream, Daniel Hartmeier, Constantine
-A. Murenin, J. Martin Petersen, Fredrik Soderblom, Harm Schotanus and Martin
-van der Werff.
+Port contributors: \%Marc \%Balmer, \%Matthew \%Gream, \%Daniel \%Hartmeier,
+\%Constantine A. \%Murenin, J. \%Martin \%Petersen, \%Fredrik \%Soderblom,
+\%Harm \%Schotanus and \%Martin van der \%Werff.
 .Sh SEE ALSO
 .Xr symux 8

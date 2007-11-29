@@ -1,4 +1,4 @@
-/* $Id: symux.c,v 1.40 2007/11/29 13:13:18 dijkstra Exp $ */
+/* $Id: symux.c,v 1.41 2007/11/29 13:55:30 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -63,6 +63,7 @@ void signalhandler(int);
 __END_DECLS
 
 int flag_hup = 0;
+int flag_testconf = 0;
 fd_set fdset;
 int maxfd;
 
@@ -99,7 +100,7 @@ main(int argc, char *argv[])
 {
     struct packedstream ps;
     char *cfgfile;
-    char *cfgpath;
+    char *cfgpath = NULL;
     char *stringbuf;
     char *stringptr;
     int maxstringlen;
@@ -128,11 +129,12 @@ main(int argc, char *argv[])
 
     cfgfile = SYMUX_CONFIG_FILE;
 
-    while ((ch = getopt(argc, argv, "df:lv")) != -1) {
+    while ((ch = getopt(argc, argv, "df:ltv")) != -1) {
         switch (ch) {
         case 'd':
             flag_debug = 1;
             break;
+
         case 'f':
             if (optarg && optarg[0] != '/') {
                 /* cfg path needs to be absolute, we will be a daemon soon */
@@ -153,9 +155,15 @@ main(int argc, char *argv[])
             } else
                 cfgfile = xstrdup(optarg);
             break;
+
         case 'l':
             flag_list = 1;
             break;
+
+        case 't':
+            flag_testconf = 1;
+            break;
+
         case 'v':
             info("symux version %s", SYMUX_VERSION);
         default:
@@ -198,6 +206,11 @@ main(int argc, char *argv[])
         if (!result) {
             fatal("configuration contained errors; quitting");
         }
+    }
+
+    if (flag_testconf) {
+        info("%s: ok", cfgfile);
+        exit(EX_OK);
     }
 
     setegid(getgid());
