@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.33 2007/11/29 13:13:17 dijkstra Exp $ */
+/* $Id: data.c,v 1.34 2007/11/29 19:36:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -1027,9 +1027,9 @@ init_symux_packet(struct mux * mux)
     /* multiply by 2 to allow users to detect symon.conf/symux.conf stream
      * configuration differences
      */
-    mux->packet.size = ((mux->packet.size << 2) > SYMON_MAXPACKET)?
+    mux->packet.size = ((mux->packet.size << 1) > SYMON_MAXPACKET)?
         SYMON_MAXPACKET:
-        mux->packet.size << 2;
+        mux->packet.size << 1;
 
     mux->packet.data = xmalloc(mux->packet.size);
     bzero(mux->packet.data, mux->packet.size);
