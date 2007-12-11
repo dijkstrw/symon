@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.8 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.9 2007/12/11 18:31:37 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -72,6 +72,10 @@ struct if_device_stats
     u_int64_t tx_fifo_errors;
     u_int64_t rx_compressed;
     u_int64_t tx_compressed;
+    /* aggregates */
+    u_int64_t errors_in;
+    u_int64_t errors_out;
+    u_int64_t drops;
 };
 
 void
@@ -146,15 +150,19 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
+    stats.errors_in = (stats.rx_errors + stats.rx_fifo_errors + stats.rx_frame_errors);
+    stats.errors_out = (stats.tx_errors + stats.tx_fifo_errors + stats.tx_carrier_errors);
+    stats.drops = (stats.rx_dropped + stats.tx_dropped);
+
     return snpack(symon_buf, maxlen, st->arg, MT_IF2,
-                  stats.rx_packets,
-                  stats.tx_packets,
-                  stats.rx_bytes,
-                  stats.tx_bytes,
-                  stats.multicast,
-                  0,
-                  (stats.rx_errors + stats.rx_fifo_errors + stats.rx_frame_errors),
-                  (stats.tx_errors + stats.tx_fifo_errors + stats.tx_carrier_errors),
-                  stats.collisions,
-                  (stats.rx_dropped + stats.tx_dropped));
+                  (u_int64_t) stats.rx_packets,
+                  (u_int64_t) stats.tx_packets,
+                  (u_int64_t) stats.rx_bytes,
+                  (u_int64_t) stats.tx_bytes,
+                  (u_int64_t) stats.multicast,
+                  (u_int64_t) 0,
+                  (u_int64_t) stats.errors_in,
+                  (u_int64_t) stats.errors_out,
+                  (u_int64_t) stats.collisions,
+                  (u_int64_t) stats.drops);
 }

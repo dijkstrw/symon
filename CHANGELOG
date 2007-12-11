@@ -5,6 +5,9 @@
      format. The old if and mem rrd files need no adjustments to accept
      the new data.
 
+   - c_smrrds.sh now specifies 1 jan 1980 00:00:01 as the start time for
+     graphs, this also allows graph creating with rrdtool 1.2.x.
+
 29/11/2007 - 2.77
 
    - symon/symux -t can now be used to check configuration files before
@@ -542,4 +545,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.73 2007/12/11 14:17:59 dijkstra Exp $
+$Id: CHANGELOG,v 1.74 2007/12/11 18:35:48 dijkstra Exp $
