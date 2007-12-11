@@ -1,4 +1,4 @@
-/* $Id: lex.c,v 1.28 2007/02/11 20:07:31 dijkstra Exp $ */
+/* $Id: lex.c,v 1.29 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -76,12 +76,16 @@ static struct {
     { "every", LXT_EVERY },
     { "from", LXT_FROM },
     { "if", LXT_IF },
+    { "if1", LXT_IF1 },
+    { "if2", LXT_IF },
     { "in", LXT_IN },
     { "io", LXT_IO },
     { "io1", LXT_IO1 },
     { "io2", LXT_IO },
     { "mbuf", LXT_MBUF },
     { "mem", LXT_MEM },
+    { "mem1", LXT_MEM1 },
+    { "mem2", LXT_MEM },
     { "monitor", LXT_MONITOR },
     { "mux", LXT_MUX },
     { "pf", LXT_PF },

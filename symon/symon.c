@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.49 2007/11/29 13:55:30 dijkstra Exp $ */
+/* $Id: symon.c,v 1.50 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -72,8 +72,8 @@ int symon_interval = SYMON_DEFAULT_INTERVAL;
 struct funcmap streamfunc[] = {
     {MT_IO1, 0, NULL, init_io, gets_io, get_io},
     {MT_CPU, 0, NULL, init_cpu, gets_cpu, get_cpu},
-    {MT_MEM, 0, NULL, init_mem, gets_mem, get_mem},
-    {MT_IF, 0, NULL, init_if, gets_if, get_if},
+    {MT_MEM1, 0, NULL, init_mem, gets_mem, get_mem},
+    {MT_IF1, 0, NULL, init_if, gets_if, get_if},
     {MT_PF, 0, privinit_pf, init_pf, gets_pf, get_pf},
     {MT_DEBUG, 0, NULL, init_debug, NULL, get_debug},
     {MT_PROC, 0, privinit_proc, init_proc, gets_proc, get_proc},
@@ -82,6 +82,8 @@ struct funcmap streamfunc[] = {
     {MT_IO2, 0, NULL, init_io, gets_io, get_io},
     {MT_PFQ, 0, privinit_pfq, init_pfq, gets_pfq, get_pfq},
     {MT_DF, 0, NULL, init_df, gets_df, get_df},
+    {MT_MEM2, 0, NULL, init_mem, gets_mem, get_mem},
+    {MT_IF2, 0, NULL, init_if, gets_if, get_if},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 

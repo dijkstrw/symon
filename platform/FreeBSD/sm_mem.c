@@ -1,7 +1,7 @@
-/* $Id: sm_mem.c,v 1.10 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.11 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2004      Matthew Gream
+ * Copyright (c) 2004-2007      Matthew Gream
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,8 +56,8 @@
 #define pagetob(size) ((size) << me_pageshift)
 
 /* Globals for this module all start with me_ */
-static int me_pagesize;
-static int me_pageshift;
+static u_int64_t me_pagesize;
+static u_int64_t me_pageshift;
 
 static char me_vmnswp_mib_str[] = "vm.nswapdev";
 static int me_vmnswp_mib_nam[CTL_MAXNAME];
@@ -68,7 +68,7 @@ static int me_vmiswp_mib_nam[CTL_MAXNAME];
 static size_t me_vmiswp_mib_len = 0;
 
 static int me_vm_mib[] = {CTL_VM, VM_TOTAL};
-static long me_stats[5];
+static u_int64_t me_stats[5];
 
 static struct vmtotal me_vmtotal;
 static size_t me_vmsize = sizeof(struct vmtotal);
@@ -100,12 +100,6 @@ init_mem(struct stream *st)
 
 void
 gets_mem()
-{
-    /* EMPTY */
-}
-
-int
-get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
 #ifdef HAS_XSWDEV
     int i;
@@ -139,8 +133,12 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
         me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
     }
 #endif
+}
 
-    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
+int
+get_mem(char *symon_buf, int maxlen, struct stream *st)
+{
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM2,
                   me_stats[0], me_stats[1], me_stats[2],
                   me_stats[3], me_stats[4]);
 }

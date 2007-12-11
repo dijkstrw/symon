@@ -1,8 +1,8 @@
-/* $Id: sm_if.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.5 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005 Fredrik Soderblom
- * Copyright (c) 2005 Willem Dijkstra
+ * Copyright (c) 2005-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -128,17 +128,17 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     for (i = 1; i <= if_cur; i++) {
         if (!strcmp(if_md[i - 1].ifmd_name, st->arg)) {
             ifdata = if_md[i - 1].ifmd_data;
-            return snpack(symon_buf, maxlen, st->arg, MT_IF,
-                          ifdata.ifi_ipackets,
-                          ifdata.ifi_opackets,
-                          ifdata.ifi_ibytes,
-                          ifdata.ifi_obytes,
-                          ifdata.ifi_imcasts,
-                          ifdata.ifi_omcasts,
-                          ifdata.ifi_ierrors,
-                          ifdata.ifi_oerrors,
-                          ifdata.ifi_collisions,
-                          ifdata.ifi_iqdrops);
+            return snpack(symon_buf, maxlen, st->arg, MT_IF2,
+                          (u_int64_t) ifdata.ifi_ipackets,
+                          (u_int64_t) ifdata.ifi_opackets,
+                          (u_int64_t) ifdata.ifi_ibytes,
+                          (u_int64_t) ifdata.ifi_obytes,
+                          (u_int64_t) ifdata.ifi_imcasts,
+                          (u_int64_t) ifdata.ifi_omcasts,
+                          (u_int64_t) ifdata.ifi_ierrors,
+                          (u_int64_t) ifdata.ifi_oerrors,
+                          (u_int64_t) ifdata.ifi_collisions,
+                          (u_int64_t) ifdata.ifi_iqdrops);
         }
     }
 

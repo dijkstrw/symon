@@ -1,4 +1,4 @@
-/* $Id: sylimits.h,v 1.6 2007/02/11 20:07:31 dijkstra Exp $ */
+/* $Id: sylimits.h,v 1.7 2007/12/11 14:17:59 dijkstra Exp $ */
 
 #ifndef _LIB_LIMITS_H
 #define _LIB_LIMITS_H
@@ -15,5 +15,6 @@
 #define SYMON_MAXCPUID         16       /* cpu0 - cpu15 */
 #define SYMON_DFBLOCKSIZE      512
 #define SYMON_DFNAMESIZE       16
+#define SYMON_MAXPACKET        65515    /* udp packet max payload 65Kb - 20 byte header */
 
 #endif

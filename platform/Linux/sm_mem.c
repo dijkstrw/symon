@@ -1,7 +1,7 @@
-/* $Id: sm_mem.c,v 1.5 2007/10/29 16:14:37 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.6 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2005 Harm Schotanus
+ * Copyright (c) 2005-2007 Harm Schotanus
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,9 +50,9 @@
 
 /* Globals for this module all start with me_ */
 static void *me_buf = NULL;
-static int me_size = 0;
-static int me_maxsize = 0;
-static long me_stats[5];
+static u_int64_t me_size = 0;
+static u_int64_t me_maxsize = 0;
+static u_int64_t me_stats[5];
 
 void
 init_mem(struct stream *st)
@@ -130,7 +130,7 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
 
     me_stats[3] = me_stats[4] - me_stats[3];
 
-    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM2,
                   me_stats[0], me_stats[1], me_stats[2],
                   me_stats[3], me_stats[4]);
 }

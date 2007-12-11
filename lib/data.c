@@ -1,4 +1,4 @@
-/* $Id: data.c,v 1.34 2007/11/29 19:36:03 dijkstra Exp $ */
+/* $Id: data.c,v 1.35 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -99,8 +99,8 @@ struct {
 } streamform[] = {
     { MT_IO1, "LLL" },
     { MT_CPU, "ccccc" },
-    { MT_MEM, "lllll" },
-    { MT_IF, "llllllllll" },
+    { MT_MEM1, "lllll" },
+    { MT_IF1, "llllllllll" },
     { MT_PF, "LLLLLLLLLLLLLLLLLLLLLL" },
     { MT_DEBUG, "llllllllllllllllllll" },
     { MT_PROC, "lLLLlcll" },
@@ -109,6 +109,8 @@ struct {
     { MT_IO2, "LLLLL" },
     { MT_PFQ, "LLLL" },
     { MT_DF, "LLLLLLL" },
+    { MT_MEM2, "LLLLL" },
+    { MT_IF2, "LLLLLLLLLL" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -119,8 +121,8 @@ struct {
 } streamtoken[] = {
     { MT_IO1, LXT_IO1 },
     { MT_CPU, LXT_CPU },
-    { MT_MEM, LXT_MEM },
-    { MT_IF, LXT_IF },
+    { MT_MEM1, LXT_MEM1 },
+    { MT_IF1, LXT_IF1 },
     { MT_PF, LXT_PF },
     { MT_DEBUG, LXT_DEBUG },
     { MT_PROC, LXT_PROC },
@@ -129,6 +131,8 @@ struct {
     { MT_IO2, LXT_IO },
     { MT_PFQ, LXT_PFQ },
     { MT_DF, LXT_DF },
+    { MT_MEM2, LXT_MEM },
+    { MT_IF2, LXT_IF },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

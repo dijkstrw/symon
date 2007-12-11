@@ -27,7 +27,7 @@
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd August 8, 2004
+.Dd December 11, 2007
 .Dt SYMUX 8
 .Os
 .Sh NAME
@@ -225,9 +225,15 @@ bit unsigned integers.
 Disk free statistics ( blocks : bfree : bavail : files :
 ffree : synwrites : asyncwrites). Values are 64 bit unsigned integers.
 .It if
+Alias for if2. See below.
+.It if1
+Pre OpenBSD 4.3 interface counters ( packets_in, packets_out, bytes_in,
+bytes_out, multicasts_in, multicasts_out, errors_in, errors_out, collisions,
+drops ). Values are 32 bit unsigned integers.
+.It if2
 Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
 multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
-). Values are 32 bit unsigned integers.
+). Values are 64 bit unsigned integers.
 .It io
 Alias for io2. See below.
 .It io1
@@ -241,8 +247,14 @@ Mbuf statistics ( totmbufs : mt_data : mt_oobdata : mt_control :
 mt_header : mt_ftable : mt_soname : mt_soopts : pgused : pgtotal :
 totmem : totpct : m_drops : m_wait : m_drain ).
 .It mem
+Alias for mem2. See below.
+.It mem1
+Pre symon 2.78 memory counters ( real_active, real_total, free, swap_used,
+swap_total ). All values are in bytes rounded to page boundaries. Values are 32
+bit unsigned integers.
+.It mem2
 Memory in ( real_active, real_total, free, swap_used, swap_total ). All values
-are in bytes rounded of to page boundaries. Values are 32 bit unsigned integers.
+are in bytes rounded to page boundaries. Values are 64 bit unsigned integers.
 .It pf
 Packet filter statistics ( bytes_v4_in : bytes_v4_out : bytes_v6_in :
 bytes_v6_out : packets_v4_in_pass : packets_v4_in_drop : packets_v4_out_pass :
@@ -287,42 +299,27 @@ system wide configuration file.
 .El
 .Sh LEGACY FORMATS
 .Nm
-supports symon(8) clients that send pre OpenBSD 3.5 disk
-statistics. These streams should be identified as io1(<disk>) instead of
+supports symon(8) clients that send
+.Bl -tag -width Ds
+.It pre OpenBSD 3.5 disk statistics.
+These streams should be identified as io1(<disk>) instead of
 io(<disk>) in
 .Pa /etc/symux.conf.
-Note that symon(8) measures io1 or io2 depending on whether it was
-compiled on a host that supports version 1 or 2.
-.Pp
-Because the structure of the incoming data has changed, the rrd files
-concerning io need to change as well:
-.Bl -tag -width Ds
-.It Upgrading symux only
-Move all
-.Pa io_<disk>.rrd
-files to
-.Pa io1_<disk>.rrd.
-Change the
-.Nm
-configuration file to accept and write io1.
-.Pp
-.It Upgrading hosts to OpenBSD 3.5 and updating symon(8)
-create new
-.Pa io_<disk>.rrd
-files using c_smrrds.sh for the upgraded host. Both symon(8) and
-.Nm
-configuration files can be left untouched as their io statements will
-now default to io2.
+Also note that symon(8) measures io1 or io2 depending on whether it was
+compiled on a host that supports version 1 or 2. The rrd datastructures of
+these streams differ and there is no easy way to change an io1 rrd into an io2
+rrd.
+.It pre symon 2.78 mem/if statistics.
+These streams should be identified as if1(<interface>) and mem1() in
+.Pa /etc/symux.conf.
+symon versions 2.78 and up will always report if2 and mem2 statistics. The rrd
+files for the old and new probes are identical and need not be changed.
 .El
-.Pp
 .Nm
 will output what version of information it is offered by symon(8)s on
 the network when started with the
 .Va -d
 flag.
-.Pp
-Note that although an io1 can be translated into an io2 using rrdtool
-dump - vi dump - rrdtool restore, this is not recommended.
 .Sh BUGS
 .Nm
 writes incoming data to rrd files "in process". An rrdupdate on a somewhat

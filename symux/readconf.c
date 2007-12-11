@@ -1,4 +1,4 @@
-/* $Id: readconf.c,v 1.33 2007/10/29 14:59:43 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.34 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -71,19 +71,21 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ts = "df_";
         ta = args;
         break;
-    case MT_IF:
+    case MT_IF1:  /* rrd stores 64bits, if1 and if2 are equivalent */
+    case MT_IF2:
         ts = "if_";
-        ta = args;
-        break;
-    case MT_IO2:
-        ts = "io_";
         ta = args;
         break;
     case MT_IO1:
         ts = "io1_";
         ta = args;
         break;
-    case MT_MEM:
+    case MT_IO2:
+        ts = "io_";
+        ta = args;
+        break;
+    case MT_MEM1: /* rrd stores 64bits, mem1 and mem2 are equivalent */
+    case MT_MEM2:
         ts = "mem";
         ta = "";
         break;
@@ -212,9 +214,11 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_CPU:
                 case LXT_DF:
                 case LXT_IF:
+                case LXT_IF1:
                 case LXT_IO:
                 case LXT_IO1:
                 case LXT_MEM:
+                case LXT_MEM1:
                 case LXT_PF:
                 case LXT_PFQ:
                 case LXT_MBUF:
@@ -258,7 +262,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                         return 0;
                     }
 
-                    break;      /* LXT_CPU/IF/IO/IO1/MEM/PF/MBUF/DEBUG/PROC */
+                    break;      /* LXT_CPU/IF/IF1/IO/IO1/MEM/MEM1/PF/MBUF/DEBUG/PROC */
                 case LXT_COMMA:
                     break;
                 default:
@@ -352,9 +356,11 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             case LXT_CPU:
             case LXT_DF:
             case LXT_IF:
+            case LXT_IF1:
             case LXT_IO:
             case LXT_IO1:
             case LXT_MEM:
+            case LXT_MEM1:
             case LXT_PF:
             case LXT_PFQ:
             case LXT_MBUF:
@@ -420,7 +426,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                         stream->file = xstrdup(l->token);
                     }
                 }
-                break;          /* LXT_CPU/IF/IO/IO1/MEM/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
+                break;          /* LXT_CPU/IF/IF1/IO/IO1/MEM/MEM1/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
             default:
                 parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
                 return 0;

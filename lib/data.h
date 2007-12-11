@@ -1,4 +1,4 @@
-/* $Id: data.h,v 1.31 2007/11/29 13:13:17 dijkstra Exp $ */
+/* $Id: data.h,v 1.32 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -74,10 +74,6 @@ static inline u_int64_t
  * version 1 and 2:
  * symon_version:timestamp:length:crc:n*packedstream
  * packedstream = type:arg[<SYMON_PS_ARGLENVx]:data
- *
- * Note that the data portion is limited. The current (20/01/2007) largest
- * streamtype (pf) needs 88 bytes without arguments. _POSIX2_LINE_MAX is 2k, so
- * that works out to about 23 packedstreams in a single symon packet.
  */
 #define SYMON_PACKET_VER  2
 #define SYMON_UNKMUX   "<unknown mux>"  /* mux nodes without host addr */
@@ -148,8 +144,8 @@ SLIST_HEAD(muxlist, mux);
 /* Stream types */
 #define MT_IO1    0
 #define MT_CPU    1
-#define MT_MEM    2
-#define MT_IF     3
+#define MT_MEM1   2
+#define MT_IF1    3
 #define MT_PF     4
 #define MT_DEBUG  5
 #define MT_PROC   6
@@ -158,8 +154,10 @@ SLIST_HEAD(muxlist, mux);
 #define MT_IO2    9
 #define MT_PFQ    10
 #define MT_DF     11
-#define MT_TEST   12
-#define MT_EOT    13
+#define MT_MEM2   12
+#define MT_IF2    13
+#define MT_TEST   14
+#define MT_EOT    15
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -176,7 +174,7 @@ struct packedstream {
             u_int64_t mtotal_transfers;
             u_int64_t mtotal_seeks;
             u_int64_t mtotal_bytes;
-        }      ps_io;
+        }      ps_io1;
         struct {
             u_int16_t muser;
             u_int16_t mnice;
@@ -190,7 +188,7 @@ struct packedstream {
             u_int32_t mfree;
             u_int32_t mswap_used;
             u_int32_t mswap_total;
-        }      ps_mem;
+        }      ps_mem1;
         struct {
             u_int32_t mipackets;
             u_int32_t mopackets;
@@ -202,7 +200,7 @@ struct packedstream {
             u_int32_t moerrors;
             u_int32_t mcolls;
             u_int32_t mdrops;
-        }      ps_if;
+        }      ps_if1;
         struct {
             u_int64_t bytes_v4_in;
             u_int64_t bytes_v4_out;
@@ -299,6 +297,25 @@ struct packedstream {
             u_int64_t syncwrites;
             u_int64_t asyncwrites;
         }      ps_df;
+        struct {
+            u_int64_t mreal_active;
+            u_int64_t mreal_total;
+            u_int64_t mfree;
+            u_int64_t mswap_used;
+            u_int64_t mswap_total;
+        }      ps_mem2;
+        struct {
+            u_int64_t mipackets;
+            u_int64_t mopackets;
+            u_int64_t mibytes;
+            u_int64_t mobytes;
+            u_int64_t mimcasts;
+            u_int64_t momcasts;
+            u_int64_t mierrors;
+            u_int64_t moerrors;
+            u_int64_t mcolls;
+            u_int64_t mdrops;
+        }      ps_if2;
     }     data;
 };
 

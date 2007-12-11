@@ -1,4 +1,4 @@
-/* $Id: net.h,v 1.16 2007/11/29 13:13:17 dijkstra Exp $ */
+/* $Id: net.h,v 1.17 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -38,7 +38,6 @@
 #include <sys/types.h>
 
 #define SYMUX_PORT  "2100"      /* default symux port */
-#define SYMON_MAXPACKET 65515   /* udp packet max payload 65Kb - 20 byte header */
 extern char res_host[];
 extern char res_service[];
 extern struct sockaddr_storage res_addr;

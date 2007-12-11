@@ -1,12 +1,19 @@
+11/12/2007 - 2.78
+
+   - if and mem probes upgraded to report in u_int64_t values. symux will
+     accept reports from older symons that use the old u_int32_t
+     format. The old if and mem rrd files need no adjustments to accept
+     the new data.
+
 29/11/2007 - 2.77
 
-   - symon/symux -t can now be used to check configuration files before running
-     in anger.
+   - symon/symux -t can now be used to check configuration files before
+     running in anger.
 
-   - symon now also calculates maximum message size; with symux using twice the
-     calculated value to ensure that configuration errors between
-     sy[mon|mux].conf are detected in the logs. Both enforce maximum message =
-     sizeof(udp payload).
+   - symon now also calculates maximum message size; with symux using
+     twice the calculated value to ensure that configuration errors
+     between sy[mon|mux].conf are detected in the logs. Both enforce
+     maximum message = sizeof(udp payload).
 
    - Martin van der Werff donated the Linux/sm_df probe.
 
@@ -14,20 +21,21 @@
      sensor_*. (Daniel Spizak, Evgeniy Sudyr)
 
    - pfq probes must be specified as pfq(interface/queue) in symon and are
-     treated as pfq_interface_symon.rrd by symux.
+     treated as pfq_interface_queue.rrd by symux.
 
-   - platform/Linux/sm_mem modified to better reflect OpenBSD's idea of the
-     vm_meter stats.
+   - platform/Linux/sm_mem modified to better reflect OpenBSD's idea of
+     the vm_meter stats.
 
 05/07/2007 - 2.76
 
-   - symux/readconf.c resolve from host, but discard result. (Henning Brauer)
+   - symux/readconf.c resolve from host, but discard result. (Henning
+     Brauer)
 
    - symux/symux.c -f used strncpy wrong and broke when using gcc4
      (Mechiel Lukkien)
 
-   - platform/Linux/sm_cpu now uses iowait + hardirq + softirq + steal as its
-     cpu "interrupt". My feeling is that this is the most accurate
+   - platform/Linux/sm_cpu now uses iowait + hardirq + softirq + steal as
+     its cpu "interrupt". My feeling is that this is the most accurate
      representation of what the values mean for the *BSDs.
 
    - platform/NetBSD/sm_io uses new iostat_sysctl of NetBSD4
@@ -40,14 +48,14 @@
    - platform/OpenBSD/sm_if removed obselete netipx includes
      (Christian Weisgerber)
 
-   - Daemon needs to be able to bind /dev/null - drop privileges after daemon
-     call (Markus Friedl).
+   - Daemon needs to be able to bind /dev/null - drop privileges after
+     daemon call (Markus Friedl).
 
-   - data.c/free_muxlist closed fd 0 at HUP. This makes symux unresponsive on
-     OpenBSD and makes it stop on FreeBSD. (Marco Pfatschbacher).
+   - data.c/free_muxlist closed fd 0 at HUP. This makes symux unresponsive
+     on OpenBSD and makes it stop on FreeBSD. (Marco Pfatschbacher).
 
-   - platform/OpenBSD/sm_cpu fixed to call CPTIME2 only for machines with more
-     than one cpu. (Henning Brauer)
+   - platform/OpenBSD/sm_cpu fixed to call CPTIME2 only for machines with
+     more than one cpu. (Henning Brauer)
 
 13/02/2007 - 2.75
 
@@ -57,17 +65,18 @@
 
 11/02/2007 - 2.74
 
-   - symon can be told what local interface to send data from (Henning Brauer)
+   - symon can be told what local interface to send data from (Henning
+     Brauer)
 
    - removed typos in client/SymuxClient.pm (Sandeep Kr Sangwan)
 
    - OpenBSD sm_sensor upgrade to sensor_dev (Constantine A. Murenin)
 
-   - NetBSD can use OpenBSD sm_pf, sm_mem and sm_pfq with little modifications
-     (Jean-Yves Moulin)
+   - NetBSD can use OpenBSD sm_pf, sm_mem and sm_pfq with little
+     modifications (Jean-Yves Moulin)
 
-   - symon network protocol version bumped to allow stream arguments upto 63
-     characters.
+   - symon network protocol version bumped to allow stream arguments upto
+     63 characters.
 
 19/12/2006 - 2.73
 
@@ -77,14 +86,14 @@
    - NetBSD compiles on 2.1 after addition of rrd.h location in
      NetBSD/Makefile.inc
 
-   - FreeBSD/platform.h now also includes sys/socket.h and sys/dkstat.h, which
-     makes the FreeBSD probes compile on 4/5/6.
+   - FreeBSD/platform.h now also includes sys/socket.h and sys/dkstat.h,
+     which makes the FreeBSD probes compile on 4/5/6.
 
    - FreeBSD/sm_pf and OpenBSD/sm_pf were broken when pf was not available
      (Ulrich Spörlein)
 
-   - c_smrrds.sh now accepts filenames, not descriptions. Intended use is now
-     c_smrrds.sh `symux -l`.
+   - c_smrrds.sh now accepts filenames, not descriptions. Intended use is
+     now c_smrrds.sh `symux -l`.
 
    - symux -l lists rrd files in active configuration.
 
@@ -96,8 +105,8 @@
    - Library deps now split between symon and symux. Not all libraries are
      needed on a host if only symon/symux is compiled.
 
-   - OpenBSD/Makefile.inc now includes fontconfig library needed for
-     gd > 2.0.33. This breaks symux compilation for OpenBSD < 3.9.
+   - OpenBSD/Makefile.inc now includes fontconfig library needed for gd >
+     2.0.33. This breaks symux compilation for OpenBSD < 3.9.
 
    - OpenBSD/sm_cpu is smp aware
 
@@ -123,8 +132,8 @@
    - OpenBSD/sm_if.c no longer uses netns (Mitja Muzenic)
 
    - symux/share.c now uses a ringbuffer to distribute symon packets to
-     connected tcp clients. Clients that can not keep up with the datarate are
-     still killed, but have a bit more time to catch up.
+     connected tcp clients. Clients that can not keep up with the datarate
+     are still killed, but have a bit more time to catch up.
 
    - Ulrich Spörlein updated proc probe for FreeBSD-current.
 
@@ -136,17 +145,17 @@
 
 19/03/2005 - 2.71
 
-   - Ulrich Spörlein updated mem probe for FreeBSD-current and removed some
-     bugs from FreeBSD/conf.sh.
+   - Ulrich Spörlein updated mem probe for FreeBSD-current and removed
+     some bugs from FreeBSD/conf.sh.
 
-   - J. Martin Petersen contributed the FreeBSD io probe and a new probe called
-     pfq that can monitor pf altq queues on Free and OpenBSD.
+   - J. Martin Petersen contributed the FreeBSD io probe and a new probe
+     called pfq that can monitor pf altq queues on Free and OpenBSD.
 
 22/02/2005 - 2.70
 
-   - Ulrich Spörlein updated the FreeBSD proc and mem probes, found a bug in
-     the mem probe for OpenBSD and helped extend the shell config files for
-     FreeBSD.
+   - Ulrich Spörlein updated the FreeBSD proc and mem probes, found a bug
+     in the mem probe for OpenBSD and helped extend the shell config files
+     for FreeBSD.
 
    - Linux/Makefile.inc TSORT should be cat not echo
 
@@ -167,7 +176,8 @@
    - platform/*BSD/sm_proc transferred cpucpt as uint16 instead of double
      (Jamie Herre)
 
-   - states_entries is a GAUGE, not a ABSOLUTE (Lars Hansson, Marco Pfatschbacher)
+   - states_entries is a GAUGE, not a ABSOLUTE (Lars Hansson, Marco
+     Pfatschbacher)
 
    - NetBSD/plaform.h -> platform.h (Joel Andersson)
 
@@ -176,8 +186,8 @@
 09/08/2004 - 2.67
 
    - Matthew Gream contributed the port and probes to NetBSD and FreeBSD.
-     Probes for FreeBSD: cpu, debug, mbuf, mem and proc.  Probes for NetBSD:
-     cpu, debug, if, io, mbuf, proc and sensor.
+     Probes for FreeBSD: cpu, debug, mbuf, mem and proc.  Probes for
+     NetBSD: cpu, debug, if, io, mbuf, proc and sensor.
 
    - Added initial support for Linux: cpu and if.
 
@@ -194,8 +204,8 @@
      will use more characters if specified in monitoring, but will only
      send the first 15 over the network. (Michael)
 
-   - Textual: symux.8 and c_smrrds.sh agree on stream names.
-     (Okan Demirmen)
+   - Textual: symux.8 and c_smrrds.sh agree on stream names.  (Okan
+     Demirmen)
 
 29/02/2004 - 2.65
 
@@ -205,10 +215,10 @@
 
 27/02/2004 - 2.64
 
-   - Added new disk structure. symon has a single notion of "io" - the
-     new or the old depending on the machine it was built on. symux
-     deals with legacy streams and knows about "io1" (upto 3.4)
-     and "io" (3.5+). symux will accept legacy symons.
+   - Added new disk structure. symon has a single notion of "io" - the new
+     or the old depending on the machine it was built on. symux deals with
+     legacy streams and knows about "io1" (upto 3.4) and "io"
+     (3.5+). symux will accept legacy symons.
 
    - c_smrrds.sh complains if files cannot be built. (Daniel Polak)
 
@@ -532,4 +542,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.72 2007/11/29 13:55:30 dijkstra Exp $
+$Id: CHANGELOG,v 1.73 2007/12/11 14:17:59 dijkstra Exp $

@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.6 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2004      Matthew Gream
+ * Copyright (c) 2004-2007      Matthew Gream
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -89,15 +89,15 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     }
     ifi = &st->parg.ifr.ifdr_data;
 
-    return snpack(symon_buf, maxlen, st->arg, MT_IF,
-                  (u_int32_t) ifi->ifi_ipackets,
-                  (u_int32_t) ifi->ifi_opackets,
-                  (u_int32_t) ifi->ifi_ibytes,
-                  (u_int32_t) ifi->ifi_obytes,
-                  (u_int32_t) ifi->ifi_imcasts,
-                  (u_int32_t) ifi->ifi_omcasts,
-                  (u_int32_t) ifi->ifi_ierrors,
-                  (u_int32_t) ifi->ifi_oerrors,
-                  (u_int32_t) ifi->ifi_collisions,
-                  (u_int32_t) ifi->ifi_iqdrops);
+    return snpack(symon_buf, maxlen, st->arg, MT_IF2,
+                  (u_int64_t) ifi->ifi_ipackets,
+                  (u_int64_t) ifi->ifi_opackets,
+                  (u_int64_t) ifi->ifi_ibytes,
+                  (u_int64_t) ifi->ifi_obytes,
+                  (u_int64_t) ifi->ifi_imcasts,
+                  (u_int64_t) ifi->ifi_omcasts,
+                  (u_int64_t) ifi->ifi_ierrors,
+                  (u_int64_t) ifi->ifi_oerrors,
+                  (u_int64_t) ifi->ifi_collisions,
+                  (u_int64_t) ifi->ifi_iqdrops);
 }

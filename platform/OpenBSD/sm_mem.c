@@ -1,7 +1,7 @@
-/* $Id: sm_mem.c,v 1.21 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.22 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,13 +53,13 @@
 #define pagetob(size) ((size) << me_pageshift)
 
 /* Globals for this module all start with me_ */
-static int me_pageshift;
-static long me_stats[5];
+static u_int64_t me_pageshift;
+static u_int64_t me_stats[5];
 static int me_vm_mib[] = {CTL_VM, VM_METER};
 static struct vmtotal me_vmtotal;
 static size_t me_vmsize;
-static int me_pagesize;
-static int me_nswap;
+static u_int64_t me_pagesize;
+static u_int64_t me_nswap;
 struct swapent *me_swdev = NULL;
 
 void
@@ -134,7 +134,7 @@ gets_mem()
 int
 get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
-    return snpack(symon_buf, maxlen, st->arg, MT_MEM,
+    return snpack(symon_buf, maxlen, st->arg, MT_MEM2,
                   me_stats[0], me_stats[1], me_stats[2],
                   me_stats[3], me_stats[4]);
 }

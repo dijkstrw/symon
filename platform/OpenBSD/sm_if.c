@@ -1,4 +1,4 @@
-/* $Id: sm_if.c,v 1.17 2007/07/05 08:34:52 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.18 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
@@ -77,7 +77,9 @@ init_if(struct stream *st)
 void
 gets_if()
 {
+    /* EMPTY */
 }
+
 int
 get_if(char *symon_buf, int maxlen, struct stream *st)
 {
@@ -90,15 +92,15 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
-    return snpack(symon_buf, maxlen, st->arg, MT_IF,
-                  ifdata.ifi_ipackets,
-                  ifdata.ifi_opackets,
-                  ifdata.ifi_ibytes,
-                  ifdata.ifi_obytes,
-                  ifdata.ifi_imcasts,
-                  ifdata.ifi_omcasts,
-                  ifdata.ifi_ierrors,
-                  ifdata.ifi_oerrors,
-                  ifdata.ifi_collisions,
-                  ifdata.ifi_iqdrops);
+    return snpack(symon_buf, maxlen, st->arg, MT_IF2,
+                  (u_int64_t) ifdata.ifi_ipackets,
+                  (u_int64_t) ifdata.ifi_opackets,
+                  (u_int64_t) ifdata.ifi_ibytes,
+                  (u_int64_t) ifdata.ifi_obytes,
+                  (u_int64_t) ifdata.ifi_imcasts,
+                  (u_int64_t) ifdata.ifi_omcasts,
+                  (u_int64_t) ifdata.ifi_ierrors,
+                  (u_int64_t) ifdata.ifi_oerrors,
+                  (u_int64_t) ifdata.ifi_collisions,
+                  (u_int64_t) ifdata.ifi_iqdrops);
 }

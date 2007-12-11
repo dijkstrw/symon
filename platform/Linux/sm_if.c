@@ -1,7 +1,7 @@
-/* $Id: sm_if.c,v 1.7 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_if.c,v 1.8 2007/12/11 14:17:59 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,22 +56,22 @@ static int if_size = 0;
 static int if_maxsize = 0;
 struct if_device_stats
 {
-    unsigned long   rx_packets;             /* total packets received       */
-    unsigned long   tx_packets;             /* total packets transmitted    */
-    unsigned long   rx_bytes;               /* total bytes received         */
-    unsigned long   tx_bytes;               /* total bytes transmitted      */
-    unsigned long   rx_errors;              /* bad packets received         */
-    unsigned long   tx_errors;              /* packet transmit problems     */
-    unsigned long   rx_dropped;             /* no space in linux buffers    */
-    unsigned long   tx_dropped;             /* no space available in linux  */
-    unsigned long   multicast;              /* multicast packets received   */
-    unsigned long   collisions;
-    unsigned long   rx_frame_errors;        /* recv'd frame alignment error */
-    unsigned long   rx_fifo_errors;         /* recv'r fifo overrun          */
-    unsigned long   tx_carrier_errors;
-    unsigned long   tx_fifo_errors;
-    unsigned long   rx_compressed;
-    unsigned long   tx_compressed;
+    u_int64_t rx_packets;             /* total packets received       */
+    u_int64_t tx_packets;             /* total packets transmitted    */
+    u_int64_t rx_bytes;               /* total bytes received         */
+    u_int64_t tx_bytes;               /* total bytes transmitted      */
+    u_int64_t rx_errors;              /* bad packets received         */
+    u_int64_t tx_errors;              /* packet transmit problems     */
+    u_int64_t rx_dropped;             /* no space in linux buffers    */
+    u_int64_t tx_dropped;             /* no space available in linux  */
+    u_int64_t multicast;              /* multicast packets received   */
+    u_int64_t collisions;
+    u_int64_t rx_frame_errors;        /* recv'd frame alignment error */
+    u_int64_t rx_fifo_errors;         /* recv'r fifo overrun          */
+    u_int64_t tx_carrier_errors;
+    u_int64_t tx_fifo_errors;
+    u_int64_t rx_compressed;
+    u_int64_t tx_compressed;
 };
 
 void
@@ -137,7 +137,7 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     /* Inter-|   Receive                                                |  Transmit
      *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
      */
-    if (16 > sscanf(line, ":%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu\n",
+    if (16 > sscanf(line, ":%Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu\n",
                     &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
                     &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
                     &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,
@@ -146,7 +146,7 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
-    return snpack(symon_buf, maxlen, st->arg, MT_IF,
+    return snpack(symon_buf, maxlen, st->arg, MT_IF2,
                   stats.rx_packets,
                   stats.tx_packets,
                   stats.rx_bytes,
