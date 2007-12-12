@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.38 2007/12/11 18:31:37 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.39 2007/12/12 12:16:16 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2006 Willem Dijkstra
@@ -123,9 +123,7 @@ EOF
     exit 1;
 fi
 
-# RRDtool 1.2.x restricts the start time of the database to after 1980 for some
-# reason.
-RRD_ARGS="--step=$INTERVAL --start=315360001"
+RRD_ARGS="--step=$INTERVAL --start=now-10"
 
 for i in $args
 do

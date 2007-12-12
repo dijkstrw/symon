@@ -5,8 +5,8 @@
      format. The old if and mem rrd files need no adjustments to accept
      the new data.
 
-   - c_smrrds.sh now specifies 1 jan 1980 00:00:01 as the start time for
-     graphs, this also allows graph creating with rrdtool 1.2.x.
+   - c_smrrds.sh now specifies the start time at graph creation in such a
+     way that it can be used by both rrdtool 1.0.x and rrdtool 1.2.x.
 
 29/11/2007 - 2.77
 
@@ -545,4 +545,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.74 2007/12/11 18:35:48 dijkstra Exp $
+$Id: CHANGELOG,v 1.75 2007/12/12 12:16:16 dijkstra Exp $
