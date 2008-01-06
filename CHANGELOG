@@ -1,4 +1,7 @@
-11/12/2007 - 2.78
+06/01/2008 - 2.78
+
+   - lib/sylimits.h: DFNAMESIZE bumped from 16 to 64 chars
+     (Mahlon E. Smith)
 
    - if and mem probes upgraded to report in u_int64_t values. symux will
      accept reports from older symons that use the old u_int32_t
@@ -545,4 +548,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.75 2007/12/12 12:16:16 dijkstra Exp $
+$Id: CHANGELOG,v 1.76 2008/01/06 14:25:44 dijkstra Exp $
