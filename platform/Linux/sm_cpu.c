@@ -1,4 +1,4 @@
-/* $Id: sm_cpu.c,v 1.7 2007/07/09 12:54:18 dijkstra Exp $ */
+/* $Id: sm_cpu.c,v 1.8 2008/01/30 09:32:50 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -194,8 +194,19 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
                            &st->parg.cp.time[CP_HARDIRQ],
                            &st->parg.cp.time[CP_SOFTIRQ],
                            &st->parg.cp.time[CP_STEAL])) {
+      /* /proc/stat might not support steal */
+      st->parg.cp.time[CP_STEAL] = 0;
+      if ((CPUSTATES - 1) > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu\n",
+				   &st->parg.cp.time[CP_USER],
+				   &st->parg.cp.time[CP_NICE],
+				   &st->parg.cp.time[CP_SYS],
+				   &st->parg.cp.time[CP_IDLE],
+				   &st->parg.cp.time[CP_IOWAIT],
+				   &st->parg.cp.time[CP_HARDIRQ],
+				   &st->parg.cp.time[CP_SOFTIRQ])) {
         warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
         return 0;
+      }
     }
 
     percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time,
