@@ -1,4 +1,4 @@
-/* $Id: sm_cpuiow.c,v 1.1 2008/01/30 12:06:50 dijkstra Exp $ */
+/* $Id: sm_cpuiow.c,v 1.2 2008/01/30 14:29:31 dijkstra Exp $ */
 
 /* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
  *
@@ -212,7 +212,7 @@ get_cpuiow(char *symon_buf, int maxlen, struct stream *st)
     percentages(CPUSTATES, st->parg.cpw.states, st->parg.cpw.time,
                 st->parg.cpw.old, st->parg.cpw.diff);
 
-    return snpack(symon_buf, maxlen, st->arg, MT_CPU,
+    return snpack(symon_buf, maxlen, st->arg, MT_CPUIOW,
                   (double) (st->parg.cpw.states[CP_USER] / 10.0),
                   (double) (st->parg.cpw.states[CP_NICE] / 10.0),
                   (double) (st->parg.cpw.states[CP_SYS] / 10.0),
@@ -220,5 +220,5 @@ get_cpuiow(char *symon_buf, int maxlen, struct stream *st)
                             st->parg.cpw.states[CP_SOFTIRQ] +
                             st->parg.cpw.states[CP_STEAL]) / 10.0,
                   (double) (st->parg.cpw.states[CP_IDLE] / 10.0),
-                  (double) (st->parg.cpw.states[CP_IOWAIT] / 10));
+                  (double) (st->parg.cpw.states[CP_IOWAIT] / 10.0));
 }

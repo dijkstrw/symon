@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.6 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.7 2008/01/30 14:29:31 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2005-2007 Harm Schotanus
@@ -94,10 +94,10 @@ gets_mem()
    }
 }
 
-long
+u_int64_t
 mem_getitem(char *name)
 {
-    long stat;
+    u_int64_t stat;
     char *line;
 
     if (me_size <= 0) {
@@ -110,7 +110,7 @@ mem_getitem(char *name)
     }
 
     line += strlen(name);
-    if (1 < sscanf(line, ": %lu Kb", &stat)) {
+    if (1 < sscanf(line, ": %llu Kb", &stat)) {
         warning("could not parse memory statistics");
         return 0;
     } else {
