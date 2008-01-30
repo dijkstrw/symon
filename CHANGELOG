@@ -1,4 +1,6 @@
-29/01/2008 - 2.79
+30/01/2008 - 2.79
+
+   - Added a cpuiow probe that counts iowait ticks on Linux.
 
    - Linux/sm_cpu now also parses /proc/stat without steal entry
 
@@ -552,4 +554,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.77 2008/01/30 09:32:50 dijkstra Exp $
+$Id: CHANGELOG,v 1.78 2008/01/30 12:06:49 dijkstra Exp $

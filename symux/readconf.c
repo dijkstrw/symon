@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.34 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.35 2008/01/30 12:06:50 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
     switch (type) {
     case MT_CPU:
         ts = "cpu";
+        ta = args;
+        break;
+    case MT_CPUIOW:
+        ts = "cpuiow";
         ta = args;
         break;
     case MT_DF:
@@ -135,7 +139,7 @@ insert_filename(char *path, int maxlen, int type, char *args)
     xfree(fta);
     return result;
 }
-/* mux <host> (port|,| ) <number> */
+/* parse "'mux' (ip4addr | ip6addr | hostname) [['port' | ',' portnumber]" */
 int
 read_mux(struct muxlist * mul, struct lex * l)
 {
@@ -179,7 +183,7 @@ read_mux(struct muxlist * mul, struct lex * l)
 
     return 1;
 }
-/* source <host> { accept ... | write ... | datadir ... } */
+/* parse "'source' host '{' accept-stmst [write-stmts] [datadir-stmts] '}'" */
 int
 read_source(struct sourcelist * sol, struct lex * l, int filecheck)
 {
@@ -212,17 +216,18 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             while (lex_nexttoken(l) && l->op != LXT_END) {
                 switch (l->op) {
                 case LXT_CPU:
+                case LXT_CPUIOW:
+                case LXT_DEBUG:
                 case LXT_DF:
-                case LXT_IF:
                 case LXT_IF1:
-                case LXT_IO:
+                case LXT_IF:
                 case LXT_IO1:
-                case LXT_MEM:
+                case LXT_IO:
+                case LXT_MBUF:
                 case LXT_MEM1:
+                case LXT_MEM:
                 case LXT_PF:
                 case LXT_PFQ:
-                case LXT_MBUF:
-                case LXT_DEBUG:
                 case LXT_PROC:
                 case LXT_SENSOR:
                     st = token2type(l->op);
@@ -262,7 +267,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                         return 0;
                     }
 
-                    break;      /* LXT_CPU/IF/IF1/IO/IO1/MEM/MEM1/PF/MBUF/DEBUG/PROC */
+                    break;      /* LXT_resource */
                 case LXT_COMMA:
                     break;
                 default:
@@ -354,17 +359,18 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             lex_nexttoken(l);
             switch (l->op) {
             case LXT_CPU:
+            case LXT_CPUIOW:
+            case LXT_DEBUG:
             case LXT_DF:
-            case LXT_IF:
             case LXT_IF1:
-            case LXT_IO:
+            case LXT_IF:
             case LXT_IO1:
-            case LXT_MEM:
+            case LXT_IO:
+            case LXT_MBUF:
             case LXT_MEM1:
+            case LXT_MEM:
             case LXT_PF:
             case LXT_PFQ:
-            case LXT_MBUF:
-            case LXT_DEBUG:
             case LXT_PROC:
             case LXT_SENSOR:
                 st = token2type(l->op);
@@ -426,9 +432,9 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                         stream->file = xstrdup(l->token);
                     }
                 }
-                break;          /* LXT_CPU/IF/IF1/IO/IO1/MEM/MEM1/PF/PFQ/MBUF/DEBUG/PROC/SENSOR */
+                break;          /* LXT_resource */
             default:
-                parse_error(l, "{cpu|if|io|mem|pf|mbuf|debug|proc|sensor}");
+                parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor}");
                 return 0;
                 break;
             }

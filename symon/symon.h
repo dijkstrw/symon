@@ -1,4 +1,4 @@
-/* $Id: symon.h,v 1.36 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: symon.h,v 1.37 2008/01/30 12:06:50 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
@@ -65,6 +65,11 @@ __BEGIN_DECLS
 extern void init_cpu(struct stream *);
 extern void gets_cpu();
 extern int get_cpu(char *, int, struct stream *);
+
+/* sm_cpuiow.c */
+extern void init_cpuiow(struct stream *);
+extern void gets_cpuiow();
+extern int get_cpuiow(char *, int, struct stream *);
 
 /* sm_mem.c */
 extern void init_mem(struct stream *);

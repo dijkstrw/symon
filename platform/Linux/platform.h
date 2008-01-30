@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.8 2007/07/16 07:37:11 dijkstra Exp $ */
+/* $Id: platform.h,v 1.9 2008/01/30 12:06:50 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
@@ -46,6 +46,13 @@ union stream_parg {
         int64_t states[CPUSTATES];
         char name[6];
     } cp;
+    struct {
+        int64_t time[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
+        char name[6];
+    } cpw;
     struct {
         char mountpath[MAX_PATH_LEN];
     } df;

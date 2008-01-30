@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.39 2007/12/12 12:16:16 dijkstra Exp $
+# $Id: c_smrrds.sh,v 1.40 2008/01/30 12:06:50 dijkstra Exp $
 
 #
 # Copyright (c) 2001-2006 Willem Dijkstra
@@ -72,6 +72,10 @@ find_exec() {
 }
 # find rrdtool
 RRDTOOL=`find_exec "$RRDTOOL" /usr/local/bin rrdtool`
+if [ ! -x "$RRDTOOL" ]; then
+    echo "Cannot find rrdtool - add it to \$PATH or \$RRDTOOL"
+    exit 1;
+fi
 # get arguments
 select_interval=""
 for i
@@ -110,7 +114,7 @@ if [ X"$1$2$3$4$5$6$7$8$9" = "X" ]; then
     cat <<EOF
 Create rrd files for symux.
 
-Usage: `basename $0` [oneday] [interval <seconds>] [all] \
+Usage: `basename $0` [oneday] [interval <seconds>] [all] \\
 		     <rrd files>
 
 Where:
@@ -119,6 +123,10 @@ seconds      = modify rrds for non standard monitoring interval
 all          = run symux -l to determine current configured rrd
 	       files
 <rrd files>  = files ending in rrd that follow symux naming
+
+If rrdtool or symux are not installed in default locations try
+setting \$PATH or \$RRDTOOL, \$SYMUX.
+
 EOF
     exit 1;
 fi
@@ -137,7 +145,11 @@ j=`basename $i`
 case $j in
 
 all)
-    SYMUX=`find_exec "$SYMUX" /usr/libexec:/usr/local/libexec symux`
+    SYMUX=`find_exec "$SYMUX" /usr/libexec:/usr/local/libexec:/usr/local/bin:/usr/local/sbin symux`
+    if [ ! -x "$SYMUX" ]; then
+        echo "Cannot find symux - add it to \$PATH or \$SYMUX"
+        exit 1;
+    fi
     sh $this interval $INTERVAL child $config `$SYMUX -l`
     ;;
 
@@ -149,6 +161,17 @@ cpu[0-9].rrd)
 	DS:system:GAUGE:$INTERVAL:0:100 \
 	DS:interrupt:GAUGE:$INTERVAL:0:100 \
 	DS:idle:GAUGE:$INTERVAL:0:100
+    ;;
+
+cpuiow[0-9].rrd)
+    # Build cpuiow file
+    create_rrd $i \
+	DS:user:GAUGE:$INTERVAL:0:100 \
+	DS:nice:GAUGE:$INTERVAL:0:100 \
+	DS:system:GAUGE:$INTERVAL:0:100 \
+	DS:interrupt:GAUGE:$INTERVAL:0:100 \
+	DS:idle:GAUGE:$INTERVAL:0:100 \
+	DS:iowait:GAUGE:$INTERVAL:0:100
     ;;
 
 df_*.rrd)

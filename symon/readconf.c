@@ -1,7 +1,7 @@
-/* $Id: readconf.c,v 1.28 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: readconf.c,v 1.29 2008/01/30 12:06:50 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@ __END_DECLS
 
 const char *default_symux_port = SYMUX_PORT;
 
-/* <hostname> (port|:|,| ) <number> */
+/* parse "(ip4addr | ip6addr | hostname) [['port' | ',' ] portnumber]" */
 int
 read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 {
@@ -89,7 +89,7 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 
     return 1;
 }
-/* parse "<cpu(arg)|df(arg)|mem|if(arg)|io(arg)|debug|pf|pfq(arg)|proc(arg)>", end condition == "}" */
+/* parse "resource version ['(' argument ')']", end condition == '}' */
 int
 read_symon_args(struct mux * mux, struct lex * l)
 {
@@ -101,17 +101,18 @@ read_symon_args(struct mux * mux, struct lex * l)
         while (lex_nexttoken(l) && l->op != LXT_END) {
         switch (l->op) {
         case LXT_CPU:
+        case LXT_CPUIOW:
+        case LXT_DEBUG:
         case LXT_DF:
-        case LXT_IF:
         case LXT_IF1:
-        case LXT_IO:
+        case LXT_IF:
         case LXT_IO1:
-        case LXT_MEM:
+        case LXT_IO:
+        case LXT_MBUF:
         case LXT_MEM1:
+        case LXT_MEM:
         case LXT_PF:
         case LXT_PFQ:
-        case LXT_MBUF:
-        case LXT_DEBUG:
         case LXT_PROC:
         case LXT_SENSOR:
             st = token2type(l->op);
@@ -152,7 +153,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_COMMA:
             break;
         default:
-            parse_error(l, "{cpu|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor}");
+            parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor}");
             return 0;
             break;
         }
@@ -161,7 +162,8 @@ read_symon_args(struct mux * mux, struct lex * l)
     return 1;
 }
 
-/* parse monitor <args> stream [from <host>] [to] <host>:<port> */
+/* parse "'monitor' '{' resources '}' ['every' time ] 'stream' ['from' host]
+ * ['to'] host [port]" */
 int
 read_monitor(struct muxlist * mul, struct lex * l)
 {

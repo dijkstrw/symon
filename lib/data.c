@@ -1,7 +1,7 @@
-/* $Id: data.c,v 1.35 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: data.c,v 1.36 2008/01/30 12:06:49 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the
@@ -111,6 +111,7 @@ struct {
     { MT_DF, "LLLLLLL" },
     { MT_MEM2, "LLLLL" },
     { MT_IF2, "LLLLLLLLLL" },
+    { MT_CPUIOW, "cccccc" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -133,6 +134,7 @@ struct {
     { MT_DF, LXT_DF },
     { MT_MEM2, LXT_MEM },
     { MT_IF2, LXT_IF },
+    { MT_CPUIOW, LXT_CPUIOW },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

@@ -1,7 +1,7 @@
-/* $Id: lex.c,v 1.29 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: lex.c,v 1.30 2008/01/30 12:06:50 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,6 +70,7 @@ static struct {
     { ",", LXT_COMMA },
     { "accept", LXT_ACCEPT },
     { "cpu", LXT_CPU },
+    { "cpuiow", LXT_CPUIOW },
     { "datadir", LXT_DATADIR },
     { "debug", LXT_DEBUG },
     { "df", LXT_DF },

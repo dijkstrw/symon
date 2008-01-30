@@ -1,7 +1,7 @@
-/* $Id: data.h,v 1.32 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: data.h,v 1.33 2008/01/30 12:06:49 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -141,7 +141,11 @@ SLIST_HEAD(muxlist, mux);
 #define PS2STR_PRETTY 0
 #define PS2STR_RRD    1
 
-/* Stream types */
+/* Stream types
+ *
+ * Add new items at the bottom to preserve compatibility with older symon
+ * instances
+ */
 #define MT_IO1    0
 #define MT_CPU    1
 #define MT_MEM1   2
@@ -156,8 +160,9 @@ SLIST_HEAD(muxlist, mux);
 #define MT_DF     11
 #define MT_MEM2   12
 #define MT_IF2    13
-#define MT_TEST   14
-#define MT_EOT    15
+#define MT_CPUIOW 14
+#define MT_TEST   15
+#define MT_EOT    16
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -316,6 +321,14 @@ struct packedstream {
             u_int64_t mcolls;
             u_int64_t mdrops;
         }      ps_if2;
+        struct {
+            u_int16_t muser;
+            u_int16_t mnice;
+            u_int16_t msystem;
+            u_int16_t minterrupt;
+            u_int16_t midle;
+            u_int16_t miowait;
+        }      ps_cpuiow;
     }     data;
 };
 

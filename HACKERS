@@ -1,4 +1,23 @@
-$Id: HACKERS,v 1.2 2005/10/16 15:26:47 dijkstra Exp $
+$Id: HACKERS,v 1.3 2008/01/30 12:06:49 dijkstra Exp $
+
+Adding a probe for a new platform
+---------------------------------
+
+Look at similar probes for other platforms and work out what each value
+means. Ensure that your probe conveys the same semantics, this allows ppl that
+want to monitor several different platform simultaneously to compare probe
+measurements.
+
+Places to touch:
+
+- platform/<os>/sm_<name>.c: your probe
+
+- platform/<os>/cons.sh: your checks for system dependencies. Make sure you
+  check for features, not versions here.
+
+- platform/<os>/platform.h: stream_parg holds stream instance state data that
+  is platform specific.
+
 
 Adding a new probe
 ------------------
