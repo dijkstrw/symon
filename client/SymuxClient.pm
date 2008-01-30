@@ -1,6 +1,6 @@
-# $Id: SymuxClient.pm,v 1.13 2007/02/11 20:07:31 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.14 2008/01/30 13:19:40 dijkstra Exp $
 #
-# Copyright (c) 2001-2007 Willem Dijkstra
+# Copyright (c) 2001-2008 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ use IO::Socket;
 
 my $streamitem =
     {cpu    => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5},
+     cpuiow => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5, iowait => 6},
      mem    => {real_active => 1, real_total => 2, free => 3, swap_used => 4,
 	        swap_total =>5},
      if     => {packets_in => 1, packets_out => 2, bytes_in => 3, bytes_out => 4,

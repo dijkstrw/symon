@@ -1,6 +1,7 @@
-# $Id: Makefile,v 1.40 2006/12/19 22:31:47 dijkstra Exp $
-.include "../Makefile.inc"
+# $Id: Makefile,v 1.41 2008/01/30 13:19:40 dijkstra Exp $
+OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
+.include "../Makefile.inc"
 
 LIBS+=	${SYMON_LIBS} -L../lib -lsymon
 MODS!=	( for g in ../platform/stub/sm_*.c; do \
@@ -27,12 +28,13 @@ clean:
 	rm -f conf.h symon symon.cat8 symon.core ${OBJS}
 
 install: symon symon.8 symon.conf
-	${INSTALL} -c -m 555  -g wheel -o root symon      ${PREFIX}/${BINDIR}
-	${INSTALL} -c -m 444  -g wheel -o root symon.8 ${PREFIX}/${MANDIR}/man8/symon.8
-	${INSTALL} -d -m 555  -g bin   -o root ${PREFIX}/${SHRDIR}
-	${INSTALL} -c -m 555  -g wheel -o root c_config.sh ${PREFIX}/${SHRDIR}
-	${INSTALL} -d -m 555  -g bin   -o root ${PREFIX}/${EXADIR}
-	${INSTALL} -c -m 444  -g bin   -o root symon.conf ${PREFIX}/${EXADIR}
+	${INSTALL} -c -m 555 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symon      ${PREFIX}/${BINDIR}/
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${MANDIR}/man8
+	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symon.8 ${PREFIX}/${MANDIR}/man8/symon.8
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${SHRDIR}
+	${INSTALL} -c -m 555 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} c_config.sh ${PREFIX}/${SHRDIR}/
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${EXADIR}
+	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symon.conf ${PREFIX}/${EXADIR}/
 
 conf.h:  Makefile ../Makefile.inc
 	@echo Generating $@ on ${OS}

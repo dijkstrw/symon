@@ -59,7 +59,20 @@ Less quick, but all OSes
      + SHRDIR = Where are the example configurations to be installed. Defaults
                 to 'share/symon'.
 
-     + RRDDIR = $RRDDIR/include should yield rrd.h.
+     + RRDDIR = $RRDDIR/include should yield rrd.h. Define SYMON_ONLY in the
+                environment or on the make command line to render this mute.
+
+     + INSTALLUSER / GROUPDIR / GROUPFILE = user and groups that install should
+                use.
+
+  Note that:
+
+     + you can define SYMON_ONLY if you do not want to compile symux / do not
+       have rrdtool installed.
+
+     + symon/platform/<os>/Makefile.inc is read before Makefile.inc; define
+       your vars in the environment, or in Makefile.inc with != to force
+       overwriting the defaults.
 
    BSDs: Run make && make install
   Linux: Run pmake && pmake install
@@ -106,5 +119,5 @@ for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.21 2006/12/19 22:37:11 dijkstra Exp $
+$Id: INSTALL,v 1.22 2008/01/30 13:19:40 dijkstra Exp $
 

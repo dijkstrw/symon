@@ -1,7 +1,6 @@
-# $Id: Makefile.inc,v 1.40 2008/01/30 09:32:50 dijkstra Exp $
+# $Id: Makefile.inc,v 1.41 2008/01/30 13:19:40 dijkstra Exp $
 
 V=2.79
-OS!=uname -s
 
 AR?=	ar
 CC?=	cc
@@ -23,11 +22,14 @@ BINDIR?=libexec
 MANDIR?=man
 SHRDIR?=share/symon
 EXADIR?=share/examples/symon
-WEBDIR?=${SHRDIR}/web
 CLIENTDIR?=${SHRDIR}/client
 
 PREFIX?=/usr/local
 SYSCONFDIR?=/etc
+
+INSTALLUSER?=root
+INSTALLGROUPDIR?=bin
+INSTALLGROUPFILE?=wheel
 
 .SUFFIXES: .c .o .8 .cat8 .pm .cat3p
 

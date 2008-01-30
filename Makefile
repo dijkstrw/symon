@@ -1,6 +1,10 @@
-# $Id: Makefile,v 1.14 2004/08/07 12:21:36 dijkstra Exp $
+# $Id: Makefile,v 1.15 2008/01/30 13:19:40 dijkstra Exp $
 
+.ifdef SYMON_ONLY
+SUBDIR= lib symon
+.else
 SUBDIR=	lib symon symux client
+.endif
 
 .include "Makefile.inc"
 

@@ -1,6 +1,7 @@
-# $Id: Makefile,v 1.24 2006/12/19 22:30:47 dijkstra Exp $
-.include "../Makefile.inc"
+# $Id: Makefile,v 1.25 2008/01/30 13:19:40 dijkstra Exp $
+OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
+.include "../Makefile.inc"
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
 OBJS+=	${SRCS:R:S/$/.o/g}
@@ -19,12 +20,13 @@ clean:
 	rm -f conf.h symux symux.cat8 symux.core ${OBJS}
 
 install: symux symux.8 c_smrrds.sh symux.conf
-	${INSTALL} -c -m 555 -g bin   -o root symux	   ${PREFIX}/${BINDIR}
-	${INSTALL} -c -m 444 -g wheel -o root symux.8	   ${PREFIX}/${MANDIR}/man8/symux.8
-	${INSTALL} -d -m 555 -g bin   -o root ${PREFIX}/${SHRDIR}
-	${INSTALL} -c -m 544 -g bin   -o root c_smrrds.sh  ${PREFIX}/${SHRDIR}
-	${INSTALL} -d -m 555 -g bin   -o root ${PREFIX}/${EXADIR}
-	${INSTALL} -c -m 444 -g bin   -o root symux.conf   ${PREFIX}/${EXADIR}
+	${INSTALL} -c -m 555 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symux	   ${PREFIX}/${BINDIR}/
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${MANDIR}/man8
+	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symux.8	   ${PREFIX}/${MANDIR}/man8/symux.8
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${SHRDIR}
+	${INSTALL} -c -m 544 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} c_smrrds.sh  ${PREFIX}/${SHRDIR}/
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${EXADIR}
+	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symux.conf   ${PREFIX}/${EXADIR}/
 
 cleanipc:
 	ipcs | egrep "^m" | awk '{print $$2}' | xargs -n1 ipcrm -m &

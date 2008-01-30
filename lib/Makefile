@@ -1,6 +1,7 @@
-# $Id: Makefile,v 1.13 2005/10/16 15:26:51 dijkstra Exp $
-.include "../Makefile.inc"
+# $Id: Makefile,v 1.14 2008/01/30 13:19:40 dijkstra Exp $
+OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
+.include "../Makefile.inc"
 
 SRCS=   error.c lex.c xmalloc.c net.c data.c
 OBJS+=	${SRCS:R:S/$/.o/g}
