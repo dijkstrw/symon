@@ -1,5 +1,8 @@
 30/01/2008 - 2.79
 
+   - platform/Linux/Makefile.inc: more sensible defaults for owner, group and
+     install directories.
+
    - Top makefile will not compile symux - and not need librrd - if SYMON_ONLY
      is set.
 
@@ -559,4 +562,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.79 2008/01/30 13:19:39 dijkstra Exp $
+$Id: CHANGELOG,v 1.80 2008/01/30 13:23:06 dijkstra Exp $
