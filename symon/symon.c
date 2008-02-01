@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.51 2008/01/30 12:06:50 dijkstra Exp $ */
+/* $Id: symon.c,v 1.52 2008/02/01 13:48:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
@@ -248,9 +248,13 @@ main(int argc, char *argv[])
         }
     }
 
-    drop_privileges(flag_unsecure);
+    /* Ensure that first syslog call is before we drop privileges below. This
+     * ensures that localtime is set and used in syslog messages.
+     */
 
     info("symon version %s", SYMON_VERSION);
+
+    drop_privileges(flag_unsecure);
 
     if (flag_debug == 1)
         info("program id=%d", (u_int) getpid());

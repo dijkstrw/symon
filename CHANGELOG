@@ -1,5 +1,8 @@
 30/01/2008 - 2.79
 
+   - symon/symon.c: Make the first syslog call before dropping privileges to
+     ensure that local timezone is set. (Cory Waddingham)
+
    - platform/Linux/Makefile.inc: more sensible defaults for owner, group and
      install directories.
 
@@ -562,4 +565,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.80 2008/01/30 13:23:06 dijkstra Exp $
+$Id: CHANGELOG,v 1.81 2008/02/01 13:48:05 dijkstra Exp $
