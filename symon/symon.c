@@ -1,4 +1,4 @@
-/* $Id: symon.c,v 1.52 2008/02/01 13:48:06 dijkstra Exp $ */
+/* $Id: symon.c,v 1.53 2008/02/12 12:43:04 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
@@ -248,13 +248,12 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Ensure that first syslog call is before we drop privileges below. This
-     * ensures that localtime is set and used in syslog messages.
-     */
+    drop_privileges(flag_unsecure);
+
+    /* TODO: howto log using active timezone, which may be unavailable in
+     * chroot */
 
     info("symon version %s", SYMON_VERSION);
-
-    drop_privileges(flag_unsecure);
 
     if (flag_debug == 1)
         info("program id=%d", (u_int) getpid());
