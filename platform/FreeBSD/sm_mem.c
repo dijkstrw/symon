@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.12 2008/02/20 08:17:19 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.13 2008/02/20 08:30:06 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -130,7 +130,6 @@ gets_mem()
         me_vmiswp_mib_nam[me_vmiswp_mib_len] = i;
         if (sysctl(me_vmiswp_mib_nam, me_vmiswp_mib_len + 1, &vmiswp_dat, (void *)&vmiswp_siz, NULL, 0) < 0)
                 continue;
-        vmiswp_dat.xsw_used=104856;
         me_stats[3] += pagetob(vmiswp_dat.xsw_used);
         me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
     }
