@@ -1,7 +1,8 @@
-/* $Id: sm_mem.c,v 1.11 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.12 2008/02/20 08:17:19 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2004-2007      Matthew Gream
+ * Copyright (c) 2004      Matthew Gream
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +54,7 @@
 #include "symon.h"
 #include "xmalloc.h"
 
-#define pagetob(size) ((size) << me_pageshift)
+#define pagetob(size) (((u_int64_t)size) << me_pageshift)
 
 /* Globals for this module all start with me_ */
 static u_int64_t me_pagesize;
@@ -118,7 +119,7 @@ gets_mem()
     me_stats[3] = me_stats[4] = 0;
 
 #ifdef HAS_XSWDEV
-    vmnswp_siz = sizeof (int);
+    vmnswp_siz = sizeof(int);
     if (sysctl(me_vmnswp_mib_nam, me_vmnswp_mib_len, &vmnswp_dat, (void *)&vmnswp_siz, NULL, 0) < 0) {
         warning("%s:%d: sysctl nswapdev failed", __FILE__, __LINE__);
         vmnswp_dat = 0;
@@ -129,6 +130,7 @@ gets_mem()
         me_vmiswp_mib_nam[me_vmiswp_mib_len] = i;
         if (sysctl(me_vmiswp_mib_nam, me_vmiswp_mib_len + 1, &vmiswp_dat, (void *)&vmiswp_siz, NULL, 0) < 0)
                 continue;
+        vmiswp_dat.xsw_used=104856;
         me_stats[3] += pagetob(vmiswp_dat.xsw_used);
         me_stats[4] += pagetob(vmiswp_dat.xsw_nblks);
     }

@@ -1,7 +1,7 @@
-/* $Id: sm_mem.c,v 1.22 2007/12/11 14:17:59 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.23 2008/02/20 08:17:25 dijkstra Exp $ */
 
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,7 +50,7 @@
 #include "symon.h"
 #include "xmalloc.h"
 
-#define pagetob(size) ((size) << me_pageshift)
+#define pagetob(size) (((u_int64_t)size) << me_pageshift)
 
 /* Globals for this module all start with me_ */
 static u_int64_t me_pageshift;

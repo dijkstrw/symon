@@ -1,8 +1,8 @@
-/* $Id: sm_proc.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_proc.c,v 1.6 2008/02/20 08:17:25 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
 #include "symon.h"
 #include "xmalloc.h"
 
-#define pagetob(size) ((size) << proc_pageshift)
+#define pagetob(size) (((u_int32_t)size) << proc_pageshift)
 
 /* Globals for this module start with proc_ */
 static struct kinfo_proc *proc_ps = NULL;

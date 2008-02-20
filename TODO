@@ -9,14 +9,13 @@ TODO:
   should only read. clients should check incoming data for sanity.)
 
 - check for availability of rrd before compilation
-- make user/group part of makefile.inc
-- move everything local to a c static in the probes
 - upgrade percentages to a symon wide util; it is included seperately in all
   cpu probes now.
+- same for pagetob and friends
 
 == longer term
 - change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
 - test framework
 
-$Id: TODO,v 1.31 2008/01/30 12:06:49 dijkstra Exp $
+$Id: TODO,v 1.32 2008/02/20 08:17:17 dijkstra Exp $
