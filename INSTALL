@@ -19,8 +19,11 @@ FreeBSD:  - no privs: all
           - rw on /dev/pf for pf and pfq
 
 Linux:    - r on /proc/net/dev: if
-          - r on /proc/stat: cpu
+          - r on /proc/stat: cpu, cpuiow
           - r on /proc/meminfo: mem
+
+all:
+          - r on <chroot>/etc/localtime for proper timezone logging
 
 Real quick on OpenBSD
 =====================
@@ -87,6 +90,10 @@ Less quick, but all OSes
   syweb expects an '.../machine/*.rrd' style directory structure somewhere
   under /var/www.
 
+- Ensure that /etc/localtime is accessible by symon/symux. Failing this you
+  will get log messages in GMT. Note that etc is <chroot>/etc when symon
+  chroots.
+
 - Both symon and symux will daemonize if started normally. Start them with
   debugging on initially to iron out any configuration problems:
 
@@ -119,5 +126,5 @@ for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.22 2008/01/30 13:19:40 dijkstra Exp $
+$Id: INSTALL,v 1.23 2008/02/21 09:37:38 dijkstra Exp $
 
