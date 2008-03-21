@@ -1,10 +1,16 @@
-20/02/2008 - 2.79
+21/02/2008 - 2.79
 
    - Top makefile will not compile symux - and not need librrd - if SYMON_ONLY
      is set.
 
    - platform/*BSD/sm_mem: pages are now shifted up on int64 instead of
      int. (Volodymyr Kostyrko)
+
+   - platform/FreeBSD/sm_mem: hw.physmem - free is now used as the real memory
+     used value. This unbreaks the graphs for FreeBSD 6.3+. Note that real
+     memory used in this way means all wired, active, inactive and cached
+     memory, as well as gaps in the memory stats that are used by the kernel
+     itself.
 
    - platform/Linux/Makefile.inc: removed easy override to TSORT/LORDER on
      Linux. (Volodymyr Kostyrko)
@@ -568,4 +574,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.84 2008/02/21 09:37:38 dijkstra Exp $
+$Id: CHANGELOG,v 1.85 2008/03/21 13:22:01 dijkstra Exp $

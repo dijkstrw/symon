@@ -1,4 +1,4 @@
-/* $Id: sm_mem.c,v 1.13 2008/02/20 08:30:06 dijkstra Exp $ */
+/* $Id: sm_mem.c,v 1.14 2008/03/21 13:22:03 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2004      Matthew Gream
@@ -60,6 +60,10 @@
 static u_int64_t me_pagesize;
 static u_int64_t me_pageshift;
 
+static char me_physmem_mib_str[] = "hw.physmem";
+static int me_physmem_mib_nam[CTL_MAXNAME];
+static size_t me_physmem_mib_len = 0;
+
 static char me_vmnswp_mib_str[] = "vm.nswapdev";
 static int me_vmnswp_mib_nam[CTL_MAXNAME];
 static size_t me_vmnswp_mib_len = 0;
@@ -84,15 +88,21 @@ init_mem(struct stream *st)
         me_pagesize >>= 1;
     }
 
+    me_physmem_mib_len = CTL_MAXNAME;
+    if (sysctlnametomib(me_physmem_mib_str, me_physmem_mib_nam, &me_physmem_mib_len) < 0) {
+        warning("sysctlnametomib for %.200s failed", me_physmem_mib_str);
+        me_physmem_mib_len = 0;
+    }
+
     me_vmnswp_mib_len = CTL_MAXNAME;
     if (sysctlnametomib(me_vmnswp_mib_str, me_vmnswp_mib_nam, &me_vmnswp_mib_len) < 0) {
-        warning("sysctlnametomib for nswapdev failed");
+        warning("sysctlnametomib for %.200s failed", me_vmnswp_mib_str);
         me_vmnswp_mib_len = 0;
     }
 
     me_vmiswp_mib_len = CTL_MAXNAME;
     if (sysctlnametomib(me_vmiswp_mib_str, me_vmiswp_mib_nam, &me_vmiswp_mib_len) < 0) {
-        warning("sysctlnametomib for swap_info failed");
+        warning("sysctlnametomib for %.200s failed", me_vmiswp_mib_str);
         me_vmiswp_mib_len = 0;
     }
 
@@ -104,24 +114,35 @@ gets_mem()
 {
 #ifdef HAS_XSWDEV
     int i;
-    int vmnswp_dat, vmnswp_siz;
+    u_int vmnswp_dat;
+    size_t vmnswp_siz;
 #endif
+    u_long physmem_dat;
+    size_t physmem_siz;
+
+    bzero(&me_vmtotal, sizeof(me_vmtotal));
 
     if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
         warning("%s:%d: sysctl failed", __FILE__, __LINE__);
-        bzero(&me_vmtotal, sizeof(me_vmtotal));
+        return;
+    }
+
+    physmem_siz = sizeof(u_long);
+    if (sysctl(me_physmem_mib_nam, me_physmem_mib_len, &physmem_dat, (void *)&physmem_siz, NULL, 0) < 0) {
+        warning("%s:%d: sysctl %.200s failed", __FILE__, __LINE__, me_physmem_mib_str);
+        return;
     }
 
     /* convert memory stats to Kbytes */
     me_stats[0] = pagetob(me_vmtotal.t_arm);
-    me_stats[1] = pagetob(me_vmtotal.t_rm);
+    me_stats[1] = ((u_int64_t) physmem_dat) - pagetob(me_vmtotal.t_free);
     me_stats[2] = pagetob(me_vmtotal.t_free);
     me_stats[3] = me_stats[4] = 0;
 
 #ifdef HAS_XSWDEV
     vmnswp_siz = sizeof(int);
     if (sysctl(me_vmnswp_mib_nam, me_vmnswp_mib_len, &vmnswp_dat, (void *)&vmnswp_siz, NULL, 0) < 0) {
-        warning("%s:%d: sysctl nswapdev failed", __FILE__, __LINE__);
+        warning("%s:%d: sysctl %.200s failed", __FILE__, __LINE__, me_vmnswp_mib_str);
         vmnswp_dat = 0;
     }
     for (i = 0; i < vmnswp_dat; i++) {
