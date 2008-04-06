@@ -1,8 +1,9 @@
-/* $Id: platform.h,v 1.9 2008/01/30 12:06:50 dijkstra Exp $ */
+/* $Id: platform.h,v 1.10 2008/04/06 13:02:12 dijkstra Exp $ */
 
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <grp.h>
 
@@ -40,17 +41,17 @@ union semun {
 
 union stream_parg {
     struct {
-        int64_t time[CPUSTATES];
-        int64_t old[CPUSTATES];
-        int64_t diff[CPUSTATES];
-        int64_t states[CPUSTATES];
+        u_int64_t time[CPUSTATES];
+        u_int64_t old[CPUSTATES];
+        u_int64_t diff[CPUSTATES];
+        u_int64_t states[CPUSTATES];
         char name[6];
     } cp;
     struct {
-        int64_t time[CPUSTATES];
-        int64_t old[CPUSTATES];
-        int64_t diff[CPUSTATES];
-        int64_t states[CPUSTATES];
+        u_int64_t time[CPUSTATES];
+        u_int64_t old[CPUSTATES];
+        u_int64_t diff[CPUSTATES];
+        u_int64_t states[CPUSTATES];
         char name[6];
     } cpw;
     struct {

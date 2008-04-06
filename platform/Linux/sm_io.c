@@ -1,4 +1,4 @@
-/* $Id: sm_io.c,v 1.2 2007/02/11 20:07:32 dijkstra Exp $ */
+/* $Id: sm_io.c,v 1.3 2008/04/06 13:02:12 dijkstra Exp $ */
 
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
@@ -57,17 +57,17 @@ static int io_size = 0;
 static int io_maxsize = 0;
 struct io_device_stats
 {
-    uint64_t read_issued;
-    uint64_t read_merged;
-    uint64_t read_sectors;
-    uint64_t read_milliseconds;
-    uint64_t write_issued;
-    uint64_t write_merged;
-    uint64_t write_sectors;
-    uint64_t write_milliseconds;
-    uint64_t progress_ios;
-    uint64_t progress_milliseconds;
-    uint64_t progress_weight;
+    u_int64_t read_issued;
+    u_int64_t read_merged;
+    u_int64_t read_sectors;
+    u_int64_t read_milliseconds;
+    u_int64_t write_issued;
+    u_int64_t write_merged;
+    u_int64_t write_sectors;
+    u_int64_t write_milliseconds;
+    u_int64_t progress_ios;
+    u_int64_t progress_milliseconds;
+    u_int64_t progress_weight;
 };
 #ifdef HAS_PROC_DISKSTATS
 char *io_filename = "/proc/diskstats";
@@ -159,11 +159,11 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
 #endif
 
     return snpack(symon_buf, maxlen, st->arg, MT_IO2,
-                  (stats.read_issued + stats.read_merged),
-                  (stats.write_issued + stats.write_merged),
-                  (uint64_t) 0,
-                  (uint64_t)(stats.read_sectors * DEV_BSIZE),
-                  (uint64_t)(stats.write_sectors * DEV_BSIZE));
+                  stats.read_issued,
+                  stats.write_issued,
+                  (u_int64_t) 0,
+                  (u_int64_t)(stats.read_sectors * DEV_BSIZE),
+                  (u_int64_t)(stats.write_sectors * DEV_BSIZE));
 }
 #else
 void
