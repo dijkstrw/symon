@@ -1,4 +1,4 @@
-21/02/2008 - 2.79
+07/04/2008 - 2.79
 
    - Top makefile will not compile symux - and not need librrd - if SYMON_ONLY
      is set.
@@ -20,11 +20,11 @@
 
    - platform/Linux/sm_io.c: count only read/write operations in io, not merged
      reads and writes. This way io/s show actuator movements, instead of
-     movements + cache hits.
+     movements + cache hits. (Yeb Havinga)
 
    - Updated INSTALL about chrooted timezone gotchas. (Cory Waddingham)
 
-   - Added a cpuiow probe that counts iowait ticks on Linux.
+   - Added a cpuiow probe that counts iowait ticks on Linux. (Yeb Havinga)
 
    - platform/Linux/sm_cpu now also parses /proc/stat without steal entry.
 
@@ -578,4 +578,4 @@
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
 
-$Id: CHANGELOG,v 1.86 2008/04/06 13:02:11 dijkstra Exp $
+$Id: CHANGELOG,v 1.87 2008/04/07 06:01:05 dijkstra Exp $
