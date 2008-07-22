@@ -23,7 +23,7 @@ Linux:    - r on /proc/net/dev: if
           - r on /proc/meminfo: mem
 
 all:
-          - r on <chroot>/etc/localtime for proper timezone logging
+          - r on chroot/etc/localtime for proper timezone logging
 
 Real quick on OpenBSD
 =====================
@@ -73,7 +73,7 @@ Less quick, but all OSes
      + you can define SYMON_ONLY if you do not want to compile symux / do not
        have rrdtool installed.
 
-     + symon/platform/<os>/Makefile.inc is read before Makefile.inc; define
+     + symon/platform/os/Makefile.inc is read before Makefile.inc; define
        your vars in the environment, or in Makefile.inc with != to force
        overwriting the defaults.
 
@@ -91,7 +91,7 @@ Less quick, but all OSes
   under /var/www.
 
 - Ensure that /etc/localtime is accessible by symon/symux. Failing this you
-  will get log messages in GMT. Note that etc is <chroot>/etc when symon
+  will get log messages in GMT. Note that etc is chroot/etc when symon
   chroots.
 
 - Both symon and symux will daemonize if started normally. Start them with
@@ -126,5 +126,5 @@ for FreeBSD, NetBSD and Linux.
 
 Willem Dijkstra - wpd@xs4all.nl
 
-$Id: INSTALL,v 1.23 2008/02/21 09:37:38 dijkstra Exp $
+$Id: INSTALL,v 1.24 2008/07/22 17:35:47 dijkstra Exp $
 

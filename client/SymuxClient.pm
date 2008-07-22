@@ -1,4 +1,4 @@
-# $Id: SymuxClient.pm,v 1.14 2008/01/30 13:19:40 dijkstra Exp $
+# $Id: SymuxClient.pm,v 1.15 2008/07/22 17:35:49 dijkstra Exp $
 #
 # Copyright (c) 2001-2008 Willem Dijkstra
 # All rights reserved.
@@ -66,7 +66,7 @@ my $streamitem =
 	        m_drops => 13, m_wait => 14, m_drain => 15 },
      sensor => {value => 1},
      io     => {total_rxfers => 1, total_wxfers => 2, total_seeks => 3,
-		total_rbytes => 4, total_rbytes => 5 },
+		total_rbytes => 4, total_wbytes => 5 },
      pfq    => {sent_bytes => 1, sent_packets => 2, drop_bytes => 3,
 		drop_packets => 4},
      df     => {blocks => 1, bfree => 2, bavail => 3, files => 4, ffree => 5,
