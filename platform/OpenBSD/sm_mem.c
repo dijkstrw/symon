@@ -124,8 +124,8 @@ gets_mem()
         /* Total things up */
         for (i = 0; i < me_nswap; i++) {
             if (me_swdev[i].se_flags & SWF_ENABLE) {
-                me_stats[3] += (me_swdev[i].se_inuse * DEV_BSIZE);
-                me_stats[4] += (me_swdev[i].se_nblks * DEV_BSIZE);
+                me_stats[3] += ((u_int64_t)me_swdev[i].se_inuse * DEV_BSIZE);
+                me_stats[4] += ((u_int64_t)me_swdev[i].se_nblks * DEV_BSIZE);
             }
         }
     }

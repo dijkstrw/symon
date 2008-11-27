@@ -1,5 +1,8 @@
 22/07/2008 - 2.80
 
+   - platform/OpenBSD/sm_mem.c: more than 2^31 bytes of swap would overflow
+     calculation (Marco Pfatschbacher)
+
    - client/SymuxClient.pm: typo fixed that clobbered total read/write
      (Masahiro Yamagishi)
 
