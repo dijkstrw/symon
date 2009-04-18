@@ -85,6 +85,7 @@ struct funcmap streamfunc[] = {
     {MT_MEM2, 0, NULL, init_mem, gets_mem, get_mem},
     {MT_IF2, 0, NULL, init_if, gets_if, get_if},
     {MT_CPUIOW, 0, NULL, init_cpuiow, gets_cpuiow, get_cpuiow},
+    {MT_SMART, 0, NULL, init_smart, gets_smart, get_smart},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 

@@ -1,5 +1,3 @@
-/* $Id: platform.h,v 1.10 2008/04/06 13:02:12 dijkstra Exp $ */
-
 #ifndef _CONF_LINUX_H
 #define _CONF_LINUX_H
 
@@ -38,6 +36,7 @@ union semun {
 #define CP_STEAL     7
 
 #define MAX_PATH_LEN 1024
+#define DISK_BLOCK_LEN 512
 
 union stream_parg {
     struct {
@@ -57,6 +56,9 @@ union stream_parg {
     struct {
         char mountpath[MAX_PATH_LEN];
     } df;
+    struct {
+        int dev;
+    } smart;
 };
 
 #endif

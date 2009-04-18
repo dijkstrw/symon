@@ -112,6 +112,7 @@ struct {
     { MT_MEM2, "LLLLL" },
     { MT_IF2, "LLLLLLLLLL" },
     { MT_CPUIOW, "cccccc" },
+    { MT_SMART, "bbbbbbbbbbbb" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };

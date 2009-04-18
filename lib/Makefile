@@ -3,19 +3,29 @@ OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
 .include "../Makefile.inc"
 
-SRCS=   error.c lex.c xmalloc.c net.c data.c
-OBJS+=	${SRCS:R:S/$/.o/g}
+SRCSsym=   	error.c lex.c xmalloc.c net.c data.c
+OBJSsym+=	${SRCSsym:R:S/$/.o/g}
+
+SRCSprobe=      smart.c
+OBJSprobe+=     ${SRCSprobe:R:S/$/.o/g}
+
 CFLAGS+=-I../platform/${OS} -I.
 
-all: libsymon.a
+all: libsym.a libprobe.a
 
-${OBJS}: conf.h ../Makefile.inc
+${OBJSsym} ${OBJSprobe}: conf.h ../Makefile.inc Makefile
 
-libsymon.a: ${OBJS}
-	@echo building standard symon library
-	@rm -f libsymon.a
-	@${AR} cq libsymon.a `${LORDER} ${OBJS} | ${TSORT}`
-	${RANLIB} libsymon.a
+libsym.a: ${OBJSsym}
+	@echo building standard library
+	@rm -f libsym.a
+	@${AR} cq libsym.a `${LORDER} ${OBJSsym} | ${TSORT}`
+	${RANLIB} libsym.a
+
+libprobe.a: ${OBJSprobe}
+	@echo building probe helper library
+	@rm -f libprobe.a
+	@${AR} cq libprobe.a `${LORDER} ${OBJSprobe} | ${TSORT}`
+	${RANLIB} libprobe.a
 
 conf.h:  Makefile ../Makefile.inc
 	@echo Generating $@ on ${OS}
@@ -27,6 +37,6 @@ conf.h:  Makefile ../Makefile.inc
 	@if [ -f ../platform/${OS}/conf.sh ]; then sh ../platform/${OS}/conf.sh >> $@; fi
 
 clean:
-	rm -f conf.h libsymon.a ${OBJS}
+	rm -f conf.h libsym.a ${OBJSsym} ${OBJSprobe}
 
-install: libsymon.a
+install: libsym.a libprobe.a

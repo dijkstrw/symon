@@ -143,8 +143,8 @@ SLIST_HEAD(muxlist, mux);
 
 /* Stream types
  *
- * Add new items at the bottom to preserve compatibility with older symon
- * instances
+ * Add new items at the bottom, before entries for test and eot to preserve
+ * compatibility with older symon instances
  */
 #define MT_IO1    0
 #define MT_CPU    1
@@ -161,8 +161,9 @@ SLIST_HEAD(muxlist, mux);
 #define MT_MEM2   12
 #define MT_IF2    13
 #define MT_CPUIOW 14
-#define MT_TEST   15
-#define MT_EOT    16
+#define MT_SMART  15
+#define MT_TEST   16
+#define MT_EOT    17
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -329,6 +330,20 @@ struct packedstream {
             u_int16_t midle;
             u_int16_t miowait;
         }      ps_cpuiow;
+        struct {
+            u_int8_t read_error_rate;
+            u_int8_t reallocated_sectors;
+            u_int8_t spin_retries;
+            u_int8_t air_flow_temp;
+            u_int8_t temperature;
+            u_int8_t reallocations;
+            u_int8_t current_pending;
+            u_int8_t uncorrectables;
+            u_int8_t soft_read_error_rate;
+            u_int8_t g_sense_error_rate;
+            u_int8_t temperature2;
+            u_int8_t free_fall_protection;
+        }      ps_smart;
     }     data;
 };
 

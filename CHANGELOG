@@ -6,6 +6,8 @@
    - client/SymuxClient.pm: typo fixed that clobbered total read/write
      (Masahiro Yamagishi)
 
+   - Added smart probe for NetBSD (Tito Dal Canton), Linux (me)
+
 07/04/2008 - 2.79
 
    - Top makefile will not compile symux - and not need librrd - if SYMON_ONLY

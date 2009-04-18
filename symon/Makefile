@@ -3,7 +3,7 @@ OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
 .include "../Makefile.inc"
 
-LIBS+=	${SYMON_LIBS} -L../lib -lsymon
+LIBS+=	${SYMON_LIBS} -L../lib -lsym -lprobe
 MODS!=	( for g in ../platform/stub/sm_*.c; do \
 		f=../platform/${OS}/`basename $$g`; \
 		if [ -f $$f ]; then echo $$f; \

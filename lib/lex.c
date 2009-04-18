@@ -96,6 +96,7 @@ static struct {
     { "second", LXT_SECOND },
     { "seconds", LXT_SECONDS },
     { "sensor", LXT_SENSOR },
+    { "smart", LXT_SMART },
     { "source", LXT_SOURCE },
     { "stream", LXT_STREAM },
     { "to", LXT_TO },

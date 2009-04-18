@@ -74,10 +74,11 @@
 #define LXT_SECOND    28
 #define LXT_SECONDS   29
 #define LXT_SENSOR    30
-#define LXT_SOURCE    31
-#define LXT_STREAM    32
-#define LXT_TO        33
-#define LXT_WRITE     34
+#define LXT_SMART     31
+#define LXT_SOURCE    32
+#define LXT_STREAM    33
+#define LXT_TO        34
+#define LXT_WRITE     35
 
 struct lex {
     char *buffer;               /* current line(s) */
