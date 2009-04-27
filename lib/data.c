@@ -87,7 +87,7 @@ struct {
     { 'l', ":%lu", " %10lu", 12, sizeof(u_int32_t), (u_int64_t) 0xffffffff },
     { 's', ":%u", " %5u", 7, sizeof(u_int16_t), (u_int64_t) 0xffff },
     { 'c', ":%3.2f", " %3.2f", 8, sizeof(u_int16_t), (u_int64_t) 100 },
-    { 'b', ":%3u", " %3u", 5, sizeof(u_int8_t), (u_int64_t) 255 },
+    { 'b', ":%u", " %3u", 5, sizeof(u_int8_t), (u_int64_t) 255 },
     { '\0', NULL, NULL, 0, 0, 0 }
 };
 /* streams of <type> have the packedstream <form> */
@@ -134,6 +134,7 @@ struct {
     { MT_MEM2, LXT_MEM },
     { MT_IF2, LXT_IF },
     { MT_CPUIOW, LXT_CPUIOW },
+    { MT_SMART, LXT_SMART },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

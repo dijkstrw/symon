@@ -115,6 +115,11 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ts = "sensor_";
         ta = args;
         break;
+    case MT_SMART:
+        ts = "smart_";
+        ta = args;
+        break;
+
     default:
         warning("%.200s:%d: internal error: type (%d) unknown",
                 __FILE__, __LINE__, type);
@@ -228,6 +233,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_PFQ:
                 case LXT_PROC:
                 case LXT_SENSOR:
+                case LXT_SMART:
                     st = token2type(l->op);
                     strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -269,7 +275,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_COMMA:
                     break;
                 default:
-                    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor}");
+                    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor|smart}");
                     return 0;
 
                     break;
@@ -371,6 +377,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             case LXT_PFQ:
             case LXT_PROC:
             case LXT_SENSOR:
+            case LXT_SMART:
                 st = token2type(l->op);
                 strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -432,7 +439,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 }
                 break;          /* LXT_resource */
             default:
-                parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor}");
+                parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart}");
                 return 0;
                 break;
             }

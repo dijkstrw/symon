@@ -64,7 +64,7 @@ struct smart_device {
 };
 
 static struct smart_device *smart_devs = NULL;
-static int smart_size = 0;
+static int smart_cur = 0;
 
 void
 init_smart(struct stream *st)
@@ -84,7 +84,7 @@ init_smart(struct stream *st)
     snprintf(drivename, MAX_PATH_LEN, "/dev/%s", st->arg);
 
     /* look for drive in our global table */
-    for (i = 0; i < smart_size; i++) {
+    for (i = 0; i < smart_cur; i++) {
         if (strncmp(smart_devs[i].name, drivename, MAX_PATH_LEN) == 0) {
             st->parg.smart.dev = i;
             return;
@@ -92,25 +92,32 @@ init_smart(struct stream *st)
     }
 
     /* this is a new drive; allocate the command and data block */
-    smart_size++;
-    smart_devs = xrealloc(smart_devs, smart_size * sizeof(struct smart_device));
-    bzero(&smart_devs[smart_size - 1], sizeof(struct smart_device));
+    if (smart_cur > SYMON_MAX_DOBJECTS) {
+        fatal("%s:%d: dynamic object limit (%d) exceeded for smart data",
+              __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+    }
+
+    smart_devs = xrealloc(smart_devs, (smart_cur + 1) * sizeof(struct smart_device));
+
+    bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
     /* store drivename in new block */
-    snprintf(smart_devs[smart_size - 1].name, MAX_PATH_LEN, "%s", drivename);
+    snprintf(smart_devs[smart_cur].name, MAX_PATH_LEN, "%s", drivename);
 
     /* populate ata command header */
-    memcpy(&smart_devs[smart_size -1].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
+    memcpy(&smart_devs[smart_cur].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
 
     /* store filedescriptor to device */
-    smart_devs[smart_size - 1].fd = open(drivename, O_RDONLY | O_NONBLOCK);
+    smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK);
 
     if (errno) {
         fatal("smart: could not open '%s' for read", drivename);
     }
 
     /* store smart dev entry in stream to facilitate quick get */
-    st->parg.smart.dev = smart_size - 1;
+    st->parg.smart.dev = smart_cur;
+
+    smart_cur++;
 
     info("started module smart(%.200s)", st->arg);
 }
@@ -120,7 +127,7 @@ gets_smart()
 {
     int i;
 
-    for (i = 0; i < smart_size; i++) {
+    for (i = 0; i < smart_cur; i++) {
         if (ioctl(smart_devs[i].fd, HDIO_DRIVE_CMD, &smart_devs[i].cmd)) {
             warning("smart: ioctl for drive '%s' failed: %d",
                     &smart_devs[i].name, errno);
@@ -143,7 +150,7 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
     struct smart_report sr;
 
-    if ((st->parg.smart.dev < smart_size) &&
+    if ((st->parg.smart.dev < smart_cur) &&
         (!smart_devs[st->parg.smart.dev].failed))
     {
         smart_parse(&smart_devs[st->parg.smart.dev].data, &sr);

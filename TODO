@@ -9,8 +9,7 @@ TODO:
   should only read. clients should check incoming data for sanity.)
 
 - check for availability of rrd before compilation
-- upgrade percentages to a symon wide util; it is included seperately in all
-  cpu probes now.
+- release probe memory at config reload
 - same for pagetob and friends
 
 == longer term
