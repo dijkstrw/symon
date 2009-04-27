@@ -1,8 +1,7 @@
 #!/bin/sh
-# $Id: c_smrrds.sh,v 1.40 2008/01/30 12:06:50 dijkstra Exp $
 
 #
-# Copyright (c) 2001-2006 Willem Dijkstra
+# Copyright (c) 2001-2009 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

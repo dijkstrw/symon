@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: c_config.sh,v 1.7 2005/02/25 15:10:10 dijkstra Exp $
 #
 # Create an example configuration file for symon on a host and print to stdout
 

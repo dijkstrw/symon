@@ -1,4 +1,3 @@
-# $Id: Makefile,v 1.41 2008/01/30 13:19:40 dijkstra Exp $
 OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
 .include "../Makefile.inc"

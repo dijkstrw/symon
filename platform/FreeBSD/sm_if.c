@@ -1,5 +1,3 @@
-/* $Id: sm_if.c,v 1.5 2007/12/11 14:17:59 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2005 Fredrik Soderblom
  * Copyright (c) 2005-2007 Willem Dijkstra

@@ -1,5 +1,3 @@
-/* $Id: sm_df.c,v 1.1 2007/02/11 20:08:19 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2005 Marc Balmer
  * All rights reserved.

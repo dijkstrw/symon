@@ -1,5 +1,3 @@
-/* $Id: platform.h,v 1.8 2007/05/12 16:46:27 dijkstra Exp $ */
-
 #ifndef _CONF_OPENBSD_H
 #define _CONF_OPENBSD_H
 

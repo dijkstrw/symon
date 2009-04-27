@@ -1,5 +1,3 @@
-/* $Id: sm_sensor.c,v 1.4 2007/02/11 20:07:32 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2004      Matthew Gream
  * All rights reserved.

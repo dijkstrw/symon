@@ -1,5 +1,3 @@
-/* $Id: sm_mem.c,v 1.7 2008/01/30 14:29:31 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2005-2007 Harm Schotanus
  * All rights reserved.

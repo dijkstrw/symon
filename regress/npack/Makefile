@@ -1,4 +1,3 @@
-# $Id: Makefile,v 1.4 2007/01/20 12:52:48 dijkstra Exp $
 .include "../../Makefile.inc"
 .include "../../platform/${OS}/Makefile.inc"
 

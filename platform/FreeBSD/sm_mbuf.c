@@ -1,5 +1,3 @@
-/* $Id: sm_mbuf.c,v 1.7 2007/04/20 18:53:24 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2004 Matthew Gream
  * Copyright (c) 2003 Daniel Hartmeier

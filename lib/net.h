@@ -1,5 +1,3 @@
-/* $Id: net.h,v 1.17 2007/12/11 14:17:59 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.

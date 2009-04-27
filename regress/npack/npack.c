@@ -1,5 +1,3 @@
-/* $Id: npack.c,v 1.7 2007/02/11 20:07:32 dijkstra Exp $ */
-
 /* Regression test to test marshalling and demarshalling
  *
  * Test one - For each datatype pack 4 values (zero value, maximum value,

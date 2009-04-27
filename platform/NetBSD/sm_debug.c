@@ -1,5 +1,3 @@
-/* $Id: sm_debug.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2004      Matthew Gream
  * Copyright (c) 2001-2005 Willem Dijkstra

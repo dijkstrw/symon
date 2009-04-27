@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: conf.sh,v 1.3 2005/03/20 16:17:22 dijkstra Exp $
 if grep -q "m_drops" /usr/include/sys/mbuf.h; then
     echo "#define HAS_MBUF_MDROPS	1"
 else

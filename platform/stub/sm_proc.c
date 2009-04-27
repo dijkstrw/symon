@@ -1,5 +1,3 @@
-/* $Id: sm_proc.c,v 1.3 2005/10/19 20:06:07 dijkstra Exp $ */
-
 #include <stdlib.h>
 
 #include "sylimits.h"

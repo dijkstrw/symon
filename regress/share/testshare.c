@@ -1,5 +1,3 @@
-/* $Id: testshare.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
-
 /* Regression test for shared memory information transfer between symux master
  * and n clients.
  */

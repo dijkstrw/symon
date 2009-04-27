@@ -1,5 +1,3 @@
-/* $Id: sm_pf.c,v 1.2 2007/02/11 20:07:32 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2002 Daniel Hartmeier
  * All rights reserved.

@@ -17,5 +17,3 @@ TODO:
 - change rrd to accommodate batch updates
 - write a muxer that supports unix pipes
 - test framework
-
-$Id: TODO,v 1.32 2008/02/20 08:17:17 dijkstra Exp $

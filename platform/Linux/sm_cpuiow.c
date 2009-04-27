@@ -1,5 +1,3 @@
-/* $Id: sm_cpuiow.c,v 1.2 2008/01/30 14:29:31 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.

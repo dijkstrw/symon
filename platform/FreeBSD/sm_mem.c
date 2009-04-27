@@ -1,5 +1,3 @@
-/* $Id: sm_mem.c,v 1.14 2008/03/21 13:22:03 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2004      Matthew Gream
  * Copyright (c) 2001-2008 Willem Dijkstra

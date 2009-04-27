@@ -1,5 +1,3 @@
-/* $Id: symuxnet.c,v 1.24 2007/11/29 13:13:18 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.

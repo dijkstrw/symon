@@ -1,5 +1,3 @@
-/* $Id: sm_pfq.c,v 1.5 2007/07/09 12:32:16 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2005 J. Martin Petersen
  * All rights reserved.

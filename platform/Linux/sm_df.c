@@ -1,5 +1,3 @@
-/* $Id: sm_df.c,v 1.4 2007/11/29 07:47:51 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2007 Martin van der Werff
  * All rights reserved.
@@ -85,8 +83,8 @@ gets_df()
 u_int64_t
 fsbtoblk(u_int64_t num, u_int64_t fsbs, u_int64_t bs)
 {
-    return (((fsbs) != 0 && (fsbs) < (bs)) ? 
-        (num) / ((bs) / (fsbs)) : 
+    return (((fsbs) != 0 && (fsbs) < (bs)) ?
+        (num) / ((bs) / (fsbs)) :
         (num) * ((fsbs) / (bs)));
 }
 

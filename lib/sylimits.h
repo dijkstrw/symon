@@ -1,5 +1,3 @@
-/* $Id: sylimits.h,v 1.8 2008/01/06 14:25:45 dijkstra Exp $ */
-
 #ifndef _LIB_LIMITS_H
 #define _LIB_LIMITS_H
 

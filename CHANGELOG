@@ -1,12 +1,17 @@
-22/07/2008 - 2.80
+27/04/2009 - 2.80
+
+   - Removed all cvs ids, moved src control to git
+
+   - Added smart probe for NetBSD (Tito Dal Canton), Linux (me)
+
+   - Added libprobe; a library for code that is shared between probes,
+     e.g. smart decoding and cpu percentages calculations.
 
    - platform/OpenBSD/sm_mem.c: more than 2^31 bytes of swap would overflow
      calculation (Marco Pfatschbacher)
 
    - client/SymuxClient.pm: typo fixed that clobbered total read/write
      (Masahiro Yamagishi)
-
-   - Added smart probe for NetBSD (Tito Dal Canton), Linux (me)
 
 07/04/2008 - 2.79
 
@@ -587,5 +592,3 @@
 01/10/2001 - Mon configuration is read from a mon.conf.
 29/09/2001 - Lexer had trouble dealing with ip-addresses. Cleaned up the number
              parsing code and removed a second comment reader.
-
-$Id: CHANGELOG,v 1.88 2008/07/22 17:35:47 dijkstra Exp $

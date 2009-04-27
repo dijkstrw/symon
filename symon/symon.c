@@ -1,5 +1,3 @@
-/* $Id: symon.c,v 1.53 2008/02/12 12:43:04 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.

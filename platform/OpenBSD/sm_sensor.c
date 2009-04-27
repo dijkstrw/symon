@@ -1,5 +1,3 @@
-/* $Id: sm_sensor.c,v 1.11 2007/02/13 19:12:26 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2005 Willem Dijkstra
  * Copyright (c) 2006/2007 Constantine A. Murenin

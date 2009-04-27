@@ -1,5 +1,3 @@
-/* $Id: sm_proc.c,v 1.9 2008/02/20 08:17:19 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2004      Matthew Gream
  * Copyright (c) 2001-2008 Willem Dijkstra

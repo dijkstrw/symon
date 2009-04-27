@@ -1,5 +1,3 @@
-/* $Id: sm_cpu.c,v 1.26 2007/07/09 12:54:18 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2007 Willem Dijkstra
  * All rights reserved.

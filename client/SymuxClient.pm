@@ -1,4 +1,3 @@
-# $Id: SymuxClient.pm,v 1.15 2008/07/22 17:35:49 dijkstra Exp $
 #
 # Copyright (c) 2001-2008 Willem Dijkstra
 # All rights reserved.

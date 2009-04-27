@@ -1,5 +1,3 @@
-/* $Id: data.h,v 1.33 2008/01/30 12:06:49 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.

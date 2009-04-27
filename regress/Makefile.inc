@@ -1,5 +1,3 @@
-# $Id: Makefile.inc,v 1.2 2003/12/20 16:30:44 dijkstra Exp $
-
 CC=	 cc
 CFLAGS+= -g -Wall
 OBJS+=   ${SRCS:R:S/$/.o/g}

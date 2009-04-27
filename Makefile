@@ -1,5 +1,3 @@
-# $Id: Makefile,v 1.15 2008/01/30 13:19:40 dijkstra Exp $
-
 .ifdef SYMON_ONLY
 SUBDIR= lib symon
 .else

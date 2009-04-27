@@ -1,5 +1,3 @@
-/* $Id: sm_io.c,v 1.3 2008/04/06 13:02:12 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2006 Willem Dijkstra
  * All rights reserved.

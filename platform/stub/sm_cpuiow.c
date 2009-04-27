@@ -1,5 +1,3 @@
-/* $Id: sm_cpuiow.c,v 1.1 2008/01/30 12:06:50 dijkstra Exp $ */
-
 #include <stdlib.h>
 
 #include "sylimits.h"

@@ -1,6 +1,4 @@
-# $Id: Makefile.inc,v 1.41 2008/01/30 13:19:40 dijkstra Exp $
-
-V=2.79
+V=2.80
 
 AR?=	ar
 CC?=	cc

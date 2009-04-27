@@ -1,5 +1,3 @@
-/* $Id: platform.h,v 1.6 2007/07/05 13:14:05 dijkstra Exp $ */
-
 #ifndef _CONF_NETBSD_H
 #define _CONF_NETBSD_H
 

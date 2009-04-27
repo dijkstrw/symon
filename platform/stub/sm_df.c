@@ -1,5 +1,3 @@
-/* $Id: sm_df.c,v 1.2 2005/10/18 19:58:12 dijkstra Exp $ */
-
 #include <stdlib.h>
 
 #include "sylimits.h"

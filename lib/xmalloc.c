@@ -1,5 +1,3 @@
-/* $Id: xmalloc.c,v 1.8 2007/02/11 20:07:31 dijkstra Exp $ */
-
 /*
  * Author: Tatu Ylonen <ylo@cs.hut.fi>
  * Copyright (c) 1995 Tatu Ylonen <ylo@cs.hut.fi>, Espoo, Finland

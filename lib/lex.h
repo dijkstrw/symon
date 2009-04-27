@@ -1,5 +1,3 @@
-/* $Id: lex.h,v 1.26 2008/01/30 12:06:50 dijkstra Exp $ */
-
 /*
  * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
