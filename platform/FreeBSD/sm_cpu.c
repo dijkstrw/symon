@@ -1,10 +1,6 @@
 /* $Id: sm_cpu.c,v 1.5 2007/02/11 20:07:32 dijkstra Exp $ */
 
-/* The author of this code is Matthew Gream.
- *
- * The percentages function was written by William LeFebvre and is part
- * of the 'top' utility. His copyright statement is below.
- *
+/*
  * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *
@@ -35,17 +31,6 @@
  */
 
 /*
- *  Top users/processes display for Unix
- *  Version 3
- *
- *  This program may be freely redistributed,
- *  but this entire comment MUST remain intact.
- *
- *  Copyright (c) 1984, 1989, William LeFebvre, Rice University
- *  Copyright (c) 1989, 1990, 1992, William LeFebvre, Northwestern University
- */
-
-/*
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in symon_buf as
  *
@@ -63,60 +48,14 @@
 #include <sys/sysctl.h>
 
 #include "error.h"
+#include "percentages.h"
 #include "symon.h"
-
-__BEGIN_DECLS
-int percentages(int, int *, long *, long *, long *);
-__END_DECLS
 
 /* Globals for this module all start with cp_ */
 static char cp_time_mib_str[] = "kern.cp_time";
 static int cp_time_mib[CTL_MAXNAME];
 static size_t cp_time_len = 0;
 static size_t cp_size;
-/*
- *  percentages(cnt, out, new, old, diffs) - calculate percentage change
- *      between array "old" and "new", putting the percentages i "out".
- *      "cnt" is size of each array and "diffs" is used for scratch space.
- *      The array "old" is updated on each call.
- *      The routine assumes modulo arithmetic.  This function is especially
- *      useful on BSD mchines for calculating cpu state percentages.
- */
-int
-percentages(int cnt, int *out, register long *new, register long *old, long *diffs)
-{
-    register int i;
-    register long change;
-    register long total_change;
-    register long *dp;
-    long half_total;
-
-    /* initialization */
-    total_change = 0;
-    dp = diffs;
-
-    /* calculate changes for each state and the overall change */
-    for (i = 0; i < cnt; i++) {
-        if (*new < *old)
-            change = (ULONG_MAX - *old) + *new;
-        else
-            change = *new - *old;
-        total_change += (*dp++ = change);
-        *old++ = *new++;
-    }
-
-    /* avoid divide by zero potential */
-    if (total_change == 0)
-        total_change = 1;
-
-    /* calculate percentages based on overall change, rounding up */
-    half_total = total_change / 2;
-    for (i = 0; i < cnt; i++)
-        *out++ = ((*diffs++ * 1000 + half_total) / total_change);
-
-    /* return the total in case the caller wants to use it */
-    return total_change;
-}
 
 void
 init_cpu(struct stream *st)
@@ -148,13 +87,16 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
-    if (sysctl(cp_time_mib, cp_time_len, &st->parg.cp.time, &cp_size, NULL, 0) < 0) {
+    if (sysctl(cp_time_mib, cp_time_len, &st->parg.cp.time1, &cp_size, NULL, 0) < 0) {
         warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
         return 0;
     }
 
     /* convert cp_time counts to percentages */
-    (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time, st->parg.cp.old, st->parg.cp.diff);
+    for (int i = 0; i < CPUSTATES; i++)
+        st->parg.cp.time2[i] = (int64_t) st->parg.cp.time1[i];
+
+    (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time2, st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
                   (double) (st->parg.cp.states[CP_USER] / 10.0),

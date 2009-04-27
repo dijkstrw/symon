@@ -22,10 +22,11 @@
 
 union stream_parg {
     struct {
-        long time[CPUSTATES];
-        long old[CPUSTATES];
-        long diff[CPUSTATES];
-        int states[CPUSTATES];
+        long time1[CPUSTATES];
+        int64_t time2[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
     } cp;
     struct {
         char rawdev[SYMON_DFNAMESIZE];
