@@ -68,7 +68,7 @@ init_cpu(struct stream *st)
         cp_time_len = 0;
     }
 
-    cp_size = sizeof(st->parg.cp.time);
+    cp_size = sizeof(st->parg.cp.time1);
     get_cpu(buf, sizeof(buf), st);
 
     info("started module cpu(%.200s)", st->arg);
@@ -83,6 +83,8 @@ gets_cpu()
 int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
+    int i;
+
     if (!cp_time_len) {
         return 0;
     }
@@ -93,7 +95,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     /* convert cp_time counts to percentages */
-    for (int i = 0; i < CPUSTATES; i++)
+    for (i = 0; i < CPUSTATES; i++)
         st->parg.cp.time2[i] = (int64_t) st->parg.cp.time1[i];
 
     (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time2, st->parg.cp.old, st->parg.cp.diff);
