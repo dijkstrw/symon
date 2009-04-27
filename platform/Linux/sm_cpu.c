@@ -1,10 +1,6 @@
 /* $Id: sm_cpu.c,v 1.9 2008/01/30 12:06:50 dijkstra Exp $ */
 
-/* The author of this code is Willem Dijkstra (wpd@xs4all.nl).
- *
- * The percentages function was written by William LeFebvre and is part
- * of the 'top' utility. His copyright statement is below.
- *
+/*
  * Copyright (c) 2001-2008 Willem Dijkstra
  * All rights reserved.
  *
@@ -35,17 +31,6 @@
  */
 
 /*
- *  Top users/processes display for Unix
- *  Version 3
- *
- *  This program may be freely redistributed,
- *  but this entire comment MUST remain intact.
- *
- *  Copyright (c) 1984, 1989, William LeFebvre, Rice University
- *  Copyright (c) 1989, 1990, 1992, William LeFebvre, Northwestern University
- */
-
-/*
  * Get current cpu statistics in percentages (total of all counts = 100.0)
  * and returns them in symon_buf as
  *
@@ -65,57 +50,14 @@
 
 #include "conf.h"
 #include "error.h"
+#include "percentages.h"
 #include "symon.h"
 #include "xmalloc.h"
-
-__BEGIN_DECLS
-static int percentages(int, int64_t *, int64_t *, int64_t *, int64_t *);
-__END_DECLS
 
 /* Globals for this module all start with cp_ */
 static void *cp_buf = NULL;
 static int cp_size = 0;
 static int cp_maxsize = 0;
-/*
- *  percentages(cnt, out, new, old, diffs) - calculate percentage change
- *      between array "old" and "new", putting the percentages i "out".
- *      "cnt" is size of each array and "diffs" is used for scratch space.
- *      The array "old" is updated on each call.
- *      The routine assumes modulo arithmetic.  This function is especially
- *      useful on BSD mchines for calculating cpu state percentages.
- */
-static int
-percentages(int cnt, int64_t *out, int64_t *new, int64_t *old, int64_t *diffs)
-{
-    int64_t change, total_change, *dp, half_total;
-    int i;
-
-    /* initialization */
-    total_change = 0;
-    dp = diffs;
-
-    /* calculate changes for each state and the overall change */
-    for (i = 0; i < cnt; i++) {
-        if ((change = *new - *old) < 0) {
-            /* this only happens when the counter wraps */
-            change = (QUAD_MAX - *old) + *new;
-        }
-        total_change += (*dp++ = change);
-        *old++ = *new++;
-    }
-
-    /* avoid divide by zero potential */
-    if (total_change == 0)
-        total_change = 1;
-
-    /* calculate percentages based on overall change, rounding up */
-    half_total = total_change / 2l;
-    for (i = 0; i < cnt; i++)
-        *out++ = ((*diffs++ * 1000 + half_total) / total_change);
-
-    /* return the total in case the caller wants to use it */
-    return (total_change);
-}
 
 void
 init_cpu(struct stream *st)

@@ -5,7 +5,7 @@ OS!=uname -s
 
 SRCS=	symux.c readconf.c symuxnet.c share.c
 OBJS+=	${SRCS:R:S/$/.o/g}
-LIBS+=  ${SYMUX_LIBS} -L../lib -L$(RRDDIR)/lib -lsymon -lrrd
+LIBS+=  ${SYMUX_LIBS} -L../lib -L$(RRDDIR)/lib -lsym -lrrd
 CFLAGS+=-I../lib -I$(RRDDIR)/include -I../platform/${OS} -I.
 
 all: symux symux.cat8

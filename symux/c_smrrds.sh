@@ -296,6 +296,23 @@ io1_*.rrd)
 	DS:bytes:COUNTER:$INTERVAL:U:U
     ;;
 
+smart_*.rrd)
+    # Build smart files
+    create_rrd $i \
+        DS:read_error_rate:GAUGE:$INTERVAL:U:U \
+        DS:reallocated_sectors:GAUGE:$INTERVAL:U:U \
+        DS:spin_retries:GAUGE:$INTERVAL:U:U \
+        DS:air_flow_temp:GAUGE:$INTERVAL:U:U \
+        DS:temperature:GAUGE:$INTERVAL:U:U \
+        DS:reallocations:GAUGE:$INTERVAL:U:U \
+        DS:current_pending:GAUGE:$INTERVAL:U:U \
+        DS:uncorrectables:GAUGE:$INTERVAL:U:U \
+        DS:soft_read_error_rate:GAUGE:$INTERVAL:U:U \
+        DS:g_sense_error_rate:GAUGE:$INTERVAL:U:U \
+        DS:temperature2:GAUGE:$INTERVAL:U:U \
+        DS:free_fall_protectio:GAUGE:$INTERVAL:U:U
+    ;;
+
 "done")
     # ignore
     ;;

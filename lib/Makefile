@@ -6,7 +6,7 @@ OS!=uname -s
 SRCSsym=   	error.c lex.c xmalloc.c net.c data.c
 OBJSsym+=	${SRCSsym:R:S/$/.o/g}
 
-SRCSprobe=      smart.c
+SRCSprobe=      percentages.c smart.c
 OBJSprobe+=     ${SRCSprobe:R:S/$/.o/g}
 
 CFLAGS+=-I../platform/${OS} -I.

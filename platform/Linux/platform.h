@@ -40,17 +40,17 @@ union semun {
 
 union stream_parg {
     struct {
-        u_int64_t time[CPUSTATES];
-        u_int64_t old[CPUSTATES];
-        u_int64_t diff[CPUSTATES];
-        u_int64_t states[CPUSTATES];
+        int64_t time[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
         char name[6];
     } cp;
     struct {
-        u_int64_t time[CPUSTATES];
-        u_int64_t old[CPUSTATES];
-        u_int64_t diff[CPUSTATES];
-        u_int64_t states[CPUSTATES];
+        int64_t time[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
         char name[6];
     } cpw;
     struct {
