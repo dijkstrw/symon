@@ -70,7 +70,14 @@ my $streamitem =
      pfq    => {sent_bytes => 1, sent_packets => 2, drop_bytes => 3,
 		drop_packets => 4},
      df     => {blocks => 1, bfree => 2, bavail => 3, files => 4, ffree => 5,
-		syncwrites => 6, asyncwrites => 7}};
+		syncwrites => 6, asyncwrites => 7},
+     smart  => {read_error_rate => 1, reallocated_sectors => 2, spin_retries => 3,
+                air_flow_temp => 4, temperature => 5, reallocations => 6,
+                current_pending => 7, uncorrectables => 8,
+                soft_read_error_rate => 9, g_sense_error_rate => 10,
+                temperature2 => 10, free_fall_protection => 11}
+};
+
 sub new {
     my ($class, %arg) = @_;
     my $self;
