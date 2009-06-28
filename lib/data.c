@@ -605,6 +605,7 @@ ps2strn(struct packedstream * ps, char *buf, const int maxlen, int pretty)
         switch (vartype) {
         case 'b':
             bcopy(in, &b, sizeof(u_int8_t));
+            b &= 0xff;
             snprintf(out, strlenvar(vartype), formatstr, b);
             in++;
             break;

@@ -37,6 +37,15 @@ struct smart_values {
 };
 #pragma pack()
 
+#ifndef DISK_BLOCK_LEN
+#define DISK_BLOCK_LEN                             512
+#endif
+
+#define SMART_CYLINDER                             0xc24f
+#define SMART_TIMEOUT                              600
+
+#define ATA_SMART_READ_VALUES                      0xd0
+
 #define ATA_ATTRIBUTE_END                          0x00
 #define ATA_ATTRIBUTE_READ_ERROR_RATE              0x01
 #define ATA_ATTRIBUTE_REALLOCATED_SECTOR_COUNT     0x05

@@ -2,10 +2,10 @@
 
    - Removed all cvs ids, moved src control to git
 
-   - Added smart probe for NetBSD (Tito Dal Canton), Linux (me)
+   - Added smart probe for NetBSD (Tito Dal Canton), Linux / FreeBSD (me)
 
    - Added libprobe; a library for code that is shared between probes,
-     e.g. smart decoding and cpu percentages calculations.
+     e.g. smart decoding and cpu percentages calculation.
 
    - platform/OpenBSD/sm_mem.c: more than 2^31 bytes of swap would overflow
      calculation (Marco Pfatschbacher)
