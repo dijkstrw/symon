@@ -35,8 +35,12 @@ union semun {
 #define CP_SOFTIRQ   6
 #define CP_STEAL     7
 
-#define MAX_PATH_LEN 1024
-#define DISK_BLOCK_LEN 512
+#define MAX_PATH_LEN       1024
+#define DISK_BLOCK_LEN     512
+
+#define SENSOR_FAN       0
+#define SENSOR_IN        1
+#define SENSOR_TEMP      2
 
 union stream_parg {
     struct {
@@ -59,6 +63,10 @@ union stream_parg {
     struct {
         int dev;
     } smart;
+    struct {
+        int type;
+        char path[MAX_PATH_LEN];
+    } sn;
 };
 
 #endif
