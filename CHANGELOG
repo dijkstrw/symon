@@ -2,7 +2,9 @@
 
    - Removed all cvs ids, moved src control to git
 
-   - Added smart probe for NetBSD (Tito Dal Canton), Linux / FreeBSD (me)
+   - Added smart probe for NetBSD (Tito Dal Canton), Linux / FreeBSD / OpenBSD
+     (me). Not all these have been tested thoroughly as they require physical
+     boxes to be tested on.
 
    - Added libprobe; a library for code that is shared between probes,
      e.g. smart decoding and cpu percentages calculation.
