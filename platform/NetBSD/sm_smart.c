@@ -108,10 +108,10 @@ init_smart(struct stream *st)
     sd->cmd.timeout = SMART_TIMEOUT;
 
     /* store filedescriptor to device */
-    if ((sd->fd = opendisk(drivename, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
+    if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
         if (errno == ENOENT) {
             /* Device does not exist, retry using cooked name semantics */
-            if ((sd->fd = opendisk(drivename, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
+            if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
                 fatal("smart: could not open '%s' for read", drivename);
             }
         } else {
