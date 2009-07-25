@@ -17,6 +17,9 @@
 
    - client port now really optional in symon.conf
 
+   - platform/OpenBSD/sm_mbuf.c: patch from openbsd ports following h2k8 mcpl
+     changes (Stuart Henderson)
+
 07/04/2008 - 2.79
 
    - Top makefile will not compile symux - and not need librrd - if SYMON_ONLY

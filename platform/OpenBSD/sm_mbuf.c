@@ -75,6 +75,8 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     int totmem, totused, totmbufs, totpct;
     u_int32_t stats[15];
 
+    totmem = totused = 0;
+
     mib[0] = CTL_KERN;
     mib[1] = KERN_MBSTAT;
     size = sizeof(mbstat);
@@ -112,24 +114,55 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
         if (!strcmp(name, "mbpl")) {
             bcopy(&pool, &mbpool, sizeof(pool));
             flag |= 1;
-        } else if (!strcmp(name, "mclpl")) {
+        } else if (!strcmp(name, "mcl2k")) {
             bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
             flag |= 2;
+        } else if (!strcmp(name, "mcl4k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 4;
+        } else if (!strcmp(name, "mcl8k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 8;
+        } else if (!strcmp(name, "mcl9k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 16;
+        } else if (!strcmp(name, "mcl12k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 32;
+        } else if (!strcmp(name, "mcl16k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 64;
+        } else if (!strcmp(name, "mcl64k")) {
+            bcopy(&pool, &mclpool, sizeof(pool));
+            totmem += mclpool.pr_npages * page_size;
+            totused += (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+            flag |= 128;
         }
-        if (flag == 3)
+        if (flag == 255)
             break;
     }
-    if (flag != 3) {
-        warning("mbuf(%.200s) failed (flag != 3)", st->arg);
+    if (flag != 255) {
+        warning("mbuf(%.200s) failed (flag != 255)", st->arg);
         return 0;
     }
 
     totmbufs = 0;
     for (i = 0; i < nmbtypes; ++i)
         totmbufs += mbstat.m_mtypes[i];
-    totmem = (mbpool.pr_npages + mclpool.pr_npages) * page_size;
-    totused = (mbpool.pr_nget - mbpool.pr_nput) * mbpool.pr_size +
-        (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
+    totmem += mbpool.pr_npages * page_size;
+    totused += (mbpool.pr_nget - mbpool.pr_nput) * mbpool.pr_size;
     totpct = (totmem == 0) ? 0 : ((totused * 100) / totmem);
 
     stats[0] = totmbufs;
