@@ -31,9 +31,7 @@ union stream_parg {
     } df;
     struct ifreq ifr;
     int sn;
-    struct {
-        int dev;
-    } smart;
+    int smart;
 };
 
 #endif

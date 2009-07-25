@@ -93,9 +93,8 @@ init_smart(struct stream *st)
     bzero(sd, sizeof(struct smart_device));
 
     /* rewire all bufferlocations, as our addresses may have changed */
-    for (i = 0; i < smart_size; i++) {
+    for (i = 0; i < smart_size; i++)
         smart_devs[i].cmd.databuf = (caddr_t)&smart_devs[i].data;
-    }
 
     /* store drivename in new block */
     snprintf(sd->name, MAX_PATH_LEN, "%s", drivename);
@@ -106,7 +105,7 @@ init_smart(struct stream *st)
     sd->cmd.command = WDCC_SMART;
     sd->cmd.datalen = sizeof(struct smart_values);
     sd->cmd.cylinder = WDSMART_CYL;
-    sd->cmd.timeout = 1000;
+    sd->cmd.timeout = SMART_TIMEOUT;
 
     /* store filedescriptor to device */
     if ((sd->fd = opendisk(drivename, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {

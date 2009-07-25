@@ -79,7 +79,7 @@ init_smart(struct stream *st)
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
         if (strncmp(smart_devs[i].name, drivename, MAXPATHLEN) == 0) {
-            st->parg.smart.dev = i;
+            st->parg.smart = i;
             return;
         }
     }
@@ -94,6 +94,11 @@ init_smart(struct stream *st)
 
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
+    /* rewire all bufferlocations, as our addresses may have changed */
+    for (i = 0; i < smart_size; i++) {
+        smart_devs[i].cmd.data = (caddr_t)&smart_devs[i].data;
+    }
+
     /* store drivename in new block */
     snprintf(smart_devs[smart_cur].name, MAXPATHLEN, "%s", drivename);
 
@@ -104,7 +109,6 @@ init_smart(struct stream *st)
     p->u.ata.feature = ATA_SMART_READ_VALUES;
     p->u.ata.lba = SMART_CYLINDER << 8;
     p->flags = ATA_CMD_READ;
-    p->data = (caddr_t) &smart_devs[smart_cur].data;
     p->count = DISK_BLOCK_LEN;
 
     /* store filedescriptor to device */
@@ -115,7 +119,7 @@ init_smart(struct stream *st)
     }
 
     /* store smart dev entry in stream to facilitate quick get */
-    st->parg.smart.dev = smart_cur;
+    st->parg.smart = smart_cur;
 
     smart_cur++;
 
@@ -150,10 +154,10 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
     struct smart_report sr;
 
-    if ((st->parg.smart.dev < smart_cur) &&
-        (!smart_devs[st->parg.smart.dev].failed))
+    if ((st->parg.smart < smart_cur) &&
+        (!smart_devs[st->parg.smart].failed))
     {
-        smart_parse(&smart_devs[st->parg.smart.dev].data, &sr);
+        smart_parse(&smart_devs[st->parg.smart].data, &sr);
         return snpack(symon_buf, maxlen, st->arg, MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,

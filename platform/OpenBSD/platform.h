@@ -37,9 +37,7 @@ union stream_parg {
         int mib[5];
 #endif
     } sn;
-    struct {
-        int dev;
-    } smart;
+    int smart;
 };
 
 #endif

@@ -61,12 +61,10 @@ union stream_parg {
         char mountpath[MAX_PATH_LEN];
     } df;
     struct {
-        int dev;
-    } smart;
-    struct {
         int type;
         char path[MAX_PATH_LEN];
     } sn;
+    int smart;
 };
 
 #endif
