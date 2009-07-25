@@ -65,16 +65,16 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
 
     /* check for port statement */
     if (!lex_nexttoken(l))
-        return 1;
-
-    if (l->op == LXT_PORT || l->op == LXT_COMMA)
+        mux->port = xstrdup(default_symux_port);
+    else if (l->op == LXT_PORT || l->op == LXT_COMMA) {
         lex_nexttoken(l);
 
-    if (l->type != LXY_NUMBER) {
-        lex_ungettoken(l);
-        mux->port = xstrdup(default_symux_port);
-    } else {
-        mux->port = xstrdup((const char *) l->token);
+        if (l->type != LXY_NUMBER) {
+            lex_ungettoken(l);
+            mux->port = xstrdup(default_symux_port);
+        } else {
+            mux->port = xstrdup((const char *) l->token);
+        }
     }
 
     bzero(&muxname, sizeof(muxname));

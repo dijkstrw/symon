@@ -90,6 +90,7 @@ struct lex {
     int endpos;                 /* current maxpos in buffer */
     int op;                     /* opcode of token, if string */
     int unget;                  /* bool; token pushed back */
+    int eof;                    /* bool; all tokens read */
     int tokpos;                 /* current position in token buffer */
     enum {
         LXY_STRING, LXY_NUMBER, LXY_UNKNOWN

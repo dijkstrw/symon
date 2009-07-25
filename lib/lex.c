@@ -170,14 +170,16 @@ lex_copychar(struct lex *l)
 int
 lex_nextchar(struct lex *l)
 {
-    if (l == NULL)
+    if (l == NULL || l->eof)
         return 0;
 
     l->curpos++;
 
     if (l->curpos >= l->endpos)
-        if (!lex_readline(l))
+        if (!lex_readline(l)) {
+            l->eof = 1;
             return 0;
+        }
 
     if (l->buffer[l->curpos] == '\n')
         l->cline++;
@@ -207,7 +209,7 @@ lex_ungettoken(struct lex *l)
 int
 lex_nexttoken(struct lex *l)
 {
-    if (l == NULL)
+    if (l == NULL || l->eof)
         return 0;
 
     /* return same token as last time if it has been pushed back */
@@ -359,6 +361,7 @@ reset_lex(struct lex *l)
     l->tokpos = 0;
     l->type = LXY_UNKNOWN;
     l->unget = 0;
+    l->eof = 0;
     l->value = 0;
 }
 /* Destroy a lexical analyser */
