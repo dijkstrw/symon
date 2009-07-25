@@ -95,7 +95,7 @@ init_smart(struct stream *st)
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
     /* rewire all bufferlocations, as our addresses may have changed */
-    for (i = 0; i < smart_size; i++) {
+    for (i = 0; i <= smart_cur; i++) {
         smart_devs[i].cmd.data = (caddr_t)&smart_devs[i].data;
     }
 
