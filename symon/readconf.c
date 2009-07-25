@@ -66,8 +66,9 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
     /* check for port statement */
     if (!lex_nexttoken(l))
         mux->port = xstrdup(default_symux_port);
-    else if (l->op == LXT_PORT || l->op == LXT_COMMA) {
-        lex_nexttoken(l);
+    else {
+        if (l->op == LXT_PORT || l->op == LXT_COMMA)
+            lex_nexttoken(l);
 
         if (l->type != LXY_NUMBER) {
             lex_ungettoken(l);
