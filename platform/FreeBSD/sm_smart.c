@@ -45,6 +45,7 @@
 #include "xmalloc.h"
 #include "smart.h"
 
+#ifdef HAS_IOCATAREQUEST
 /* per drive storage structure */
 struct smart_device {
     char name[MAXPATHLEN];
@@ -175,3 +176,23 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 
     return 0;
 }
+#else
+void
+init_smart(struct stream *st)
+{
+    fatal("smart module not available");
+}
+void
+gets_smart()
+{
+    fatal("smart module not available");
+}
+int
+get_smart(char *symon_buf, int maxlen, struct stream *st)
+{
+    fatal("io module not available");
+
+    /* NOT REACHED */
+    return 0;
+}
+#endif

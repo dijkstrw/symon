@@ -37,3 +37,8 @@ if grep -q "CPUSTATES" /usr/include/sys/resource.h; then
 else
     echo "#undef HAS_RESOURCE_CPUSTATE"
 fi
+if grep -q "IOCATAREQUEST" /usr/include/sys/ata.h; then
+    echo "#define HAS_IOCATAREQUEST 1"
+else
+    echo "#undef HAS_IOCATAREQUEST"
+fi
