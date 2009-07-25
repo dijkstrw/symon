@@ -9,6 +9,8 @@
 
 #include <net/if.h>
 
+#include <stdio.h>
+
 #include "sylimits.h"
 
 #define SYMON_USER      "_symon"
@@ -20,18 +22,20 @@ union semun {
         int val;
 };
 
+#define MAX_PATH_LEN FILENAME_MAX
 union stream_parg {
     struct {
-        u_int64_t time[CPUSTATES];
-        u_int64_t old[CPUSTATES];
-        u_int64_t diff[CPUSTATES];
-        int states[CPUSTATES];
+        int64_t time[CPUSTATES];
+        int64_t old[CPUSTATES];
+        int64_t diff[CPUSTATES];
+        int64_t states[CPUSTATES];
     } cp;
     struct {
         char rawdev[SYMON_DFNAMESIZE];
     } df;
     struct ifdatareq ifr;
     int sn;
+    int smart;
 };
 
 #endif
