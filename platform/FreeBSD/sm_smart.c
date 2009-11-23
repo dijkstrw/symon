@@ -46,6 +46,9 @@
 #include "smart.h"
 
 #ifdef HAS_IOCATAREQUEST
+#ifndef HAS_ATA_SMART_CMD
+#define ATA_SMART_CMD 0xb0
+#endif
 /* per drive storage structure */
 struct smart_device {
     char name[MAXPATHLEN];

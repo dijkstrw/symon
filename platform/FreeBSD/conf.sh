@@ -42,3 +42,8 @@ if grep -q "IOCATAREQUEST" /usr/include/sys/ata.h; then
 else
     echo "#undef HAS_IOCATAREQUEST"
 fi
+if grep -q "ATA_SMART_CMD" /usr/include/sys/ata.h; then
+    echo "#define HAS_ATA_SMART_CMD 1"
+else
+    echo "#undef HAS_ATA_SMART_CMD"
+fi
