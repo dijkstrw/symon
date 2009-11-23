@@ -116,7 +116,7 @@ init_smart(struct stream *st)
     smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK);
 
     if (errno) {
-        fatal("smart: could not open '%s' for read", drivename);
+        fatal("smart: could not open '%s' for read; %.200s", drivename, strerror(errno));
     }
 
     /* store smart dev entry in stream to facilitate quick get */

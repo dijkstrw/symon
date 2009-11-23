@@ -161,7 +161,7 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 
     /* Check pre/post h2k8 mcpl */
     if ((flag != 3) && (flag != 509)) {
-        warning("mbuf(%.200s) failed", st->arg);
+        warning("mbuf(%.200s) failed (%d)", st->arg, flag);
         return 0;
     }
 
