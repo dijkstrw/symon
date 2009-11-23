@@ -1,10 +1,15 @@
-27/04/2009 - 2.80
+23/11/2009 - 2.80
 
    - Removed all cvs ids, moved src control to git
 
+   - Added initial sensor probe for Linux which reads directly from hwmon. Note
+     that there is no conversion of the raw data to real voltage, temperature
+     or rotations.
+
    - Added smart probe for NetBSD (Tito Dal Canton), Linux / FreeBSD / OpenBSD
-     (me). Not all these have been tested thoroughly as they require physical
-     boxes to be tested on.
+     (me). Note that smart values sometimes need per drive/per model
+     interpretation. Not all these probes have been tested thoroughly as they
+     require physical boxes to be tested on.
 
    - Added libprobe; a library for code that is shared between probes,
      e.g. smart decoding and cpu percentages calculation.

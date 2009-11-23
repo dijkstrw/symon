@@ -36,6 +36,6 @@ conf.h:  Makefile ../Makefile.inc
 	@if [ -f ../platform/${OS}/conf.sh ]; then sh ../platform/${OS}/conf.sh >> $@; fi
 
 clean:
-	rm -f conf.h libsym.a ${OBJSsym} ${OBJSprobe}
+	rm -f conf.h libsym.a libprobe.a ${OBJSsym} ${OBJSprobe}
 
 install: libsym.a libprobe.a
