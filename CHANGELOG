@@ -1,3 +1,7 @@
+04/01/2010 - 2.81
+
+   - Linux/sm_df.c now uses statvfs (Harm Schotanus)
+
 23/11/2009 - 2.80
 
    - Removed all cvs ids, moved src control to git

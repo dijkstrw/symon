@@ -40,7 +40,7 @@
 #include <stdio.h>
 #include <mntent.h>
 #include <string.h>
-#include <sys/vfs.h>
+#include <sys/statvfs.h>
 
 #include "conf.h"
 #include "error.h"
@@ -91,9 +91,9 @@ fsbtoblk(u_int64_t num, u_int64_t fsbs, u_int64_t bs)
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
 {
-    struct statfs buf;
+    struct statvfs buf;
 
-    if (statfs(st->parg.df.mountpath, &buf) == 0 ) {
+    if (statvfs(st->parg.df.mountpath, &buf) == 0 ) {
         return snpack(symon_buf, maxlen, st->arg, MT_DF,
                       (u_int64_t)fsbtoblk(buf.f_blocks, buf.f_bsize, SYMON_DFBLOCKSIZE),
                       (u_int64_t)fsbtoblk(buf.f_bfree, buf.f_bsize, SYMON_DFBLOCKSIZE),
