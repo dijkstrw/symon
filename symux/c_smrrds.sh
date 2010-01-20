@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (c) 2001-2009 Willem Dijkstra
+# Copyright (c) 2001-2010 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -310,6 +310,14 @@ smart_*.rrd)
         DS:gsense_error_rate:GAUGE:$INTERVAL:U:U \
         DS:temperature2:GAUGE:$INTERVAL:U:U \
         DS:freefall:GAUGE:$INTERVAL:U:U
+    ;;
+
+load.rrd)
+    # Build load file
+    create_rrd $i \
+	DS:load1:GAUGE:$INTERVAL:0:U \
+	DS:load5:GAUGE:$INTERVAL:0:U \
+	DS:load15:GAUGE:$INTERVAL:0:U \
     ;;
 
 "done")

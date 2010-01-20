@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -124,6 +124,11 @@ extern int get_df(char *, int, struct stream *);
 extern void init_smart(struct stream *);
 extern void gets_smart();
 extern int get_smart(char *, int, struct stream *);
+
+/* sm_load.c */
+extern void init_load(struct stream *);
+extern void gets_load();
+extern int get_load(char *, int, struct stream *);
 
 __END_DECLS
 

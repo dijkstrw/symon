@@ -3,11 +3,13 @@ OS!=uname -s
 .include "../Makefile.inc"
 
 LIBS+=	${SYMON_LIBS} -L../lib -lsym -lprobe
-MODS!=	( for g in ../platform/stub/sm_*.c; do \
-		f=../platform/${OS}/`basename $$g`; \
-		if [ -f $$f ]; then echo $$f; \
-		else		    echo $$g; \
-		fi; \
+MODS!=	( for s in ../platform/stub/sm_*.c; do \
+		f=../platform/${OS}/`basename $$s`; \
+		g=../platform/generic/`basename $$s`; \
+		if [ -f $$f ]; then      echo $$f; \
+		else if [ -f $$g ]; then echo $$g; \
+		else                     echo $$s; \
+		fi; fi; \
 	  done )
 SRCS=	symon.c readconf.c symonnet.c ${MODS}
 OBJS+=	${SRCS:R:S/$/.o/g}

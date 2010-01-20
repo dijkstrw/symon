@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the
@@ -111,6 +111,7 @@ struct {
     { MT_IF2, "LLLLLLLLLL" },
     { MT_CPUIOW, "cccccc" },
     { MT_SMART, "bbbbbbbbbbbb" },
+    { MT_LOAD, "ccc" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -135,6 +136,7 @@ struct {
     { MT_IF2, LXT_IF },
     { MT_CPUIOW, LXT_CPUIOW },
     { MT_SMART, LXT_SMART },
+    { MT_LOAD, LXT_LOAD },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

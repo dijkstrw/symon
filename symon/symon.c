@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,7 @@ struct funcmap streamfunc[] = {
     {MT_IF2, 0, NULL, init_if, gets_if, get_if},
     {MT_CPUIOW, 0, NULL, init_cpuiow, gets_cpuiow, get_cpuiow},
     {MT_SMART, 0, NULL, init_smart, gets_smart, get_smart},
+    {MT_LOAD, 0, NULL, init_load, gets_load, get_load},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 

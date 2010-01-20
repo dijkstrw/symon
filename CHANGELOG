@@ -2,6 +2,8 @@
 
    - Linux/sm_df.c now uses statvfs (Harm Schotanus)
 
+   - Added load average probe (Lars Kotthoff)
+
 23/11/2009 - 2.80
 
    - Removed all cvs ids, moved src control to git

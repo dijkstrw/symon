@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -115,6 +115,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_PROC:
         case LXT_SENSOR:
         case LXT_SMART:
+        case LXT_LOAD:
             st = token2type(l->op);
             strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -153,7 +154,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_COMMA:
             break;
         default:
-            parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart}");
+            parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|load|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart}");
             return 0;
             break;
         }

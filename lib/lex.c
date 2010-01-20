@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -81,6 +81,7 @@ static struct {
     { "io", LXT_IO },
     { "io1", LXT_IO1 },
     { "io2", LXT_IO },
+    { "load", LXT_LOAD },
     { "mbuf", LXT_MBUF },
     { "mem", LXT_MEM },
     { "mem1", LXT_MEM1 },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
 #include <stdio.h>
 
 /* Tokens known to lex */
-#define LXT_BADTOKEN   0
 #define LXT_ACCEPT     1
+#define LXT_BADTOKEN   0
 #define LXT_BEGIN      2
 #define LXT_CLOSE      3
 #define LXT_COMMA      4
@@ -59,24 +59,25 @@
 #define LXT_IN        15
 #define LXT_IO        16
 #define LXT_IO1       17
-#define LXT_MBUF      18
-#define LXT_MEM       19
-#define LXT_MEM1      20
-#define LXT_MONITOR   21
-#define LXT_MUX       22
-#define LXT_OPEN      23
-#define LXT_PF        24
-#define LXT_PFQ       25
-#define LXT_PORT      26
-#define LXT_PROC      27
-#define LXT_SECOND    28
-#define LXT_SECONDS   29
-#define LXT_SENSOR    30
-#define LXT_SMART     31
-#define LXT_SOURCE    32
-#define LXT_STREAM    33
-#define LXT_TO        34
-#define LXT_WRITE     35
+#define LXT_LOAD      18
+#define LXT_MBUF      19
+#define LXT_MEM       20
+#define LXT_MEM1      21
+#define LXT_MONITOR   22
+#define LXT_MUX       23
+#define LXT_OPEN      24
+#define LXT_PF        25
+#define LXT_PFQ       26
+#define LXT_PORT      27
+#define LXT_PROC      28
+#define LXT_SECOND    29
+#define LXT_SECONDS   30
+#define LXT_SENSOR    31
+#define LXT_SMART     32
+#define LXT_SOURCE    33
+#define LXT_STREAM    34
+#define LXT_TO        35
+#define LXT_WRITE     36
 
 struct lex {
     char *buffer;               /* current line(s) */

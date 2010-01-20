@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -160,8 +160,9 @@ SLIST_HEAD(muxlist, mux);
 #define MT_IF2    13
 #define MT_CPUIOW 14
 #define MT_SMART  15
-#define MT_TEST   16
-#define MT_EOT    17
+#define MT_LOAD   16
+#define MT_TEST   17
+#define MT_EOT    18
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -342,6 +343,11 @@ struct packedstream {
             u_int8_t temperature2;
             u_int8_t free_fall_protection;
         }      ps_smart;
+        struct {
+            u_int16_t mload1;
+            u_int16_t mload2;
+            u_int16_t mload3;
+        }      ps_load;
     }     data;
 };
 

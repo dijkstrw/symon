@@ -1,6 +1,6 @@
 .\"  -*- nroff -*-
 .\"
-.\" Copyright (c) 2001-2009 Willem Dijkstra
+.\" Copyright (c) 2001-2010 Willem Dijkstra
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 .Pp
 .Sh DESCRIPTION
 .Nm
-is a lightweight system monitor that measures cpu, filesystem, interface, disk,
+is a lightweight system monitor that measures cpu, load, filesystem, interface, disk,
 memory, pf, pf queues, mbuf, proc and sensor statistics every 5 seconds. This
 information is then spooled to
 .Xr symux 8
@@ -108,7 +108,7 @@ monitor-rule = "monitor" "{" resources "}" [every]
 resources    = resource [ version ] ["(" argument ")"]
                [ ","|" " resources ]
 resource     = "cpu" | "cpuiow" | "debug" | "df" | "if" | "io"
-               "mbuf" | "mem" | "pf" | "pfq" | "proc" |
+               "load" | "mbuf" | "mem" | "pf" | "pfq" | "proc" |
                "sensor" | "smart"
 version      = number
 argument     = number | name
@@ -179,8 +179,9 @@ exist.
 Willem Dijkstra <wpd@xs4all.nl>. \%Daniel \%Hartmeier helped to port to big-endian
 architectures. \%Matthew \%Gream helped to port symon to other BSD platforms.
 .Pp
-Port contributors: \%Marc \%Balmer, \%Tito \%Dal \%Canton, \%Matthew \%Gream,
-\%Daniel \%Hartmeier, \%Constantine A. \%Murenin, J. \%Martin \%Petersen,
-\%Fredrik \%Soderblom, \%Harm \%Schotanus and \%Martin van der \%Werff.
+Port contributors: \%Marc \%Balmer, \%Tito \%Dal \%Canton, \%Matthew
+\%Gream, \%Daniel \%Hartmeier, \%Lars \%Kotthoff, \%Constantine
+A. \%Murenin, J. \%Martin \%Petersen, \%Fredrik \%Soderblom, \%Harm
+\%Schotanus and \%Martin van der \%Werff.
 .Sh SEE ALSO
 .Xr symux 8

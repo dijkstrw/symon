@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -119,6 +119,10 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ts = "smart_";
         ta = args;
         break;
+    case MT_LOAD:
+        ts = "load_";
+        ta = "";
+        break;
 
     default:
         warning("%.200s:%d: internal error: type (%d) unknown",
@@ -234,6 +238,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_PROC:
                 case LXT_SENSOR:
                 case LXT_SMART:
+                case LXT_LOAD:
                     st = token2type(l->op);
                     strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -275,7 +280,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_COMMA:
                     break;
                 default:
-                    parse_error(l, "{cpu|mem|if|io|pf|debug|mbuf|proc|sensor|smart}");
+                    parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart|load}");
                     return 0;
 
                     break;
@@ -378,6 +383,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             case LXT_PROC:
             case LXT_SENSOR:
             case LXT_SMART:
+            case LXT_LOAD:
                 st = token2type(l->op);
                 strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
 
@@ -439,7 +445,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 }
                 break;          /* LXT_resource */
             default:
-                parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart}");
+                parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart|load}");
                 return 0;
                 break;
             }

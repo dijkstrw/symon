@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2001-2008 Willem Dijkstra
+# Copyright (c) 2001-2010 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,8 @@ my $streamitem =
                 air_flow_temp => 4, temperature => 5, reallocations => 6,
                 current_pending => 7, uncorrectables => 8,
                 soft_read_error_rate => 9, g_sense_error_rate => 10,
-                temperature2 => 10, free_fall_protection => 11}
+                temperature2 => 10, free_fall_protection => 11},
+     load   => {load1 => 1, load5 => 2, load15 => 3}
 };
 
 sub new {
