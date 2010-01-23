@@ -42,7 +42,7 @@ struct smart_values {
 #endif
 
 #define SMART_CYLINDER                             0xc24f
-#define SMART_TIMEOUT                              600
+#define SMART_TIMEOUT                              1000
 
 #define ATA_SMART_READ_VALUES                      0xd0
 

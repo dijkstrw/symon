@@ -128,6 +128,8 @@ gets_smart()
     int i;
 
     for (i = 0; i < smart_cur; i++) {
+        /* populate ata command header */
+        memcpy(&smart_devs[i].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
         if (ioctl(smart_devs[i].fd, HDIO_DRIVE_CMD, &smart_devs[i].cmd)) {
             warning("smart: ioctl for drive '%s' failed: %d",
                     &smart_devs[i].name, errno);

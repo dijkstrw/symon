@@ -137,6 +137,31 @@ gets_smart()
             smart_devs[i].failed = 1;
         }
 
+        /* check ATA command completion status */
+        switch (smart_devs[i].cmd.retsts) {
+            case ATACMD_OK:
+                break;
+            case ATACMD_TIMEOUT:
+                warning("smart: ATA command timed out for drive '%s'", &smart_devs[i].name);
+                smart_devs[i].failed = 1;
+                break;
+            case ATACMD_DF:
+                warning("smart: ATA device '%s' returned a Device Fault", &smart_devs[i].name);
+                smart_devs[i].failed = 1;
+                break;
+            case ATACMD_ERROR:
+                if (smart_devs[i].cmd.error & WDCE_ABRT)
+                    warning("smart: ATA device '%s' returned Aborted Command", &smart_devs[i].name);
+                else
+                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, smart_devs[i].cmd.error);
+                smart_devs[i].failed = 1;
+                break;
+            default:
+                warning("smart: ATAIOCCOMMAND returned unknown result code %d for drive '%s'", smart_devs[i].cmd.retsts, &smart_devs[i].name);
+                smart_devs[i].failed = 1;
+                break;
+        }
+
         /* Some drives do not calculate the smart checksum correctly;
          * additional code that identifies these drives would increase our
          * footprint and the amount of datajuggling we need to do; we would
