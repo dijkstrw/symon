@@ -46,14 +46,28 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
+/* ata command register set for requesting smart values */
+static struct atareq smart_cmd = {
+  ATACMD_READ, /* flags */
+  WDCC_SMART,  /* command */
+  WDSM_RD_DATA, /* features */
+  1, /* sector count */
+  0, /* sector number */
+  0, /* head */
+  WDSMART_CYL, /* cylinder */
+  NULL, /* data buffer */
+  sizeof(struct smart_values), /* sizeof data buffer */
+  SMART_TIMEOUT, /* timeout */
+  0, /* retsts */
+  0 /* error bits */
+};
 
 /* per drive storage structure */
-struct smart_device {
+static struct smart_device {
     char name[MAX_PATH_LEN];
     int fd;
     int type;
     int failed;
-    struct atareq cmd;
     struct smart_values data;
 };
 
@@ -99,14 +113,6 @@ init_smart(struct stream *st)
     /* store drivename in new block */
     snprintf(sd->name, MAX_PATH_LEN, "%s", drivename);
 
-    /* populate ata command header */
-    sd->cmd.flags = ATACMD_READ;
-    sd->cmd.features = WDSM_RD_DATA;
-    sd->cmd.command = WDCC_SMART;
-    sd->cmd.datalen = sizeof(struct smart_values);
-    sd->cmd.cylinder = WDSMART_CYL;
-    sd->cmd.timeout = SMART_TIMEOUT;
-
     /* store filedescriptor to device */
     if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
         if (errno == ENOENT) {
@@ -129,8 +135,13 @@ void
 gets_smart()
 {
     int i;
+    struct atareq cmd;
 
     for (i = 0; i < smart_size; i++) {
+        /* populate ata command header */
+        memcpy(&cmd, (void *) &smart_cmd, sizeof(struct atareq));
+        cmd.databuf = (caddr_t)&smart_devs[i].data;
+        
         if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &smart_devs[i].cmd)) {
             warning("smart: ioctl for drive '%s' failed: %d",
                     &smart_devs[i].name, errno);

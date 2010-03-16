@@ -4,6 +4,9 @@
 
    - Added load average probe (Lars Kotthoff)
 
+   - Smart probe assumed that its ioctl cmd structure was not overwritten and
+     did not check the return code correctly on NetBSD. (Tito Dal Canton)
+
 23/11/2009 - 2.80
 
    - Removed all cvs ids, moved src control to git

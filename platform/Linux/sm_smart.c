@@ -53,15 +53,20 @@ static struct hd_drive_cmd_hdr smart_cmd = {
     1 /* sector count */
 };
 
-/* per drive storage structure */
+/* Per drive storage structure; the ata cmd is followed by the data buffer that
+ * is filled by the ioctl. There can be no room between the two; hence the
+ * pragma for byte alignment.
+ */
+#pragma pack(1)
 struct smart_device {
+    struct hd_drive_cmd_hdr cmd;
+    struct smart_values data;
     char name[MAX_PATH_LEN];
     int fd;
     int type;
     int failed;
-    struct hd_drive_cmd_hdr cmd;
-    struct smart_values data;
 };
+#pragma pack()
 
 static struct smart_device *smart_devs = NULL;
 static int smart_cur = 0;
@@ -104,9 +109,6 @@ init_smart(struct stream *st)
     /* store drivename in new block */
     snprintf(smart_devs[smart_cur].name, MAX_PATH_LEN, "%s", drivename);
 
-    /* populate ata command header */
-    memcpy(&smart_devs[smart_cur].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
-
     /* store filedescriptor to device */
     smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK);
 
@@ -125,7 +127,7 @@ init_smart(struct stream *st)
 void
 gets_smart()
 {
-    int i;
+  int i;
 
     for (i = 0; i < smart_cur; i++) {
         /* populate ata command header */
@@ -136,12 +138,14 @@ gets_smart()
             smart_devs[i].failed = 1;
         }
 
+        /* Linux does not allow checking the smart return code using the
+         * HDIO_DRIVE_CMD */
+
         /* Some drives do not calculate the smart checksum correctly;
          * additional code that identifies these drives would increase our
          * footprint and the amount of datajuggling we need to do; we would
          * rather ignore the checksums.
          */
-
         smart_devs[i].failed = 0;
     }
     return;

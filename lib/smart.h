@@ -76,5 +76,6 @@ struct smart_report {
 };
 
 extern void smart_parse(struct smart_values *ds, struct smart_report *sr);
+extern int smart_status(unsigned char low, unsigned char high);
 
 #endif /* _SYMON_LIB_SMART_H */

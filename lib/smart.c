@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Willem Dijkstra
+ * Copyright (c) 2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -101,4 +101,28 @@ smart_parse(struct smart_values *ds, struct smart_report *sr)
             break;
         }
     }
+}
+/*
+ * The return value of the smart read values is encoded in the ata
+ * cylinder register. This function hides that magic and is used by
+ * those operating systems that do not decode this data for us.
+ */
+int
+smart_status(unsigned char low, unsigned char high)
+{
+    unsigned const char nlow = 0x4f;
+    unsigned const char nhigh = 0xc2;
+    unsigned const char flow = 0xf4;
+    unsigned const char fhigh = 0x2c;
+
+    /* Check for good values */
+    if ((low == nlow) && (high == nhigh))
+        return 0;
+
+    /* Check for bad values */
+    if ((low == flow) && (high == fhigh))
+        return 1;
+
+    /* Values do not make sense - signal to caller */
+    return 2;
 }
