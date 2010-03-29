@@ -79,7 +79,7 @@ read_host_port(struct muxlist * mul, struct mux * mux, struct lex * l)
     }
 
     bzero(&muxname, sizeof(muxname));
-    snprintf(&muxname[0], sizeof(muxname), "%s %s", mux->addr, mux->port);
+    snprintf(&muxname[0], sizeof(muxname), "%s %s (%ds)", mux->addr, mux->port, mux->interval);
     if (rename_mux(mul, mux, muxname) == NULL) {
         warning("%.200s:%d: monitored data for host '%.200s' has already been specified",
                 l->filename, l->cline, muxname);
@@ -183,9 +183,9 @@ read_monitor(struct muxlist * mul, struct lex * l)
         lex_nexttoken(l);
 
         if (l->op == LXT_SECOND) {
-            symon_interval = 1;
+            mux->interval = 1;
         } else if (l->type == LXY_NUMBER) {
-            symon_interval = l->value;
+            mux->interval = l->value;
             lex_nexttoken(l);
             if (l->op != LXT_SECONDS) {
                 parse_error(l, "seconds");
@@ -196,7 +196,8 @@ read_monitor(struct muxlist * mul, struct lex * l)
         }
 
         lex_nexttoken(l);
-    }
+    } else
+        mux->interval = SYMON_DEFAULT_INTERVAL;
 
     /* parse [stream [from <host>] to] */
     if (l->op != LXT_STREAM) {

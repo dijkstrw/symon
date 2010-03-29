@@ -56,6 +56,7 @@
 #include "xmalloc.h"
 #include "lex.h"
 #include "error.h"
+#include "sylimits.h"
 
 static struct {
     const char *name;
@@ -306,6 +307,9 @@ lex_nexttoken(struct lex *l)
         if (strlen(l->token) == strspn(l->token, "0123456789")) {
             l->type = LXY_NUMBER;
             l->value = strtol(l->token, NULL, 10);
+            if (l->value > SYMON_MAXLEXNUM) {
+                fatal("%.200s:%d: parse error at '%.200s': number too large", l->filename, l->cline, l->token);
+            }
         }
     }
     return 1;

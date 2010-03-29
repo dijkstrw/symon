@@ -15,4 +15,5 @@
 #define SYMON_DFNAMESIZE       64
 #define SYMON_MAXPACKET        65515    /* udp packet max payload 65Kb - 20 byte header */
 
+#define SYMON_MAXLEXNUM        65535    /* maximum numeric argument while lexing */
 #endif

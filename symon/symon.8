@@ -107,7 +107,7 @@ monitor-rule = "monitor" "{" resources "}" [every]
                "stream" ["from" host] ["to"] host [ port ]
 resources    = resource [ version ] ["(" argument ")"]
                [ ","|" " resources ]
-resource     = "cpu" | "cpuiow" | "debug" | "df" | "if" | "io"
+resource     = "cpu" | "cpuiow" | "debug" | "df" | "if" | "io" |
                "load" | "mbuf" | "mem" | "pf" | "pfq" | "proc" |
                "sensor" | "smart"
 version      = number

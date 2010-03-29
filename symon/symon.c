@@ -58,13 +58,14 @@ void alarmhandler(int);
 void drop_privileges();
 void exithandler(int);
 void huphandler(int);
-void set_stream_use(struct muxlist *);
+void init_streams(struct muxlist *mul);
+void drop_privileges(int unsecure);
 __END_DECLS
 
 int flag_unsecure = 0;
 int flag_hup = 0;
 int flag_testconf = 0;
-int symon_interval = SYMON_DEFAULT_INTERVAL;
+int symon_interval = 0;
 
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
@@ -89,19 +90,39 @@ struct funcmap streamfunc[] = {
 };
 
 void
-set_stream_use(struct muxlist *mul)
+init_streams(struct muxlist *mul)
 {
-    struct mux *mux;
+    struct itimerval alarminterval;
     struct stream *stream;
-    int i;
+    struct mux *mux;
 
-    for (i = 0; i < MT_EOT; i++)
-        streamfunc[i].used = 0;
+    if ((mul == NULL) || ((mux = SLIST_FIRST(mul)) == NULL))
+        fatal("empty mux list");
 
+    symon_interval = mux->interval;
 
     SLIST_FOREACH(mux, mul, muxes) {
-        SLIST_FOREACH(stream, &mux->sl, streams)
-            streamfunc[stream->type].used = 1;
+        /* determine gcd of alarm times */
+        symon_interval = gcd(symon_interval, mux->interval);
+
+        /* init network */
+        init_symon_packet(mux);
+        connect2mux(mux);
+
+        /* init modules */
+        SLIST_FOREACH(stream, &mux->sl, streams) {
+            (streamfunc[stream->type].init) (stream);
+        }
+    }
+
+    /* setup alarm */
+    timerclear(&alarminterval.it_interval);
+    timerclear(&alarminterval.it_value);
+    alarminterval.it_interval.tv_sec =
+        alarminterval.it_value.tv_sec = symon_interval;
+
+    if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
+        fatal("alarm setup failed: %.200s", strerror(errno));
     }
 }
 void
@@ -173,7 +194,6 @@ int
 main(int argc, char *argv[])
 {
     struct muxlist mul, newmul;
-    struct itimerval alarminterval;
     struct stream *stream;
     struct mux *mux;
     time_t now, last_update;
@@ -225,7 +245,11 @@ main(int argc, char *argv[])
         exit(EX_OK);
     }
 
-    set_stream_use(&mul);
+    SLIST_FOREACH(mux, &mul, muxes) {
+        SLIST_FOREACH(stream, &mux->sl, streams) {
+            streamfunc[stream->type].used = 1;
+        }
+    }
 
     /* open resources that might not be available after privilege drop */
     for (i = 0; i < MT_EOT; i++)
@@ -268,24 +292,7 @@ main(int argc, char *argv[])
     /* prepare crc32 */
     init_crc32();
 
-    /* init modules */
-    SLIST_FOREACH(mux, &mul, muxes) {
-        init_symon_packet(mux);
-        connect2mux(mux);
-        SLIST_FOREACH(stream, &mux->sl, streams) {
-            (streamfunc[stream->type].init) (stream);
-        }
-    }
-
-    /* setup alarm */
-    timerclear(&alarminterval.it_interval);
-    timerclear(&alarminterval.it_value);
-    alarminterval.it_interval.tv_sec =
-        alarminterval.it_value.tv_sec = symon_interval;
-
-    if (setitimer(ITIMER_REAL, &alarminterval, NULL) != 0) {
-        fatal("alarm setup failed: %.200s", strerror(errno));
-    }
+    init_streams(&mul);
 
     last_update = time(NULL);
     for (;;) {                  /* FOREVER */
@@ -307,14 +314,7 @@ main(int argc, char *argv[])
                     info("read configuration file '%.200s' successfully", cfgpath);
 
                     /* init modules */
-                    SLIST_FOREACH(mux, &mul, muxes) {
-                        init_symon_packet(mux);
-                        connect2mux(mux);
-                        SLIST_FOREACH(stream, &mux->sl, streams) {
-                            (streamfunc[stream->type].init) (stream);
-                        }
-                    }
-                    set_stream_use(&mul);
+                    init_streams(&mul);
                 }
             } else {
                 info("configuration unreachable because of privsep; keeping old configuration");
@@ -332,19 +332,31 @@ main(int argc, char *argv[])
             last_update = now;
 
             /* populate for modules that get all their measurements in one go */
+            SLIST_FOREACH(mux, &mul, muxes) {
+                mux->last += symon_interval;
+                if (mux->last > mux->interval) {
+                    SLIST_FOREACH(stream, &mux->sl, streams) {
+                        streamfunc[stream->type].used = 1;
+                    }
+                }
+            }
+
             for (i = 0; i < MT_EOT; i++)
                 if (streamfunc[i].used && (streamfunc[i].gets != NULL))
                     (streamfunc[i].gets) ();
 
             SLIST_FOREACH(mux, &mul, muxes) {
-                prepare_packet(mux);
+                if (mux->last >= mux->interval) {
+                    mux->last = 0;
+                    prepare_packet(mux);
 
-                SLIST_FOREACH(stream, &mux->sl, streams)
-                    stream_in_packet(stream, mux);
+                    SLIST_FOREACH(stream, &mux->sl, streams)
+                        stream_in_packet(stream, mux);
 
-                finish_packet(mux);
+                    finish_packet(mux);
 
-                send_packet(mux);
+                    send_packet(mux);
+                }
             }
         }
     }

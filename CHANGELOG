@@ -1,4 +1,7 @@
-04/01/2010 - 2.81
+29/03/2010 - 2.81
+
+   - symon: Allow multiple monitor statements with different intervals to the
+     same mux. Retrieving smart info every 5 secs confuses some disks.
 
    - Linux/sm_df.c now uses statvfs (Harm Schotanus)
 

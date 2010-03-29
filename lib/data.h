@@ -127,6 +127,8 @@ struct mux {
     int clientsocket;           /* symux; incoming tcp connections */
     int symonsocket[AF_MAX];    /* symux; incoming symon data */
     int symuxsocket;            /* symon; outgoing data to mux */
+    int last;
+    int interval;
     struct symonpacket packet;
     struct sockaddr_storage sockaddr;
     struct streamlist sl;
@@ -356,6 +358,7 @@ __BEGIN_DECLS
 char *type2str(const int);
 int bytelen_sourcelist(struct sourcelist *);
 int bytelen_streamlist(struct streamlist *);
+int gcd(int a, int b);
 int getheader(char *, struct symonpacketheader *);
 int ps2strn(struct packedstream *, char *, int, int);
 int setheader(char *, struct symonpacketheader *);
