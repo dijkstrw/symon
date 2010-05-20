@@ -11,3 +11,9 @@ if [ -f /proc/partitions ]; then
 	echo "#undef HAS_PROC_PARTITIONS"
     fi
 fi
+if grep -q "hd_drive_cmd_hdr" /usr/include/linux/hdreg.h; then
+    echo "#define HAS_HDDRIVECMDHDR 1"
+else
+    echo "#undef HAS_HDDRIVECMDHDR"
+fi
+

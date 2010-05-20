@@ -45,6 +45,17 @@
 #include "xmalloc.h"
 #include "smart.h"
 
+#ifndef HAS_HDDRIVECMDHDR
+typedef unsigned char task_ioreg_t;
+
+struct hd_drive_cmd_hdr {
+    task_ioreg_t command;
+    task_ioreg_t sector_number;
+    task_ioreg_t feature;
+    task_ioreg_t sector_count;
+};
+#endif
+
 /* Ata command register set for requesting smart values */
 static struct hd_drive_cmd_hdr smart_cmd = {
     WIN_SMART, /* command code */
