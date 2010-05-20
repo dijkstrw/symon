@@ -331,19 +331,23 @@ main(int argc, char *argv[])
             }
             last_update = now;
 
-            /* populate for modules that get all their measurements in one go */
+            /* populate for modules that get all their measurements in one
+             * go. we bunch up calls together to ensure that the measurements
+             * happen "at the same time" */
+            for (i = 0; i < MT_EOT; i++)
+                streamfunc[i].used = 0;
             SLIST_FOREACH(mux, &mul, muxes) {
                 mux->last += symon_interval;
-                if (mux->last > mux->interval) {
+                if (mux->last >= mux->interval) {
                     SLIST_FOREACH(stream, &mux->sl, streams) {
-                        streamfunc[stream->type].used = 1;
+                        if (streamfunc[stream->type].used == 0) {
+                            streamfunc[stream->type].used = 1;
+                            if (streamfunc[stream->type].gets != NULL)
+                                (streamfunc[stream->type].gets)();
+                        }
                     }
                 }
             }
-
-            for (i = 0; i < MT_EOT; i++)
-                if (streamfunc[i].used && (streamfunc[i].gets != NULL))
-                    (streamfunc[i].gets) ();
 
             SLIST_FOREACH(mux, &mul, muxes) {
                 if (mux->last >= mux->interval) {

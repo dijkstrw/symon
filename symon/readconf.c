@@ -262,10 +262,9 @@ read_config_file(struct muxlist *muxlist, char *filename)
                     l->filename, mux->name);
             return 0;
         }
-    }
-
-    if (symon_interval < SYMON_DEFAULT_INTERVAL) {
-        warning("%.200s: monitoring set to every %d s", l->filename, symon_interval);
+        if (mux->interval < SYMON_DEFAULT_INTERVAL) {
+            warning("%.200s: monitoring set to every %d s", l->filename, mux->interval);
+        }
     }
 
     close_lex(l);
