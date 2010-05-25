@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 __BEGIN_DECLS
 void connect2mux(struct mux *);
 void send_packet(struct mux *);
-void prepare_packet(struct mux *);
+void prepare_packet(struct mux *, time_t t);
 void stream_in_packet(struct stream *, struct mux *);
 void finish_packet(struct mux *);
 __END_DECLS

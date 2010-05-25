@@ -352,7 +352,7 @@ main(int argc, char *argv[])
             SLIST_FOREACH(mux, &mul, muxes) {
                 if (mux->last >= mux->interval) {
                     mux->last = 0;
-                    prepare_packet(mux);
+                    prepare_packet(mux, now);
 
                     SLIST_FOREACH(stream, &mux->sl, streams)
                         stream_in_packet(stream, mux);

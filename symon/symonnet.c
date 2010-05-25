@@ -85,10 +85,8 @@ send_packet(struct mux * mux)
 }
 /* Prepare a packet for data */
 void
-prepare_packet(struct mux * mux)
+prepare_packet(struct mux * mux, time_t t)
 {
-    time_t t = time(NULL);
-
     bzero(mux->packet.data, mux->packet.size);
     mux->packet.header.symon_version = SYMON_PACKET_VER;
     mux->packet.header.timestamp = t;

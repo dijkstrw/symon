@@ -10,6 +10,9 @@
    - Smart probe assumed that its ioctl cmd structure was not overwritten and
      did not check the return code correctly on NetBSD. (Tito Dal Canton)
 
+   - sm_smart.c: support for kernels 2.6.9 and friends that miss the required
+     hdio structure.
+
 23/11/2009 - 2.80
 
    - Removed all cvs ids, moved src control to git
