@@ -152,7 +152,7 @@ all)
     sh $this interval $INTERVAL child $config `$SYMUX -l`
     ;;
 
-cpu[0-9].rrd)
+cpu[0-9]*.rrd)
     # Build cpu file
     create_rrd $i \
 	DS:user:GAUGE:$INTERVAL:0:100 \
@@ -162,7 +162,7 @@ cpu[0-9].rrd)
 	DS:idle:GAUGE:$INTERVAL:0:100
     ;;
 
-cpuiow[0-9].rrd)
+cpuiow[0-9]*.rrd)
     # Build cpuiow file
     create_rrd $i \
 	DS:user:GAUGE:$INTERVAL:0:100 \

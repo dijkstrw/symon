@@ -1,4 +1,4 @@
-29/03/2010 - 2.81
+31/05/2010 - 2.81
 
    - symon: Allow multiple monitor statements with different intervals to the
      same mux. Retrieving smart info every 5 secs confuses some disks.
@@ -12,6 +12,8 @@
 
    - sm_smart.c: support for kernels 2.6.9 and friends that miss the required
      hdio structure.
+
+   - c_smrrds.sh: Allow more than 10 cpus.
 
 23/11/2009 - 2.80
 
