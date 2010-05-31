@@ -120,7 +120,7 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ta = args;
         break;
     case MT_LOAD:
-        ts = "load_";
+        ts = "load";
         ta = "";
         break;
 
