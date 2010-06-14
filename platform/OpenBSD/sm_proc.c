@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,6 +36,8 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
@@ -50,7 +52,11 @@
 #define pagetob(size) (((u_int32_t)size) << proc_pageshift)
 
 /* Globals for this module start with proc_ */
+#ifdef HAS_KERN_PROC2
+static struct kinfo_proc2 *proc_ps = NULL;
+#else
 static struct kinfo_proc *proc_ps = NULL;
+#endif
 static int proc_max = 0;
 static int proc_cur = 0;
 static int proc_stathz = 0;
@@ -65,7 +71,7 @@ typedef long pctcpu;
 void
 gets_proc()
 {
-    int mib[3];
+    int mib[6];
     int procs;
     size_t size;
 
@@ -78,6 +84,41 @@ gets_proc()
               __FILE__, __LINE__);
     }
 
+#ifdef HAS_KERN_PROC2
+    /* increase buffers if necessary */
+    if (procs > proc_max) {
+        proc_max = (procs * 5) / 4;
+
+        if (proc_max > SYMON_MAX_DOBJECTS) {
+            fatal("%s:%d: dynamic object limit (%d) exceeded for kinfo_proc2 structures",
+                  __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+        }
+
+        proc_ps = xrealloc(proc_ps, proc_max * sizeof(struct kinfo_proc2));
+    }
+
+    /* read data in anger */
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC2;
+    mib[2] = KERN_PROC_KTHREAD;
+    mib[3] = 0;
+    mib[4] = sizeof(struct kinfo_proc2);
+    mib[5] = proc_max;
+    size = proc_max * sizeof(struct kinfo_proc2);
+    if (sysctl(mib, 6, proc_ps, &size, NULL, 0) < 0) {
+        warning("proc probe cannot get processes");
+        proc_cur = 0;
+        return;
+    }
+
+    if (size % sizeof(struct kinfo_proc2) != 0) {
+        warning("proc size mismatch: got %d bytes, not dividable by sizeof(kinfo_proc2) %d",
+                size, sizeof(struct kinfo_proc2));
+        proc_cur = 0;
+    } else {
+        proc_cur = size / sizeof(struct kinfo_proc2);
+    }
+#else
     /* increase buffers if necessary */
     if (procs > proc_max) {
         proc_max = (procs * 5) / 4;
@@ -108,6 +149,7 @@ gets_proc()
     } else {
         proc_cur = size / sizeof(struct kinfo_proc);
     }
+#endif
 }
 
 void
@@ -145,7 +187,11 @@ int
 get_proc(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
+#ifdef HAS_KERN_PROC2
+    struct kinfo_proc2 *pp;
+#else
     struct kinfo_proc *pp;
+#endif
     u_quad_t  cpu_ticks = 0;
     u_quad_t  cpu_uticks = 0;
     u_quad_t  cpu_iticks = 0;
@@ -158,6 +204,21 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
     int n = 0;
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
+#ifdef HAS_KERN_PROC2
+         if (strncmp(st->arg, pp->p_comm, strlen(st->arg)) == 0) {
+             /* cpu time - accumulated */
+             cpu_uticks += pp->p_uticks;  /* user */
+             cpu_sticks += pp->p_sticks;  /* sys  */
+             cpu_iticks += pp->p_iticks;  /* int  */
+             /* cpu time - percentage since last measurement */
+             cpu_pct = pctdouble(pp->p_pctcpu) * 100.0;
+             cpu_pcti += cpu_pct;
+             /* memory size - shared pages are counted multiple times */
+             mem_procsize += pagetob(pp->p_vm_tsize + /* text pages */
+                                     pp->p_vm_dsize + /* data */
+                                     pp->p_vm_ssize); /* stack */
+             mem_rss += pagetob(pp->p_vm_rssize);     /* rss  */
+#else
          if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
              /* cpu time - accumulated */
              cpu_uticks += pp->kp_proc.p_uticks;  /* user */
@@ -171,6 +232,7 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
                                      pp->kp_eproc.e_vm.vm_dsize + /* data */
                                      pp->kp_eproc.e_vm.vm_ssize); /* stack */
              mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+#endif
              n++;
          }
     }

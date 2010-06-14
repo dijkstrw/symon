@@ -3,7 +3,7 @@
    - symon: Allow multiple monitor statements with different intervals to the
      same mux. Retrieving smart info every 5 secs confuses some disks.
 
-   - Linux/sm_df.c now uses statvfs (Harm Schotanus)
+   - platform/Linux/sm_df.c now uses statvfs (Harm Schotanus)
 
    - Added load average probe (Lars Kotthoff)
 
@@ -14,6 +14,12 @@
      hdio structure.
 
    - c_smrrds.sh: Allow more than 10 cpus.
+
+   - platform/OpenBSD/sm_proc.c now uses PROC2 sysctl (Stuart Henderson /
+     Tasmanian Devil)
+
+   - platform/OpenBSD/sm_sensor.c now uses the updated sensors api (Stuart
+     Henderson / Tasmanian Devil).
 
 23/11/2009 - 2.80
 

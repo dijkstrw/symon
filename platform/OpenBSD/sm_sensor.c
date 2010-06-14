@@ -93,8 +93,14 @@ init_sensor(struct stream *st)
     /* convert sensor device string to an integer */
     for (dev = 0; dev < MAXSENSORDEVICES; dev++) {
         st->parg.sn.mib[2] = dev;
-        if (sysctl(st->parg.sn.mib, 3, &sensordev, &sdlen, NULL, 0) == -1)
-            continue;
+        if (sysctl(st->parg.sn.mib, 3, &sensordev, &sdlen, NULL, 0) == -1) {
+            if (errno == ENOENT)
+                break;
+            if (errno == ENXIO)
+                continue;
+            fatal("%s:%d: sensor(%.200s): sensor %d unknown errno %d",
+                  __FILE__, __LINE__, st->arg, dev, errno);
+        }
         if (strcmp(devname, sensordev.xname) == 0)
             break;
     }

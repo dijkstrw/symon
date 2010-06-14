@@ -96,6 +96,8 @@ init_streams(struct muxlist *mul)
     struct stream *stream;
     struct mux *mux;
 
+    mux = NULL;
+
     if ((mul == NULL) || ((mux = SLIST_FIRST(mul)) == NULL))
         fatal("empty mux list");
 
