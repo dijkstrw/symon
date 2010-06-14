@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2007 Willem Dijkstra
+ * Copyright (c) 2001-2010 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -139,7 +140,10 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
     /* Inter-|   Receive                                                |  Transmit
      *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
      */
-    if (16 > sscanf(line, ":%Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu\n",
+    if (16 > sscanf(line, ":%" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %"
+                               SCNu64 " %" SCNu64 " %" SCNu64 " %"
+                               SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %"
+                               SCNu64 " %" SCNu64 " %" SCNu64 "\n",
                     &stats.rx_bytes, &stats.rx_packets, &stats.rx_errors, &stats.rx_dropped, &stats.rx_fifo_errors,
                     &stats.rx_frame_errors, &stats.rx_compressed, &stats.multicast,
                     &stats.tx_bytes, &stats.tx_packets, &stats.tx_errors, &stats.tx_dropped, &stats.tx_fifo_errors,

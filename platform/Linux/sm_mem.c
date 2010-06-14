@@ -34,11 +34,13 @@
  * real active : real total : free : [swap used : swap total]
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+
 #include "error.h"
 #include "conf.h"
 #include "symon.h"
@@ -108,7 +110,7 @@ mem_getitem(char *name)
     }
 
     line += strlen(name);
-    if (1 < sscanf(line, ": %llu Kb", &stat)) {
+    if (1 < sscanf(line, ": %" SCNu64 " Kb", &stat)) {
         warning("could not parse memory statistics");
         return 0;
     } else {

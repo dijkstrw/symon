@@ -41,6 +41,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -135,7 +136,12 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
     line += strlen(st->arg);
     bzero(&stats, sizeof(struct io_device_stats));
 
-    if (11 > sscanf(line, " %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
+    if (11 > sscanf(line, " %" SCNu64 " %" SCNu64
+                          " %" SCNu64 " %" SCNu64
+                          " %" SCNu64 " %" SCNu64
+                          " %" SCNu64 " %" SCNu64
+                          " %" SCNu64 " %" SCNu64
+                          " %" SCNu64 "\n",
                     &stats.read_issued, &stats.read_merged,
                     &stats.read_sectors, &stats.read_milliseconds,
                     &stats.write_issued, &stats.write_merged,
@@ -143,7 +149,8 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
                     &stats.progress_ios, &stats.progress_milliseconds,
                     &stats.progress_weight)) {
 #ifdef HAS_PROC_DISKSTATS
-        if (4 > sscanf(line, " %llu %llu %llu %llu\n",
+        if (4 > sscanf(line, " %" SCNu64 " %" SCNu64
+                             " %" SCNu64 " %" SCNu64 "\n",
                        &stats.read_issued, &stats.read_sectors,
                        &stats.write_issued, &stats.write_sectors)) {
             warning("could not parse disk statistics for %.200s", st->arg);

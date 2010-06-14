@@ -41,6 +41,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -125,28 +126,28 @@ get_cpuiow(char *symon_buf, int maxlen, struct stream *st)
     }
 
     line += strlen(st->parg.cpw.name);
-    if (CPUSTATES > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu %llu\n",
-                           &st->parg.cpw.time[CP_USER],
-                           &st->parg.cpw.time[CP_NICE],
-                           &st->parg.cpw.time[CP_SYS],
-                           &st->parg.cpw.time[CP_IDLE],
-                           &st->parg.cpw.time[CP_IOWAIT],
-                           &st->parg.cpw.time[CP_HARDIRQ],
-                           &st->parg.cpw.time[CP_SOFTIRQ],
-                           &st->parg.cpw.time[CP_STEAL])) {
-        /* /proc/stat might not support steal */
-        st->parg.cpw.time[CP_STEAL] = 0;
-        if ((CPUSTATES - 1) > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu\n",
-                                     &st->parg.cpw.time[CP_USER],
-                                     &st->parg.cpw.time[CP_NICE],
-                                     &st->parg.cpw.time[CP_SYS],
-                                     &st->parg.cpw.time[CP_IDLE],
-                                     &st->parg.cpw.time[CP_IOWAIT],
-                                     &st->parg.cpw.time[CP_HARDIRQ],
-                                     &st->parg.cpw.time[CP_SOFTIRQ])) {
-            warning("could not parse cpu statistics for %.200s", &st->parg.cpw.name);
-            return 0;
-        }
+    if (CPUSTATES > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
+                           &st->parg.cp.time[CP_USER],
+                           &st->parg.cp.time[CP_NICE],
+                           &st->parg.cp.time[CP_SYS],
+                           &st->parg.cp.time[CP_IDLE],
+                           &st->parg.cp.time[CP_IOWAIT],
+                           &st->parg.cp.time[CP_HARDIRQ],
+                           &st->parg.cp.time[CP_SOFTIRQ],
+                           &st->parg.cp.time[CP_STEAL])) {
+      /* /proc/stat might not support steal */
+      st->parg.cp.time[CP_STEAL] = 0;
+      if ((CPUSTATES - 1) > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
+				   &st->parg.cp.time[CP_USER],
+				   &st->parg.cp.time[CP_NICE],
+				   &st->parg.cp.time[CP_SYS],
+				   &st->parg.cp.time[CP_IDLE],
+				   &st->parg.cp.time[CP_IOWAIT],
+				   &st->parg.cp.time[CP_HARDIRQ],
+				   &st->parg.cp.time[CP_SOFTIRQ])) {
+        warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
+        return 0;
+      }
     }
 
     percentages(CPUSTATES, st->parg.cpw.states, st->parg.cpw.time,

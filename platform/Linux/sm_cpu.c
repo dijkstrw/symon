@@ -41,6 +41,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -125,7 +126,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     line += strlen(st->parg.cp.name);
-    if (CPUSTATES > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu %llu\n",
+    if (CPUSTATES > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
                            &st->parg.cp.time[CP_USER],
                            &st->parg.cp.time[CP_NICE],
                            &st->parg.cp.time[CP_SYS],
@@ -136,7 +137,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
                            &st->parg.cp.time[CP_STEAL])) {
       /* /proc/stat might not support steal */
       st->parg.cp.time[CP_STEAL] = 0;
-      if ((CPUSTATES - 1) > sscanf(line, "%llu %llu %llu %llu %llu %llu %llu\n",
+      if ((CPUSTATES - 1) > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
 				   &st->parg.cp.time[CP_USER],
 				   &st->parg.cp.time[CP_NICE],
 				   &st->parg.cp.time[CP_SYS],

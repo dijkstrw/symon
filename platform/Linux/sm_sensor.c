@@ -40,11 +40,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "error.h"
 #include "symon.h"
@@ -62,7 +63,7 @@ init_sensor(struct stream *st)
     char buf[SYMON_MAX_OBJSIZE];
     struct stat pathinfo;
     char *name, *p;
-    int n;
+    int32_t n;
 
     /* sensors can be identified as using
      *
@@ -88,11 +89,11 @@ init_sensor(struct stream *st)
     else
         name = st->arg;
 
-    if (sscanf(name, "fan%d", &n) == 1)
+    if (sscanf(name, "fan%" SCNd32, &n) == 1)
         st->parg.sn.type = SENSOR_FAN;
-    else if (sscanf(name, "in%d", &n) == 1)
+    else if (sscanf(name, "in%" SCNd32, &n) == 1)
         st->parg.sn.type = SENSOR_IN;
-    else if (sscanf(name, "temp%d", &n) == 1)
+    else if (sscanf(name, "temp%" SCNd32, &n) == 1)
         st->parg.sn.type = SENSOR_TEMP;
     else
         fatal("sensor(%.200s): '%s' is a unknown sensor type; expected fan/in/temp",
