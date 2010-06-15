@@ -78,7 +78,7 @@ Less quick, but all OSes
        overwriting the defaults.
 
    BSDs: Run make && make install
-  Linux: Run pmake && pmake install
+  Linux: Run pmake && pmake install || bmake && bmake install
 
 - Create an '/etc/symon.conf' for each monitored host and one symux.conf for
   the gatherer host. See the manual pages on how to specify alternative

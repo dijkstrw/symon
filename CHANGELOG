@@ -1,3 +1,7 @@
+15/06/2010 - 2.82
+
+   - platform/OpenBSD/sm_sensor.c define MAXSENSORSDEVICES (Stuart Henderson)
+
 31/05/2010 - 2.81
 
    - symon: Allow multiple monitor statements with different intervals to the

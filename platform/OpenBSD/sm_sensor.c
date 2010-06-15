@@ -53,6 +53,10 @@
 #include "symon.h"
 #include "xmalloc.h"
 
+#ifndef MAXSENSORDEVICES
+#define MAXSENSORDEVICES 1024
+#endif
+
 /* Globals for this module start with sn_ */
 static struct sensor sn_sensor;
 
