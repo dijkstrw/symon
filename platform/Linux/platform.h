@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include <grp.h>
 
+/* uclibc snprintf is redefined between stdio.h and string.h */
+#include <features.h>
+#ifdef __UCLIBC_MAJOR__
+#undef __USE_BSD
+#endif
+
 #include "queue.h"
 #include "sylimits.h"
 
