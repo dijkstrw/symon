@@ -74,6 +74,7 @@ static struct {
     { "debug", LXT_DEBUG },
     { "df", LXT_DF },
     { "every", LXT_EVERY },
+    { "flukso", LXT_FLUKSO },
     { "from", LXT_FROM },
     { "if", LXT_IF },
     { "if1", LXT_IF1 },

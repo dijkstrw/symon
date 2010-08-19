@@ -112,6 +112,7 @@ struct {
     { MT_CPUIOW, "cccccc" },
     { MT_SMART, "bbbbbbbbbbbb" },
     { MT_LOAD, "ccc" },
+    { MT_FLUKSO, "D" },
     { MT_TEST, "LLLLDDDDllllssssccccbbbb" },
     { MT_EOT, "" }
 };
@@ -137,6 +138,7 @@ struct {
     { MT_CPUIOW, LXT_CPUIOW },
     { MT_SMART, LXT_SMART },
     { MT_LOAD, LXT_LOAD },
+    { MT_FLUKSO, LXT_FLUKSO },
     { MT_EOT, LXT_BADTOKEN }
 };
 /* parallel crc32 table */

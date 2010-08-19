@@ -67,6 +67,9 @@ int flag_hup = 0;
 int flag_testconf = 0;
 int symon_interval = 0;
 
+/* program wide time_t indicating start of measurement time */
+time_t now;
+
 /* map stream types to inits and getters */
 struct funcmap streamfunc[] = {
     {MT_IO1, 0, NULL, init_io, gets_io, get_io},
@@ -86,6 +89,7 @@ struct funcmap streamfunc[] = {
     {MT_CPUIOW, 0, NULL, init_cpuiow, gets_cpuiow, get_cpuiow},
     {MT_SMART, 0, NULL, init_smart, gets_smart, get_smart},
     {MT_LOAD, 0, NULL, init_load, gets_load, get_load},
+    {MT_FLUKSO, 0, NULL, init_flukso, gets_flukso, get_flukso},
     {MT_EOT, 0, NULL, NULL, NULL}
 };
 
@@ -198,7 +202,7 @@ main(int argc, char *argv[])
     struct muxlist mul, newmul;
     struct stream *stream;
     struct mux *mux;
-    time_t now, last_update;
+    time_t last_update;
     FILE *pidfile;
     char *cfgpath;
     int ch;

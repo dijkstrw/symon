@@ -56,6 +56,7 @@ struct funcmap {
 extern struct funcmap streamfunc[];
 
 extern int symon_interval;
+extern time_t now;
 
 /* prototypes */
 __BEGIN_DECLS
@@ -129,6 +130,11 @@ extern int get_smart(char *, int, struct stream *);
 extern void init_load(struct stream *);
 extern void gets_load();
 extern int get_load(char *, int, struct stream *);
+
+/* sm_flukso.c */
+void init_flukso(struct stream *);
+void gets_flukso();
+int get_flukso(char *, int, struct stream *);
 
 __END_DECLS
 
