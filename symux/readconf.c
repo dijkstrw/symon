@@ -123,8 +123,8 @@ insert_filename(char *path, int maxlen, int type, char *args)
         ts = "load";
         ta = "";
     case MT_FLUKSO:
-        ts = "flukso";
-        ta = "";
+        ts = "flukso_";
+        ta = args;
         break;
 
     default:

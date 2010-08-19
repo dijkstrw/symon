@@ -317,7 +317,13 @@ load.rrd)
     create_rrd $i \
 	DS:load1:GAUGE:$INTERVAL:0:U \
 	DS:load5:GAUGE:$INTERVAL:0:U \
-	DS:load15:GAUGE:$INTERVAL:0:U \
+	DS:load15:GAUGE:$INTERVAL:0:U
+    ;;
+
+flukso_*.rrd)
+    # Build the flukso file
+    create_rrd $i \
+        DS:watts:GAUGE:$INTERVAL:0:U
     ;;
 
 "done")
