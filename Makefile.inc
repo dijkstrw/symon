@@ -1,12 +1,8 @@
-V=2.82
+V=2.83
 
 AR?=	ar
 CC?=	cc
-.ifdef DEBUG
-CFLAGS=-g -Wall
-.else
 CFLAGS+=-Wall
-.endif
 INSTALL?=install
 LORDER?=lorder
 TSORT?=tsort

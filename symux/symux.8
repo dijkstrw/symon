@@ -117,9 +117,9 @@ accept-stmts = accept-stmt [accept-stmts]
 accept-stmt  = "accept" "{" resources "}"
 resources    = resource [ version ] ["(" argument ")"]
                [ ","|" " resources ]
-resource     = "cpu" | "cpuiow" | "debug" | "df" | "if" | "io"
-               "load" | "mbuf" | "mem" | "pf" | "pfq" | "proc" |
-               "sensor" | "smart"
+resource     = "cpu" | "cpuiow" | "debug" | "df" | "flukso" |
+               "if" | "io" | "load" | "mbuf" | "mem" | "pf" |
+               "pfq" | "proc" | "sensor" | "smart"
 version      = number
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
@@ -284,6 +284,11 @@ SMART attributes ( read_error_rate: reallocated_sectors: spin_retries:
 air_flow_temp: temperature: reallocations: current_pending: uncorrectables:
 soft_read_error_rate: g_sense_error_rate: temperature2: free_fall_protection
 ). Values depend on drive model and may change between models.
+.It flukso
+Average pwr sensor value offered with 7.6 precision. Requires a symon
+crosscompiled for the flukso host, and disabling the flukso's normal
+measurement application. Value is a moving average and will depend on the
+number and values of measurements seen in a particular symon interval.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds

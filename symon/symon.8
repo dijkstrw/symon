@@ -27,7 +27,7 @@
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd November 23, 2009
+.Dd October 20, 2010
 .Dt SYMON 8
 .Os
 .Sh NAME
@@ -107,9 +107,9 @@ monitor-rule = "monitor" "{" resources "}" [every]
                "stream" ["from" host] ["to"] host [ port ]
 resources    = resource [ version ] ["(" argument ")"]
                [ ","|" " resources ]
-resource     = "cpu" | "cpuiow" | "debug" | "df" | "if" | "io" |
-               "load" | "mbuf" | "mem" | "pf" | "pfq" | "proc" |
-               "sensor" | "smart"
+resource     = "cpu" | "cpuiow" | "debug" | "df" | "flukso" |
+               "if" | "io" | "load" | "mbuf" | "mem" | "pf" |
+               "pfq" | "proc" | "sensor" | "smart"
 version      = number
 argument     = number | name
 every        = "every" time

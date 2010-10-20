@@ -29,7 +29,7 @@
  */
 
 /*
- * Get measurement data from a flukso (arduino) board tied to the serial port
+ * Get measurement data from a flukso (arduino) board tied to the serial port.
  *
  * num : value
  *
