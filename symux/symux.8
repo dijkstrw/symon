@@ -27,7 +27,7 @@
 .\" ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 .\" POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd January 20, 2010
+.Dd October 20, 2010
 .Dt SYMUX 8
 .Os
 .Sh NAME
@@ -104,7 +104,7 @@ ipv6 with mux = ipv4, a listen port of the sources' family is opened
 using the unspecified address. Whitespace, newlines and text behind '#'
 are ignored. The format in BNF:
 .Pp
-.nf
+.Bd -literal -offset indent -compact
 stmt         = mux-stmt | source-stmt
 mux-stmt     = "mux" host [ port ]
 host         = ip4addr | ip6addr | hostname
@@ -125,7 +125,7 @@ argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
 write-stmts  = write-stmt [write-stmts]
 write-stmt   = "write" resource "in" filename
-.fi
+.Ed
 .Pp
 Note that
 .Bl -tag -width Ds
@@ -158,7 +158,7 @@ on localhost.
 .Nm
 will also listen on tcp port 2100 for incoming listeners.
 .Pp
-.nf
+.Bd -literal -offset indent -compact
 mux 127.0.0.1 2100
 source 127.0.0.1 {
     accept { cpu(0), mem, pf,
@@ -170,14 +170,14 @@ source 127.0.0.1 {
 .Pp
     datadir "/var/www/symon/rrds/localhost"
 }
-.fi
+.Ed
 .Sh LISTENERS
 .Nm
 offers received
 .Xr symon 8
 data to other programs via tcp. An example of a listener session:
 .Pp
-.nf
+.Bd -literal -offset indent -compact
 nexus:~/project/symon$ telnet 10.0.0.1 2100
 Trying 10.0.0.1...
 Connected to 10.0.0.1.
@@ -190,7 +190,7 @@ Escape character is '^]'.
 0:0;pf::1077658247:700930123:535398451:0:352:1107229:706391:119833
 9:4:0:0:2:3:29:4109383:83291:83262:980325:0:1:6:0:0;mem::107765824
 7:79155200:131956736:391430144:0:536739840;cpu:0:1077658247:0.50:0
-.00:0.00:0.90:98.60;proc:httpd:1077658247:9:216:172:8:3:0.00:14999
+\.00:0.00:0.90:98.60;proc:httpd:1077658247:9:216:172:8:3:0.00:14999
 552:0;if:lo0:1077658247:147104:147104:45868177:45868177:0:0:0:0:0:
 0;if:xl0:1077658247:284267:452077:150620236:273265863:372:89478:0:
 0:0:0;if:de0:1077658247:1813721:1197722:729054136:568900227:101:2:
@@ -199,7 +199,7 @@ Escape character is '^]'.
 ^]
 telnet> close
 Connection closed.
-.fi
+.Ed
 .Lp
 The format is
 .Va symon-version
@@ -285,10 +285,9 @@ air_flow_temp: temperature: reallocations: current_pending: uncorrectables:
 soft_read_error_rate: g_sense_error_rate: temperature2: free_fall_protection
 ). Values depend on drive model and may change between models.
 .It flukso
-Average pwr sensor value offered with 7.6 precision. Requires a symon
-crosscompiled for the flukso host, and disabling the flukso's normal
-measurement application. Value is a moving average and will depend on the
-number and values of measurements seen in a particular symon interval.
+Average pwr sensor value offered with 7.6 precision. Value is a moving average
+and will depend on the number of measurements seen in a particular symon
+interval.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds
