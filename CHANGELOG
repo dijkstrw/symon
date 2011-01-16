@@ -4,6 +4,8 @@
 
    - platform/OpenBSD/sm_io.c updated to support uids (Stuart Henderson)
 
+   - platform/Linux/sm_df.c checks if /etc/mtab could be openend (Lars Kotthoff)
+
 15/06/2010 - 2.82
 
    - platform/OpenBSD/sm_sensor.c define MAXSENSORSDEVICES (Stuart Henderson)
@@ -20,8 +22,8 @@
    - Smart probe assumed that its ioctl cmd structure was not overwritten and
      did not check the return code correctly on NetBSD. (Tito Dal Canton)
 
-   - sm_smart.c: support for kernels 2.6.9 and friends that miss the required
-     hdio structure.
+   - platform/Linux/sm_smart.c: support for kernels 2.6.9 and friends that miss
+     the required hdio structure.
 
    - c_smrrds.sh: Allow more than 10 cpus.
 

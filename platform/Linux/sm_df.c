@@ -37,6 +37,7 @@
 
 
 #include <sys/types.h>
+#include <errno.h>
 #include <stdio.h>
 #include <mntent.h>
 #include <string.h>
@@ -51,6 +52,9 @@ init_df(struct stream *st)
 {
     FILE * fp = setmntent("/etc/mtab", "r");
     struct mntent *mount;
+
+    if (fp == NULL)
+        fatal("cannot access /etc/mtab: %.200s", strerror(errno));
 
     while ((mount = getmntent(fp))) {
 	if (strncmp(mount->mnt_fsname, "/dev/", 5) == 0) {
