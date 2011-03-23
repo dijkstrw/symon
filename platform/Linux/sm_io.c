@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2006 Willem Dijkstra
+ * Copyright (c) 2001-2011 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -80,12 +80,25 @@ char *io_filename = "/proc/partitions";
 void
 init_io(struct stream *st)
 {
+    size_t lead;
+
     if (io_buf == NULL) {
         io_maxsize = SYMON_MAX_OBJSIZE;
         io_buf = xmalloc(io_maxsize);
     }
 
-    info("started module io(%.200s)", st->arg);
+    if (st->arg == NULL)
+        fatal("io: need a <device>|<devicename> argument");
+
+    if ((diskbyname(st->arg, &st->parg.io[0], MAX_PATH_LEN) == 0))
+        fatal("io: '%.200s' is not a <device>|<devicename>", st->arg);
+
+    /* devices are named sdX, not /dev/sdX */
+    lead = sizeof("/dev/") - 1;
+    if (strncmp(st->parg.io, "/dev/", lead) == 0)
+        memmove(&st->parg.io[0], &st->parg.io[0] + lead, sizeof(st->parg.io) - lead);
+
+    info("started module io(%.200s = %.200s)", st->arg, st->parg.io);
 }
 
 void
@@ -128,12 +141,12 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
-    if ((line = strstr(io_buf, st->arg)) == NULL) {
-        warning("could not find disk %s", st->arg);
+    if ((line = strstr(io_buf, st->parg.io)) == NULL) {
+        warning("could not find disk %.200s = %.200s", st->arg, st->parg.io);
         return 0;
     }
 
-    line += strlen(st->arg);
+    line += strlen(st->parg.io);
     bzero(&stats, sizeof(struct io_device_stats));
 
     if (11 > sscanf(line, " %" SCNu64 " %" SCNu64

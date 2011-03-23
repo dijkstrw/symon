@@ -72,6 +72,10 @@ union stream_parg {
     } sn;
     int smart;
     char flukso[MAX_PATH_LEN];
+    char io[MAX_PATH_LEN];
 };
+
+extern size_t
+diskbyname(const char *spath, char *dpath, size_t maxlen);
 
 #endif

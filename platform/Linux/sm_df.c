@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Willem Dijkstra
  * Copyright (c) 2007 Martin van der Werff
  * All rights reserved.
  *
@@ -50,28 +51,31 @@
 void
 init_df(struct stream *st)
 {
+    char drivename[MAX_PATH_LEN];
     FILE * fp = setmntent("/etc/mtab", "r");
     struct mntent *mount;
 
     if (fp == NULL)
-        fatal("cannot access /etc/mtab: %.200s", strerror(errno));
+        fatal("df: cannot access /etc/mtab: %.200s", strerror(errno));
+
+    if (st->arg == NULL)
+        fatal("df: need a <disk device|name> argument");
+
+    if ((diskbyname(st->arg, drivename, sizeof(drivename)) == 0))
+        fatal("df: '%.200s' is not a disk device", st->arg);
 
     while ((mount = getmntent(fp))) {
-	if (strncmp(mount->mnt_fsname, "/dev/", 5) == 0) {
-            if (strcmp(mount->mnt_fsname + 5, st->arg) == 0) {
-                strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
-                info("started module df(%.200s) --> %.200s", st->arg, st->parg.df.mountpath);
-                endmntent(fp);
-		return;
-            }
-	}
+	if (strncmp(mount->mnt_fsname, drivename, sizeof(drivename)) == 0) {
+            strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
+            info("started module df(%.200s = %.200s)", st->arg, st->parg.df.mountpath);
+            endmntent(fp);
+            return;
+        }
     }
 
     endmntent(fp);
 
-    strlcpy(st->parg.df.mountpath, "/", sizeof(st->parg.df.mountpath));
-
-    info("failed to find (%.200s) - started module df for /", st->arg);
+    fatal("df(.200s): not mounted", st->arg);
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2009 Willem Dijkstra
+ * Copyright (c) 2008-2011 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -92,16 +92,15 @@ init_smart(struct stream *st)
         fatal("smart: internal error: smart values structure is broken");
     }
 
-    if (st->arg == NULL) {
-        fatal("smart: need a <device> argument");
-    }
+    if (st->arg == NULL)
+        fatal("smart: need a <disk device|name> argument");
 
-    bzero(drivename, MAX_PATH_LEN);
-    snprintf(drivename, MAX_PATH_LEN, "/dev/%s", st->arg);
+    if ((diskbyname(st->arg, drivename, sizeof(drivename)) == 0))
+        fatal("smart: '%.200s' is not a disk device", st->arg);
 
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
-        if (strncmp(smart_devs[i].name, drivename, MAX_PATH_LEN) == 0) {
+        if (strncmp(smart_devs[i].name, drivename, sizeof(drivename)) == 0) {
             st->parg.smart = i;
             return;
         }
@@ -118,21 +117,18 @@ init_smart(struct stream *st)
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
     /* store drivename in new block */
-    snprintf(smart_devs[smart_cur].name, MAX_PATH_LEN, "%s", drivename);
+    strlcpy(smart_devs[smart_cur].name, drivename, sizeof(smart_devs[0].name));
 
     /* store filedescriptor to device */
-    smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK);
-
-    if (errno) {
-        fatal("smart: could not open '%s' for read", drivename);
-    }
+    if ((smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK)) < 0)
+        fatal("smart: could not open '%.200s' for read: %.200s", drivename, strerror(errno));
 
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
 
     smart_cur++;
 
-    info("started module smart(%.200s)", st->arg);
+    info("started module smart(%.200s = %.200s)", st->arg, smart_devs[st->parg.smart].name);
 }
 
 void
