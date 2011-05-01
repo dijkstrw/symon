@@ -98,7 +98,10 @@ init_io(struct stream *st)
     if (strncmp(st->parg.io, "/dev/", lead) == 0)
         memmove(&st->parg.io[0], &st->parg.io[0] + lead, sizeof(st->parg.io) - lead);
 
-    info("started module io(%.200s = %.200s)", st->arg, st->parg.io);
+    if (strcmp(st->arg, st->parg.io) == 0)
+        info("started module io(%.200s)", st->parg.io);
+    else
+        info("started module io(%.200s = %.200s)", st->arg, st->parg.io);
 }
 
 void

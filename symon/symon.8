@@ -119,14 +119,19 @@ port         = [ "port" | "," ] portnumber
 .Ed
 .Pp
 Note that symux(8) data files default to receiving data every 5
-seconds. Adjusting the monitoring interval will also require adjusting every
-symux(8) datafile.
+seconds. Adjusting the monitoring interval will also require adjusting the
+associated symux(8) datafile(s).
 .Pp
 The pf probe will return data that is collected for the
 .Pa loginterface
 set in /etc/pf.conf(5).
+.Pp
+The Linux io, df, and smart probes support device names via id, label, path and uuid.
+.Pp
+The OpenBSD io probe supports device uuids.
+.Pp
 .Sh EXAMPLE
-Here is an example
+Here is an example OpenBSD
 .Ar symon.conf
 that monitors cpu, memory, pf, interfaces xl0/de0/lo0/wi0, disks
 wd[0-3]/cd[0-1], debug variables debug0 to debug19 and streams that
@@ -138,6 +143,29 @@ monitor { cpu(0),  mem, pf, if(xl0), if(de0),
 	  io(wd2), io(wd3), io(cd0), io(cd1),
 	  io(ccd0), df(sd0a), df(sd0d), df(sd0e),
 	  debug, proc(httpd) } stream to 127.0.0.1 2100
+.Ed
+.Sh EXAMPLE
+Here is an example Linux
+.Ar symon.conf
+that monitors cpu including iowait, memory, load, interface eth0, io an df for
+a set of disks every 5 seconds. Smart data is collected and sent every 60
+seconds. Disks in the smart and io statements are identified using ids,
+filesystem volumes in df using labels.
+.Bd -literal -offset indent -compact
+monitor { smart(ata-Hitachi_HDS722020ALA330_JK1130ABABABAB),
+          smart(ata-Hitachi_HDS722020ALA330_JK1130ACACACAC),
+        } every 60 seconds stream to 192.168.0.2 port 2100
+
+monitor { cpuiow(0), cpuiow(1), mem, if(eth0),
+          io(ata-Hitachi_HDS722020ALA330_JK1130ABABABAB),
+          io(ata-Hitachi_HDS722020ALA330_JK1130ACACACAC),
+          df(data_1),
+          df(data_2),
+          df(data_3),
+          df(home),
+          df(var),
+          load
+        } stream to 192.168.0.2 port 2100
 .Ed
 .Sh SIGNALS
 .Bl -tag -width Ds

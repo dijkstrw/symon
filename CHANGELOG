@@ -1,4 +1,4 @@
-20/10/2010 - 2.83
+01/05/2011 - 2.83
 
    - Added flukso probe
 
@@ -6,8 +6,8 @@
 
    - platform/Linux/sm_df.c checks if /etc/mtab could be openend (Lars Kotthoff)
 
-   - platform/Linux: Support disk by id, label, path or uuid for smart, io and
-     df probes.
+   - platform/Linux: Support diskname by id, label, path or uuid for smart, io
+     and df probes.
 
 15/06/2010 - 2.82
 
