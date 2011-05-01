@@ -99,8 +99,8 @@ resources should be monitored and to which
 .Xr symux 8
 the information should be streamed to.
 .Pp
-Multiple monitor statements to different muxes are allowed. Whitespace,
-newlines and text behind '#' are ignored. The format in BNF:
+Multiple monitor statements are allowed. Whitespace, newlines and text
+behind '#' are ignored. The format in BNF:
 .Pp
 .Bd -literal -offset indent -compact
 monitor-rule = "monitor" "{" resources "}" [every]
@@ -147,10 +147,10 @@ monitor { cpu(0),  mem, pf, if(xl0), if(de0),
 .Sh EXAMPLE
 Here is an example Linux
 .Ar symon.conf
-that monitors cpu including iowait, memory, load, interface eth0, io an df for
-a set of disks every 5 seconds. Smart data is collected and sent every 60
-seconds. Disks in the smart and io statements are identified using ids,
-filesystem volumes in df using labels.
+that monitors cpu including iowait, memory, load, interface eth0, io and df for
+a set of disks every 5 seconds. Smart data is to be collected every 60 seconds.
+Disks in the smart and io statements are identified using ids, filesystem
+volumes in df using labels.
 .Bd -literal -offset indent -compact
 monitor { smart(ata-Hitachi_HDS722020ALA330_JK1130ABABABAB),
           smart(ata-Hitachi_HDS722020ALA330_JK1130ACACACAC),
@@ -199,7 +199,7 @@ The proc module is too simple: memory shared between two instances of the same
 process is simply counted twice.
 .Pp
 .Nm
-does not check whether resources mentioned in
+does not check whether all resources mentioned in
 .Pa /etc/symon.conf
 exist.
 .Pp
