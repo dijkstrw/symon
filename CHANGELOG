@@ -292,8 +292,6 @@
 
    - Added initial support for Linux: cpu and if.
 
-   - Textual: INSTALL (Hiddo Hut)
-
    - Removed net_iso from symon.c (Hans Kremers)
 
    - Time since last update gets checked in symon.c to ensure correct
