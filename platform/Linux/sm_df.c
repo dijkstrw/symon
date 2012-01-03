@@ -47,6 +47,7 @@
 #include "conf.h"
 #include "error.h"
 #include "symon.h"
+#include "diskbyname.h"
 
 void
 init_df(struct stream *st)
@@ -75,7 +76,7 @@ init_df(struct stream *st)
 
     endmntent(fp);
 
-    fatal("df(.200s): not mounted", st->arg);
+    warning("df(%.200s): not mounted", st->arg);
 }
 
 void

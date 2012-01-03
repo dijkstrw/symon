@@ -44,6 +44,7 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
+#include "diskbyname.h"
 
 #ifndef HAS_HDDRIVECMDHDR
 typedef unsigned char task_ioreg_t;

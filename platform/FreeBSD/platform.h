@@ -18,6 +18,8 @@
 #define SA_LEN(x)       ((x)->sa_len)
 #define SS_LEN(x)       ((x)->ss_len)
 
+#define MAX_PATH_LEN MAXPATHLEN
+
 union stream_parg {
     struct {
         long time1[CPUSTATES];

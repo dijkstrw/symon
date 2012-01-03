@@ -54,6 +54,8 @@
 #include "share.h"
 #include "xmalloc.h"
 
+#include "platform.h"
+
 __BEGIN_DECLS
 void exithandler();
 void huphandler(int);
@@ -136,8 +138,8 @@ main(int argc, char *argv[])
         case 'f':
             if (optarg && optarg[0] != '/') {
                 /* cfg path needs to be absolute, we will be a daemon soon */
-                cfgpath = xmalloc(MAXPATHLEN);
-                if ((cfgpath = getcwd(cfgpath, MAXPATHLEN)) == NULL)
+                cfgpath = xmalloc(MAX_PATH_LEN);
+                if ((cfgpath = getcwd(cfgpath, MAX_PATH_LEN)) == NULL)
                     fatal("could not get working directory");
 
                 maxstringlen = strlen(cfgpath) + 1 + strlen(optarg) + 1;

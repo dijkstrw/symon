@@ -49,6 +49,7 @@
 #include "xmalloc.h"
 #include "error.h"
 #include "symon.h"
+#include "diskbyname.h"
 
 /* Globals for this module start with io_ */
 static void *io_buf = NULL;

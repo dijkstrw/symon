@@ -86,27 +86,24 @@ checkdisk(const char *spath, char *dpath, size_t maxlen)
  * Resolve a logical disk name <spath> to it's block device name
  * <dpath>. <dpath> is preallocated and can hold <maxlen> characters. <spath>
  * can refer to a disk via 1) an absolute path or 2) a diskname relative to
- * /dev, or 3) a diskname relative to the /dev/disk/by-* directories.
+ * /dev in various forms defined in platform specific DISK_PATHS.
  */
 size_t
 diskbyname(const char *spath, char *dpath, size_t maxlen)
 {
     char diskname[MAX_PATH_LEN];
     size_t size;
-    char *l[] = {
-        "/dev/%s",
-        "/dev/disk/by-id/%s",
-        "/dev/disk/by-label/%s",
-        "/dev/disk/by-uuid/%s",
-        "/dev/disk/by-path/%s",
-        NULL
-    };
+#ifdef DISK_PATHS
+    char *l[] =  DISK_PATHS;
+#else
+    char *l[] = { "/dev/%s", NULL };
+#endif
     int i;
 
     if (spath == NULL)
         return 0;
 
-    if (strchr(spath, '/'))
+    if (strchr(spath, '/') == spath)
         return checkdisk(spath, dpath, maxlen);
 
     for (i = 0; l[i] != NULL; i++) {
