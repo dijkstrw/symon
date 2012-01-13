@@ -75,7 +75,7 @@ init_io(struct stream *st)
     if (st->arg == NULL)
         fatal("io: need a <device>|<devicename> argument");
 
-    if ((diskbyname(st->arg, drivename, MAX_PATH_LEN) == 0))
+    if (diskbyname(st->arg, drivename, MAX_PATH_LEN) == 0)
         fatal("io: '%.200s' is not a <device>|<devicename>", st->arg);
 
     io_stats.dinfo = malloc(sizeof(struct devinfo));

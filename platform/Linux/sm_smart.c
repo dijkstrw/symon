@@ -96,7 +96,7 @@ init_smart(struct stream *st)
     if (st->arg == NULL)
         fatal("smart: need a <disk device|name> argument");
 
-    if ((diskbyname(st->arg, drivename, sizeof(drivename)) == 0))
+    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
         fatal("smart: '%.200s' is not a disk device", st->arg);
 
     /* look for drive in our global table */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007      Willem Dijkstra
+ * Copyright (c) 2007-2012 Willem Dijkstra
  * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *

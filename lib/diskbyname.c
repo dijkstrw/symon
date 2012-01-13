@@ -32,6 +32,7 @@
 #include <sys/types.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 #include <strings.h>
@@ -60,6 +61,7 @@ checkdisk(const char *spath, char *dpath, size_t maxlen)
         return 0;
     }
 
+    /* Walk one link, if it is there */
     if (S_ISLNK(buffer.st_mode)) {
         if ((r = realpath(spath, NULL))) {
             strlcpy(diskname, r, sizeof(diskname));
@@ -72,7 +74,12 @@ checkdisk(const char *spath, char *dpath, size_t maxlen)
     } else
         strlcpy(diskname, spath, sizeof(diskname));
 
-    if (S_ISBLK(buffer.st_mode) && !S_ISLNK(buffer.st_mode)) {
+    /*
+     * No more links from here; also note the lack of further checks on the
+     * stat structure. For linux we should now be looking at a block device,
+     * for FreeBSD this should be a character device.
+     */
+    if (!S_ISLNK(buffer.st_mode)) {
         result = strlcpy(dpath, diskname, maxlen);
         return result;
     }

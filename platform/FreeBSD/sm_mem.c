@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2004      Matthew Gream
- * Copyright (c) 2001-2008 Willem Dijkstra
+ * Copyright (c) 2001-2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,12 +111,12 @@ void
 gets_mem()
 {
 #ifdef HAS_XSWDEV
-    int i;
     u_int vmnswp_dat;
-    size_t vmnswp_siz;
+    u_long vmnswp_siz;
+    int i;
 #endif
     u_long physmem_dat;
-    size_t physmem_siz;
+    u_long physmem_siz;
 
     bzero(&me_vmtotal, sizeof(me_vmtotal));
 
