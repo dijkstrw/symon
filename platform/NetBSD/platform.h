@@ -6,6 +6,7 @@
 #include <sys/queue.h>
 #include <sys/sched.h>
 #include <sys/types.h>
+#include <sys/param.h>
 
 #include <net/if.h>
 
@@ -22,7 +23,8 @@ union semun {
         int val;
 };
 
-#define MAX_PATH_LEN FILENAME_MAX
+#define MAX_PATH_LEN MAXPATHLEN
+
 union stream_parg {
     struct {
         int64_t time[CPUSTATES];

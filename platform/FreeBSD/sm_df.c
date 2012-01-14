@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2005 Marc Balmer
+ * Copyright (c) 2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +53,7 @@
 
 #include "error.h"
 #include "symon.h"
+#include "diskbyname.h"
 
 /* Globals for this module start with df_ */
 static struct statfs *df_stats = NULL;
@@ -60,10 +62,26 @@ static int df_parts = 0;
 void
 init_df(struct stream *st)
 {
-    strlcpy(st->parg.df.rawdev, "/dev/", sizeof(st->parg.df.rawdev));
-    strlcat(st->parg.df.rawdev, st->arg, sizeof(st->parg.df.rawdev));
+    int n;
+    char drivename[SYMON_DFNAMESIZE];
 
-    info("started module df(%.200s)", st->arg);
+    if (st->arg == NULL)
+        fatal("df: need a <disk device|name> argument");
+
+    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
+        fatal("df: '%.200s' is not a disk device", st->arg);
+
+    gets_df();
+
+    for (n = 0; n < df_parts; n++) {
+        if (!strncmp(df_stats[n].f_mntfromname, drivename, SYMON_DFNAMESIZE)) {
+            strlcpy(st->parg.df.rawdev, drivename, sizeof(st->parg.df.rawdev));
+            info("started module df(%.200s)", st->arg);
+            return;
+        }
+    }
+
+    warning("df(%.200s) failed (no such device)", st->arg);
 }
 
 void

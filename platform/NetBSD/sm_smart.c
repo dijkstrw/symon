@@ -46,6 +46,7 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
+
 /* ata command register set for requesting smart values */
 static struct atareq smart_cmd = {
   ATACMD_READ, /* flags */
@@ -69,16 +70,13 @@ static struct smart_device {
     int type;
     int failed;
     struct smart_values data;
-};
-
-static struct smart_device *smart_devs = NULL;
+} *smart_devs = NULL;
 static int smart_size = 0;
 
 void
 init_smart(struct stream *st)
 {
     int i;
-    char drivename[MAX_PATH_LEN];
     struct smart_device *sd;
 
     if (sizeof(struct smart_values) != DISK_BLOCK_LEN) {
@@ -89,12 +87,9 @@ init_smart(struct stream *st)
         fatal("smart: need a <device> argument");
     }
 
-    bzero(drivename, MAX_PATH_LEN);
-    snprintf(drivename, MAX_PATH_LEN, "/dev/%s", st->arg);
-
     /* look for drive in our global table */
     for (i = 0; i < smart_size; i++) {
-        if (strncmp(smart_devs[i].name, drivename, MAX_PATH_LEN) == 0) {
+        if (strncmp(smart_devs[i].name, st->arg, MAX_PATH_LEN) == 0) {
             st->parg.smart = i;
             return;
         }
@@ -106,22 +101,18 @@ init_smart(struct stream *st)
     sd = &smart_devs[smart_size - 1];
     bzero(sd, sizeof(struct smart_device));
 
-    /* rewire all bufferlocations, as our addresses may have changed */
-    for (i = 0; i < smart_size; i++)
-        smart_devs[i].cmd.databuf = (caddr_t)&smart_devs[i].data;
-
     /* store drivename in new block */
-    snprintf(sd->name, MAX_PATH_LEN, "%s", drivename);
+    snprintf(sd->name, MAX_PATH_LEN, "%s", st->arg);
 
     /* store filedescriptor to device */
-    if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
+    if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
         if (errno == ENOENT) {
             /* Device does not exist, retry using cooked name semantics */
-            if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
-                fatal("smart: could not open '%s' for read", drivename);
+            if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
+                fatal("smart: could not open '%s' for read", st->arg);
             }
         } else {
-            fatal("smart: could not open '%s' for read", drivename);
+            fatal("smart: could not open '%s' for read", st->arg);
         }
     }
 
@@ -141,15 +132,15 @@ gets_smart()
         /* populate ata command header */
         memcpy(&cmd, (void *) &smart_cmd, sizeof(struct atareq));
         cmd.databuf = (caddr_t)&smart_devs[i].data;
-        
-        if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &smart_devs[i].cmd)) {
+
+        if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &cmd)) {
             warning("smart: ioctl for drive '%s' failed: %d",
                     &smart_devs[i].name, errno);
             smart_devs[i].failed = 1;
         }
 
         /* check ATA command completion status */
-        switch (smart_devs[i].cmd.retsts) {
+        switch (cmd.retsts) {
             case ATACMD_OK:
                 break;
             case ATACMD_TIMEOUT:
@@ -161,14 +152,14 @@ gets_smart()
                 smart_devs[i].failed = 1;
                 break;
             case ATACMD_ERROR:
-                if (smart_devs[i].cmd.error & WDCE_ABRT)
+                if (cmd.error & WDCE_ABRT)
                     warning("smart: ATA device '%s' returned Aborted Command", &smart_devs[i].name);
                 else
-                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, smart_devs[i].cmd.error);
+                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, cmd.error);
                 smart_devs[i].failed = 1;
                 break;
             default:
-                warning("smart: ATAIOCCOMMAND returned unknown result code %d for drive '%s'", smart_devs[i].cmd.retsts, &smart_devs[i].name);
+                warning("smart: ATAIOCCOMMAND returned unknown result code %d for drive '%s'", cmd.retsts, &smart_devs[i].name);
                 smart_devs[i].failed = 1;
                 break;
         }
@@ -178,8 +169,6 @@ gets_smart()
          * footprint and the amount of datajuggling we need to do; we would
          * rather ignore the checksums.
          */
-
-        smart_devs[i].failed = 0;
     }
     return;
 }

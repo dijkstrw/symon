@@ -1,3 +1,16 @@
+04/01/2012 - 2.84
+
+   - platform/Linux/disk probes now handles '/' in arguments (Bostjan Skufca)
+
+   - platform/FreeBSD/disk probes now allow args not in '/dev' (Edho Arief),
+     and support diskname by ufs name, ufs id, gpt id.
+
+   - platform/FreeBSD/sm_mem.c: sysctl call could overwrite swap count (Edho
+     Arief)
+
+   - platform/NetBSD/Makefile.inc: update linker flags for finding librrd in
+     /usr/pkg
+
 01/05/2011 - 2.83
 
    - Added flukso probe

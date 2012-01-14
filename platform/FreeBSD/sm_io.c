@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2005 J. Martin Petersen
+ * Copyright (c) 2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +54,7 @@
 
 #include "error.h"
 #include "symon.h"
+#include "diskbyname.h"
 
 static struct statinfo io_stats;
 static int io_numdevs = 0;
@@ -66,13 +68,38 @@ privinit_io()
 void
 init_io(struct stream *st)
 {
+    unsigned int i;
+    struct devstat *ds;
+    char drivename[MAX_PATH_LEN];
+
+    if (st->arg == NULL)
+        fatal("io: need a <device>|<devicename> argument");
+
+    if (diskbyname(st->arg, drivename, MAX_PATH_LEN) == 0)
+        fatal("io: '%.200s' is not a <device>|<devicename>", st->arg);
+
     io_stats.dinfo = malloc(sizeof(struct devinfo));
     if (io_stats.dinfo == NULL) {
         fatal("io: could not allocate memory");
     }
 
     io_stats.dinfo->mem_ptr = NULL;
-    info("started module io(%.200s)", st->arg);
+
+    gets_io();
+
+    for (i = 0; i < io_numdevs; i++) {
+        ds = &io_stats.dinfo->devices[i];
+
+        if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&
+            strlen(ds->device_name) < strlen(st->arg) &&
+            isdigit(st->arg[strlen(ds->device_name)]) &&
+            atoi(&st->arg[strlen(ds->device_name)]) == ds->unit_number) {
+            info("started module io(%.200s)", st->arg);
+            return;
+        }
+    }
+
+    warning("io(%.200s): not found", st->arg);
 }
 
 void
@@ -108,7 +135,7 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
     unsigned int i;
     struct devstat *ds;
 
-    for (i=0; i < io_numdevs; i++) {
+    for (i = 0; i < io_numdevs; i++) {
         ds = &io_stats.dinfo->devices[i];
 
         if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&

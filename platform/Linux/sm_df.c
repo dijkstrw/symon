@@ -47,6 +47,7 @@
 #include "conf.h"
 #include "error.h"
 #include "symon.h"
+#include "diskbyname.h"
 
 void
 init_df(struct stream *st)
@@ -61,7 +62,7 @@ init_df(struct stream *st)
     if (st->arg == NULL)
         fatal("df: need a <disk device|name> argument");
 
-    if ((diskbyname(st->arg, drivename, sizeof(drivename)) == 0))
+    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
         fatal("df: '%.200s' is not a disk device", st->arg);
 
     while ((mount = getmntent(fp))) {
@@ -75,7 +76,7 @@ init_df(struct stream *st)
 
     endmntent(fp);
 
-    fatal("df(.200s): not mounted", st->arg);
+    warning("df(%.200s): not mounted", st->arg);
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Willem Dijkstra
+ * Copyright (c) 2009-2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
+#include "diskbyname.h"
 
 #ifdef HAS_IOCATAREQUEST
 #ifndef HAS_ATA_SMART_CMD
@@ -51,7 +52,7 @@
 #endif
 /* per drive storage structure */
 struct smart_device {
-    char name[MAXPATHLEN];
+    char name[MAX_PATH_LEN];
     int fd;
     int type;
     int failed;
@@ -66,7 +67,7 @@ void
 init_smart(struct stream *st)
 {
     int i;
-    char drivename[MAXPATHLEN];
+    char drivename[MAX_PATH_LEN];
     struct ata_ioc_request *p;
 
     if (sizeof(struct smart_values) != DISK_BLOCK_LEN) {
@@ -77,12 +78,12 @@ init_smart(struct stream *st)
         fatal("smart: need a <device> argument");
     }
 
-    bzero(drivename, MAXPATHLEN);
-    snprintf(drivename, MAXPATHLEN, "/dev/%s", st->arg);
+    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
+        fatal("smart: '%.200s' is not a disk device", st->arg);
 
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
-        if (strncmp(smart_devs[i].name, drivename, MAXPATHLEN) == 0) {
+        if (strncmp(smart_devs[i].name, drivename, MAX_PATH_LEN) == 0) {
             st->parg.smart = i;
             return;
         }
@@ -104,7 +105,7 @@ init_smart(struct stream *st)
     }
 
     /* store drivename in new block */
-    snprintf(smart_devs[smart_cur].name, MAXPATHLEN, "%s", drivename);
+    snprintf(smart_devs[smart_cur].name, MAX_PATH_LEN, "%s", drivename);
 
     /* populate ata command header */
     p = &smart_devs[smart_cur].cmd;

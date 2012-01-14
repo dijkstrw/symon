@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/dkstat.h>
+#include <sys/param.h>
 #include <sys/resource.h>
 
 #include <net/if.h>
@@ -17,6 +18,9 @@
 #define SEM_ARGS        (SEM_A|SEM_R)
 #define SA_LEN(x)       ((x)->sa_len)
 #define SS_LEN(x)       ((x)->ss_len)
+
+#define DISK_PATHS { "/dev/%s", "/dev/ufs/%s", "/dev/ufsid/%s", "/dev/gpt/%s", NULL }
+#define MAX_PATH_LEN MAXPATHLEN
 
 union stream_parg {
     struct {
