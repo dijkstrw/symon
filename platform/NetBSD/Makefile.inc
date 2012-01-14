@@ -1,2 +1,2 @@
 RRDDIR?=/usr/pkg
-LIBS=-lutil
+LIBS=-lutil -Wl -R${RRDDIR}/lib

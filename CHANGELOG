@@ -8,6 +8,9 @@
    - platform/FreeBSD/sm_mem.c: sysctl call could overwrite swap count (Edho
      Arief)
 
+   - platform/NetBSD/Makefile.inc: update linker flags for finding librrd in
+     /usr/pkg
+
 01/05/2011 - 2.83
 
    - Added flukso probe

@@ -90,7 +90,7 @@ init_smart(struct stream *st)
     }
 
     if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("smart: '%.200s' is not a disk device", st-arg);
+        fatal("smart: '%.200s' is not a disk device", st->arg);
 
     /* look for drive in our global table */
     for (i = 0; i < smart_size; i++) {
@@ -160,7 +160,7 @@ gets_smart()
                 if (cmd.error & WDCE_ABRT)
                     warning("smart: ATA device '%s' returned Aborted Command", &smart_devs[i].name);
                 else
-                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, smart_devs[i].cmd.error);
+                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, cmd.error);
                 smart_devs[i].failed = 1;
                 break;
             default:
