@@ -43,7 +43,6 @@
 
 #include "conf.h"
 #include "data.h"
-#include "diskbyname.h"
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
@@ -78,7 +77,6 @@ void
 init_smart(struct stream *st)
 {
     int i;
-    char drivename[MAX_PATH_LEN];
     struct smart_device *sd;
 
     if (sizeof(struct smart_values) != DISK_BLOCK_LEN) {
@@ -89,12 +87,9 @@ init_smart(struct stream *st)
         fatal("smart: need a <device> argument");
     }
 
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("smart: '%.200s' is not a disk device", st->arg);
-
     /* look for drive in our global table */
     for (i = 0; i < smart_size; i++) {
-        if (strncmp(smart_devs[i].name, drivename, MAX_PATH_LEN) == 0) {
+        if (strncmp(smart_devs[i].name, st->arg, MAX_PATH_LEN) == 0) {
             st->parg.smart = i;
             return;
         }
@@ -107,17 +102,17 @@ init_smart(struct stream *st)
     bzero(sd, sizeof(struct smart_device));
 
     /* store drivename in new block */
-    snprintf(sd->name, MAX_PATH_LEN, "%s", drivename);
+    snprintf(sd->name, MAX_PATH_LEN, "%s", st->arg);
 
     /* store filedescriptor to device */
-    if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
+    if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
         if (errno == ENOENT) {
             /* Device does not exist, retry using cooked name semantics */
-            if ((sd->fd = opendisk(drivename, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
-                fatal("smart: could not open '%s' for read", drivename);
+            if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
+                fatal("smart: could not open '%s' for read", st->arg);
             }
         } else {
-            fatal("smart: could not open '%s' for read", drivename);
+            fatal("smart: could not open '%s' for read", st->arg);
         }
     }
 
