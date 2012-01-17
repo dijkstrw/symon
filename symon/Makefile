@@ -30,6 +30,7 @@ clean:
 	rm -f conf.h symon symon.cat8 symon.core ${OBJS}
 
 install: symon symon.8 symon.conf
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${BINDIR}
 	${INSTALL} -c -m 555 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symon      ${PREFIX}/${BINDIR}/
 	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${MANDIR}/man8
 	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symon.8 ${PREFIX}/${MANDIR}/man8/symon.8

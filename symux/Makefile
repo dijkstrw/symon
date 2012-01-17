@@ -19,6 +19,7 @@ clean:
 	rm -f conf.h symux symux.cat8 symux.core ${OBJS}
 
 install: symux symux.8 c_smrrds.sh symux.conf
+	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${BINDIR}
 	${INSTALL} -c -m 555 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symux	   ${PREFIX}/${BINDIR}/
 	${INSTALL} -d -m 555 -g ${INSTALLGROUPDIR} -o ${INSTALLUSER} ${PREFIX}/${MANDIR}/man8
 	${INSTALL} -c -m 444 -g ${INSTALLGROUPFILE} -o ${INSTALLUSER} symux.8	   ${PREFIX}/${MANDIR}/man8/symux.8
