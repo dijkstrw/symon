@@ -1,4 +1,4 @@
-04/01/2012 - 2.84
+14/01/2012 - 2.84
 
    - platform/Linux/disk probes now handles '/' in arguments (Bostjan Skufca)
 
@@ -304,8 +304,6 @@
      NetBSD: cpu, debug, if, io, mbuf, proc and sensor.
 
    - Added initial support for Linux: cpu and if.
-
-   - Textual: INSTALL (Hiddo Hut)
 
    - Removed net_iso from symon.c (Hans Kremers)
 
