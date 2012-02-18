@@ -44,7 +44,7 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 #ifdef HAS_IOCATAREQUEST
 #ifndef HAS_ATA_SMART_CMD
@@ -66,6 +66,8 @@ static int smart_cur = 0;
 void
 init_smart(struct stream *st)
 {
+    struct disknamectx c;
+    int fd;
     int i;
     char drivename[MAX_PATH_LEN];
     struct ata_ioc_request *p;
@@ -75,11 +77,18 @@ init_smart(struct stream *st)
     }
 
     if (st->arg == NULL) {
-        fatal("smart: need a <device> argument");
+        fatal("smart: need a <disk device|name> argument");
     }
 
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("smart: '%.200s' is not a disk device", st->arg);
+    initdisknamectx(&c, st->arg, drivename, sizeof(drivename));
+    fd = -1;
+
+    while (nextdiskname(&c))
+        if ((fd = open(drivename, O_RDONLY, O_NONBLOCK)) != -1)
+            break;
+
+    if (fd < 0)
+        fatal("smart: cannot open '%.200s'", st->arg);
 
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
@@ -117,7 +126,7 @@ init_smart(struct stream *st)
     p->count = DISK_BLOCK_LEN;
 
     /* store filedescriptor to device */
-    smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK);
+    smart_devs[smart_cur].fd = fd;
 
     if (errno) {
         fatal("smart: could not open '%s' for read; %.200s", drivename, strerror(errno));

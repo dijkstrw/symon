@@ -53,7 +53,7 @@
 
 #include "error.h"
 #include "symon.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 /* Globals for this module start with df_ */
 static struct statfs *df_stats = NULL;
@@ -62,22 +62,24 @@ static int df_parts = 0;
 void
 init_df(struct stream *st)
 {
+    struct disknamectx c;
     int n;
     char drivename[SYMON_DFNAMESIZE];
 
     if (st->arg == NULL)
         fatal("df: need a <disk device|name> argument");
 
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("df: '%.200s' is not a disk device", st->arg);
+    initdisknamectx(&c, st->arg, drivename, sizeof(drivename));
 
     gets_df();
 
-    for (n = 0; n < df_parts; n++) {
-        if (!strncmp(df_stats[n].f_mntfromname, drivename, SYMON_DFNAMESIZE)) {
-            strlcpy(st->parg.df.rawdev, drivename, sizeof(st->parg.df.rawdev));
-            info("started module df(%.200s)", st->arg);
-            return;
+    while (nextdiskname(&c)) {
+        for (n = 0; n < df_parts; n++) {
+            if (!strncmp(df_stats[n].f_mntfromname, drivename, SYMON_DFNAMESIZE)) {
+                strlcpy(st->parg.df.rawdev, drivename, sizeof(st->parg.df.rawdev));
+                info("started module df(%.200s)", st->arg);
+                return;
+            }
         }
     }
 

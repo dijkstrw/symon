@@ -54,7 +54,7 @@
 
 #include "error.h"
 #include "symon.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 static struct statinfo io_stats;
 static int io_numdevs = 0;
@@ -68,15 +68,13 @@ privinit_io()
 void
 init_io(struct stream *st)
 {
+    struct disknamectx c;
     unsigned int i;
     struct devstat *ds;
     char drivename[MAX_PATH_LEN];
 
     if (st->arg == NULL)
         fatal("io: need a <device>|<devicename> argument");
-
-    if (diskbyname(st->arg, drivename, MAX_PATH_LEN) == 0)
-        fatal("io: '%.200s' is not a <device>|<devicename>", st->arg);
 
     io_stats.dinfo = malloc(sizeof(struct devinfo));
     if (io_stats.dinfo == NULL) {
@@ -85,17 +83,24 @@ init_io(struct stream *st)
 
     io_stats.dinfo->mem_ptr = NULL;
 
+    initdisknamectx(&c, st->arg, drivename, MAX_PATH_LEN);
+
     gets_io();
 
-    for (i = 0; i < io_numdevs; i++) {
-        ds = &io_stats.dinfo->devices[i];
+    while (nextdiskname(&c)) {
+        for (i = 0; i < io_numdevs; i++) {
+            ds = &io_stats.dinfo->devices[i];
 
-        if (strncmp(ds->device_name, st->arg, strlen(ds->device_name)) == 0 &&
-            strlen(ds->device_name) < strlen(st->arg) &&
-            isdigit(st->arg[strlen(ds->device_name)]) &&
-            atoi(&st->arg[strlen(ds->device_name)]) == ds->unit_number) {
-            info("started module io(%.200s)", st->arg);
-            return;
+            if (strncmp(ds->device_name, drivename, strlen(ds->device_name)) == 0 &&
+                strlen(ds->device_name) < strlen(drivename) &&
+                isdigit(st->arg[strlen(ds->device_name)]) &&
+                atoi(&drivename[strlen(ds->device_name)]) == ds->unit_number) {
+                if (strcmp(st->arg, drivename) == 0)
+                    info("started module io(%.200s)", st->arg);
+                else
+                    info("started module io(%.200s = %.200s)", st->arg, drivename);
+                return;
+            }
         }
     }
 

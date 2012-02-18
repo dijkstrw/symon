@@ -19,7 +19,7 @@
 #define SA_LEN(x)       ((x)->sa_len)
 #define SS_LEN(x)       ((x)->ss_len)
 
-#define DISK_PATHS { "/dev/%s", "/dev/ufs/%s", "/dev/ufsid/%s", "/dev/gpt/%s", NULL }
+#define DISK_PATHS { "%s", "/dev/%s", "/dev/ufs/%s", "/dev/ufsid/%s", "/dev/gpt/%s", "/dev/label/%s", NULL }
 #define MAX_PATH_LEN MAXPATHLEN
 
 union stream_parg {
