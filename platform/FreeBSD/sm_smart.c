@@ -128,10 +128,6 @@ init_smart(struct stream *st)
     /* store filedescriptor to device */
     smart_devs[smart_cur].fd = fd;
 
-    if (errno) {
-        fatal("smart: could not open '%s' for read; %.200s", drivename, strerror(errno));
-    }
-
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
 
