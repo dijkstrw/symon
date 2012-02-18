@@ -66,7 +66,11 @@ nextdiskname(struct disknamectx *c)
 {
     char *r;
     struct stat buffer;
-    char *l[] =  { "%s", "/dev/%s", "/dev/disk/by-id/%s", "/dev/disk/by-id/%s-part1", "/dev/disk/by-label/%s", "/dev/disk/by-uuid/%s", "/dev/disk/by-path/%s", "/dev/disk/by-path/%s-part1", NULL };
+#ifdef DISK_PATHS
+    char *l[] = DISK_PATHS;
+#else
+    char *l[] = { "/dev/%s", NULL };
+#endif
 
     if ((c->spath == NULL) || (c->dpath == NULL) || (l[c->i] == NULL))
         return NULL;

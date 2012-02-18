@@ -12,7 +12,6 @@ MODS!=	( for s in ../platform/stub/sm_*.c; do \
 		fi; fi; \
 	  done )
 
-EXTRA_SRC=${PLATFORM_SRC:S,^,../platform/${OS}/,g}
 SRCS=	symon.c readconf.c symonnet.c ${MODS} ${EXTRA_SRC}
 OBJS+=	${SRCS:R:S/$/.o/g}
 CFLAGS+=-I../lib -I../platform/${OS} -I.
