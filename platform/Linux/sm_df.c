@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Willem Dijkstra
+ * Copyright (c) 2011-2012 Willem Dijkstra
  * Copyright (c) 2007 Martin van der Werff
  * All rights reserved.
  *
@@ -47,34 +47,38 @@
 #include "conf.h"
 #include "error.h"
 #include "symon.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 void
 init_df(struct stream *st)
 {
+    struct disknamectx c;
     char drivename[MAX_PATH_LEN];
-    FILE * fp = setmntent("/etc/mtab", "r");
+    FILE *fp;
     struct mntent *mount;
-
-    if (fp == NULL)
-        fatal("df: cannot access /etc/mtab: %.200s", strerror(errno));
 
     if (st->arg == NULL)
         fatal("df: need a <disk device|name> argument");
 
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("df: '%.200s' is not a disk device", st->arg);
+    initdisknamectx(&c, st->arg, drivename, sizeof(drivename));
 
-    while ((mount = getmntent(fp))) {
-	if (strncmp(mount->mnt_fsname, drivename, sizeof(drivename)) == 0) {
-            strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
-            info("started module df(%.200s = %.200s)", st->arg, st->parg.df.mountpath);
-            endmntent(fp);
-            return;
+    while (nextdiskname(&c)) {
+        fp = setmntent("/etc/mtab", "r");
+
+        if (fp == NULL)
+            fatal("df: cannot access /etc/mtab: %.200s", strerror(errno));
+
+        while ((mount = getmntent(fp))) {
+            if (strncmp(mount->mnt_fsname, drivename, sizeof(drivename)) == 0) {
+                strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
+                info("started module df(%.200s = %.200s)", st->arg, st->parg.df.mountpath);
+                endmntent(fp);
+                return;
+            }
         }
-    }
 
-    endmntent(fp);
+        endmntent(fp);
+    }
 
     warning("df(%.200s): not mounted", st->arg);
 }

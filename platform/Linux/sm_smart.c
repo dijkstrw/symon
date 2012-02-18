@@ -44,7 +44,7 @@
 #include "error.h"
 #include "xmalloc.h"
 #include "smart.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 #ifndef HAS_HDDRIVECMDHDR
 typedef unsigned char task_ioreg_t;
@@ -86,6 +86,8 @@ static int smart_cur = 0;
 void
 init_smart(struct stream *st)
 {
+    struct disknamectx c;
+    int fd;
     int i;
     char drivename[MAX_PATH_LEN];
 
@@ -96,7 +98,15 @@ init_smart(struct stream *st)
     if (st->arg == NULL)
         fatal("smart: need a <disk device|name> argument");
 
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
+    initdisknamectx(&c, st->arg, drivename, sizeof(drivename));
+
+    fd = -1;
+    while (nextdiskname(&c))
+        if ((fd = open(drivename, O_RDONLY | O_NONBLOCK)) != -1)
+            break;
+
+
+    if (fd < 0)
         fatal("smart: '%.200s' is not a disk device", st->arg);
 
     /* look for drive in our global table */
@@ -121,8 +131,7 @@ init_smart(struct stream *st)
     strlcpy(smart_devs[smart_cur].name, drivename, sizeof(smart_devs[0].name));
 
     /* store filedescriptor to device */
-    if ((smart_devs[smart_cur].fd = open(drivename, O_RDONLY | O_NONBLOCK)) < 0)
-        fatal("smart: could not open '%.200s' for read: %.200s", drivename, strerror(errno));
+    smart_devs[smart_cur].fd = fd;
 
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
@@ -141,8 +150,8 @@ gets_smart()
         /* populate ata command header */
         memcpy(&smart_devs[i].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
         if (ioctl(smart_devs[i].fd, HDIO_DRIVE_CMD, &smart_devs[i].cmd)) {
-            warning("smart: ioctl for drive '%s' failed: %d",
-                    &smart_devs[i].name, errno);
+            warning("smart: ioctl for drive '%.200s' failed: %.200s",
+                    &smart_devs[i].name, strerror(errno));
             smart_devs[i].failed = 1;
         }
 

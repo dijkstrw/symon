@@ -42,7 +42,6 @@ union semun {
 #define CP_STEAL     7
 
 #define MAX_PATH_LEN       1024
-#define DISK_PATHS         { "/dev/%s", "/dev/disk/by-id/%s", "/dev/disk/by-label/%s", "/dev/disk/by-uuid/%s", "/dev/disk/by-path/%s", NULL }
 #define DISK_BLOCK_LEN     512
 
 #define SENSOR_FAN       0

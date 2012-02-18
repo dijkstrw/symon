@@ -49,7 +49,7 @@
 #include "xmalloc.h"
 #include "error.h"
 #include "symon.h"
-#include "diskbyname.h"
+#include "diskname.h"
 
 /* Globals for this module start with io_ */
 static void *io_buf = NULL;
@@ -81,7 +81,8 @@ char *io_filename = "/proc/partitions";
 void
 init_io(struct stream *st)
 {
-    size_t lead;
+    struct disknamectx c;
+    size_t lead = sizeof("/dev/") - 1;
 
     if (io_buf == NULL) {
         io_maxsize = SYMON_MAX_OBJSIZE;
@@ -91,18 +92,26 @@ init_io(struct stream *st)
     if (st->arg == NULL)
         fatal("io: need a <device>|<devicename> argument");
 
-    if (diskbyname(st->arg, &st->parg.io[0], MAX_PATH_LEN) == 0)
-        fatal("io: '%.200s' is not a <device>|<devicename>", st->arg);
+    /* Retrieve io stats to search for devicename */
+    gets_io();
 
-    /* devices are named sdX, not /dev/sdX */
-    lead = sizeof("/dev/") - 1;
-    if (strncmp(st->parg.io, "/dev/", lead) == 0)
-        memmove(&st->parg.io[0], &st->parg.io[0] + lead, sizeof(st->parg.io) - lead);
+    initdisknamectx(&c, st->arg, st->parg.io, sizeof(st->parg.io));
 
-    if (strcmp(st->arg, st->parg.io) == 0)
-        info("started module io(%.200s)", st->parg.io);
-    else
-        info("started module io(%.200s = %.200s)", st->arg, st->parg.io);
+    while (nextdiskname(&c) != NULL) {
+        /* devices are named sdX, not /dev/sdX */
+        if (strncmp(st->parg.io, "/dev/", lead) == 0)
+            memmove(&st->parg.io[0], &st->parg.io[0] + lead, sizeof(st->parg.io) - lead);
+
+        if (strstr(io_buf, st->parg.io)) {
+            if (strcmp(st->arg, st->parg.io) == 0)
+                info("started module io(%.200s)", st->parg.io);
+            else
+                info("started module io(%.200s = %.200s)", st->arg, st->parg.io);
+            return;
+        }
+    }
+
+    warning("io(%.200s): not mounted", st->arg);
 }
 
 void
