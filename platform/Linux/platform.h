@@ -43,7 +43,7 @@ union semun {
 
 #define MAX_PATH_LEN       1024
 
-#define DISK_PATHS   { "%s", "/dev/%s", "/dev/disk/by-id/%s", "/dev/disk/by-id/%s-part1", "/dev/disk/by-label/%s", "/dev/disk/by-uuid/%s", "/dev/disk/by-path/%s", "/dev/disk/by-path/%s-part1", NULL }
+#define DISK_PATHS   { "%s", "/dev/%s", "/dev/disk/by-id/%s", "/dev/disk/by-id/%s-part1", "/dev/disk/by-label/%s", "/dev/disk/by-uuid/%s", "/dev/disk/by-path/%s", "/dev/disk/by-path/%s-part1", "/dev/mapper/%s", NULL }
 
 #define DISK_BLOCK_LEN     512
 

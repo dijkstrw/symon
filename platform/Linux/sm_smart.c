@@ -107,7 +107,7 @@ init_smart(struct stream *st)
 
 
     if (fd < 0)
-        fatal("smart: '%.200s' is not a disk device", st->arg);
+        fatal("smart: cannot open '%.200s'", st->arg);
 
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
