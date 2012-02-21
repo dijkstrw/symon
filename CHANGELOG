@@ -1,6 +1,9 @@
 18/02/2012 - 2.85
 
-   - reworked diskname support
+   - lib/diskname rewrite -- return possible disknames for Linux and FreeBSD
+     based on a number of predefined path patterns
+
+   - platform/Linux allow /dev/mapper disknames (Edho Arief)
 
 14/01/2012 - 2.84
 
