@@ -51,7 +51,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "diskbyname.h"
 #include "error.h"
 #include "symon.h"
 
@@ -62,15 +61,8 @@ static int df_parts = 0;
 void
 init_df(struct stream *st)
 {
-    char drivename[MAX_PATH_LEN];
-
-    if (st->arg == NULL)
-        fatal("io: need a <disk device|name> argument");
-
-    if (diskbyname(st->arg, drivename, sizeof(drivename)) == 0)
-        fatal("io: '%.200s' is not a disk device", st->arg);
-
-    strlcpy(st->parg.df.rawdev, drivename, sizeof(st->parg.df.rawdev));
+    strlcpy(st->parg.df.rawdev, "/dev/", sizeof(st->parg.df.rawdev));
+    strlcat(st->parg.df.rawdev, st->arg, sizeof(st->parg.df.rawdev));
 
     info("started module df(%.200s)", st->arg);
 }
