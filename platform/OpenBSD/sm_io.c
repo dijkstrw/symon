@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2004 Willem Dijkstra
+ * Copyright (c) 2001-2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -134,8 +134,7 @@ gets_io()
         }
         if ((*p == ':') && (*p+1 != '\0')) {
             *p = '\0';
-            p++;
-            io_dkuids[io_dks] = p;
+            io_dkuids[io_dks] = p+1;
 	}
         p++;
     }

@@ -2,6 +2,9 @@
 
    - platform/OpenBSD/sm_proc.c updated to new kinfo_proc interface
 
+   - platform/OpenBSD/sm_io.c hw.disknames was parsed wrong for devices with
+     no uuid (Raphaël Berbain)
+
 18/02/2012 - 2.85
 
    - lib/diskname rewrite -- return possible disknames for Linux and FreeBSD
