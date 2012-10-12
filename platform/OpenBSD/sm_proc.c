@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2010 Willem Dijkstra
+ * Copyright (c) 2001-2012 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -204,21 +204,7 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
     int n = 0;
 
     for (pp = proc_ps, i = 0; i < proc_cur; pp++, i++) {
-#ifdef HAS_KERN_PROC2
-         if (strncmp(st->arg, pp->p_comm, strlen(st->arg)) == 0) {
-             /* cpu time - accumulated */
-             cpu_uticks += pp->p_uticks;  /* user */
-             cpu_sticks += pp->p_sticks;  /* sys  */
-             cpu_iticks += pp->p_iticks;  /* int  */
-             /* cpu time - percentage since last measurement */
-             cpu_pct = pctdouble(pp->p_pctcpu) * 100.0;
-             cpu_pcti += cpu_pct;
-             /* memory size - shared pages are counted multiple times */
-             mem_procsize += pagetob(pp->p_vm_tsize + /* text pages */
-                                     pp->p_vm_dsize + /* data */
-                                     pp->p_vm_ssize); /* stack */
-             mem_rss += pagetob(pp->p_vm_rssize);     /* rss  */
-#else
+#ifdef HAS_KERN_KPPROC
          if (strncmp(st->arg, pp->kp_proc.p_comm, strlen(st->arg)) == 0) {
              /* cpu time - accumulated */
              cpu_uticks += pp->kp_proc.p_uticks;  /* user */
@@ -232,6 +218,20 @@ get_proc(char *symon_buf, int maxlen, struct stream *st)
                                      pp->kp_eproc.e_vm.vm_dsize + /* data */
                                      pp->kp_eproc.e_vm.vm_ssize); /* stack */
              mem_rss += pagetob(pp->kp_eproc.e_vm.vm_rssize);     /* rss  */
+#else
+         if (strncmp(st->arg, pp->p_comm, strlen(st->arg)) == 0) {
+             /* cpu time - accumulated */
+             cpu_uticks += pp->p_uticks;  /* user */
+             cpu_sticks += pp->p_sticks;  /* sys  */
+             cpu_iticks += pp->p_iticks;  /* int  */
+             /* cpu time - percentage since last measurement */
+             cpu_pct = pctdouble(pp->p_pctcpu) * 100.0;
+             cpu_pcti += cpu_pct;
+             /* memory size - shared pages are counted multiple times */
+             mem_procsize += pagetob(pp->p_vm_tsize + /* text pages */
+                                     pp->p_vm_dsize + /* data */
+                                     pp->p_vm_ssize); /* stack */
+             mem_rss += pagetob(pp->p_vm_rssize);     /* rss  */
 #endif
              n++;
          }
