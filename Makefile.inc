@@ -1,8 +1,8 @@
-V=2.85
+V=2.86
 
 AR?=	ar
 CC?=	cc
-CFLAGS+=-Wall
+CFLAGS+=-Wall -g
 INSTALL?=install
 LORDER?=lorder
 TSORT?=tsort

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2012 Willem Dijkstra
+ * Copyright (c) 2009-2013 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,9 @@
 #include <strings.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <camlib.h>
+#include <cam/cam_ccb.h>
 
 #include "conf.h"
 #include "data.h"
@@ -50,6 +53,9 @@
 #ifndef HAS_ATA_SMART_CMD
 #define ATA_SMART_CMD 0xb0
 #endif
+
+#define MSG_SIMPLE_Q_TAG 0x20
+
 /* per drive storage structure */
 struct smart_device {
     char name[MAX_PATH_LEN];
@@ -57,6 +63,8 @@ struct smart_device {
     int type;
     int failed;
     struct ata_ioc_request cmd;
+    struct cam_device *cd;
+    struct ccb_ataio ccb;
     struct smart_values data;
 };
 
@@ -70,7 +78,9 @@ init_smart(struct stream *st)
     int fd;
     int i;
     char drivename[MAX_PATH_LEN];
-    struct ata_ioc_request *p;
+    struct ata_ioc_request *pa;
+    struct cam_device *cd;
+    struct ccb_ataio *pc;
 
     if (sizeof(struct smart_values) != DISK_BLOCK_LEN) {
         fatal("smart: internal error: smart values structure is broken");
@@ -81,13 +91,18 @@ init_smart(struct stream *st)
     }
 
     initdisknamectx(&c, st->arg, drivename, sizeof(drivename));
-    fd = -1;
 
-    while (nextdiskname(&c))
+    fd = -1;
+    cd = NULL;
+
+    while (nextdiskname(&c)) {
+        if ((cd = cam_open_device(drivename, O_RDWR)) != NULL)
+            break;
         if ((fd = open(drivename, O_RDONLY, O_NONBLOCK)) != -1)
             break;
+    }
 
-    if (fd < 0)
+    if ((fd < 0) && (cd == NULL))
         fatal("smart: cannot open '%.200s'", st->arg);
 
     /* look for drive in our global table */
@@ -111,22 +126,50 @@ init_smart(struct stream *st)
     /* rewire all bufferlocations, as our addresses may have changed */
     for (i = 0; i <= smart_cur; i++) {
         smart_devs[i].cmd.data = (caddr_t)&smart_devs[i].data;
+        smart_devs[i].ccb.data_ptr = (u_int8_t *)&smart_devs[i].data;
     }
 
     /* store drivename in new block */
     snprintf(smart_devs[smart_cur].name, MAX_PATH_LEN, "%s", drivename);
 
-    /* populate ata command header */
-    p = &smart_devs[smart_cur].cmd;
-    p->u.ata.command = ATA_SMART_CMD;
-    p->timeout = SMART_TIMEOUT;
-    p->u.ata.feature = ATA_SMART_READ_VALUES;
-    p->u.ata.lba = SMART_CYLINDER << 8;
-    p->flags = ATA_CMD_READ;
-    p->count = DISK_BLOCK_LEN;
-
     /* store filedescriptor to device */
-    smart_devs[smart_cur].fd = fd;
+    if (fd > 0) {
+        smart_devs[smart_cur].fd = fd;
+
+        /* populate ata command header */
+        pa = &smart_devs[smart_cur].cmd;
+        pa->u.ata.command = ATA_SMART_CMD;
+        pa->timeout = SMART_TIMEOUT;
+        pa->u.ata.feature = ATA_SMART_READ_VALUES;
+        pa->u.ata.lba = SMART_CYLINDER << 8;
+        pa->flags = ATA_CMD_READ;
+        pa->count = DISK_BLOCK_LEN;
+    } else if (cd) {
+        smart_devs[smart_cur].cd = cd;
+
+        /* populate cam control block */
+        pc = &smart_devs[smart_cur].ccb;
+        cam_fill_ataio(pc,
+                       0, /* retries */
+                       NULL, /* completion callback */
+                       CAM_DIR_IN, /* flags */
+                       MSG_SIMPLE_Q_TAG, /* tag_action */
+                       (u_int8_t *)&smart_devs[smart_cur].data,
+                       DISK_BLOCK_LEN,
+                       SMART_TIMEOUT);
+
+        /* disable queue freeze on error */
+        pc->ccb_h.flags |= CAM_DEV_QFRZDIS;
+
+        /* populate ata command header */
+        pc->cmd.flags = CAM_ATAIO_NEEDRESULT;
+        pc->cmd.features = ATA_SMART_READ_VALUES;
+        pc->cmd.lba_low = 0;
+        pc->cmd.lba_mid = SMART_CYLINDER & 0xff;
+        pc->cmd.lba_high = (SMART_CYLINDER >> 8) & 0xff;
+        pc->cmd.sector_count = DISK_BLOCK_LEN;
+        pc->cmd.sector_count_exp = DISK_BLOCK_LEN >> 8;
+    }
 
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
@@ -142,20 +185,36 @@ gets_smart()
     int i;
 
     for (i = 0; i < smart_cur; i++) {
-        if (ioctl(smart_devs[i].fd, IOCATAREQUEST, &smart_devs[i].cmd) || smart_devs[i].cmd.error) {
-            warning("smart: ioctl for drive '%s' failed: %d",
-                    &smart_devs[i].name, errno);
-            smart_devs[i].failed = 1;
+        if (smart_devs[i].fd > 0) {
+            if (ioctl(smart_devs[i].fd, IOCATAREQUEST, &smart_devs[i].cmd) || smart_devs[i].cmd.error) {
+                warning("smart: ioctl for drive '%s' failed: %s",
+                        &smart_devs[i].name, strerror(errno));
+                smart_devs[i].failed = 1;
+                continue;
+            }
+
+            /* Some drives do not calculate the smart checksum correctly;
+             * additional code that identifies these drives would increase our
+             * footprint and the amount of datajuggling we need to do; we would
+             * rather ignore the checksums.
+             */
+
+            smart_devs[i].failed = 0;
+        } else if (smart_devs[i].cd != NULL) {
+            if ((cam_send_ccb(smart_devs[i].cd, (union ccb *)&smart_devs[i].ccb) < 0) || smart_devs[i].ccb.res.error) {
+                warning("smart: ccb for drive '%s' failed: %s",
+                        &smart_devs[i].name,
+                        cam_error_string(smart_devs[i].cd, (union ccb *)&smart_devs[i].ccb,
+                                         (char *)&smart_devs[i].data, DISK_BLOCK_LEN,
+                                         CAM_ESF_ALL, CAM_EPF_ALL));
+                smart_devs[i].failed = 1;
+                continue;
+            }
+
+            smart_devs[i].failed = 0;
         }
-
-        /* Some drives do not calculate the smart checksum correctly;
-         * additional code that identifies these drives would increase our
-         * footprint and the amount of datajuggling we need to do; we would
-         * rather ignore the checksums.
-         */
-
-        smart_devs[i].failed = 0;
     }
+
     return;
 }
 
