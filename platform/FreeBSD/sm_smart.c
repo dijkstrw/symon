@@ -58,14 +58,14 @@
 
 /* per drive storage structure */
 struct smart_device {
+    struct smart_values data;
+    struct ata_ioc_request cmd;
+    struct cam_device *cd;
+    struct ccb_ataio ccb;
     char name[MAX_PATH_LEN];
     int fd;
     int type;
     int failed;
-    struct ata_ioc_request cmd;
-    struct cam_device *cd;
-    struct ccb_ataio ccb;
-    struct smart_values data;
 };
 
 static struct smart_device *smart_devs = NULL;
@@ -150,30 +150,33 @@ init_smart(struct stream *st)
         /* populate cam control block */
         pc = &smart_devs[smart_cur].ccb;
         cam_fill_ataio(pc,
-                       0, /* retries */
-                       NULL, /* completion callback */
-                       CAM_DIR_IN, /* flags */
-                       MSG_SIMPLE_Q_TAG, /* tag_action */
+                       0,                            /* retries */
+                       NULL,                         /* completion callback */
+                       CAM_DIR_IN,                   /* flags */
+                       MSG_SIMPLE_Q_TAG,             /* tag_action */
                        (u_int8_t *)&smart_devs[smart_cur].data,
                        DISK_BLOCK_LEN,
-                       SMART_TIMEOUT);
+                       SMART_TIMEOUT);               /* timeout (s) */
 
         /* disable queue freeze on error */
         pc->ccb_h.flags |= CAM_DEV_QFRZDIS;
 
         /* populate ata command header */
         pc->cmd.flags = CAM_ATAIO_NEEDRESULT;
+        pc->cmd.command = ATA_SMART_CMD;
         pc->cmd.features = ATA_SMART_READ_VALUES;
         pc->cmd.lba_low = 0;
         pc->cmd.lba_mid = SMART_CYLINDER & 0xff;
         pc->cmd.lba_high = (SMART_CYLINDER >> 8) & 0xff;
-        pc->cmd.sector_count = DISK_BLOCK_LEN;
-        pc->cmd.sector_count_exp = DISK_BLOCK_LEN >> 8;
+        pc->cmd.lba_low_exp = 0;
+        pc->cmd.lba_mid_exp = 0;
+        pc->cmd.lba_high_exp = 0;
+        pc->cmd.sector_count = 1;
+        pc->cmd.sector_count_exp = 0;
     }
 
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
-
     smart_cur++;
 
     info("started module smart(%.200s)", st->arg);
@@ -227,6 +230,20 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
         (!smart_devs[st->parg.smart].failed))
     {
         smart_parse(&smart_devs[st->parg.smart].data, &sr);
+        debug("%x %x %x %x %x %x %x %x %x %x %x %x",
+                      sr.read_error_rate,
+                      sr.reallocated_sectors,
+                      sr.spin_retries,
+                      sr.air_flow_temp,
+                      sr.temperature,
+                      sr.reallocations,
+                      sr.current_pending,
+                      sr.uncorrectables,
+                      sr.soft_read_error_rate,
+                      sr.g_sense_error_rate,
+                      sr.temperature2,
+                      sr.free_fall_protection);
+
         return snpack(symon_buf, maxlen, st->arg, MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,
