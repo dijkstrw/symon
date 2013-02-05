@@ -1,11 +1,12 @@
-12/10/2012 - 2.86
+05/02/2013 - 2.86
 
    - platform/OpenBSD/sm_proc.c updated to new kinfo_proc interface
 
    - platform/OpenBSD/sm_io.c hw.disknames was parsed wrong for devices with
      no uuid (Raphaël Berbain)
 
-   - platform/FreeBSD/sm_smart.c updated to also support atacam devices
+   - platform/FreeBSD/sm_smart.c updated to also support atacam (Alexander
+     Sheiko)
 
 18/02/2012 - 2.85
 
