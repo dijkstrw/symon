@@ -230,20 +230,6 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
         (!smart_devs[st->parg.smart].failed))
     {
         smart_parse(&smart_devs[st->parg.smart].data, &sr);
-        debug("%x %x %x %x %x %x %x %x %x %x %x %x",
-                      sr.read_error_rate,
-                      sr.reallocated_sectors,
-                      sr.spin_retries,
-                      sr.air_flow_temp,
-                      sr.temperature,
-                      sr.reallocations,
-                      sr.current_pending,
-                      sr.uncorrectables,
-                      sr.soft_read_error_rate,
-                      sr.g_sense_error_rate,
-                      sr.temperature2,
-                      sr.free_fall_protection);
-
         return snpack(symon_buf, maxlen, st->arg, MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,
