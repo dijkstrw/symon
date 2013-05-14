@@ -1,3 +1,7 @@
+12/05/2013 -
+
+   - symux/symux.8 counter name fixes (Dennis Lindahl)
+
 05/02/2013 - 2.86
 
    - platform/OpenBSD/sm_proc.c updated to new kinfo_proc interface

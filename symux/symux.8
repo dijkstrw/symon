@@ -227,9 +227,9 @@ Kernel variables debug0 to debug19. ( debug0 : ... : debug19 ). Values are 32
 bit unsigned integers.
 .It df
 Disk free statistics ( blocks : bfree : bavail : files :
-ffree : synwrites : asyncwrites). Values are 64 bit unsigned integers.
+ffree : syncwrites : asyncwrites ). Values are 64 bit unsigned integers.
 .It load
-Load averages for the last 1, 5, and 15 minutes. Data is offered with precision
+Load averages for the last 1, 5, and 15 minutes ( load1, load5, load15 ). Data is offered with prec ision
 2 and a maximum of 655.
 .It if
 Alias for if2. See below.
@@ -238,8 +238,8 @@ Pre OpenBSD 4.3 interface counters ( packets_in, packets_out, bytes_in,
 bytes_out, multicasts_in, multicasts_out, errors_in, errors_out, collisions,
 drops ). Values are 32 bit unsigned integers.
 .It if2
-Interface counters ( packets_in, packets_out, bytes_in, bytes_out,
-multicasts_in, multicasts_out, errors_in, errors_out, collisions, drops
+Interface counters ( ipackets, opackets, ibytes, obytes,
+imcasts, omcasts, ierrors, oerrors, collisions, drops
 ). Values are 64 bit unsigned integers.
 .It io
 Alias for io2. See below.
@@ -247,8 +247,8 @@ Alias for io2. See below.
 Pre OpenBSD 3.5 io/disk counters ( total_transfers, total_seeks, total_bytes
 ). Values are 64 bit unsigned integers.
 .It io2
-Io/disk counters ( total_rxfer, total_wxfer, total_seeks, total_rbytes,
-total_wbytes). Values are 64 bit unsigned integers.
+Io/disk counters ( rxfer, wxfer, seeks, rbytes,
+wbytes). Values are 64 bit unsigned integers.
 .It mbuf
 Mbuf statistics ( totmbufs : mt_data : mt_oobdata : mt_control :
 mt_header : mt_ftable : mt_soname : mt_soopts : pgused : pgtotal :
