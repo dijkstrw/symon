@@ -4,6 +4,8 @@
 
    - platform/Linux/sm_io.c read all disk info, not just first block
 
+   - client/SymuxClient.pm removed documentation errors (Jeroen Roovers)
+
    - symon.8, mention that a windows symon client by Valeriy Leshchinskiy is
      available on https://github.com/ValHazelwood/SymonClient
 

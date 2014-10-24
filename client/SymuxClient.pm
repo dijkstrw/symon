@@ -267,14 +267,22 @@ Example:
 
 =head2 METHODS
 
+=over 4
+
 =item getitem (host, stream, item)
+
+=back
 
 Refresh the measured data and get an item from a stream for a particular
 host. Note that successive calls for this function deal with successive
 measurements of B<symon>. Set C<host> to '*' if data about any host is of
 interest. Any errors are sent out on STDOUT prepended with 'error: '.
 
+=over 4
+
 =item getcacheditem (host, stream, item)
+
+=back
 
 Get an item from a stream for a particular host. Returns C<undef> if no data is
 cached, or if the data cached does not match the B<host>. Can be called
@@ -282,7 +290,11 @@ multiple times to obtain items from the same measurement. Set C<host> to '*' if
 data about any host is of interest. Any errors are sent out on STDOUT prepended
 with 'error: '.
 
+=over 4
+
 =item getsource ()
+
+=back
 
 Get the symon source host of the currently cached information. Usefull to see
 what host's data getcacheditem is working on.
