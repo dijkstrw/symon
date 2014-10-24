@@ -13,17 +13,17 @@ if ! grep -q "VM_TOTAL" /usr/include/vm/vm_param.h; then
     echo "#define VM_TOTAL VM_METER"
 fi
 if grep -q "struct xswdev" /usr/include/vm/vm_param.h; then
-    echo "#define HAS_XSWDEV	1"
+    echo "#define HAS_XSWDEV		1"
 else
     echo "#undef HAS_XSWDEV"
 fi
 if [ -f /usr/include/net/pfvar.h ]; then
-    echo "#define HAS_PFVAR_H	1"
+    echo "#define HAS_PFVAR_H		1"
 else
     echo "#undef HAS_PFVAR_H"
 fi
 if grep -q "ki_paddr" /usr/include/sys/user.h; then
-    echo "#define HAS_KI_PADDR	1"
+    echo "#define HAS_KI_PADDR		1"
 else
     echo "#undef HAS_KI_PADDR"
 fi
@@ -38,12 +38,17 @@ else
     echo "#undef HAS_RESOURCE_CPUSTATE"
 fi
 if grep -q "IOCATAREQUEST" /usr/include/sys/ata.h; then
-    echo "#define HAS_IOCATAREQUEST 1"
+    echo "#define HAS_IOCATAREQUEST	1"
 else
     echo "#undef HAS_IOCATAREQUEST"
 fi
 if grep -q "ATA_SMART_CMD" /usr/include/sys/ata.h; then
-    echo "#define HAS_ATA_SMART_CMD 1"
+    echo "#define HAS_ATA_SMART_CMD	1"
 else
     echo "#undef HAS_ATA_SMART_CMD"
+fi
+if sysctl kern.cp_times >/dev/null 2>&1; then
+    echo "#define HAS_CP_TIMES		1"
+else
+    echo "#undef HAS_CP_TIMES"
 fi

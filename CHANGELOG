@@ -1,6 +1,14 @@
-12/05/2013 -
+24/10/2014 - 2.87
+
+   - platform/FreeBSD/sm_cpu.c updated to support smp
+
+   - symon.8, mention that a windows symon client by Valeriy Leshchinskiy is
+     available on https://github.com/ValHazelwood/SymonClient
 
    - symux/symux.8 counter name fixes (Dennis Lindahl)
+
+   - symon/c_config.sh updated. # cpus are now detected + more Linux mount
+     types supported.
 
 05/02/2013 - 2.86
 

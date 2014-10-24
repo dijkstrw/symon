@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2014      Willem Dijkstra
  * Copyright (c) 2004      Matthew Gream
  * All rights reserved.
  *
@@ -34,7 +35,7 @@
  *
  * user : nice : system : interrupt : idle
  *
- * This code is not re-entrant and UP only.
+ * This code is not re-entrant.
  *
  * This module uses the sysctl interface and can run as any user.
  */
@@ -45,28 +46,55 @@
 #include <sys/dkstat.h>
 #include <sys/sysctl.h>
 
+#include <errno.h>
+#include <stdlib.h>
+#include <limits.h>
+
 #include "error.h"
 #include "percentages.h"
 #include "symon.h"
+#include "sylimits.h"
+#include "xmalloc.h"
 
 /* Globals for this module all start with cp_ */
+#ifdef HAS_CP_TIMES
+static char cp_time_mib_str[] = "kern.cp_times";
+#else
 static char cp_time_mib_str[] = "kern.cp_time";
+#endif
 static int cp_time_mib[CTL_MAXNAME];
 static size_t cp_time_len = 0;
-static size_t cp_size;
+static void *cp_buf;
+static size_t cp_size = 0;
 
 void
 init_cpu(struct stream *st)
 {
     char buf[SYMON_MAX_OBJSIZE];
+    const char *errstr;
 
-    cp_time_len = CTL_MAXNAME;
-    if (sysctlnametomib(cp_time_mib_str, cp_time_mib, &cp_time_len) < 0) {
-        warning("sysctlnametomib for cpu failed");
-        cp_time_len = 0;
+    if (cp_time_len == 0) {
+        cp_time_len = CTL_MAXNAME;
+        if (sysctlnametomib(cp_time_mib_str, cp_time_mib, &cp_time_len) < 0) {
+            warning("sysctlnametomib for cpu failed");
+            cp_time_len = 0;
+        }
+
+        if ((sysctl(cp_time_mib, cp_time_len, NULL, &cp_size, NULL, 0) != -1) &&
+            (errno == ENOMEM))
+            fatal("cpu(%.200s): failed to determine sysctl buffer len", st->arg);
+
+        if (cp_size > SYMON_MAX_OBJSIZE)
+            fatal("cpu(%.200s): sysctl buffer too large", st->arg);
+
+        cp_buf = xmalloc(cp_size);
+        gets_cpu();
     }
 
-    cp_size = sizeof(st->parg.cp.time1);
+    st->parg.cp.id = strtonum(st->arg, 0, SYMON_MAXCPUID, &errstr);
+    if (errstr != NULL)
+        fatal("cpu(%.200s) is invalid: %.200s", st->arg, errstr);
+
     get_cpu(buf, sizeof(buf), st);
 
     info("started module cpu(%.200s)", st->arg);
@@ -75,26 +103,29 @@ init_cpu(struct stream *st)
 void
 gets_cpu()
 {
-    /* EMPTY */
+    if (sysctl(cp_time_mib, cp_time_len, cp_buf, &cp_size, NULL, 0) < 0) {
+        warning("%s:%d: sysctl failed", __FILE__, __LINE__);
+        return;
+    }
 }
 
 int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
     int i;
+    long *time1;
 
-    if (!cp_time_len) {
+    if (!cp_time_len)
         return 0;
-    }
 
-    if (sysctl(cp_time_mib, cp_time_len, &st->parg.cp.time1, &cp_size, NULL, 0) < 0) {
-        warning("%s:%d: sysctl kern.cp_time failed", __FILE__, __LINE__);
-        return 0;
-    }
+    time1 = (long *)(cp_buf + (sizeof(long) * CPUSTATES * st->parg.cp.id));
+
+    if (((void *)time1 - cp_buf) > cp_size)
+        warning("cpu(%d): not in sysctl buffer", st->parg.cp.id);
 
     /* convert cp_time counts to percentages */
     for (i = 0; i < CPUSTATES; i++)
-        st->parg.cp.time2[i] = (int64_t) st->parg.cp.time1[i];
+        st->parg.cp.time2[i] = (int64_t) time1[i];
 
     (void)percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time2, st->parg.cp.old, st->parg.cp.diff);
 
