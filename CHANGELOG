@@ -2,6 +2,8 @@
 
    - platform/FreeBSD/sm_cpu.c updated to support smp
 
+   - platform/Linux/sm_io.c read all disk info, not just first block
+
    - symon.8, mention that a windows symon client by Valeriy Leshchinskiy is
      available on https://github.com/ValHazelwood/SymonClient
 

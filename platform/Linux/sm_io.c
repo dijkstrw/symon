@@ -118,13 +118,23 @@ void
 gets_io()
 {
     int fd;
+    int len;
+    char *p;
+
     if ((fd = open(io_filename, O_RDONLY)) < 0) {
         warning("cannot access %.200s: %.200s", io_filename, strerror(errno));
         return;
     }
 
     bzero(io_buf, io_maxsize);
-    io_size = read(fd, io_buf, io_maxsize);
+
+    len = 0;
+    p = io_buf;
+    io_size = 0;
+    while ((len = read(fd, p, io_maxsize - io_size)) > 0) {
+      p += len;
+      io_size += len;
+    }
     close(fd);
 
     if (io_size == io_maxsize) {
