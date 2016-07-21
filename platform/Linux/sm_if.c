@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2010 Willem Dijkstra
+ * Copyright (c) 2001-2016 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -85,6 +85,8 @@ init_if(struct stream *st)
         if_buf = xmalloc(if_maxsize);
     }
 
+    snprintf(st->parg.ifname, sizeof(st->parg.ifname), "%s:", st->arg);
+
     info("started module if(%.200s)", st->arg);
 }
 
@@ -129,18 +131,18 @@ get_if(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     }
 
-    if ((line = strstr(if_buf, st->arg)) == NULL) {
+    if ((line = strstr(if_buf, st->parg.ifname)) == NULL) {
         warning("could not find interface %s", st->arg);
         return 0;
     }
 
-    line += strlen(st->arg);
+    line += strlen(st->parg.ifname);
     bzero(&stats, sizeof(struct if_device_stats));
 
     /* Inter-|   Receive                                                |  Transmit
      *  face |bytes    packets errs drop fifo frame compressed multicast|bytes    packets errs drop fifo colls carrier compressed
      */
-    if (16 > sscanf(line, ":%" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %"
+    if (16 > sscanf(line, "%" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %"
                                SCNu64 " %" SCNu64 " %" SCNu64 " %"
                                SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %" SCNu64 " %"
                                SCNu64 " %" SCNu64 " %" SCNu64 "\n",

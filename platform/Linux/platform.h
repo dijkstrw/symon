@@ -74,6 +74,7 @@ union stream_parg {
         char path[MAX_PATH_LEN];
     } sn;
     int smart;
+    char ifname[MAX_PATH_LEN];
     char flukso[MAX_PATH_LEN];
     char io[MAX_PATH_LEN];
 };
