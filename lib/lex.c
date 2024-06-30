@@ -101,6 +101,7 @@ static struct {
     { "source", LXT_SOURCE },
     { "stream", LXT_STREAM },
     { "to", LXT_TO },
+    { "wg", LXT_WG },
     { "write", LXT_WRITE },
     { NULL, 0 }
 };

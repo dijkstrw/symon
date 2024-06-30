@@ -115,6 +115,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_SMART:
         case LXT_LOAD:
         case LXT_FLUKSO:
+        case LXT_WG:
             st = token2type(l->op);
             strncpy(&sn[0], l->token, (_POSIX2_LINE_MAX - 1));
 
@@ -153,7 +154,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_COMMA:
             break;
         default:
-            parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|load|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart|load|flukso}");
+            parse_error(l, "{cpu|cpuiow|df|if|if1|io|io1|load|mem|mem1|pf|pfq|mbuf|debug|proc|sensor|smart|load|flukso|wg}");
             return 0;
             break;
         }

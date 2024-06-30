@@ -119,7 +119,7 @@ resources    = resource [ version ] ["(" argument ")"]
                [ ","|" " resources ]
 resource     = "cpu" | "cpuiow" | "debug" | "df" | "flukso" |
                "if" | "io" | "load" | "mbuf" | "mem" | "pf" |
-               "pfq" | "proc" | "sensor" | "smart"
+               "pfq" | "proc" | "sensor" | "smart" | "wg"
 version      = number
 argument     = number | interfacename | diskname
 datadir-stmt = "datadir" dirname
@@ -281,6 +281,10 @@ soft_read_error_rate: g_sense_error_rate: temperature2: free_fall_protection
 Average pwr sensor value offered with 7.6 precision. Value is a moving average
 and will depend on the number of measurements seen in a particular symon
 interval.
+.It wg
+WireGuard peer counters ( rxbytes : txbytes : lasthandshake ).
+rxbytes and txbytes are 64 bit unsigned integers.
+lasthandshake is a 32 bit unsigned integer.
 .El
 .Sh SIGNALS
 .Bl -tag -width Ds

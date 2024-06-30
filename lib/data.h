@@ -163,8 +163,9 @@ SLIST_HEAD(muxlist, mux);
 #define MT_SMART  15
 #define MT_LOAD   16
 #define MT_FLUKSO 17
-#define MT_TEST   18
-#define MT_EOT    19
+#define MT_WG     18
+#define MT_TEST   19
+#define MT_EOT    20
 
 /*
  * Unpacking of incoming packets is done via a packedstream structure. This
@@ -353,6 +354,11 @@ struct packedstream {
         struct {
             int64_t value;
         }      ps_flukso;
+        struct {
+            u_int64_t rxbytes;
+            u_int64_t txbytes;
+            u_int32_t lasthandshake;
+        }      ps_wg;
     }     data;
 };
 
