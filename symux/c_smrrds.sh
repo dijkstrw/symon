@@ -326,6 +326,14 @@ flukso_*.rrd)
         DS:watts:GAUGE:$INTERVAL:0:U
     ;;
 
+wg_*.rrd)
+    # Build wireguard files
+    create_rrd $i \
+	DS:rxbytes:COUNTER:$INTERVAL:0:U \
+	DS:txbytes:COUNTER:$INTERVAL:0:U \
+	DS:lasthandshake:COUNTER:$INTERVAL:0:U
+    ;;
+
 "done")
     # ignore
     ;;

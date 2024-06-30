@@ -38,6 +38,10 @@ union stream_parg {
         int mib[5];
     } sn;
     int smart;
+    struct {
+	char full[IFNAMSIZ + 1 + SYMON_WGPEERDESC];
+	char *peerdesc;
+    } wg;
 };
 
 #endif
