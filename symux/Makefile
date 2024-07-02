@@ -11,9 +11,6 @@ all: symux symux.cat8
 
 symux: ${OBJS}
 	${CC} -o $@ ${OBJS} ${LIBS}
-.ifndef DEBUG
-	${STRIP} $@
-.endif
 
 clean:
 	rm -f conf.h symux symux.cat8 symux.core ${OBJS}

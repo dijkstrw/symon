@@ -22,9 +22,6 @@ ${OBJS}: conf.h
 
 symon: ${OBJS}
 	${CC} -o $@ ${OBJS} ${LIBS}
-.ifndef DEBUG
-	${STRIP} $@
-.endif
 
 clean:
 	rm -f conf.h symon symon.cat8 symon.core ${OBJS}

@@ -8,7 +8,6 @@ LORDER?=lorder
 TSORT?=tsort
 NROFF?=nroff
 RANLIB?=ranlib
-STRIP?=strip
 POD2MAN?=pod2man
 
 RRDDIR?=/usr/local
