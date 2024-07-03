@@ -20,6 +20,7 @@
 /* Like malloc and friends, but these call fatal if something breaks */
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
+void *xreallocarray(void *, size_t, size_t);
 void xfree(void *);
 char *xstrdup(const char *);
 #endif                          /* _SYMON_LIB_XMALLOC_H */
