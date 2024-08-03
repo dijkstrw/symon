@@ -123,7 +123,7 @@ get_mem(char *symon_buf, int maxlen, struct stream *st)
 {
     me_stats[0] = ktob(mem_getitem("Active"));
     me_stats[1] = ktob(mem_getitem("MemTotal"));
-    me_stats[2] = ktob(mem_getitem("MemFree"));
+    me_stats[2] = ktob(mem_getitem("MemAvailable"));
     me_stats[1] -= me_stats[2];
     me_stats[3] = ktob(mem_getitem("SwapFree"));
     me_stats[4] = ktob(mem_getitem("SwapTotal"));
