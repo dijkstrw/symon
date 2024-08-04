@@ -312,6 +312,12 @@ smart_*.rrd)
         DS:freefall:GAUGE:$INTERVAL:U:U
     ;;
 
+time.rrd)
+    # Build symon cpu time file
+    create_rrd $i \
+	DS:usec:GAUGE:$INTERVAL:0:U
+    ;;
+
 load.rrd)
     # Build load file
     create_rrd $i \

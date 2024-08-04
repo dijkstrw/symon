@@ -88,6 +88,7 @@ struct funcmap streamfunc[] = {
     {MT_LOAD, 0, NULL, init_load, gets_load, get_load},
     {MT_FLUKSO, 0, NULL, init_flukso, gets_flukso, get_flukso},
     {MT_WG, 0, NULL, init_wg, gets_wg, get_wg},
+    {MT_TIME, 0, NULL, init_time, NULL, get_time},
     {MT_EOT, 0, NULL, NULL, NULL, NULL}
 };
 
