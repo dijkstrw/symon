@@ -100,6 +100,7 @@ static struct {
     { "smart", LXT_SMART },
     { "source", LXT_SOURCE },
     { "stream", LXT_STREAM },
+    { "time", LXT_TIME },
     { "to", LXT_TO },
     { "wg", LXT_WG },
     { "write", LXT_WRITE },

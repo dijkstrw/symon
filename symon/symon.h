@@ -141,4 +141,8 @@ extern void init_wg(struct stream *);
 extern void gets_wg(void);
 extern int get_wg(char *, int, struct stream *);
 
+/* sm_time.c */
+extern void init_time(struct stream *);
+extern int get_time(char *, int, struct stream *);
+
 #endif                          /* _SYMON_SYMON_H */
