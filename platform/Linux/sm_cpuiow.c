@@ -57,6 +57,7 @@
 static void *cpw_buf = NULL;
 static int cpw_size = 0;
 static int cpw_maxsize = 0;
+static int fd;
 
 void
 init_cpuiow(struct stream *st)
@@ -74,6 +75,9 @@ init_cpuiow(struct stream *st)
         snprintf(st->parg.cpw.name, sizeof(st->parg.cpw.name), "cpu");
     }
 
+    if ((fd = open("/proc/stat", O_RDONLY)) < 0)
+        warning("cannot access /proc/stat: %.200s", strerror(errno));
+
     gets_cpuiow();
     get_cpuiow(buf, sizeof(buf), st);
 
@@ -83,16 +87,11 @@ init_cpuiow(struct stream *st)
 void
 gets_cpuiow()
 {
-    int fd;
-
-    if ((fd = open("/proc/stat", O_RDONLY)) < 0) {
-        warning("cannot access /proc/stat: %.200s", strerror(errno));
-        return;
-    }
+    if (lseek(fd, 0, SEEK_SET) != 0)
+        fatal("/proc/stat seek error: %.200s", strerror(errno));
 
     bzero(cpw_buf, cpw_maxsize);
     cpw_size = read(fd, cpw_buf, cpw_maxsize);
-    close(fd);
 
     if (cpw_size == cpw_maxsize) {
         /* buffer is too small to hold all interface data */

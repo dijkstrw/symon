@@ -54,6 +54,8 @@ static u_int64_t me_size = 0;
 static u_int64_t me_maxsize = 0;
 static u_int64_t me_stats[5];
 
+static int fd;
+
 void
 init_mem(struct stream *st)
 {
@@ -62,20 +64,20 @@ init_mem(struct stream *st)
         me_buf = xmalloc(me_maxsize);
     }
 
+    if ((fd = open("/proc/meminfo", O_RDONLY)) < 0)
+        warning("cannot access /proc/meminfo: %.200s", strerror(errno));
+
     info("started module mem(%.200s)", st->arg);
 }
 
 void
 gets_mem()
 {
-   int fd;
-   if ((fd = open("/proc/meminfo", O_RDONLY)) < 0) {
-        warning("cannot access /proc/meminfo: %.200s", strerror(errno));
-   }
+   if (lseek(fd, 0, SEEK_SET) != 0)
+        fatal("/proc/meminfo seek error: %.200s", strerror(errno));
 
    bzero(me_buf, me_maxsize);
    me_size = read(fd, me_buf, me_maxsize);
-   close(fd);
 
    if (me_size == me_maxsize) {
         /* buffer is too small to hold all memory data */

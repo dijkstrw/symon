@@ -77,6 +77,8 @@ struct if_device_stats
     u_int64_t drops;
 };
 
+static int fd;
+
 void
 init_if(struct stream *st)
 {
@@ -87,22 +89,20 @@ init_if(struct stream *st)
 
     snprintf(st->parg.ifname, sizeof(st->parg.ifname), "%s:", st->arg);
 
+    if ((fd = open("/proc/net/dev", O_RDONLY)) < 0)
+        warning("cannot access /proc/net/dev: %.200s", strerror(errno));
+
     info("started module if(%.200s)", st->arg);
 }
 
 void
 gets_if()
 {
-    int fd;
-
-    if ((fd = open("/proc/net/dev", O_RDONLY)) < 0) {
-        warning("cannot access /proc/net/dev: %.200s", strerror(errno));
-        return;
-    }
+    if (lseek(fd, 0, SEEK_SET) != 0)
+        fatal("/proc/net/dev seek error: %.200s", strerror(errno));
 
     bzero(if_buf, if_maxsize);
     if_size = read(fd, if_buf, if_maxsize);
-    close(fd);
 
     if (if_size == if_maxsize) {
         /* buffer is too small to hold all interface data */

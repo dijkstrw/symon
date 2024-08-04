@@ -58,6 +58,8 @@ static void *cp_buf = NULL;
 static int cp_size = 0;
 static int cp_maxsize = 0;
 
+static int fd;
+
 void
 init_cpu(struct stream *st)
 {
@@ -74,6 +76,9 @@ init_cpu(struct stream *st)
         snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
     }
 
+    if ((fd = open("/proc/stat", O_RDONLY)) < 0)
+        warning("cannot access /proc/stat: %.200s", strerror(errno));
+
     gets_cpu();
     get_cpu(buf, sizeof(buf), st);
 
@@ -83,16 +88,11 @@ init_cpu(struct stream *st)
 void
 gets_cpu()
 {
-    int fd;
-
-    if ((fd = open("/proc/stat", O_RDONLY)) < 0) {
-        warning("cannot access /proc/stat: %.200s", strerror(errno));
-        return;
-    }
+    if (lseek(fd, 0, SEEK_SET) != 0)
+        fatal("/proc/stat seek error: %.200s", strerror(errno));
 
     bzero(cp_buf, cp_maxsize);
     cp_size = read(fd, cp_buf, cp_maxsize);
-    close(fd);
 
     if (cp_size == cp_maxsize) {
         /* buffer is too small to hold all interface data */
