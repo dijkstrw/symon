@@ -6,14 +6,6 @@ case `grep -csq KERN_CPTIME2 /usr/include/sys/sysctl.h` in
 1)	echo "#define HAS_KERN_CPTIME2	1" ;;
 0)	echo "#undef HAS_KERN_CPTIME2" ;;
 esac;
-case `grep -csq KERN_PROC2 /usr/include/sys/sysctl.h` in
-1)	echo "#define HAS_KERN_PROC2	1" ;;
-0)	echo "#undef HAS_KERN_PROC2" ;;
-esac;
-case `grep -csq kp_proc /usr/include/sys/sysctl.h` in
-1)	echo "#define HAS_KERN_KPPROC	1" ;;
-0)	echo "#undef HAS_KERN_KPPROC" ;;
-esac;
 case `grep -csq "struct sensordev" /usr/include/sys/sensors.h` in
 1)	echo "#define HAS_SENSORDEV	1" ;;
 0)	echo "#undef HAS_SENSORDEV" ;;
