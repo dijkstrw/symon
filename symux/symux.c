@@ -370,7 +370,7 @@ main(int argc, char *argv[])
                     stringptr += strlen(stringptr);
                 } else {
                     debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
-                          ((ps.arg == NULL) ? "0" : ps.arg), source->addr);
+                          ((strlen(ps.arg) == 0) ? "0" : ps.arg), source->addr);
                 }
             }
             /*
