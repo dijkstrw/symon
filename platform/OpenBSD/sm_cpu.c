@@ -55,19 +55,16 @@ void
 init_cpu(struct stream *st)
 {
     char buf[SYMON_MAX_OBJSIZE];
-#ifdef HAS_KERN_CPTIME2
     const char *errstr;
     int mib[2] = {CTL_HW, HW_NCPU};
     int ncpu;
     long num;
     size_t size = sizeof(ncpu);
-#endif
 
     st->parg.cp.mib[0] = CTL_KERN;
     st->parg.cp.mib[1] = KERN_CPTIME;
     st->parg.cp.miblen = 2;
 
-#ifdef HAS_KERN_CPTIME2
     if (sysctl(mib, 2, &ncpu, &size, NULL, 0) == -1) {
         warning("could not determine number of cpus: %.200s", strerror(errno));
         ncpu = 1;
@@ -87,7 +84,6 @@ init_cpu(struct stream *st)
             fatal("cpu(%d) is not present", st->parg.cp.mib[2]);
         }
     }
-#endif
 
     /* Call get_cpu once to fill the cp_old structure */
     get_cpu(buf, sizeof(buf), st);
