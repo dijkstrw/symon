@@ -104,7 +104,7 @@ gets_cpu()
 int
 get_cpu(char *symon_buf, int maxlen, struct stream *st)
 {
-    int i, total;
+    int i;
     size_t len;
 
     len = sizeof(st->parg.cp.time2);
@@ -123,7 +123,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
     }
 
     /* convert cp_time counts to percentages */
-    total = percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time2, st->parg.cp.old, st->parg.cp.diff);
+    percentages(CPUSTATES, st->parg.cp.states, st->parg.cp.time2, st->parg.cp.old, st->parg.cp.diff);
 
     return snpack(symon_buf, maxlen, st->arg, MT_CPU,
                   (double) (st->parg.cp.states[CP_USER] / 10.0),
