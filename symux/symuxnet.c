@@ -205,8 +205,10 @@ recv_symon_packet(struct mux *mux, int socknr, struct source **source)
     } while ((size == -1) && (errno == EAGAIN || errno == EINTR)
         && (tries < SYMUX_MAXREADTRIES) && (received < mux->packet.size));
 
-    if ((size == -1) && errno)
+    if ((size == -1) && errno) {
         warning("recvfrom failed: %.200s", strerror(errno));
+        return 0;
+    }
 
     *source = find_source_sockaddr(&mux->sol, (struct sockaddr *)&sind);
 
