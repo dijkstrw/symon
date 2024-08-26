@@ -7,3 +7,4 @@ if [ -f /usr/include/net/pfvar.h ]; then
 else
     echo "#undef HAS_PFVAR_H"
 fi
+echo "#define HAS_UNVEIL	1"
