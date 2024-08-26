@@ -142,8 +142,10 @@ drop_privileges(int unsecure)
             fatal("could not get user information for user '%.200s': %.200s",
                   SYMON_USER, strerror(errno));
 
+#ifndef HAS_UNVEIL
         if (chroot(pw->pw_dir) < 0)
             fatal("chroot failed: %.200s", strerror(errno));
+#endif
 
         if (chdir("/") < 0)
             fatal("chdir / failed: %.200s", strerror(errno));
@@ -297,6 +299,17 @@ main(int argc, char *argv[])
     init_crc32();
 
     init_streams(&mul);
+
+#ifdef HAS_UNVEIL
+    if (unveil(SYMON_PID_FILE, "w") == -1)
+        fatal("unveil %s: %.200s", SYMON_PID_FILE, strerror(errno));
+
+    if (unveil(cfgpath, "r") == -1)
+        fatal("unveil %s: %.200s", cfgpath, strerror(errno));
+
+    if (unveil(NULL, NULL) == -1)
+        fatal("disable unveil: %.200s", strerror(errno));
+#endif
 
     last_update = time(NULL);
     for (;;) {                  /* FOREVER */

@@ -257,6 +257,28 @@ main(int argc, char *argv[])
     stringbuf = xmalloc(churnbuflen);
     init_symux_packet(mux);
 
+#ifdef HAS_UNVEIL
+    SLIST_FOREACH(source, &mux->sol, sources) {
+        if (! SLIST_EMPTY(&source->sl)) {
+            SLIST_FOREACH(stream, &source->sl, streams) {
+                if (stream->file != NULL) {
+                    if (unveil(stream->file, "rw") == -1)
+                        fatal("unveil %s: %.200s", stream->file, strerror(errno));
+                }
+            }
+        }
+    }
+
+    if (unveil(SYMUX_PID_FILE, "w") == -1)
+        fatal("unveil %s: %.200s", SYMUX_PID_FILE, strerror(errno));
+
+    if (unveil(cfgfile, "r") == -1)
+        fatal("unveil %s: %.200s", cfgfile, strerror(errno));
+
+    if (unveil(NULL, NULL) == -1)
+        fatal("disable unveil: %.200s", strerror(errno));
+#endif
+
     /* catch signals */
     signal(SIGHUP, huphandler);
     signal(SIGINT, exithandler);
