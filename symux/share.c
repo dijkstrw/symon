@@ -80,7 +80,7 @@ void check_master();
 void check_sem();
 void client_doneread();
 void client_loop();
-void client_signalhandler();
+void client_signalhandler(int);
 int client_waitread();
 void exitmaster();
 void master_resetsem(int);

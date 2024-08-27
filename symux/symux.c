@@ -57,7 +57,7 @@
 #include "platform.h"
 
 __BEGIN_DECLS
-void exithandler();
+void exithandler(int);
 void huphandler(int);
 void signalhandler(int);
 __END_DECLS

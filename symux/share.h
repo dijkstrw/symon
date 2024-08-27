@@ -53,7 +53,7 @@ void master_permitread();
 long shared_getlen(int);
 long shared_getmaxlen();
 char *shared_getmem(int);
-void initshare();
+void initshare(int);
 void shared_setlen(int, long);
 pid_t spawn_client(int);
 __END_DECLS

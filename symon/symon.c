@@ -55,7 +55,6 @@
 
 __BEGIN_DECLS
 void alarmhandler(int);
-void drop_privileges();
 void exithandler(int);
 void huphandler(int);
 void init_streams(struct muxlist *mul);
