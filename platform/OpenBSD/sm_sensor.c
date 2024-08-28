@@ -159,14 +159,23 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     } else {
         switch (sn_sensor.type) {
-        case SENSOR_TEMP:
-            t = (double) (sn_sensor.value / 1000.0 / 1000.0) - 273.15;
-            break;
-        case SENSOR_FANRPM:
-            t = (double) sn_sensor.value;
-            break;
-        case SENSOR_VOLTS_DC:
-            t = (double) (sn_sensor.value / 1000.0 / 1000.0);
+        case SENSOR_TEMP:                    /* temperature (uK) */
+            sn_sensor.value -= 273150000;
+            /* FALLTHROUGH */
+        case SENSOR_VOLTS_DC:                /* voltage (uV DC) */
+        case SENSOR_VOLTS_AC:                /* voltage (uV AC) */
+        case SENSOR_WATTS:                   /* power (uW) */
+        case SENSOR_AMPS:                    /* current (uA) */
+        case SENSOR_WATTHOUR:                /* power capacity (uWh) */
+        case SENSOR_AMPHOUR:                 /* power capacity (uAh) */
+        case SENSOR_LUX:                     /* illuminance (ulx) */
+        case SENSOR_FREQ:                    /* frequency (uHz) */
+        case SENSOR_ANGLE:                   /* angle (uDegrees) */
+        case SENSOR_DISTANCE:                /* distance (uMeter) */
+        case SENSOR_ACCEL:                   /* acceleration (u m/s^2) */
+        case SENSOR_VELOCITY:                /* velocity (u m/s) */
+        case SENSOR_ENERGY:                  /* energy (uJ) */
+            t = (double) (sn_sensor.value / 1000000.0);
             break;
         default:
             t = (double) sn_sensor.value;
