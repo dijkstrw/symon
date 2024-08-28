@@ -69,15 +69,6 @@ privinit_sensor()
 void
 init_sensor(struct stream *st)
 {
-#ifndef HAS_SENSORDEV
-
-    long l = strtol(st->arg, NULL, 10);
-    st->parg.sn.mib[0] = CTL_HW;
-    st->parg.sn.mib[1] = HW_SENSORS;
-    st->parg.sn.mib[2] = (int) (l & SYMON_SENSORMASK);
-
-#else /* HAS_SENSORDEV */
-
     char *devname, *typename, *bufp, *bufpo;
     int dev, numt, i;
     enum sensor_type type;
@@ -145,8 +136,6 @@ init_sensor(struct stream *st)
     st->parg.sn.mib[4] = numt;
 
     xfree(bufpo);
-
-#endif /* !HAS_SENSORDEV */
 
     info("started module sensor(%.200s)", st->arg);
 }

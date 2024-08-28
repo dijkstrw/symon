@@ -36,11 +36,7 @@ union stream_parg {
     } df;
     struct ifreq ifr;
     struct {
-#ifndef HAS_SENSORDEV
-        int mib[3];
-#else
         int mib[5];
-#endif
     } sn;
     int smart;
 };
