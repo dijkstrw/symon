@@ -99,7 +99,7 @@ void
 init_pf(struct stream *st)
 {
     if (pf_dev == -1) {
-        privinit_pf();
+        privinit_pf(void);
     }
 
     info("started module pf()");
