@@ -93,7 +93,7 @@ output_message(int level, char *fmt, va_list args)
               __FILE__, __LINE__);
 
     if (flag_daemon) {
-        syslog(logmapping[loglevel].priority, msgbuf);
+        syslog(logmapping[loglevel].priority, "%.200s", msgbuf);
     } else {
         if (strlen(logmapping[loglevel].errtxt) > 0) {
             fprintf(logmapping[loglevel].stream == SYMON_OUT_STDERR ? stderr : stdout, "%.200s: %.200s\n",
