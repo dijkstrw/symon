@@ -250,15 +250,13 @@ main(int argc, char *argv[])
     }
 
     SLIST_FOREACH(mux, &mul, muxes) {
+        /* privinit modules */
         SLIST_FOREACH(stream, &mux->sl, streams) {
             streamfunc[stream->type].used = 1;
+            if (streamfunc[stream->type].privinit != NULL)
+                streamfunc[stream->type].privinit(stream);
         }
     }
-
-    /* open resources that might not be available after privilege drop */
-    for (i = 0; i < MT_EOT; i++)
-        if (streamfunc[i].used && (streamfunc[i].privinit != NULL))
-            (streamfunc[i].privinit) ();
 
     if ((pidfile = fopen(SYMON_PID_FILE, "w")) == NULL)
         warning("could not open \"%.200s\", %.200s", SYMON_PID_FILE,

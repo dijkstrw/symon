@@ -52,7 +52,7 @@
 #include "xmalloc.h"
 
 void
-privinit_sensor(void)
+privinit_sensor(struct stream *st)
 {
     /* EMPTY */
 }

@@ -49,7 +49,7 @@
 /* Globals for this module start with sn_ */
 static int sn_dev = -1;
 void
-privinit_sensor(void)
+privinit_sensor(struct stream *st)
 {
     if (sn_dev == -1 && (sn_dev = open("/dev/sysmon", O_RDONLY)) == -1) {
         warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));
@@ -60,7 +60,7 @@ void
 init_sensor(struct stream *st)
 {
     if (sn_dev == -1) {
-        privinit_sensor();
+        privinit_sensor(st);
     }
 
     st->parg.sn = (strtol(st->arg, NULL, 10) & SYMON_SENSORMASK);
