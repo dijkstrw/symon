@@ -166,6 +166,7 @@ main(int argc, char *argv[])
 
         case 'v':
             info("symux version %s", SYMUX_VERSION);
+            /* FALLTHROUGH */
         default:
             info("usage: %s [-d] [-l] [-v] [-f cfgfile]", __progname);
             exit(EX_USAGE);

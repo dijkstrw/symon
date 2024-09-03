@@ -72,11 +72,22 @@ init_mem(struct stream *st)
 void
 gets_mem()
 {
+   ssize_t r;
+
    if (lseek(me_fd, 0, SEEK_SET) != 0)
         fatal("/proc/meminfo seek error: %.200s", strerror(errno));
 
    bzero(me_buf, me_maxsize);
-   me_size = read(me_fd, me_buf, me_maxsize);
+   r = read(me_fd, me_buf, me_maxsize);
+   if (r < 0) {
+       if (r != -1)
+           fatal("read returned %d", r);
+
+       warning("could not read if statistics from /proc/meminfo: %.200s", strerror(errno));
+       return;
+   }
+
+   me_size = r;
 
    if (me_size == me_maxsize) {
         /* buffer is too small to hold all memory data */
@@ -89,10 +100,6 @@ gets_mem()
         gets_mem();
         return;
     }
-
-   if (me_size == -1) {
-       warning("could not read if statistics from /proc/meminfo: %.200s", strerror(errno));
-   }
 }
 
 u_int64_t
