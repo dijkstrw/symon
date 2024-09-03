@@ -42,6 +42,8 @@
 #include <strings.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <util.h>
 
 #include "data.h"
 #include "error.h"
@@ -62,38 +64,26 @@ static struct smart_device *smart_devs = NULL;
 static int smart_cur = 0;
 
 void
-init_smart(struct stream *st)
+privinit_smart(struct stream *st)
 {
     int i;
-    char drivename[MAXPATHLEN];
+    char *drivename;
     struct atareq *p;
 
     if (sizeof(struct smart_values) != DISK_BLOCK_LEN) {
         fatal("smart: internal error: smart values structure is broken");
     }
 
-    if (st->arg == NULL) {
+    if (st->arg == NULL)
         fatal("smart: need a <device> argument");
-    }
 
-    bzero(drivename, MAXPATHLEN);
-    snprintf(drivename, MAXPATHLEN, "/dev/%s", st->arg);
-
-    /* look for drive in our global table */
-    for (i = 0; i < smart_cur; i++) {
-        if (strncmp(smart_devs[i].name, drivename, MAXPATHLEN) == 0) {
-            st->parg.smart = i;
-            return;
-        }
-    }
-
-    /* this is a new drive; allocate the command and data block */
+    /* allocate the command and data block */
     if (smart_cur > SYMON_MAX_DOBJECTS) {
         fatal("%s:%d: dynamic object limit (%d) exceeded for smart data",
               __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
     }
 
-    smart_devs = xrealloc(smart_devs, (smart_cur + 1) * sizeof(struct smart_device));
+    smart_devs = xreallocarray(smart_devs, smart_cur + 1, sizeof(struct smart_device));
 
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
@@ -101,9 +91,6 @@ init_smart(struct stream *st)
     for (i = 0; i <= smart_cur; i++) {
         smart_devs[i].cmd.databuf = (caddr_t)&smart_devs[i].data;
     }
-
-    /* store drivename in new block */
-    snprintf(smart_devs[smart_cur].name, MAXPATHLEN, "%s", drivename);
 
     /* populate ata command header */
     p = &smart_devs[smart_cur].cmd;
@@ -116,11 +103,14 @@ init_smart(struct stream *st)
     p->datalen = DISK_BLOCK_LEN;
 
     /* store filedescriptor to device */
-    smart_devs[smart_cur].fd = open(drivename, O_RDWR | O_NONBLOCK);
+    smart_devs[smart_cur].fd = opendev(st->arg, O_RDWR | O_NONBLOCK,
+        OPENDEV_PART, &drivename);
 
-    if (errno) {
-        fatal("smart: could not open '%s' for read", drivename);
-    }
+    if (smart_devs[smart_cur].fd == -1)
+        fatal("smart: could not open '%s': %s", st->arg, strerror(errno));
+
+    /* store drivename in new block */
+    snprintf(smart_devs[smart_cur].name, MAXPATHLEN, "%s", drivename);
 
     /* store smart dev entry in stream to facilitate quick get */
     st->parg.smart = smart_cur;
@@ -131,14 +121,19 @@ init_smart(struct stream *st)
 }
 
 void
+init_smart(struct stream *st)
+{
+}
+
+void
 gets_smart(void)
 {
     int i;
 
     for (i = 0; i < smart_cur; i++) {
-        if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &smart_devs[i].cmd)) {
-            warning("smart: ioctl for drive '%s' failed: %d",
-                    &smart_devs[i].name, errno);
+        if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &smart_devs[i].cmd) == -1) {
+            warning("smart: ioctl for drive '%s' failed: %s (%d)",
+                    &smart_devs[i].name, strerror(errno), errno);
             smart_devs[i].failed = 1;
         }
 
