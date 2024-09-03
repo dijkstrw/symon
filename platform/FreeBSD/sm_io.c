@@ -60,7 +60,7 @@ static struct statinfo io_stats;
 static int io_numdevs = 0;
 
 void
-privinit_io(void)
+privinit_io(struct stream *st)
 {
     /* EMPTY */
 }

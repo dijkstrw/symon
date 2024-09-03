@@ -17,7 +17,7 @@ gets_proc(void)
 }
 
 void
-privinit_proc(void)
+privinit_proc(struct stream *st)
 {
     fatal("proc module not available");
 }

@@ -62,7 +62,7 @@
 
 #ifndef HAS_PFVAR_H
 void
-privinit_pfq(void)
+privinit_pfq(struct stream *st)
 {
     fatal("pf support not available");
 }
@@ -116,7 +116,7 @@ static int pfq_max = 0;
 int pfq_dev = -1;
 
 void
-privinit_pfq(void)
+privinit_pfq(struct stream *st)
 {
     if ((pfq_dev = open("/dev/pf", O_RDONLY)) == -1) {
         warning("pfq: could not open \"/dev/pf\", %.200s", strerror(errno));
@@ -127,7 +127,7 @@ void
 init_pfq(struct stream *st)
 {
     if (pfq_dev == -1) {
-        privinit_pfq();
+        privinit_pfq(st);
     }
 
     info("started module pfq(%.200s)", st->arg);

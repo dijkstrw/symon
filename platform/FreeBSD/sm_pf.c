@@ -61,7 +61,7 @@
 
 #ifndef HAS_PFVAR_H
 void
-privinit_pf(void)
+privinit_pf(struct stream *st)
 {
 }
 
@@ -91,7 +91,7 @@ int pf_dev = -1;
 struct pf_status pf_stat;
 
 void
-privinit_pf(void)
+privinit_pf(struct stream *st)
 {
     if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1) {
         warning("could not open \"/dev/pf\", %.200s", strerror(errno));
@@ -102,7 +102,7 @@ void
 init_pf(struct stream *st)
 {
     if (pf_dev == -1) {
-        privinit_pf();
+        privinit_pf(st);
     }
 
     info("started module pf()");

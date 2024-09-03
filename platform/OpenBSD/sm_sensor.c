@@ -61,7 +61,7 @@
 static struct sensor sn_sensor;
 
 void
-privinit_sensor(void)
+privinit_sensor(struct stream *st)
 {
     /* EMPTY */
 }

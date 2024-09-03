@@ -120,7 +120,7 @@ gets_proc(void)
 }
 
 void
-privinit_proc(void)
+privinit_proc(struct stream *st)
 {
 #ifdef HAS_KI_PADDR
     char errbuf[_POSIX2_LINE_MAX];

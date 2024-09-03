@@ -117,7 +117,7 @@ gets_proc(void)
 }
 
 void
-privinit_proc(void)
+privinit_proc(struct stream *st)
 {
     /* EMPTY */
 }

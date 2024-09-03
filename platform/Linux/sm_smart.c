@@ -85,6 +85,11 @@ static struct smart_device *smart_devs = NULL;
 static int smart_cur = 0;
 
 void
+privinit_smart(struct stream *st)
+{
+}
+
+void
 init_smart(struct stream *st)
 {
     struct disknamectx c;

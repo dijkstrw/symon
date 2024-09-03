@@ -48,7 +48,7 @@
 struct funcmap {
     int type;
     int used;
-    void (*privinit) (void);
+    void (*privinit) (struct stream *);
     void (*init) (struct stream *);
     void (*gets) (void);
     int (*get) (char *, int, struct stream *);
@@ -85,13 +85,13 @@ extern void gets_io(void);
 extern int get_io(char *, int, struct stream *);
 
 /* sm_pf.c */
-extern void privinit_pf(void);
+extern void privinit_pf(struct stream *);
 extern void init_pf(struct stream *);
 extern void gets_pf(void);
 extern int get_pf(char *, int, struct stream *);
 
 /* sm_pfq.c */
-extern void privinit_pfq(void);
+extern void privinit_pfq(struct stream *);
 extern void init_pfq(struct stream *);
 extern void gets_pfq(void);
 extern int get_pfq(char *, int, struct stream *);
@@ -105,13 +105,13 @@ extern void init_debug(struct stream *);
 extern int get_debug(char *, int, struct stream *);
 
 /* sm_proc.c */
-extern void privinit_proc(void);
+extern void privinit_proc(struct stream *);
 extern void init_proc(struct stream *);
 extern void gets_proc(void);
 extern int get_proc(char *, int, struct stream *);
 
 /* sm_sensor.c */
-extern void privinit_sensor(void);
+extern void privinit_sensor(struct stream *);
 extern void init_sensor(struct stream *);
 extern int get_sensor(char *, int, struct stream *);
 
