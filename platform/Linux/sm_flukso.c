@@ -57,7 +57,7 @@
 #define SCN(x) #x
 
 static int flukso_fd = -1;
-static void *flukso_buf = NULL;
+static char *flukso_buf = NULL;
 static int flukso_size = 0;
 static int flukso_maxsize = 0;
 static int flukso_nrsensors = 0;
@@ -111,7 +111,7 @@ gets_flukso()
     int len = 0;
     int p = 0;
     int i;
-    void *nl;
+    char *nl;
     uint32_t value;
     char id[FLUKSO_IDLEN];
 
