@@ -39,6 +39,7 @@
 #include <sys/swap.h>
 #include <sys/vmmeter.h>
 
+#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -99,7 +100,8 @@ init_mem(struct stream *st)
 void
 gets_mem(void)
 {
-    int i, rnswap;
+    size_t i;
+    int rnswap;
 
     if (sysctl(me_vm_mib, 2, &me_vmtotal, &me_vmsize, NULL, 0) < 0) {
         warning("%s:%d: sysctl failed", __FILE__, __LINE__);
@@ -116,10 +118,18 @@ gets_mem(void)
         /* A swap device may have been added; increase and retry */
         init_mem(NULL);
         rnswap = swapctl(SWAP_STATS, me_swdev, me_nswap);
+        if (rnswap == -1) {
+            warning("%s:%d: swapctl failed %s", __FILE__, __LINE__,
+                strerror(errno));
+            return;
+        }
     }
+    if (rnswap < 0)
+        fatal("unexpected return code from swapctl");
 
+    i = rnswap;
     me_stats[3] = me_stats[4] = 0;
-    if (rnswap == me_nswap) {   /* Read swap successfully */
+    if (i == me_nswap) {   /* Read swap successfully */
         /* Total things up */
         for (i = 0; i < me_nswap; i++) {
             if (me_swdev[i].se_flags & SWF_ENABLE) {

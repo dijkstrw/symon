@@ -125,7 +125,7 @@ gets_io(void)
 
     io_dknames[io_dks] = p;
 
-    while ((*p != '\0') && ((p - io_dkstr) < io_maxstr)) {
+    while ((*p != '\0') && ((unsigned long)(p - io_dkstr) < io_maxstr)) {
         if ((*p == ',') && (*p+1 != '\0')) {
             *p = '\0';
             io_dks++; p++;
