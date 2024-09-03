@@ -377,12 +377,12 @@ exitmaster()
             warning("%s:%d: internal error: control region could not be detached",
                     __FILE__, __LINE__);
 
-        /* no break */
+        /* FALLTHROUGH */
     case SIPC_KEYED:
         if (shmctl(shmid, IPC_RMID, NULL))
             warning("%s:%d: internal error: could remove control region %d",
                     __FILE__, __LINE__, shmid);
-        /* no break */
+        /* FALLTHROUGH */
     case SIPC_FREE:
         break;
 
@@ -397,7 +397,7 @@ exitmaster()
         if (semctl(semid, 0, IPC_RMID, semarg) != 0)
             warning("%s:%d: internal error: could not remove semaphore %d",
                     __FILE__, __LINE__, semid);
-        /* no break */
+        /* FALLTHROUGH */
     case SIPC_FREE:
         break;
 

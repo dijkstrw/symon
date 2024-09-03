@@ -53,7 +53,8 @@ const char *default_symux_port = SYMUX_PORT;
 int
 insert_filename(char *path, int maxlen, int type, char *args)
 {
-    int i, result;
+    size_t i;
+    int result;
     char *ts;
     char *ta;
     char *fta;
