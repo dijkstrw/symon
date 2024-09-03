@@ -11,7 +11,7 @@ init_flukso(struct stream *st)
 }
 
 void
-gets_flukso()
+gets_flukso(void)
 {
     fatal("flukso module not available");
 }

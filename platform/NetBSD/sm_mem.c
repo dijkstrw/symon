@@ -96,7 +96,7 @@ init_mem(struct stream *st)
 }
 
 void
-gets_mem()
+gets_mem(void)
 {
     int i, rnswap;
 

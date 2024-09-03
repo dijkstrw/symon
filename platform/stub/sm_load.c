@@ -10,7 +10,7 @@ init_load(struct stream *st)
     fatal("load module not available");
 }
 void
-gets_load()
+gets_load(void)
 {
     fatal("load module not available");
 }

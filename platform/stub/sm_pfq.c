@@ -5,7 +5,7 @@
 #include "error.h"
 
 void
-privinit_pfq()
+privinit_pfq(void)
 {
     fatal("pfq module not available");
 }
@@ -15,7 +15,7 @@ init_pfq(struct stream *st)
     fatal("pfq module not available");
 }
 void
-gets_pfq()
+gets_pfq(void)
 {
     fatal("pfq module not available");
 }

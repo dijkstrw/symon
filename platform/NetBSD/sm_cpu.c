@@ -63,7 +63,7 @@ init_cpu(struct stream *st)
 }
 
 void
-gets_cpu()
+gets_cpu(void)
 {
     /* EMPTY */
 }

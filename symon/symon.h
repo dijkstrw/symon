@@ -48,9 +48,9 @@
 struct funcmap {
     int type;
     int used;
-    void (*privinit) ();
+    void (*privinit) (void);
     void (*init) (struct stream *);
-    void (*gets) ();
+    void (*gets) (void);
     int (*get) (char *, int, struct stream *);
 };
 extern struct funcmap streamfunc[];
@@ -62,39 +62,39 @@ extern time_t now;
 __BEGIN_DECLS
 /* sm_cpu.c */
 extern void init_cpu(struct stream *);
-extern void gets_cpu();
+extern void gets_cpu(void);
 extern int get_cpu(char *, int, struct stream *);
 
 /* sm_cpuiow.c */
 extern void init_cpuiow(struct stream *);
-extern void gets_cpuiow();
+extern void gets_cpuiow(void);
 extern int get_cpuiow(char *, int, struct stream *);
 
 /* sm_mem.c */
 extern void init_mem(struct stream *);
-extern void gets_mem();
+extern void gets_mem(void);
 extern int get_mem(char *, int, struct stream *);
 
 /* sm_if.c */
 extern void init_if(struct stream *);
-extern void gets_if();
+extern void gets_if(void);
 extern int get_if(char *, int, struct stream *);
 
 /* sm_io.c */
 extern void init_io(struct stream *);
-extern void gets_io();
+extern void gets_io(void);
 extern int get_io(char *, int, struct stream *);
 
 /* sm_pf.c */
-extern void privinit_pf();
+extern void privinit_pf(void);
 extern void init_pf(struct stream *);
-extern void gets_pf();
+extern void gets_pf(void);
 extern int get_pf(char *, int, struct stream *);
 
 /* sm_pfq.c */
-extern void privinit_pfq();
+extern void privinit_pfq(void);
 extern void init_pfq(struct stream *);
-extern void gets_pfq();
+extern void gets_pfq(void);
 extern int get_pfq(char *, int, struct stream *);
 
 /* sm_mbuf.c */
@@ -106,34 +106,34 @@ extern void init_debug(struct stream *);
 extern int get_debug(char *, int, struct stream *);
 
 /* sm_proc.c */
-extern void privinit_proc();
+extern void privinit_proc(void);
 extern void init_proc(struct stream *);
-extern void gets_proc();
+extern void gets_proc(void);
 extern int get_proc(char *, int, struct stream *);
 
 /* sm_sensor.c */
-extern void privinit_sensor();
+extern void privinit_sensor(void);
 extern void init_sensor(struct stream *);
 extern int get_sensor(char *, int, struct stream *);
 
 /* sm_df.c */
 extern void init_df(struct stream *);
-extern void gets_df();
+extern void gets_df(void);
 extern int get_df(char *, int, struct stream *);
 
 /* sm_smart.c */
 extern void init_smart(struct stream *);
-extern void gets_smart();
+extern void gets_smart(void);
 extern int get_smart(char *, int, struct stream *);
 
 /* sm_load.c */
 extern void init_load(struct stream *);
-extern void gets_load();
+extern void gets_load(void);
 extern int get_load(char *, int, struct stream *);
 
 /* sm_flukso.c */
 void init_flukso(struct stream *);
-void gets_flukso();
+void gets_flukso(void);
 int get_flukso(char *, int, struct stream *);
 
 __END_DECLS

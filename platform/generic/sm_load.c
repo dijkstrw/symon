@@ -45,7 +45,7 @@ init_load(struct stream *st)
 }
 
 void
-gets_load()
+gets_load(void)
 {
     if (getloadavg(load_stats, 3) != 3) {
             warning("could not get load average: %.200s", strerror(errno));

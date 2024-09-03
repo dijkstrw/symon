@@ -61,7 +61,7 @@
 
 #ifndef HAS_PFVAR_H
 void
-privinit_pf()
+privinit_pf(void)
 {
 }
 void
@@ -76,7 +76,7 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
     return 0;
 }
 void
-gets_pf()
+gets_pf(void)
 {
     fatal("pf support not available");
 }
@@ -88,7 +88,7 @@ int pf_dev = -1;
 struct pf_status pf_stat;
 
 void
-privinit_pf()
+privinit_pf(void)
 {
     if ((pf_dev = open("/dev/pf", O_RDONLY)) == -1) {
         warning("could not open \"/dev/pf\", %.200s", strerror(errno));
@@ -106,7 +106,7 @@ init_pf(struct stream *st)
 }
 
 void
-gets_pf()
+gets_pf(void)
 {
     if (pf_dev == -1) {
         warning("could not get pf stats (dev == -1)");

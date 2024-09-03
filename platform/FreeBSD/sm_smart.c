@@ -183,7 +183,7 @@ init_smart(struct stream *st)
 }
 
 void
-gets_smart()
+gets_smart(void)
 {
     int i;
 
@@ -254,7 +254,7 @@ init_smart(struct stream *st)
     fatal("smart module not available");
 }
 void
-gets_smart()
+gets_smart(void)
 {
     fatal("smart module not available");
 }

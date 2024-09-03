@@ -52,7 +52,7 @@
 #include "xmalloc.h"
 
 void
-privinit_sensor()
+privinit_sensor(void)
 {
     /* EMPTY */
 }

@@ -106,7 +106,7 @@ init_flukso(struct stream *st)
 }
 
 void
-gets_flukso()
+gets_flukso(void)
 {
     int len = 0;
     int p = 0;

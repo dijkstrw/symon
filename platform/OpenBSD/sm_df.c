@@ -67,7 +67,7 @@ init_df(struct stream *st)
 }
 
 void
-gets_df()
+gets_df(void)
 {
     if ((df_parts = getmntinfo(&df_stats, MNT_NOWAIT)) == 0) {
         warning("df failed");

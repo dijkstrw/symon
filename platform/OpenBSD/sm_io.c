@@ -57,7 +57,7 @@ static int io_maxdks = 0;
 static size_t io_maxstr = 0;
 
 void
-gets_io()
+gets_io(void)
 {
     int mib[3];
     char *p;

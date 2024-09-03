@@ -66,7 +66,7 @@ typedef long pctcpu;
 
 
 void
-gets_proc()
+gets_proc(void)
 {
     int mib[6];
     int procs;
@@ -117,7 +117,7 @@ gets_proc()
 }
 
 void
-privinit_proc()
+privinit_proc(void)
 {
     /* EMPTY */
 }

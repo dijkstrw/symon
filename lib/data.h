@@ -390,7 +390,7 @@ u_int32_t crc32(const void *, unsigned int);
 void free_muxlist(struct muxlist *);
 void free_sourcelist(struct sourcelist *);
 void free_streamlist(struct streamlist *);
-void init_crc32();
+void init_crc32(void);
 void init_symon_packet(struct mux *);
 void init_symux_packet(struct mux *);
 __END_DECLS

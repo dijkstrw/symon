@@ -85,7 +85,7 @@ init_cpu(struct stream *st)
 }
 
 void
-gets_cpu()
+gets_cpu(void)
 {
     if (lseek(cp_fd, 0, SEEK_SET) != 0)
         fatal("/proc/stat seek error: %.200s", strerror(errno));

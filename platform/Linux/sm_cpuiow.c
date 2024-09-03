@@ -85,7 +85,7 @@ init_cpuiow(struct stream *st)
 }
 
 void
-gets_cpuiow()
+gets_cpuiow(void)
 {
     if (lseek(cpw_fd, 0, SEEK_SET) != 0)
         fatal("/proc/stat seek error: %.200s", strerror(errno));

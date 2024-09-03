@@ -108,7 +108,7 @@ init_mem(struct stream *st)
 }
 
 void
-gets_mem()
+gets_mem(void)
 {
 #ifdef HAS_XSWDEV
     u_int vmnswp_dat;

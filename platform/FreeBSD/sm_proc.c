@@ -72,7 +72,7 @@ typedef long pctcpu;
 #define pctdouble(p) ((double)(p) / FIXED_PCTCPU)
 
 void
-gets_proc()
+gets_proc(void)
 {
     int mib[3];
     int procs;
@@ -120,7 +120,7 @@ gets_proc()
 }
 
 void
-privinit_proc()
+privinit_proc(void)
 {
 #ifdef HAS_KI_PADDR
     char errbuf[_POSIX2_LINE_MAX];

@@ -101,7 +101,7 @@ init_cpu(struct stream *st)
 }
 
 void
-gets_cpu()
+gets_cpu(void)
 {
     if (sysctl(cp_time_mib, cp_time_len, cp_buf, &cp_size, NULL, 0) < 0) {
         warning("%s:%d: sysctl failed", __FILE__, __LINE__);

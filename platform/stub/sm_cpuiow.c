@@ -10,7 +10,7 @@ init_cpuiow(struct stream *st)
     fatal("cpuiow module not available");
 }
 void
-gets_cpuiow()
+gets_cpuiow(void)
 {
     fatal("cpuiow module not available");
 }

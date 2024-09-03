@@ -10,7 +10,7 @@ init_mem(struct stream *st)
     fatal("mem module not available");
 }
 void
-gets_mem()
+gets_mem(void)
 {
     fatal("mem module not available");
 }

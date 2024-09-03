@@ -123,7 +123,7 @@ init_smart(struct stream *st)
 }
 
 void
-gets_smart()
+gets_smart(void)
 {
     int i;
     struct atareq cmd;

@@ -11,13 +11,13 @@ init_proc(struct stream *st)
 }
 
 void
-gets_proc()
+gets_proc(void)
 {
     fatal("proc module not available");
 }
 
 void
-privinit_proc()
+privinit_proc(void)
 {
     fatal("proc module not available");
 }

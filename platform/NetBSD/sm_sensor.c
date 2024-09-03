@@ -49,7 +49,7 @@
 /* Globals for this module start with sn_ */
 static int sn_dev = -1;
 void
-privinit_sensor()
+privinit_sensor(void)
 {
     if (sn_dev == -1 && (sn_dev = open("/dev/sysmon", O_RDONLY)) == -1) {
         warning("could not open \"/dev/sysmon\", %.200s", strerror(errno));

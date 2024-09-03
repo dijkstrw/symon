@@ -76,15 +76,15 @@
  */
 
 __BEGIN_DECLS
-void check_master();
-void check_sem();
-void client_doneread();
-void client_loop();
+void check_master(void);
+void check_sem(void);
+void client_doneread(void);
+void client_loop(void);
 void client_signalhandler(int);
-int client_waitread();
-void exitmaster();
+int client_waitread(void);
+void exitmaster(void);
 void master_resetsem(int);
-void reap_clients();
+void reap_clients(void);
 __END_DECLS
 
 int realclients;                /* number of clients active */
@@ -113,7 +113,7 @@ shared_getmem(int slot)
 }
 /* Get max length of data stored in shared region */
 long
-shared_getmaxlen()
+shared_getmaxlen(void)
 {
     return shm->slotlen;
 }
@@ -136,7 +136,7 @@ shared_getlen(int slot)
 }
 /* Check whether semaphore is available */
 void
-check_sem()
+check_sem(void)
 {
     if (semstat != SIPC_KEYED)
         fatal("%s:%d: internal error: semaphore not available",
@@ -145,7 +145,7 @@ check_sem()
 
 /* Check whether process is the master process */
 void
-check_master()
+check_master(void)
 {
     if (master == 0)
         fatal("%s:%d: internal error: child process tried to access master routines",
@@ -169,7 +169,7 @@ master_resetsem(int semnum)
 }
 /* Prepare for writing to shm */
 int
-master_forbidread()
+master_forbidread(void)
 {
     int slot = (shm->seqnr + 1) % SYMUX_SHARESLOTS;
     int stalledclients;
@@ -197,7 +197,7 @@ master_forbidread()
 }
 /* Signal 'permit read' to all clients */
 void
-master_permitread()
+master_permitread(void)
 {
     int slot = ++shm->seqnr % SYMUX_SHARESLOTS;
     union semun semarg;
@@ -210,7 +210,7 @@ master_permitread()
 }
 /* Make clients wait until master signals */
 int
-client_waitread()
+client_waitread(void)
 {
     int slot = ++seqnr % SYMUX_SHARESLOTS;
     struct sembuf sops;
@@ -235,7 +235,7 @@ client_waitread()
 }
 /* Client signal 'done reading' to master */
 void
-client_doneread()
+client_doneread(void)
 {
     /* force scheduling by sleeping a single second */
     sleep(1);
@@ -337,7 +337,7 @@ spawn_client(int sock)
 }
 /* Reap exit/stopped clients */
 void
-reap_clients()
+reap_clients(void)
 {
     pid_t pid;
     int status;
@@ -364,7 +364,7 @@ reap_clients()
 }
 /* Remove shared memory and semaphores at exit */
 void
-exitmaster()
+exitmaster(void)
 {
     union semun semarg;
 
@@ -407,7 +407,7 @@ exitmaster()
     }
 }
 void
-client_loop()
+client_loop(void)
 {
     int slot;
     int total;

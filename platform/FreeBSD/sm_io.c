@@ -60,7 +60,7 @@ static struct statinfo io_stats;
 static int io_numdevs = 0;
 
 void
-privinit_io()
+privinit_io(void)
 {
     /* EMPTY */
 }
@@ -108,7 +108,7 @@ init_io(struct stream *st)
 }
 
 void
-gets_io()
+gets_io(void)
 {
 #if DEVSTAT_USER_API_VER >= 5
     io_numdevs = devstat_getnumdevs(NULL);

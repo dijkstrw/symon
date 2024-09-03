@@ -10,7 +10,7 @@ init_df(struct stream *st)
     fatal("df module not available");
 }
 void
-gets_df()
+gets_df(void)
 {
     fatal("df module not available");
 }

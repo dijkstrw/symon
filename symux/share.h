@@ -48,10 +48,10 @@ struct sharedregion {
 
 /* prototypes */
 __BEGIN_DECLS
-int master_forbidread();
-void master_permitread();
+int master_forbidread(void);
+void master_permitread(void);
 long shared_getlen(int);
-long shared_getmaxlen();
+long shared_getmaxlen(void);
 char *shared_getmem(int);
 void initshare(int);
 void shared_setlen(int, long);

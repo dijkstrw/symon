@@ -10,7 +10,7 @@ init_cpu(struct stream *st)
     fatal("cpu module not available");
 }
 void
-gets_cpu()
+gets_cpu(void)
 {
     fatal("cpu module not available");
 }

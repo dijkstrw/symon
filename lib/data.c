@@ -1064,7 +1064,7 @@ crc32(const void *buf, unsigned int len)
 }
 /* Init table for CRC32 */
 void
-init_crc32()
+init_crc32(void)
 {
     unsigned int i, j;
     u_int32_t c;

@@ -95,7 +95,7 @@ init_if(struct stream *st)
 }
 
 void
-gets_if()
+gets_if(void)
 {
     if (lseek(if_fd, 0, SEEK_SET) != 0)
         fatal("/proc/net/dev seek error: %.200s", strerror(errno));

@@ -71,7 +71,7 @@ init_if(struct stream *st)
 }
 
 void
-gets_if()
+gets_if(void)
 {
     /* EMPTY */
 }

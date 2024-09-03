@@ -10,7 +10,7 @@ init_if(struct stream *st)
     fatal("if module not available");
 }
 void
-gets_if()
+gets_if(void)
 {
     fatal("if module not available");
 }

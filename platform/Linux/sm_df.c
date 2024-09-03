@@ -84,7 +84,7 @@ init_df(struct stream *st)
 }
 
 void
-gets_df()
+gets_df(void)
 {
 }
 

@@ -61,7 +61,7 @@ static int io_maxdks = 0;
 #ifndef HAS_HW_IOSTATS
 static struct disk_sysctl *io_dkstats = NULL;
 void
-gets_io()
+gets_io(void)
 {
     int mib[3];
     size_t size;
@@ -99,7 +99,7 @@ gets_io()
 #else
 static struct io_sysctl *io_dkstats = NULL;
 void
-gets_io()
+gets_io(void)
 {
     int mib[3];
     size_t size;

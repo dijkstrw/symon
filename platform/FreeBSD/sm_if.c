@@ -92,7 +92,7 @@ get_ifmib_general(int row, struct ifmibdata *ifmd)
 }
 
 void
-gets_if()
+gets_if(void)
 {
     int i;
 

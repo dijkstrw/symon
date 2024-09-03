@@ -5,7 +5,7 @@
 #include "error.h"
 
 void
-privinit_sensor()
+privinit_sensor(void)
 {
     fatal("sensor module not available");
 }

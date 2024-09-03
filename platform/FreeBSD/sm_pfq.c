@@ -61,7 +61,7 @@
 
 #ifndef HAS_PFVAR_H
 void
-privinit_pfq()
+privinit_pfq(void)
 {
     fatal("pf support not available");
 }
@@ -73,7 +73,7 @@ init_pfq(struct stream *st)
 }
 
 void
-gets_pfq()
+gets_pfq(void)
 {
     fatal("pf support not available");
 }
@@ -112,7 +112,7 @@ static int pfq_max = 0;
 int pfq_dev = -1;
 
 void
-privinit_pfq()
+privinit_pfq(void)
 {
     if ((pfq_dev = open("/dev/pf", O_RDONLY)) == -1) {
         warning("pfq: could not open \"/dev/pf\", %.200s", strerror(errno));
@@ -130,7 +130,7 @@ init_pfq(struct stream *st)
 }
 
 void
-gets_pfq()
+gets_pfq(void)
 {
     struct pfioc_altq qs;
     struct pfioc_qstats stats;
