@@ -2,7 +2,7 @@ V=2.87
 
 AR?=	ar
 CC?=	cc
-CFLAGS+=-Wall -g
+CFLAGS+=-Wall -g -Wpedantic
 INSTALL?=install
 LORDER?=lorder
 TSORT?=tsort
