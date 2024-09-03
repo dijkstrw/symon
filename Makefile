@@ -15,6 +15,6 @@ _SUBDIRUSE: .USE
 	@for entry in ${SUBDIR}; do \
 		echo "===> $${entry}"; \
 		cd ${.CURDIR}/$${entry}; \
-		${MAKE} ${.MAKEFLAGS} ${.TARGET}; \
+		${MAKE} ${.MAKEFLAGS} ${.TARGET} || exit 2; \
 	done
 .endif
