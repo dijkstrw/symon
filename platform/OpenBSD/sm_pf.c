@@ -49,39 +49,13 @@
 
 #include <netinet/in.h>
 #include <net/if.h>
-#ifdef HAS_PFVAR_H
 #include <net/pfvar.h>
-#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 
 #include "error.h"
 #include "symon.h"
-
-#ifndef HAS_PFVAR_H
-void
-privinit_pf(struct stream *st)
-{
-}
-void
-init_pf(struct stream *st)
-{
-    fatal("pf support not available");
-}
-int
-get_pf(char *symon_buf, int maxlen, struct stream *st)
-{
-    fatal("pf support not available");
-    return 0;
-}
-void
-gets_pf(void)
-{
-    fatal("pf support not available");
-}
-
-#else
 
 /* Globals for this module start with pf_ */
 int pf_dev = -1;
@@ -156,4 +130,3 @@ get_pf(char *symon_buf, int maxlen, struct stream *st)
                   pf_stat.counters[5]
         );
 }
-#endif /* HAS_PFVAR_H */
