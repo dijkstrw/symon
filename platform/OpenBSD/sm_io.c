@@ -158,19 +158,12 @@ get_io(char *symon_buf, int maxlen, struct stream *st)
                     (io_dkstr + io_maxstr - io_dknames[i])) == 0)
         	    || (io_dkuids[i] && (strncmp(io_dkuids[i], st->arg,
                     (io_dkstr + io_maxstr - io_dkuids[i])) == 0)))
-#ifdef HAS_IO2
             return snpack(symon_buf, maxlen, st->arg, MT_IO2,
                           io_dkstats[i].ds_rxfer,
                           io_dkstats[i].ds_wxfer,
                           io_dkstats[i].ds_seek,
                           io_dkstats[i].ds_rbytes,
                           io_dkstats[i].ds_wbytes);
-#else
-            return snpack(symon_buf, maxlen, st->arg, MT_IO1,
-                          io_dkstats[i].ds_xfer,
-                          io_dkstats[i].ds_seek,
-                          io_dkstats[i].ds_bytes);
-#endif
     }
 
     return 0;
