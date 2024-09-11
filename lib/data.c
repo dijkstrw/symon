@@ -365,7 +365,7 @@ snpackx(size_t maxarglen, char *buf, int maxlen, char *id, int type, va_list ap)
     int offset = 0;
     int arglen = 0;
 
-    if (type > MT_EOT) {
+    if (type < 0 || type >= MT_EOT) {
         warning("stream type (%d) out of range", type);
         return 0;
     }
@@ -461,7 +461,9 @@ snpackx(size_t maxarglen, char *buf, int maxlen, char *id, int type, va_list ap)
  * Note that this function does "automatic" bounds checking; it uses a
  * description of the packedstream (streamform) to parse the actual bytes. This
  * description corresponds to the amount of bytes that will fit inside the
- * packedstream structure.  */
+ * packedstream structure.
+ * TODO do more explicit bounds checking
+ */
 int
 sunpack(char *buf, struct packedstream *ps)
 {
@@ -494,8 +496,8 @@ sunpackx(size_t arglen, char *buf, struct packedstream *ps)
 
     in = buf;
 
-    if ((*in) > MT_EOT) {
-        warning("unpack failure: stream type (%d) out of range", (*in));
+    if (*in < 0 || *in >= MT_EOT) {
+        warning("unpack failure: stream type (%d) out of range", *in);
         return -1;
     }
 
