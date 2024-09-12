@@ -324,6 +324,11 @@ main(int argc, char *argv[])
     }
 #endif
 
+#ifdef HAS_PLEDGE
+    if (pledge("stdio dns inet rpath wpath flock", NULL) == -1)
+        fatal("pledge failed %s", strerror(errno));
+#endif
+
     /* prepare crc32 */
     init_crc32();
 
@@ -332,6 +337,11 @@ main(int argc, char *argv[])
         fatal("no sockets could be opened for incoming symon traffic");
 
     rrderrors = 0;
+#ifdef HAS_PLEDGE
+    if (pledge("stdio rpath wpath flock", NULL) == -1)
+        fatal("pledge failed %s", strerror(errno));
+#endif
+
     /* main loop */
     for (;;) { /* FOREVER */
         wait_for_traffic(mux, &source);
