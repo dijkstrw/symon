@@ -37,6 +37,7 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/swap.h>
+#include <sys/vmmeter.h>
 
 #include <unistd.h>
 #include <stdlib.h>

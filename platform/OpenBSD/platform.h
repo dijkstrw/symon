@@ -3,11 +3,13 @@
 
 #include "conf.h"
 
-#include <sys/dkstat.h>
 #include <sys/queue.h>
 #include <sys/types.h>
+#include <sys/select.h> /* fd_set */
 #include <sys/socket.h>
+#include <sys/sched.h>
 #include <sys/syslimits.h>
+#include <time.h>
 #include <net/if.h>
 
 #include "sylimits.h"

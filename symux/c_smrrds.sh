@@ -188,7 +188,7 @@ df_*.rrd)
 sensor_*.rrd)
     # Build sensor file
     create_rrd $i \
-	DS:value:GAUGE:$INTERVAL:-U:U
+	DS:value:GAUGE:$INTERVAL:U:U
     ;;
 
 mem.rrd)

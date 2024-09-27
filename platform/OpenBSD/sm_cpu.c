@@ -39,7 +39,6 @@
 
 #include "conf.h"
 
-#include <sys/dkstat.h>
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
