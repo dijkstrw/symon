@@ -55,6 +55,7 @@
 static void *io_buf = NULL;
 static int io_size = 0;
 static int io_maxsize = 0;
+static int io_fd = -1;
 struct io_device_stats
 {
     u_int64_t read_issued;
@@ -77,8 +78,6 @@ char *io_filename = "/proc/partitions";
 #endif
 #endif
 
-static int fd;
-
 #if defined(HAS_PROC_DISKSTATS) || defined(HAS_PROC_PARTITIONS)
 void
 init_io(struct stream *st)
@@ -94,7 +93,7 @@ init_io(struct stream *st)
     if (st->arg == NULL)
         fatal("io: need a <device>|<devicename> argument");
 
-    if ((fd = open(io_filename, O_RDONLY)) < 0)
+    if ((io_fd = open(io_filename, O_RDONLY)) < 0)
         warning("cannot access %.200s: %.200s", io_filename, strerror(errno));
 
     /* Retrieve io stats to search for devicename */
@@ -125,7 +124,7 @@ gets_io()
     int len;
     char *p;
 
-    if (lseek(fd, 0, SEEK_SET) != 0)
+    if (lseek(io_fd, 0, SEEK_SET) != 0)
         fatal("%s seek error: %.200s", io_filename, strerror(errno));
 
     bzero(io_buf, io_maxsize);
@@ -133,7 +132,7 @@ gets_io()
     len = 0;
     p = io_buf;
     io_size = 0;
-    while ((len = read(fd, p, io_maxsize - io_size)) > 0) {
+    while ((len = read(io_fd, p, io_maxsize - io_size)) > 0) {
       p += len;
       io_size += len;
     }

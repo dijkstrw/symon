@@ -57,7 +57,7 @@
 static void *cpw_buf = NULL;
 static int cpw_size = 0;
 static int cpw_maxsize = 0;
-static int fd;
+static int cpw_fd = -1;
 
 void
 init_cpuiow(struct stream *st)
@@ -75,7 +75,7 @@ init_cpuiow(struct stream *st)
         snprintf(st->parg.cpw.name, sizeof(st->parg.cpw.name), "cpu");
     }
 
-    if ((fd = open("/proc/stat", O_RDONLY)) < 0)
+    if ((cpw_fd = open("/proc/stat", O_RDONLY)) < 0)
         warning("cannot access /proc/stat: %.200s", strerror(errno));
 
     gets_cpuiow();
@@ -87,11 +87,11 @@ init_cpuiow(struct stream *st)
 void
 gets_cpuiow()
 {
-    if (lseek(fd, 0, SEEK_SET) != 0)
+    if (lseek(cpw_fd, 0, SEEK_SET) != 0)
         fatal("/proc/stat seek error: %.200s", strerror(errno));
 
     bzero(cpw_buf, cpw_maxsize);
-    cpw_size = read(fd, cpw_buf, cpw_maxsize);
+    cpw_size = read(cpw_fd, cpw_buf, cpw_maxsize);
 
     if (cpw_size == cpw_maxsize) {
         /* buffer is too small to hold all interface data */
@@ -137,13 +137,13 @@ get_cpuiow(char *symon_buf, int maxlen, struct stream *st)
       /* /proc/stat might not support steal */
       st->parg.cp.time[CP_STEAL] = 0;
       if ((CPUSTATES - 1) > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
-				   &st->parg.cp.time[CP_USER],
-				   &st->parg.cp.time[CP_NICE],
-				   &st->parg.cp.time[CP_SYS],
-				   &st->parg.cp.time[CP_IDLE],
-				   &st->parg.cp.time[CP_IOWAIT],
-				   &st->parg.cp.time[CP_HARDIRQ],
-				   &st->parg.cp.time[CP_SOFTIRQ])) {
+                                   &st->parg.cp.time[CP_USER],
+                                   &st->parg.cp.time[CP_NICE],
+                                   &st->parg.cp.time[CP_SYS],
+                                   &st->parg.cp.time[CP_IDLE],
+                                   &st->parg.cp.time[CP_IOWAIT],
+                                   &st->parg.cp.time[CP_HARDIRQ],
+                                   &st->parg.cp.time[CP_SOFTIRQ])) {
         warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
         return 0;
       }

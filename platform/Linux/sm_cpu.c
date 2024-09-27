@@ -57,8 +57,7 @@
 static void *cp_buf = NULL;
 static int cp_size = 0;
 static int cp_maxsize = 0;
-
-static int fd;
+static int cp_fd = -1;
 
 void
 init_cpu(struct stream *st)
@@ -76,7 +75,7 @@ init_cpu(struct stream *st)
         snprintf(st->parg.cp.name, sizeof(st->parg.cp.name), "cpu");
     }
 
-    if ((fd = open("/proc/stat", O_RDONLY)) < 0)
+    if ((cp_fd = open("/proc/stat", O_RDONLY)) < 0)
         warning("cannot access /proc/stat: %.200s", strerror(errno));
 
     gets_cpu();
@@ -88,11 +87,11 @@ init_cpu(struct stream *st)
 void
 gets_cpu()
 {
-    if (lseek(fd, 0, SEEK_SET) != 0)
+    if (lseek(cp_fd, 0, SEEK_SET) != 0)
         fatal("/proc/stat seek error: %.200s", strerror(errno));
 
     bzero(cp_buf, cp_maxsize);
-    cp_size = read(fd, cp_buf, cp_maxsize);
+    cp_size = read(cp_fd, cp_buf, cp_maxsize);
 
     if (cp_size == cp_maxsize) {
         /* buffer is too small to hold all interface data */
@@ -138,13 +137,13 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
       /* /proc/stat might not support steal */
       st->parg.cp.time[CP_STEAL] = 0;
       if ((CPUSTATES - 1) > sscanf(line, "%" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 "\n",
-				   &st->parg.cp.time[CP_USER],
-				   &st->parg.cp.time[CP_NICE],
-				   &st->parg.cp.time[CP_SYS],
-				   &st->parg.cp.time[CP_IDLE],
-				   &st->parg.cp.time[CP_IOWAIT],
-				   &st->parg.cp.time[CP_HARDIRQ],
-				   &st->parg.cp.time[CP_SOFTIRQ])) {
+                                   &st->parg.cp.time[CP_USER],
+                                   &st->parg.cp.time[CP_NICE],
+                                   &st->parg.cp.time[CP_SYS],
+                                   &st->parg.cp.time[CP_IDLE],
+                                   &st->parg.cp.time[CP_IOWAIT],
+                                   &st->parg.cp.time[CP_HARDIRQ],
+                                   &st->parg.cp.time[CP_SOFTIRQ])) {
         warning("could not parse cpu statistics for %.200s", &st->parg.cp.name);
         return 0;
       }
