@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (c) 2001-2010 Willem Dijkstra
+# Copyright (c) 2001-2024 Willem Dijkstra
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

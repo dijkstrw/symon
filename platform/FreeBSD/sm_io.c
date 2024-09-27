@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2005 J. Martin Petersen
- * Copyright (c) 2012 Willem Dijkstra
+ * Copyright (c) 2012-2024 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

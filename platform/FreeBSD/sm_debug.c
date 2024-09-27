@@ -1,6 +1,6 @@
 /*
  * Copyright (c)      2004 Matthew Gream
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2024 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

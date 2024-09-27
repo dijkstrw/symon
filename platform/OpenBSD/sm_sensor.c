@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2005 Willem Dijkstra
+ * Copyright (c) 2001-2024 Willem Dijkstra
  * Copyright (c) 2006/2007 Constantine A. Murenin
  *                         <cnst+symon@bugmail.mojo.ru>
  * All rights reserved.

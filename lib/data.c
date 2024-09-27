@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2010 Willem Dijkstra
+ * Copyright (c) 2001-2024 Willem Dijkstra
  * All rights reserved.
  *
  * The crc routine is by Rob Warnock <rpw3@sgi.com>, from the

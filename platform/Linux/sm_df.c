@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012 Willem Dijkstra
+ * Copyright (c) 2011-2024 Willem Dijkstra
  * Copyright (c) 2007 Martin van der Werff
  * All rights reserved.
  *
