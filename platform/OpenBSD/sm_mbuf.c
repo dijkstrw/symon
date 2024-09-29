@@ -72,7 +72,7 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     int i;
     char name[32];
     int flag = 0;
-    int nmbtypes = sizeof(mbstat.m_mtypes) / sizeof(short);
+    int nmbtypes = sizeof(mbstat.m_mtypes) / sizeof(mbstat.m_mtypes[0]);
     int page_size = getpagesize();
     int totmem, totused, totmbufs, totpct;
     u_int32_t stats[15];
