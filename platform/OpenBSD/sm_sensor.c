@@ -159,23 +159,23 @@ get_sensor(char *symon_buf, int maxlen, struct stream *st)
         return 0;
     } else {
         switch (sn_sensor.type) {
-        case SENSOR_TEMP:                    /* temperature (uK) */
-            sn_sensor.value -= 273150000;
+        case SENSOR_TEMP:                    /* temperature (µK) */
+            sn_sensor.value -= (int64_t) (273.15 * 1000 * 1000);
             /* FALLTHROUGH */
-        case SENSOR_VOLTS_DC:                /* voltage (uV DC) */
-        case SENSOR_VOLTS_AC:                /* voltage (uV AC) */
-        case SENSOR_WATTS:                   /* power (uW) */
-        case SENSOR_AMPS:                    /* current (uA) */
-        case SENSOR_WATTHOUR:                /* power capacity (uWh) */
-        case SENSOR_AMPHOUR:                 /* power capacity (uAh) */
-        case SENSOR_LUX:                     /* illuminance (ulx) */
-        case SENSOR_FREQ:                    /* frequency (uHz) */
-        case SENSOR_ANGLE:                   /* angle (uDegrees) */
-        case SENSOR_DISTANCE:                /* distance (uMeter) */
-        case SENSOR_ACCEL:                   /* acceleration (u m/s^2) */
-        case SENSOR_VELOCITY:                /* velocity (u m/s) */
-        case SENSOR_ENERGY:                  /* energy (uJ) */
-            t = (double) (sn_sensor.value / 1000000.0);
+        case SENSOR_VOLTS_DC:                /* voltage (µV DC) */
+        case SENSOR_VOLTS_AC:                /* voltage (µV AC) */
+        case SENSOR_WATTS:                   /* power (µW) */
+        case SENSOR_AMPS:                    /* current (µA) */
+        case SENSOR_WATTHOUR:                /* power capacity (µWh) */
+        case SENSOR_AMPHOUR:                 /* power capacity (µAh) */
+        case SENSOR_LUX:                     /* illuminance (µlx) */
+        case SENSOR_FREQ:                    /* frequency (µHz) */
+        case SENSOR_ANGLE:                   /* angle (µDegrees) */
+        case SENSOR_DISTANCE:                /* distance (µMeter) */
+        case SENSOR_ACCEL:                   /* acceleration (µm/s^2) */
+        case SENSOR_VELOCITY:                /* velocity (µm/s) */
+        case SENSOR_ENERGY:                  /* energy (µJ) */
+            t = (double) (sn_sensor.value / (1000.0 * 1000.0));
             break;
         default:
             t = (double) sn_sensor.value;
