@@ -105,7 +105,7 @@ main(int argc, char *argv[])
     char *stringptr;
     int maxstringlen;
     struct muxlist mul, newmul;
-    char *arg_ra[4];
+    const char *arg_ra[4];
     struct stream *stream;
     struct source *source;
     struct sourcelist *sol;
