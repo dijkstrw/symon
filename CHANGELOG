@@ -1,3 +1,15 @@
+04/10/2024 - 2.89
+
+  - platform/Linux - seek instead of file reopen (Tim Kuijsten)
+
+  - platform/OpenBSD - freshen up port, remove compilation errors
+    reported by modern compilers, remove checking for ancient apis.
+    (Tim Kuijsten)
+
+  - rrdtool 1.9.0 - rrd_update now has a const second argument. This
+    breaks compilation depending on what library version is installed;
+    so we now have our own lib/rrd.h that patches this.
+
 21/07/2016 - 2.88
 
    - platform/Linux/sm_if.c more robust interface finding (Niels Koster)
