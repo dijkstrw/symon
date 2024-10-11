@@ -246,7 +246,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 case LXT_LOAD:
                 case LXT_FLUKSO:
                     st = token2type(l->op);
-                    strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
+                    strncpy(&sn[0], l->token, (_POSIX2_LINE_MAX - 1));
 
                     /* parse arg */
                     lex_nexttoken(l);
@@ -257,7 +257,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                             return 0;
                         }
 
-                        strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
+                        strncpy(&sa[0], l->token, (_POSIX2_LINE_MAX - 1));
                         lex_nexttoken(l);
 
                         if (l->op != LXT_CLOSE) {
@@ -320,7 +320,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 }
             }
 
-            strncpy(&path[0], l->token, _POSIX2_LINE_MAX);
+            strncpy(&path[0], l->token, (_POSIX2_LINE_MAX - 1));
             path[_POSIX2_LINE_MAX - 1] = '\0';
 
             pc = strlen(path);
@@ -392,7 +392,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
             case LXT_LOAD:
             case LXT_FLUKSO:
                 st = token2type(l->op);
-                strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
+                strncpy(&sn[0], l->token, (_POSIX2_LINE_MAX - 1));
 
                 /* parse arg */
                 lex_nexttoken(l);
@@ -403,7 +403,7 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                         return 0;
                     }
 
-                    strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
+                    strncpy(&sa[0], l->token, (_POSIX2_LINE_MAX - 1));
                     lex_nexttoken(l);
                     if (l->op != LXT_CLOSE) {
                         parse_error(l, ")");

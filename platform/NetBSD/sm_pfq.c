@@ -139,8 +139,8 @@ gets_pfq(void)
     struct pfioc_altq qs;
     struct pfioc_qstats stats;
     union class_stats q;
-    unsigned int nqs;
-    unsigned int i;
+    int nqs;
+    int i;
 
     bzero(&qs, sizeof(qs));
     bzero(&stats, sizeof(stats));
@@ -225,7 +225,7 @@ gets_pfq(void)
 int
 get_pfq(char *symon_buf, int maxlen, struct stream *st)
 {
-    unsigned int i;
+    int i;
 
     for (i = 0; i < pfq_cur; i++) {
         if (strncmp(pfq_stats[i].qname, st->arg, sizeof(pfq_stats[0].qname)) == 0) {

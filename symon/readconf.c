@@ -118,7 +118,7 @@ read_symon_args(struct mux * mux, struct lex * l)
         case LXT_LOAD:
         case LXT_FLUKSO:
             st = token2type(l->op);
-            strncpy(&sn[0], l->token, _POSIX2_LINE_MAX);
+            strncpy(&sn[0], l->token, (_POSIX2_LINE_MAX - 1));
 
             /* parse arg */
             lex_nexttoken(l);
@@ -128,7 +128,7 @@ read_symon_args(struct mux * mux, struct lex * l)
                     parse_error(l, "<stream argument>");
                     return 0;
                 }
-                strncpy(&sa[0], l->token, _POSIX2_LINE_MAX);
+                strncpy(&sa[0], l->token, (_POSIX2_LINE_MAX - 1));
                 lex_nexttoken(l);
                 if (l->op != LXT_CLOSE) {
                     parse_error(l, ")");

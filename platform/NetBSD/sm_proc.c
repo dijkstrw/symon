@@ -36,6 +36,8 @@
  * cpuseconds : procsizes : resident segment sizes
  */
 
+#define _KMEMUSER 1
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 

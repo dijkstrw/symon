@@ -28,7 +28,12 @@
  *
  */
 
+#define _KMEMUSER 1
+
+#include <sys/types.h>
 #include <sys/param.h>
+#include <machine/types.h>
+
 #include <sys/mbuf.h>
 #include <sys/sysctl.h>
 #include <errno.h>

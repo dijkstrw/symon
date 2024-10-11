@@ -65,7 +65,7 @@ init_if(struct stream *st)
         }
     }
 
-    strncpy(st->parg.ifr.ifdr_name, st->arg, sizeof(st->parg.ifr.ifdr_name));
+    strncpy(st->parg.ifr.ifdr_name, st->arg, (sizeof(st->parg.ifr.ifdr_name) - 1));
 
     info("started module if(%.200s)", st->arg);
 }

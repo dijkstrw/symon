@@ -34,6 +34,8 @@
  * real active : real total : free : [swap used : swap total]
  */
 
+#define _KMEMUSER 1
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/swap.h>
@@ -57,7 +59,7 @@ static int me_vm_mib[] = {CTL_VM, VM_METER};
 static struct vmtotal me_vmtotal;
 static size_t me_vmsize;
 static u_int64_t me_pagesize;
-static u_int64_t me_nswap;
+static int me_nswap;
 struct swapent *me_swdev = NULL;
 
 void

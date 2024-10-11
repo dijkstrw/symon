@@ -105,10 +105,10 @@ init_smart(struct stream *st)
     snprintf(sd->name, MAX_PATH_LEN, "%s", st->arg);
 
     /* store filedescriptor to device */
-    if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
+    if ((sd->fd = opendisk(st->arg, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
         if (errno == ENOENT) {
             /* Device does not exist, retry using cooked name semantics */
-            if ((sd->fd = opendisk(st->arg, O_RDONLY | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
+            if ((sd->fd = opendisk(st->arg, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
                 fatal("smart: could not open '%s' for read", st->arg);
             }
         } else {
