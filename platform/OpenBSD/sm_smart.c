@@ -28,6 +28,8 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -41,7 +43,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "xmalloc.h"

@@ -35,6 +35,8 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,7 +47,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "conf.h"
 #include "xmalloc.h"
 #include "error.h"
 #include "symon.h"

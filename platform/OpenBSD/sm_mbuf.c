@@ -28,6 +28,8 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/queue.h>
 #include <sys/mbuf.h>
@@ -39,7 +41,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 

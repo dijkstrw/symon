@@ -35,6 +35,8 @@
  * total nr of transfers : total seeks : total bytes transferred
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #include <sys/disk.h>
@@ -42,7 +44,6 @@
 #include <limits.h>
 #include <string.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 #include "xmalloc.h"

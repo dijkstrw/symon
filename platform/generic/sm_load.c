@@ -28,11 +28,12 @@
  *
  */
 
+#include "conf.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 

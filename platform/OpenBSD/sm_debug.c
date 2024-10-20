@@ -34,12 +34,13 @@
  * debug0 : debug1 : ... : debug19
  */
 
+#include "conf.h"
+
 #include <sys/param.h>
 #include <sys/sysctl.h>
 
 #include <string.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 

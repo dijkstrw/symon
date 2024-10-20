@@ -36,6 +36,7 @@
  *   syncwrites : asyncwrites are not available on linux
  */
 
+#include "conf.h"
 
 #include <sys/types.h>
 #include <errno.h>
@@ -44,7 +45,6 @@
 #include <string.h>
 #include <sys/statvfs.h>
 
-#include "conf.h"
 #include "error.h"
 #include "symon.h"
 #include "diskname.h"

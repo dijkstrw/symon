@@ -28,6 +28,8 @@
  *
  */
 
+#include "conf.h"
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -39,7 +41,6 @@
 #include <stdlib.h>
 #include <linux/hdreg.h>
 
-#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "xmalloc.h"

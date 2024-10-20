@@ -35,6 +35,8 @@
  * user : nice : system : interrupt : idle : iowait
  */
 
+#include "conf.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -47,7 +49,6 @@
 #include <strings.h>
 #include <unistd.h>
 
-#include "conf.h"
 #include "error.h"
 #include "percentages.h"
 #include "symon.h"

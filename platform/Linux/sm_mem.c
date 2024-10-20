@@ -34,6 +34,8 @@
  * real active : real total : free : [swap used : swap total]
  */
 
+#include "conf.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -42,7 +44,6 @@
 #include <unistd.h>
 
 #include "error.h"
-#include "conf.h"
 #include "symon.h"
 #include "xmalloc.h"
 
