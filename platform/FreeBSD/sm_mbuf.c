@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2024 Willem Dijkstra
  * Copyright (c) 2004 Matthew Gream
  * Copyright (c) 2003 Daniel Hartmeier
  * All rights reserved.
@@ -31,110 +32,176 @@
 
 #include <sys/param.h>
 #include <sys/mbuf.h>
+#include <sys/protosw.h>
+#include <sys/sf_buf.h>
+#include <sys/socket.h>
+#include <sys/socketvar.h>
 #include <sys/sysctl.h>
 #include <errno.h>
 
+#include <memstat.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "error.h"
 #include "symon.h"
 
-static char mbstat_mib_str[] = "kern.ipc.mbstat";
-static int mbstat_mib[CTL_MAXNAME];
-static size_t mbstat_len = 0;
-
 void
 init_mbuf(struct stream *st)
 {
-    mbstat_len = CTL_MAXNAME;
-    if (sysctlnametomib(mbstat_mib_str, mbstat_mib, &mbstat_len) < 0) {
-        warning("sysctlnametomib for mbuf failed");
-        mbstat_len = 0;
-    }
-
     info("started module mbuf(%.200s)", st->arg);
 }
 
 int
 get_mbuf(char *symon_buf, int maxlen, struct stream *st)
 {
-    struct mbstat mbstat;
-#ifdef KERN_POOL
-    int npools;
-    struct pool pool, mbpool, mclpool;
-    char name[32];
-    int flag = 0;
-    int page_size = getpagesize();
-#endif
-    size_t size;
-    int totmem, totused, totmbufs, totpct;
     u_int32_t stats[15];
+    struct memory_type_list *mtlp;
+    struct memory_type *mtp;
+    uintmax_t mbuf_count, mbuf_bytes, mbuf_free, mbuf_failures, mbuf_size;
+    uintmax_t mbuf_sleeps;
+    uintmax_t cluster_count, cluster_free, cluster_size;
+    uintmax_t packet_count, packet_bytes, packet_free, packet_failures;
+    uintmax_t packet_sleeps;
+    uintmax_t tag_bytes;
+    uintmax_t jumbop_count, jumbop_free, jumbop_size;
+    uintmax_t jumbo9_count, jumbo9_free, jumbo9_size;
+    uintmax_t jumbo16_count, jumbo16_free, jumbo16_size;
+    uintmax_t bytes_inuse, bytes_incache, bytes_total;
 
-    if (mbstat_len == 0)
-        return 0;
+    bzero(&stats, sizeof(stats));
 
-    size = sizeof(mbstat);
-    if (sysctl(mbstat_mib, mbstat_len, &mbstat, &size, NULL, 0) < 0) {
-        warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
+    mtlp = memstat_mtl_alloc();
+    if (mtlp == NULL) {
+        warning("mbuf() failed memstat_mtl_alloc");
         return (0);
     }
 
-#ifdef KERN_POOL
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_POOL;
-    mib[2] = KERN_POOL_NPOOLS;
-    size = sizeof(npools);
-    if (sysctl(mib, 3, &npools, &size, NULL, 0) < 0) {
-        warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-        return (0);
+    if (memstat_sysctl_all(mtlp, 0) < 0) {
+        warning("mbuf() failed memstat_sysctl_all: %.200s",
+                memstat_strerror(memstat_mtl_geterror(mtlp)));
+        goto out;
     }
 
-    for (i = 1; npools; ++i) {
-        mib[0] = CTL_KERN;
-        mib[1] = KERN_POOL;
-        mib[2] = KERN_POOL_POOL;
-        mib[3] = i;
-        size = sizeof(pool);
-        if (sysctl(mib, 4, &pool, &size, NULL, 0) < 0) {
-            warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-            return (0);
-        }
-        npools--;
-        mib[2] = KERN_POOL_NAME;
-        size = sizeof(name);
-        if (sysctl(mib, 4, name, &size, NULL, 0) < 0) {
-            warning("mbuf(%.200s) failed (sysctl() %.200s)", st->arg, strerror(errno));
-            return (0);
-        }
-        if (!strcmp(name, "mbpl")) {
-            bcopy(&pool, &mbpool, sizeof(pool));
-            flag |= 1;
-        } else if (!strcmp(name, "mclpl")) {
-            bcopy(&pool, &mclpool, sizeof(pool));
-            flag |= 2;
-        }
-        if (flag == 3)
-            break;
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_MEM_NAME);
+        goto out;
     }
-    if (flag != 3) {
-        warning("mbuf(%.200s) failed (flag != 3)", st->arg);
-        return (0);
+    mbuf_count = memstat_get_count(mtp);
+    mbuf_bytes = memstat_get_bytes(mtp);
+    mbuf_free = memstat_get_free(mtp);
+    mbuf_failures = memstat_get_failures(mtp);
+    mbuf_sleeps = memstat_get_sleeps(mtp);
+    mbuf_size = memstat_get_size(mtp);
+
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_PACKET_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_PACKET_MEM_NAME);
+        goto out;
     }
-#endif
+    packet_count = memstat_get_count(mtp);
+    packet_bytes = memstat_get_bytes(mtp);
+    packet_free = memstat_get_free(mtp);
+    packet_sleeps = memstat_get_sleeps(mtp);
+    packet_failures = memstat_get_failures(mtp);
 
-    totmbufs = 0; /* XXX: collect mb_statpcpu and add together */
-#ifdef KERN_POOL
-    totmem = (mbpool.pr_npages + mclpool.pr_npages) * page_size;
-    totused = (mbpool.pr_nget - mbpool.pr_nput) * mbpool.pr_size +
-        (mclpool.pr_nget - mclpool.pr_nput) * mclpool.pr_size;
-#else
-    totmem = 0;
-    totused = 0;
-#endif
-    totpct = (totmem == 0) ? 0 : ((totused * 100) / totmem);
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_CLUSTER_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_CLUSTER_MEM_NAME);
+        goto out;
+    }
+    cluster_count = memstat_get_count(mtp);
+    cluster_free = memstat_get_free(mtp);
+    cluster_size = memstat_get_size(mtp);
 
-    stats[0] = totmbufs;
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_MALLOC, MBUF_TAG_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_TAG_MEM_NAME);
+        goto out;
+    }
+    tag_bytes = memstat_get_bytes(mtp);
+
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_JUMBOP_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_JUMBOP_MEM_NAME);
+        goto out;
+    }
+    jumbop_count = memstat_get_count(mtp);
+    jumbop_free = memstat_get_free(mtp);
+    jumbop_size = memstat_get_size(mtp);
+
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_JUMBO9_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_JUMBO9_MEM_NAME);
+        goto out;
+    }
+    jumbo9_count = memstat_get_count(mtp);
+    jumbo9_free = memstat_get_free(mtp);
+    jumbo9_size = memstat_get_size(mtp);
+
+    mtp = memstat_mtl_find(mtlp, ALLOCATOR_UMA, MBUF_JUMBO16_MEM_NAME);
+    if (mtp == NULL) {
+        warning("mbuf() failed memstat_mtl_find: zone %.200s not found",
+                MBUF_JUMBO16_MEM_NAME);
+        goto out;
+    }
+    jumbo16_count = memstat_get_count(mtp);
+    jumbo16_free = memstat_get_free(mtp);
+    jumbo16_size = memstat_get_size(mtp);
+
+    /*-
+     * Calculate in-use bytes as:
+     * - straight mbuf memory
+     * - mbuf memory in packets
+     * - the clusters attached to packets
+     * - and the rest of the non-packet-attached clusters.
+     * - m_tag memory
+     * This avoids counting the clusters attached to packets in the cache.
+     * This currently excludes sf_buf space.
+     */
+    bytes_inuse =
+      mbuf_bytes +                      /* straight mbuf memory */
+      packet_bytes +                    /* mbufs in packets */
+      (packet_count * cluster_size) +   /* clusters in packets */
+      /* other clusters */
+      ((cluster_count - packet_count - packet_free) * cluster_size) +
+      tag_bytes +
+      (jumbop_count * jumbop_size) +    /* jumbo clusters */
+      (jumbo9_count * jumbo9_size) +
+      (jumbo16_count * jumbo16_size);
+
+    /*
+     * Calculate in-cache bytes as:
+     * - cached straught mbufs
+     * - cached packet mbufs
+     * - cached packet clusters
+     * - cached straight clusters
+     * This currently excludes sf_buf space.
+     */
+    bytes_incache =
+      (mbuf_free * mbuf_size) +         /* straight free mbufs */
+      (packet_free * mbuf_size) +               /* mbufs in free packets */
+      (packet_free * cluster_size) +    /* clusters in free packets */
+      (cluster_free * cluster_size) +   /* free clusters */
+      (jumbop_free * jumbop_size) +     /* jumbo clusters */
+      (jumbo9_free * jumbo9_size) +
+      (jumbo16_free * jumbo16_size);
+
+    /*
+     * Total is bytes in use + bytes in cache.  This doesn't take into
+     * account various other misc data structures, overhead, etc, but
+     * gives the user something useful despite that.
+     */
+    bytes_total = bytes_inuse + bytes_incache;
+
+    stats[0] = mbuf_count + packet_count;
     stats[1] = 0; /*mbstat.m_mtypes[MT_DATA];*/
     stats[2] = 0; /*mbstat.m_mtypes[MT_OOBDATA];*/
     stats[3] = 0; /*mbstat.m_mtypes[MT_CONTROL];*/
@@ -142,29 +209,16 @@ get_mbuf(char *symon_buf, int maxlen, struct stream *st)
     stats[5] = 0; /*mbstat.m_mtypes[MT_FTABLE];*/
     stats[6] = 0; /*mbstat.m_mtypes[MT_SONAME];*/
     stats[7] = 0; /*mbstat.m_mtypes[MT_SOOPTS];*/
-#ifdef KERN_POOL
-    stats[8] = mclpool.pr_nget - mclpool.pr_nput;
-    stats[9] = mclpool.pr_npages * mclpool.pr_itemsperpage;
-#else
     stats[8] = 0;
     stats[9] = 0;
-#endif
-    stats[10] = totmem;
-    stats[11] = totpct;
+    stats[10] = bytes_total;
+    stats[11] = (bytes_total == 0) ? 0 : ((bytes_inuse * 100) / bytes_total);
+    stats[12] = mbuf_failures + packet_failures;
+    stats[13] = mbuf_sleeps + packet_sleeps;
+    stats[14] = 0;
 
-#ifdef HAS_MBUF_SFALLOCFAIL
-    stats[12] = mbstat.sf_allocfail;
-    stats[13] = mbstat.sf_allocwait;
-#else
-#ifdef HAS_MBUF_MDROPS
-    stats[12] = mbstat.m_drops;
-    stats[13] = mbstat.m_wait;
-#else
-    stats[12] = 0;
-    stats[13] = 0;
-#endif
-#endif
-    stats[14] = mbstat.m_drain;
+out:
+    memstat_mtl_free(mtlp);
 
     return snpack(symon_buf, maxlen, st->arg, MT_MBUF,
                   stats[0],

@@ -28,7 +28,7 @@ else
     echo "#undef HAS_KI_PADDR"
 fi
 if grep -q "struct rusage_ext" /usr/include/sys/proc.h; then
-    echo "#define HAS_RUSAGE_EXT	1"
+    echo "#define HAS_RUSAGE_EXT		1"
 else
     echo "#undef HAS_RUSAGE_EXT"
 fi
@@ -51,4 +51,7 @@ if sysctl kern.cp_times >/dev/null 2>&1; then
     echo "#define HAS_CP_TIMES		1"
 else
     echo "#undef HAS_CP_TIMES"
+fi
+if grep -q "_WANT_SEMUN" /usr/include/sys/sem.h; then
+    echo "#define _WANT_SEMUN		1"
 fi

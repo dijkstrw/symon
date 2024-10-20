@@ -64,7 +64,7 @@ static char cp_time_mib_str[] = "kern.cp_time";
 #endif
 static int cp_time_mib[CTL_MAXNAME];
 static size_t cp_time_len = 0;
-static void *cp_buf;
+static long *cp_buf;
 static size_t cp_size = 0;
 
 void
@@ -120,7 +120,7 @@ get_cpu(char *symon_buf, int maxlen, struct stream *st)
 
     time1 = (long *)(cp_buf + (sizeof(long) * CPUSTATES * st->parg.cp.id));
 
-    if (((void *)time1 - cp_buf) > cp_size)
+    if ((time1 - cp_buf) > (long)cp_size)
         warning("cpu(%d): not in sysctl buffer", st->parg.cp.id);
 
     /* convert cp_time counts to percentages */

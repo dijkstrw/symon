@@ -28,6 +28,8 @@
  *
  */
 
+#include "conf.h"
+
 /* Share contains all routines needed for the ipc between symuxes */
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -44,7 +46,6 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-#include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "symux.h"

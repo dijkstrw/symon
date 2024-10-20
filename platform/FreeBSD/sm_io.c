@@ -69,7 +69,7 @@ void
 init_io(struct stream *st)
 {
     struct disknamectx c;
-    unsigned int i;
+    int i;
     struct devstat *ds;
     char drivename[MAX_PATH_LEN];
 
@@ -137,7 +137,7 @@ gets_io(void)
 int
 get_io(char *symon_buf, int maxlen, struct stream *st)
 {
-    unsigned int i;
+    int i;
     struct devstat *ds;
 
     for (i = 0; i < io_numdevs; i++) {

@@ -113,7 +113,7 @@ gets_mem(void)
 #ifdef HAS_XSWDEV
     u_int vmnswp_dat;
     u_long vmnswp_siz;
-    int i;
+    u_int i;
 #endif
     u_long physmem_dat;
     u_long physmem_siz;

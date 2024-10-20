@@ -45,10 +45,10 @@
 
 #ifdef HAS_PFVAR_H
 #include <net/pfvar.h>
-#include <altq/altq.h>
-#include <altq/altq_cbq.h>
-#include <altq/altq_priq.h>
-#include <altq/altq_hfsc.h>
+#include <net/altq/altq.h>
+#include <net/altq/altq_cbq.h>
+#include <net/altq/altq_priq.h>
+#include <net/altq/altq_hfsc.h>
 #endif
 
 #include <errno.h>
@@ -107,8 +107,8 @@ struct altq_stats {
 };
 
 static struct altq_stats *pfq_stats = NULL;
-static int pfq_cur = 0;
-static int pfq_max = 0;
+static u_int pfq_cur = 0;
+static u_int pfq_max = 0;
 int pfq_dev = -1;
 
 void
