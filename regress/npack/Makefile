@@ -1,7 +1,7 @@
 .include "../../Makefile.inc"
 .include "../../platform/${OS}/Makefile.inc"
 
-LIBS= -L../../lib -lsymon
+LIBS= -L../../lib -lsym
 SRCS= npack.c
 OBJS+= ${SRCS:R:S/$/.o/g}
 CFLAGS+= -I../../lib -I../../platform/${OS} -I.
