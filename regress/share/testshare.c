@@ -4,9 +4,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
-#include "conf.h"
+#include "error.h"
 #include "share.h"
 
 int verbose;
@@ -15,30 +16,34 @@ int
 main(int argc, char *argv[])
 {
     int i;
-    int j;
+    int slot;
     int clients = 25;
     char *shm;
+    struct timespec ts;
 
-/* test initialization */
-    initshare();
+    ts.tv_sec = 0;
+    ts.tv_nsec = 10000;
 
-/* test forking n clients */
-    for (i=0; i<clients; i++)
-        spawn_client(0);
+    /* test initialization */
+    initshare(40960);
 
-/* throughput test */
-    for (i=5000; i > 0; i--) {
-        shm = (char *) shared_getmem(i);
-        master_forbidread();
-        for (j=0; j<clients; j++)
-            printf(".");
-        memset(&shm[2], (i%26)+65, 80);
-        shm[1] = 80;
+    flag_debug = 1;
+    /* test forking n clients */
+    for (i = 0; i < clients; i++)
+        spawn_client(STDOUT_FILENO);
+
+    /* throughput test */
+    for (i = 0; i < 5000; i++) {
+        slot = master_forbidread();
+        shm = (char *)shared_getmem(slot);
+        memset(&shm[0], (i % 26) + 65, 80);
+        shared_setlen(slot, 80);
         master_permitread();
         info("step %d\n", i);
+
+        nanosleep(&ts, NULL);
     }
-/* kill some clients */
+    /* kill some clients */
 
     exit(1);
-
 }
