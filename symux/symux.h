@@ -33,20 +33,16 @@
 
 #include <conf.h>
 
+/* Location of pid file */
 #define SYMUX_PID_FILE "/var/run/symux.pid"
 
-/* Amount of connections allowed in listen backlog
- * - note that more than 128 makes no sense in OpenBSD
- */
-#define SYMUX_TCPBACKLOG 5
+/* Location of realtime fifo */
+#define SYMUX_FIFO_FILE "/var/run/symux.fifo"
 
 /* Number of retries allowed in recvfrom */
 #define SYMUX_MAXREADTRIES 5
 
-/* Number of data slots for clients in shared memory */
-#define SYMUX_SHARESLOTS  20
-
 /* Number of rrd errors logged before smothering sets in */
 #define SYMUX_MAXRRDERRORS 5
 
-#endif                          /* _SYMUX_SYMUX_H */
+#endif /* _SYMUX_SYMUX_H */

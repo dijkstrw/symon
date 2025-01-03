@@ -124,7 +124,6 @@ struct mux {
     char *port;
     char *localaddr;
     struct sourcelist sol;
-    int clientsocket;           /* symux; incoming tcp connections */
     int symonsocket[AF_MAX];    /* symux; incoming symon data */
     int symuxsocket;            /* symon; outgoing data to mux */
     int last;

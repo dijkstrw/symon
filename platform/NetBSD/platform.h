@@ -15,13 +15,8 @@
 #include "sylimits.h"
 
 #define SYMON_USER      "_symon"
-#define SEM_ARGS        (IPC_W|IPC_R)
 #define SA_LEN(x)       ((x)->sa_len)
 #define SS_LEN(x)       ((x)->ss_len)
-
-union semun {
-        int val;
-};
 
 #define MAX_PATH_LEN MAXPATHLEN
 

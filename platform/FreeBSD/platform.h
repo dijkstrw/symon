@@ -15,7 +15,6 @@
 #include "sylimits.h"
 
 #define SYMON_USER      "_symon"
-#define SEM_ARGS        (SEM_A|SEM_R)
 #define SA_LEN(x)       ((x)->sa_len)
 #define SS_LEN(x)       ((x)->ss_len)
 

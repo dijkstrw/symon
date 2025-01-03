@@ -14,9 +14,6 @@ npack: ${OBJS}
 	${STRIP} $@
 .endif
 
-../../lib/libsymon.a:
-	cd ../../lib; make libsymon.a
-
 clean:
 	rm -f ${OBJS} npack npack.core
 

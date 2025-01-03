@@ -28,12 +28,16 @@
  *
  */
 
-#include <sys/types.h>
 #include <sys/param.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <netdb.h>
+#include <netinet/in.h>
 
+#include <errno.h>
+#include <fcntl.h>
+#include <rrd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,17 +45,15 @@
 #include <sysexits.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <rrd.h>
 
 #include "conf.h"
 #include "data.h"
 #include "error.h"
 #include "limits.h"
-#include "symux.h"
-#include "symuxnet.h"
 #include "net.h"
 #include "readconf.h"
-#include "share.h"
+#include "symux.h"
+#include "symuxnet.h"
 #include "xmalloc.h"
 
 #include "platform.h"
@@ -113,11 +115,12 @@ main(int argc, char *argv[])
     FILE *f;
     int ch;
     int churnbuflen;
+    int fifofd;
     int flag_list;
     int offset;
     int result;
     unsigned int rrderrors;
-    int slot;
+    int len;
     time_t timestamp;
 
     SLIST_INIT(&mul);
@@ -148,7 +151,8 @@ main(int argc, char *argv[])
                 stringptr = cfgfile + strlen(cfgpath);
                 stringptr[0] = '/';
                 stringptr++;
-                strncpy(stringptr, optarg, maxstringlen - 1 - (stringptr - cfgfile));
+                strncpy(stringptr, optarg,
+                    maxstringlen - 1 - (stringptr - cfgfile));
                 cfgfile[maxstringlen - 1] = '\0';
 
                 xfree(cfgpath);
@@ -186,14 +190,13 @@ main(int argc, char *argv[])
         }
 
         sol = &mux->sol;
-
         if (sol == NULL) {
             fatal("%s:%d: sourcelist not found", __FILE__, __LINE__);
         }
 
-        SLIST_FOREACH(source, sol, sources) {
-            if (! SLIST_EMPTY(&source->sl)) {
-                SLIST_FOREACH(stream, &source->sl, streams) {
+        SLIST_FOREACH (source, sol, sources) {
+            if (!SLIST_EMPTY(&source->sl)) {
+                SLIST_FOREACH (stream, &source->sl, streams) {
                     if (stream->file != NULL) {
                         info("%.200s", stream->file);
                     }
@@ -214,6 +217,18 @@ main(int argc, char *argv[])
         exit(EX_OK);
     }
 
+    unlink(SYMUX_FIFO_FILE);
+
+    if (mkfifo(SYMUX_FIFO_FILE, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) {
+        fatal("cannot create fifo %s for reporting; %s", SYMUX_FIFO_FILE,
+            strerror(errno));
+    }
+
+    if ((fifofd = open(SYMUX_FIFO_FILE, O_RDWR | O_NONBLOCK)) < 0) {
+        fatal("cannot open fifo %s for reporting; %s", SYMUX_FIFO_FILE,
+            strerror(errno));
+    }
+
     setegid(getgid());
     setgid(getgid());
 
@@ -226,7 +241,7 @@ main(int argc, char *argv[])
         /* record pid */
         f = fopen(SYMUX_PID_FILE, "w");
         if (f) {
-            fprintf(f, "%u\n", (u_int) getpid());
+            fprintf(f, "%u\n", (u_int)getpid());
             fclose(f);
         }
     }
@@ -234,13 +249,14 @@ main(int argc, char *argv[])
     info("symux version %s", SYMUX_VERSION);
 
     if (flag_debug == 1)
-        info("program id=%d", (u_int) getpid());
+        info("program id=%d", (u_int)getpid());
 
     mux = SLIST_FIRST(&mul);
 
     churnbuflen = strlen_sourcelist(&mux->sol);
     debug("size of churnbuffer = %d", churnbuflen);
-    initshare(churnbuflen);
+
+    stringbuf = xmalloc(churnbuflen);
     init_symux_packet(mux);
 
     /* catch signals */
@@ -256,12 +272,10 @@ main(int argc, char *argv[])
     /* prepare sockets */
     if (get_symon_sockets(mux) == 0)
         fatal("no sockets could be opened for incoming symon traffic");
-    if (get_client_socket(mux) == 0)
-        fatal("socket for client connections could not be opened");
 
     rrderrors = 0;
     /* main loop */
-    for (;;) {                  /* FOREVER */
+    for (;;) { /* FOREVER */
         wait_for_traffic(mux, &source);
 
         if (flag_hup == 1) {
@@ -270,19 +284,19 @@ main(int argc, char *argv[])
             SLIST_INIT(&newmul);
 
             if (!read_config_file(&newmul, cfgfile, 1)) {
-                info("new configuration contains errors; keeping old configuration");
+                info("new configuration contains errors; keeping old "
+                     "configuration");
                 free_muxlist(&newmul);
             } else {
-                info("read configuration file '%.100s' successfully", cfgfile);
+                info(
+                    "read configuration file '%.100s' successfully", cfgfile);
                 free_muxlist(&mul);
                 mul = newmul;
                 mux = SLIST_FIRST(&mul);
                 get_symon_sockets(mux);
-                get_client_socket(mux);
                 init_symux_packet(mux);
             }
         } else {
-
             /*
              * Put information from packet into stringbuf (shared region).
              * Note that the stringbuf is used twice: 1) to update the
@@ -292,12 +306,9 @@ main(int argc, char *argv[])
              */
 
             offset = mux->packet.offset;
-            maxstringlen = shared_getmaxlen();
-            /* put time:ip: into shared region */
-            slot = master_forbidread();
-            timestamp = (time_t) mux->packet.header.timestamp;
-            stringbuf = shared_getmem(slot);
-            debug("stringbuf = 0x%08x", stringbuf);
+            maxstringlen = churnbuflen;
+
+            timestamp = (time_t)mux->packet.header.timestamp;
             snprintf(stringbuf, maxstringlen, "%s;", source->addr);
 
             /* hide this string region from rrd update */
@@ -320,11 +331,13 @@ main(int argc, char *argv[])
 
                 if (stream != NULL) {
                     /* put type and arg in and hide from rrd */
-                    snprintf(stringptr, maxstringlen, "%s:%s:", type2str(ps.type), ps.arg);
+                    snprintf(stringptr, maxstringlen,
+                        "%s:%s:", type2str(ps.type), ps.arg);
                     maxstringlen -= strlen(stringptr);
                     stringptr += strlen(stringptr);
                     /* put timestamp in and show to rrd */
-                    snprintf(stringptr, maxstringlen, "%u", (unsigned int)timestamp);
+                    snprintf(stringptr, maxstringlen, "%u",
+                        (unsigned int)timestamp);
                     arg_ra[3] = stringptr;
                     maxstringlen -= strlen(stringptr);
                     stringptr += strlen(stringptr);
@@ -351,17 +364,20 @@ main(int argc, char *argv[])
                             if (rrderrors < SYMUX_MAXRRDERRORS) {
                                 rrderrors++;
                                 warning("rrd_update:%.200s", rrd_get_error());
-                                warning("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
-                                        arg_ra[2], arg_ra[3]);
+                                warning("%.200s %.200s %.200s %.200s",
+                                    arg_ra[0], arg_ra[1], arg_ra[2],
+                                    arg_ra[3]);
                                 if (rrderrors == SYMUX_MAXRRDERRORS) {
-                                    warning("maximum rrd errors reached - will stop reporting them");
+                                    warning("maximum rrd errors reached - "
+                                            "will stop reporting them");
                                 }
                             }
                             rrd_clear_error();
                         } else {
                             if (flag_debug == 1)
-                                debug("%.200s %.200s %.200s %.200s", arg_ra[0], arg_ra[1],
-                                      arg_ra[2], arg_ra[3]);
+                                debug("%.200s %.200s %.200s %.200s",
+                                    arg_ra[0], arg_ra[1], arg_ra[2],
+                                    arg_ra[3]);
                         }
                     }
                     maxstringlen -= strlen(stringptr);
@@ -370,8 +386,9 @@ main(int argc, char *argv[])
                     maxstringlen -= strlen(stringptr);
                     stringptr += strlen(stringptr);
                 } else {
-                    debug("ignored unaccepted stream %.16s(%.16s) from %.20s", type2str(ps.type),
-                          ((strlen(ps.arg) == 0) ? "0" : ps.arg), source->addr);
+                    debug("ignored unaccepted stream %.16s(%.16s) from %.20s",
+                        type2str(ps.type),
+                        ((strlen(ps.arg) == 0) ? "0" : ps.arg), source->addr);
                 }
             }
             /*
@@ -380,11 +397,13 @@ main(int argc, char *argv[])
              */
             snprintf(stringptr, maxstringlen, "\n");
             stringptr += strlen(stringptr);
-            shared_setlen(slot, (stringptr - stringbuf));
-            debug("churnbuffer used: %d", (stringptr - stringbuf));
-            master_permitread();
-        }                       /* flag_hup == 0 */
-    }                           /* forever */
+            len = (stringptr - stringbuf);
+            if (write(fifofd, stringbuf, len) < len) {
+                debug("write is short -- no client listening?");
+            }
+            debug("churnbuffer used: %d", len);
+        } /* flag_hup == 0 */
+    } /* forever */
 
     /* NOT REACHED */
     return (EX_SOFTWARE);

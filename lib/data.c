@@ -874,8 +874,6 @@ free_muxlist(struct muxlist * mul)
             xfree(p->addr);
         if (p->port != NULL)
             xfree(p->port);
-        if (p->clientsocket)
-            close(p->clientsocket);
         if (p->symuxsocket)
             close(p->symuxsocket);
         if (p->packet.data)

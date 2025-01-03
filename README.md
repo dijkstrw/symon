@@ -170,7 +170,7 @@ called `getsymonitem.pl` shows how to use the module.
 
 Example:
 
-    nexus$ getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
+    nexus$ cat /var/run/symux.fifo | getsymonitem.pl 127.0.0.1 2100 127.0.0.1 "cpu(0)" "idle"
     93.40
 
 Historical data can be gathered using `rrdfetch(1)` from symux's `rrd`

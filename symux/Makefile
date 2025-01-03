@@ -2,7 +2,7 @@ OS!=uname -s
 .include "../platform/${OS}/Makefile.inc"
 .include "../Makefile.inc"
 
-SRCS=	symux.c readconf.c symuxnet.c share.c
+SRCS=	symux.c readconf.c symuxnet.c
 OBJS+=	${SRCS:R:S/$/.o/g}
 LIBS+=  ${SYMUX_LIBS} -L../lib -L$(RRDDIR)/lib -lsym -lrrd
 CFLAGS+=-I../lib -I$(RRDDIR)/include -I../platform/${OS} -I.

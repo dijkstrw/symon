@@ -1,3 +1,9 @@
+03/01/2025 - 2.90
+
+  - Incoming symux data is now shared as ascii via a fifo instead of a
+    tcp socket. This does away with a lot of symux code that was
+    sharing memory to a number of tcp clients, simpler is better.
+
 04/10/2024 - 2.89
 
   - platform/Linux - seek instead of file reopen (Tim Kuijsten)

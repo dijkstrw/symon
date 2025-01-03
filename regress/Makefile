@@ -1,4 +1,4 @@
-SUBDIR=	npack share
+SUBDIR=	npack
 
 all: _SUBDIRUSE
 clean: _SUBDIRUSE

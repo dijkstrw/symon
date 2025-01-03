@@ -36,40 +36,40 @@ my $streamitem =
     {cpu    => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5},
      cpuiow => {user => 1, nice => 2, system => 3, interrupt => 4, idle => 5, iowait => 6},
      mem    => {real_active => 1, real_total => 2, free => 3, swap_used => 4,
-	        swap_total =>5},
+                swap_total =>5},
      if     => {packets_in => 1, packets_out => 2, bytes_in => 3, bytes_out => 4,
-	        multicasts_in => 5, multicasts_out => 6, errors_in => 7,
-	        errors_out => 8, collisions => 9, drops => 10},
+                multicasts_in => 5, multicasts_out => 6, errors_in => 7,
+                errors_out => 8, collisions => 9, drops => 10},
      io1    => {total_transfers => 1, total_seeks => 2, total_bytes => 3},
      pf     => {bytes_v4_in => 1, bytes_v4_out => 2, bytes_v6_in => 3,
-	        bytes_v6_out => 4, packets_v4_in_pass => 5,
-	        packets_v4_in_drop => 6, packets_v4_out_pass => 7,
-	        packets_v4_out_drop => 8, packets_v6_in_pass => 9,
-	        packets_v6_in_drop => 10, packets_v6_out_pass => 11,
-	        packets_v6_out_drop => 12, states_entries => 13,
-	        states_searches => 14, states_inserts => 15,
-	        states_removals => 16, counters_match => 17,
-	        counters_badoffset => 18, counters_fragment => 19,
-	        counters_short => 20, counters_normalize => 21,
-	        counters_memory => 22},
+                bytes_v6_out => 4, packets_v4_in_pass => 5,
+                packets_v4_in_drop => 6, packets_v4_out_pass => 7,
+                packets_v4_out_drop => 8, packets_v6_in_pass => 9,
+                packets_v6_in_drop => 10, packets_v6_out_pass => 11,
+                packets_v6_out_drop => 12, states_entries => 13,
+                states_searches => 14, states_inserts => 15,
+                states_removals => 16, counters_match => 17,
+                counters_badoffset => 18, counters_fragment => 19,
+                counters_short => 20, counters_normalize => 21,
+                counters_memory => 22},
      debug  => {debug0 => 1, debug1 => 2, debug3 => 3, debug4 => 4, debug5 => 5,
-	        debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9,
-	        debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
-	        debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,
-	        debug18 => 18, debug19 => 19},
+                debug6 => 6, debug7 => 7, debug8 => 8, debug9 => 9,
+                debug10 => 10, debug11 => 11, debug12 => 12, debug13 => 13,
+                debug14 => 14, debug15 => 15, debug16 => 16, debug17 => 17,
+                debug18 => 18, debug19 => 19},
      proc   => {number => 1, uticks => 2, sticks => 3, iticks => 4, cpusec => 5,
-	        cpupct => 6, procsz => 7, rsssz => 8},
+                cpupct => 6, procsz => 7, rsssz => 8},
      mbuf   => {totmbufs => 1, mt_data => 2, mt_oobdata => 3, mt_control => 4,
-	        mt_header => 5, mt_ftable => 6, mt_soname => 7, mt_soopts => 8,
-	        pgused => 9, pgtotal => 10, totmem => 11, totpct => 12,
-	        m_drops => 13, m_wait => 14, m_drain => 15 },
+                mt_header => 5, mt_ftable => 6, mt_soname => 7, mt_soopts => 8,
+                pgused => 9, pgtotal => 10, totmem => 11, totpct => 12,
+                m_drops => 13, m_wait => 14, m_drain => 15 },
      sensor => {value => 1},
      io     => {total_rxfers => 1, total_wxfers => 2, total_seeks => 3,
-		total_rbytes => 4, total_wbytes => 5 },
+                total_rbytes => 4, total_wbytes => 5 },
      pfq    => {sent_bytes => 1, sent_packets => 2, drop_bytes => 3,
-		drop_packets => 4},
+                drop_packets => 4},
      df     => {blocks => 1, bfree => 2, bavail => 3, files => 4, ffree => 5,
-		syncwrites => 6, asyncwrites => 7},
+                syncwrites => 6, asyncwrites => 7},
      smart  => {read_error_rate => 1, reallocated_sectors => 2, spin_retries => 3,
                 air_flow_temp => 4, temperature => 5, reallocations => 6,
                 current_pending => 7, uncorrectables => 8,
@@ -82,64 +82,30 @@ sub new {
     my ($class, %arg) = @_;
     my $self;
 
-    (defined $arg{host} && defined $arg{port}) or
-	croak "error: need a host and a port to connect to.";
-
-    ($self->{host}, $self->{port}) = ($arg{host}, $arg{port});
-
+    $self->{fd} = (defined $arg{fd}? $arg{fd} : STDIN);
     $self->{retry} = (defined $arg{retry}? $arg{retry} : 10);
 
     bless($self, $class);
 
-    $self->connect();
-
     return $self;
-}
-
-sub DESTROY {
-    my $self = shift;
-
-    if (defined $self->{sock}) {
-	close($self->{sock});
-    }
-}
-
-sub connect {
-    my $self = shift;
-
-    if (defined $self->{sock} && $self->{sock}->connected() ne '') {
-	return;
-    } else {
-	close($self->{sock});
-    }
-
-    $self->{sock} = new
-      IO::Socket::INET(PeerAddr => $self->{host},
-		       PeerPort => $self->{port},
-		       Proto => "tcp",
-		       Type => SOCK_STREAM)
-	  or croak "error: could not connect to $self->{host}:$self->{port}";
 }
 
 sub getdata {
     my $self = shift;
-    my $sock;
     my $data;
     my $tries;
 
     $tries = 0;
 
     while (1) {
-	$self->connect();
-	$sock = $self->{sock};
-	$data = <$sock>;
-	if ((index($data, "\012") != -1) && (index($data, ';') != -1)) {
-	    $self->{rawdata} = $data;
-	    return $data;
-	} else {
-	    croak "error: tried to get data $tries times and failed"
-		if (++$tries == $self->{retry});
-	}
+        $data = readline($self->{fd});
+        if ((index($data, "\012") != -1) && (index($data, ';') != -1)) {
+            $self->{rawdata} = $data;
+            return $data;
+        } else {
+            croak "error: tried to get data $tries times and failed"
+                if (++$tries == $self->{retry});
+        }
     }
 }
 
@@ -157,20 +123,20 @@ sub parse {
 
     @streams = split(/;/, $self->{rawdata});
     croak "error: expected a symux dataline with ';' delimited streams"
-	if ($#streams < 1);
+        if ($#streams < 1);
 
     $self->{datasource} = shift @streams;
 
     foreach $stream (@streams) {
-	($name, $arg, @data) = split(':', $stream);
+        ($name, $arg, @data) = split(':', $stream);
 
-	croak "error: expected a symux stream with ':' delimited values"
-	    if ($#data < 1);
+        croak "error: expected a symux stream with ':' delimited values"
+            if ($#data < 1);
 
-	$name .= '('.$arg.')' if ($arg ne '');
+        $name .= '('.$arg.')' if ($arg ne '');
 
-	@{$self->{data}{$name}} = @data;
-	$number++;
+        @{$self->{data}{$name}} = @data;
+        $number++;
     }
 
     $self->{rawdata} = '';
@@ -183,19 +149,19 @@ sub getcacheditem {
 
     return undef if not defined $self->{datasource};
     return undef if (($host ne $self->{datasource})  &&
-		     ($host ne "*"));
+                     ($host ne "*"));
 
     croak "error: source $host does not contain stream $streamname"
-	if not defined $self->{data}{$streamname};
+        if not defined $self->{data}{$streamname};
 
-    ($streamtype = $streamname) =~ s/^([a-z]+).*/\1/;
+    ($streamtype = $streamname) =~ s/^([a-z]+).*/$1/;
 
     if ($item eq 'timestamp') {
-	$element = 0;
+        $element = 0;
     } elsif (not defined $$streamitem{$streamtype}{$item}) {
-	croak "error: unknown stream item '$item' - check symux(8) for names";
+        croak "error: unknown stream item '$item' - check symux(8) for names";
     } else {
-	$element = $$streamitem{$streamtype}{$item};
+        $element = $$streamitem{$streamtype}{$item};
     }
 
     return $self->{data}{$streamname}[$element];
@@ -208,15 +174,15 @@ sub getitem {
 
     undef $data;
     while (! defined $data) {
-	$self->getdata();
-	$self->parse();
-	$hosts{$self->{datasource}} += 1;
-	if ($hosts{$self->{datasource}} > $self->{retry}) {
-	    croak "error: seen a lot of data ($tries strings), but none that matches $host";
-	}
-	$data = $self->getcacheditem($host, $streamname, $item);
-	return $data if defined $data;
-	$tries++;
+        $self->getdata();
+        $self->parse();
+        $hosts{$self->{datasource}} += 1;
+        if ($hosts{$self->{datasource}} > $self->{retry}) {
+            croak "error: seen a lot of data ($tries strings), but none that matches $host";
+        }
+        $data = $self->getcacheditem($host, $streamname, $item);
+        return $data if defined $data;
+        $tries++;
     }
 }
 
@@ -248,20 +214,20 @@ parsing of, symux data.
 
 =item new ( ARGS )
 
-Creates a new C<SymuxClient> object that holds both the connection to a symux
-and data it receives from that connection. Arguments are:
+Creates a new C<SymuxClient> object that holds the data it receives
+from symux via stdin or file arguments. Arguments are:
 
-    host           dotted quad ipv4 hostaddress
-    port           tcp port that symux is on
+    fd*            filedescriptor to read data from, defaults to
+                   stdin.
+
     retry*         maximum number of retries; used to limit number
-		   of connection attempts and number of successive
-		   read attempts
+                   of connection attempts and number of successive
+                   read attempts
 
 Arguments marked with * are optional.
 
 Example:
-    $sc = new SymuxClient(host => '127.0.0.1',
-			  port => 2100);
+    $sc = new SymuxClient();
 
 =back
 
@@ -300,19 +266,18 @@ Get the symon source host of the currently cached information. Usefull to see
 what host's data getcacheditem is working on.
 
 Example:
-    $sc = new SymuxClient(host => 127.0.0.1,
-			  port => 2100);
+    $sc = new SymuxClient();
 
     print $sc->getitem("127.0.0.1", "if(de0)",
-		       "packets_out");
+                       "packets_out");
 
     # get more data from that measurement
     print $sc->getcacheditem("127.0.0.1","if(de0)",
-			     "packets_in");
+                             "packets_in");
 
     # start a new measurement
     print $sc->getitem("*", "if(de0)",
-		       "packets_out");
+                       "packets_out");
     # which hosts packets_out was that?
     print $sc->getsource();
 
