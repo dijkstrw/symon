@@ -37,16 +37,17 @@
 
 #include "conf.h"
 
-#include <sys/types.h>
-#include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/param.h>
 #include <sys/statvfs.h>
-#include <ufs/ufs/dinode.h>
+#include <sys/types.h>
 #include <ufs/ffs/fs.h>
+#include <ufs/ufs/dinode.h>
 
 #include <errno.h>
 #include <fcntl.h>
 #include <fstab.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -61,8 +62,8 @@ static int df_parts = 0;
 void
 init_df(struct stream *st)
 {
-    strlcpy(st->parg.df.rawdev, "/dev/", sizeof(st->parg.df.rawdev));
-    strlcat(st->parg.df.rawdev, st->arg, sizeof(st->parg.df.rawdev));
+    snprintf(
+        st->parg.df.rawdev, sizeof(st->parg.df.rawdev), "/dev/%s", st->arg);
 
     info("started module df(%.200s)", st->arg);
 }
@@ -80,9 +81,9 @@ gets_df(void)
  * Convert statfs returned filesystem size into BLOCKSIZE units.
  * Attempts to avoid overflow for large filesystems.
  */
-#define fsbtoblk(num, fsbs, bs) \
-        (((fsbs) != 0 && (fsbs) < (bs)) ? \
-                (num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
+#define fsbtoblk(num, fsbs, bs)                                              \
+    (((fsbs) != 0 && (fsbs) < (bs)) ? (num) / ((bs) / (fsbs))                \
+                                    : (num) * ((fsbs) / (bs)))
 
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
@@ -90,11 +91,22 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
     int n;
 
     for (n = 0; n < df_parts; n++) {
-        if (!strncmp(df_stats[n].f_mntfromname, st->parg.df.rawdev, SYMON_DFNAMESIZE)) {
-            return snpack(symon_buf, maxlen, st->arg, MT_DF,
-                          (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-                          (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-                          (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+        if (!strncmp(df_stats[n].f_mntfromname,
+                     st->parg.df.rawdev,
+                     SYMON_DFNAMESIZE)) {
+            return snpack(symon_buf,
+                          maxlen,
+                          st->arg,
+                          MT_DF,
+                          (u_int64_t)fsbtoblk(df_stats[n].f_blocks,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bfree,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bavail,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
                           (u_int64_t)df_stats[n].f_files,
                           (u_int64_t)df_stats[n].f_ffree,
                           (u_int64_t)df_stats[n].f_syncwrites,

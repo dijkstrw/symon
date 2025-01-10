@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2024 Willem Dijkstra
+ * Copyright (c) 2008-2025 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,16 +36,16 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <strings.h>
-#include <string.h>
-#include <stdlib.h>
 #include <linux/hdreg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 #include "data.h"
-#include "error.h"
-#include "xmalloc.h"
-#include "smart.h"
 #include "diskname.h"
+#include "error.h"
+#include "smart.h"
+#include "xmalloc.h"
 
 #ifndef HAS_HDDRIVECMDHDR
 typedef unsigned char task_ioreg_t;
@@ -60,15 +60,15 @@ struct hd_drive_cmd_hdr {
 
 /* Ata command register set for requesting smart values */
 static struct hd_drive_cmd_hdr smart_cmd = {
-    WIN_SMART, /* command code */
-    0, /* sector number */
+    WIN_SMART,         /* command code */
+    0,                 /* sector number */
     SMART_READ_VALUES, /* feature */
-    1 /* sector count */
+    1                  /* sector count */
 };
 
-/* Per drive storage structure; the ata cmd is followed by the data buffer that
- * is filled by the ioctl. There can be no room between the two; hence the
- * pragma for byte alignment.
+/* Per drive storage structure; the ata cmd is followed by the data buffer
+ * that is filled by the ioctl. There can be no room between the two; hence
+ * the pragma for byte alignment.
  */
 #pragma pack(1)
 struct smart_device {
@@ -106,7 +106,6 @@ init_smart(struct stream *st)
         if ((fd = open(drivename, O_RDONLY | O_NONBLOCK)) != -1)
             break;
 
-
     if (fd < 0)
         fatal("smart: cannot open '%.200s'", st->arg);
 
@@ -121,15 +120,21 @@ init_smart(struct stream *st)
     /* this is a new drive; allocate the command and data block */
     if (smart_cur > SYMON_MAX_DOBJECTS) {
         fatal("%s:%d: dynamic object limit (%d) exceeded for smart data",
-              __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+              __FILE__,
+              __LINE__,
+              SYMON_MAX_DOBJECTS);
     }
 
-    smart_devs = xrealloc(smart_devs, (smart_cur + 1) * sizeof(struct smart_device));
+    smart_devs
+        = xrealloc(smart_devs, (smart_cur + 1) * sizeof(struct smart_device));
 
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
     /* store drivename in new block */
-    strlcpy(smart_devs[smart_cur].name, drivename, sizeof(smart_devs[0].name));
+    snprintf(smart_devs[smart_cur].name,
+             sizeof(smart_devs[0].name),
+             "%s",
+             drivename);
 
     /* store filedescriptor to device */
     smart_devs[smart_cur].fd = fd;
@@ -139,20 +144,25 @@ init_smart(struct stream *st)
 
     smart_cur++;
 
-    info("started module smart(%.200s = %.200s)", st->arg, smart_devs[st->parg.smart].name);
+    info("started module smart(%.200s = %.200s)",
+         st->arg,
+         smart_devs[st->parg.smart].name);
 }
 
 void
 gets_smart(void)
 {
-  int i;
+    int i;
 
     for (i = 0; i < smart_cur; i++) {
         /* populate ata command header */
-        memcpy(&smart_devs[i].cmd, (void *) &smart_cmd, sizeof(struct hd_drive_cmd_hdr));
+        memcpy(&smart_devs[i].cmd,
+               (void *)&smart_cmd,
+               sizeof(struct hd_drive_cmd_hdr));
         if (ioctl(smart_devs[i].fd, HDIO_DRIVE_CMD, &smart_devs[i].cmd)) {
             warning("smart: ioctl for drive '%.200s' failed: %.200s",
-                    &smart_devs[i].name, strerror(errno));
+                    &smart_devs[i].name,
+                    strerror(errno));
             smart_devs[i].failed = 1;
         }
 
@@ -174,11 +184,13 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
     struct smart_report sr;
 
-    if ((st->parg.smart < smart_cur) &&
-        (!smart_devs[st->parg.smart].failed))
-    {
+    if ((st->parg.smart < smart_cur)
+        && (!smart_devs[st->parg.smart].failed)) {
         smart_parse(&smart_devs[st->parg.smart].data, &sr);
-        return snpack(symon_buf, maxlen, st->arg, MT_SMART,
+        return snpack(symon_buf,
+                      maxlen,
+                      st->arg,
+                      MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,
                       sr.spin_retries,

@@ -12,12 +12,13 @@
  * called by a name other than "ssh" or "Secure Shell".
  */
 
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "conf.h"
-#include "xmalloc.h"
 #include "error.h"
+#include "xmalloc.h"
 
 void *
 xmalloc(size_t size)
@@ -30,7 +31,7 @@ xmalloc(size_t size)
     ptr = malloc(size);
 
     if (ptr == NULL)
-        fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long) size);
+        fatal("xmalloc: out of memory (allocating %lu bytes)", (u_long)size);
 
     return ptr;
 }
@@ -49,7 +50,8 @@ xrealloc(void *ptr, size_t new_size)
         new_ptr = realloc(ptr, new_size);
 
     if (new_ptr == NULL)
-        fatal("xrealloc: out of memory (new_size %lu bytes)", (u_long) new_size);
+        fatal("xrealloc: out of memory (new_size %lu bytes)",
+              (u_long)new_size);
 
     return new_ptr;
 }
@@ -63,8 +65,8 @@ xfree(void *ptr)
     free(ptr);
 }
 
-char
-*xstrdup(const char *str)
+char *
+xstrdup(const char *str)
 {
     size_t len = strlen(str) + 1;
     char *cp;
@@ -73,7 +75,7 @@ char
         fatal("xstrdup: zero size");
 
     cp = xmalloc(len);
-    strlcpy(cp, str, len);
+    snprintf(cp, len, "%s", str);
 
     return cp;
 }

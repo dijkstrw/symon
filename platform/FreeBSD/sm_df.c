@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2005 Marc Balmer
- * Copyright (c) 2012-2024 Willem Dijkstra
+ * Copyright (c) 2012-2025 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,12 @@
 
 #include "conf.h"
 
-#include <sys/types.h>
-#include <sys/param.h>
 #include <sys/mount.h>
-#include <ufs/ufs/dinode.h>
+#include <sys/param.h>
+#include <sys/types.h>
+#include <stdio.h>
 #include <ufs/ffs/fs.h>
+#include <ufs/ufs/dinode.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -51,9 +52,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "diskname.h"
 #include "error.h"
 #include "symon.h"
-#include "diskname.h"
 
 /* Globals for this module start with df_ */
 static struct statfs *df_stats = NULL;
@@ -75,8 +76,12 @@ init_df(struct stream *st)
 
     while (nextdiskname(&c)) {
         for (n = 0; n < df_parts; n++) {
-            if (!strncmp(df_stats[n].f_mntfromname, drivename, SYMON_DFNAMESIZE)) {
-                strlcpy(st->parg.df.rawdev, drivename, sizeof(st->parg.df.rawdev));
+            if (!strncmp(
+                    df_stats[n].f_mntfromname, drivename, SYMON_DFNAMESIZE)) {
+                snprintf(st->parg.df.rawdev,
+                         sizeof(st->parg.df.rawdev),
+                         "%s",
+                         drivename);
                 info("started module df(%.200s)", st->arg);
                 return;
             }
@@ -99,9 +104,9 @@ gets_df(void)
  * Convert statfs returned filesystem size into BLOCKSIZE units.
  * Attempts to avoid overflow for large filesystems.
  */
-#define fsbtoblk(num, fsbs, bs) \
-        (((fsbs) != 0 && (fsbs) < (bs)) ? \
-                (num) / ((bs) / (fsbs)) : (num) * ((fsbs) / (bs)))
+#define fsbtoblk(num, fsbs, bs)                                              \
+    (((fsbs) != 0 && (fsbs) < (bs)) ? (num) / ((bs) / (fsbs))                \
+                                    : (num) * ((fsbs) / (bs)))
 
 int
 get_df(char *symon_buf, int maxlen, struct stream *st)
@@ -109,11 +114,22 @@ get_df(char *symon_buf, int maxlen, struct stream *st)
     int n;
 
     for (n = 0; n < df_parts; n++) {
-        if (!strncmp(df_stats[n].f_mntfromname, st->parg.df.rawdev, SYMON_DFNAMESIZE)) {
-            return snpack(symon_buf, maxlen, st->arg, MT_DF,
-                          (u_int64_t)fsbtoblk(df_stats[n].f_blocks, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-                          (u_int64_t)fsbtoblk(df_stats[n].f_bfree, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
-                          (u_int64_t)fsbtoblk(df_stats[n].f_bavail, df_stats[n].f_bsize, SYMON_DFBLOCKSIZE),
+        if (!strncmp(df_stats[n].f_mntfromname,
+                     st->parg.df.rawdev,
+                     SYMON_DFNAMESIZE)) {
+            return snpack(symon_buf,
+                          maxlen,
+                          st->arg,
+                          MT_DF,
+                          (u_int64_t)fsbtoblk(df_stats[n].f_blocks,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bfree,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
+                          (u_int64_t)fsbtoblk(df_stats[n].f_bavail,
+                                              df_stats[n].f_bsize,
+                                              SYMON_DFBLOCKSIZE),
                           (u_int64_t)df_stats[n].f_files,
                           (u_int64_t)df_stats[n].f_ffree,
                           (u_int64_t)df_stats[n].f_syncwrites,

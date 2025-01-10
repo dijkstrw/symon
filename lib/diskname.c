@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2024 Willem Dijkstra
+ * Copyright (c) 2012-2025 Willem Dijkstra
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,18 +31,21 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
+#include "diskname.h"
 #include "error.h"
 #include "platform.h"
-#include "diskname.h"
 
 void
-initdisknamectx(struct disknamectx *c, const char *spath, char *dpath, size_t dmaxlen)
+initdisknamectx(struct disknamectx *c,
+                const char *spath,
+                char *dpath,
+                size_t dmaxlen)
 {
     bzero(c, sizeof(struct disknamectx));
     c->spath = spath;
@@ -80,7 +83,7 @@ nextdiskname(struct disknamectx *c)
     /* do not play with absolute paths, just return it once */
     if (c->spath[0] == '/') {
         if (c->i == 0) {
-            strlcpy(c->dpath, c->spath, c->maxlen);
+            snprintf(c->dpath, c->maxlen, "%s", c->spath);
             c->i++;
             return c->dpath;
         }
@@ -90,12 +93,11 @@ nextdiskname(struct disknamectx *c)
     /* prepare the next pathname */
     snprintf(c->dpath, c->maxlen, l[c->i], c->spath);
 
-    if ((c->link == 0) &&
-        (lstat(c->dpath, &buffer) == 0)) {
+    if ((c->link == 0) && (lstat(c->dpath, &buffer) == 0)) {
         /* return the real path of a link, but only dereference once */
         if (S_ISLNK(buffer.st_mode)) {
             if ((r = realpath(c->dpath, NULL))) {
-                strlcpy(c->dpath, r, c->maxlen);
+                snprintf(c->dpath, c->maxlen, "%s", r);
                 free(r);
                 c->link = 1;
 

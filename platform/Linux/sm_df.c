@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2024 Willem Dijkstra
+ * Copyright (c) 2011-2025 Willem Dijkstra
  * Copyright (c) 2007 Martin van der Werff
  * All rights reserved.
  *
@@ -38,16 +38,16 @@
 
 #include "conf.h"
 
+#include <sys/statvfs.h>
 #include <sys/types.h>
 #include <errno.h>
-#include <stdio.h>
 #include <mntent.h>
+#include <stdio.h>
 #include <string.h>
-#include <sys/statvfs.h>
 
+#include "diskname.h"
 #include "error.h"
 #include "symon.h"
-#include "diskname.h"
 
 void
 init_df(struct stream *st)
@@ -70,8 +70,11 @@ init_df(struct stream *st)
 
         while ((mount = getmntent(fp))) {
             if (strncmp(mount->mnt_fsname, drivename, sizeof(drivename)) == 0) {
-                strlcpy(st->parg.df.mountpath, mount->mnt_dir, sizeof(st->parg.df.mountpath));
-                info("started module df(%.200s = %.200s)", st->arg, st->parg.df.mountpath);
+                snprintf(st->parg.df.mountpath,
+                         sizeof(st->parg.df.mountpath),
+                         "%s", mount->mnt_dir);
+                info("started module df(%.200s = %.200s)", st->arg,
+                     st->parg.df.mountpath);
                 endmntent(fp);
                 return;
             }
