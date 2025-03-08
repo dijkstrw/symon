@@ -1,8 +1,14 @@
-03/01/2025 - 2.90
+08/03/2025 - 2.90
 
   - Incoming symux data is now shared as ascii via a fifo instead of a
     tcp socket. This does away with a lot of symux code that was
     sharing memory to a number of tcp clients, simpler is better.
+
+  - Removed __*_DECLS macros around declarations. This was to protect
+    c declarations when being compiled by a c++ compiler, two decades
+    ago. C++ compilers grew up, __*_DECLS is now an internal glibc
+    header and sometimes simply not available, e.g. when compiling
+    against musl. (NHO)
 
 04/10/2024 - 2.89
 

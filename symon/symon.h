@@ -59,7 +59,6 @@ extern int symon_interval;
 extern time_t now;
 
 /* prototypes */
-__BEGIN_DECLS
 /* sm_cpu.c */
 extern void init_cpu(struct stream *);
 extern void gets_cpu(void);
@@ -136,6 +135,5 @@ void init_flukso(struct stream *);
 void gets_flukso(void);
 int get_flukso(char *, int, struct stream *);
 
-__END_DECLS
 
 #endif                          /* _SYMON_SYMON_H */

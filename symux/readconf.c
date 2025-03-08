@@ -42,11 +42,9 @@
 #include "readconf.h"
 #include "xmalloc.h"
 
-__BEGIN_DECLS
 int read_mux(struct muxlist * mul, struct lex *);
 int read_source(struct sourcelist * sol, struct lex *, int);
 int insert_filename(char *, int, int, char *);
-__END_DECLS
 
 const char *default_symux_port = SYMUX_PORT;
 

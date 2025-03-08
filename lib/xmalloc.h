@@ -18,10 +18,8 @@
 #include <sys/types.h>
 
 /* Like malloc and friends, but these call fatal if something breaks */
-__BEGIN_DECLS
 void *xmalloc(size_t);
 void *xrealloc(void *, size_t);
 void xfree(void *);
 char *xstrdup(const char *);
-__END_DECLS
 #endif                          /* _SYMON_LIB_XMALLOC_H */

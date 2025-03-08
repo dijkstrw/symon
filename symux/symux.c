@@ -58,11 +58,9 @@
 
 #include "platform.h"
 
-__BEGIN_DECLS
 void exithandler(int);
 void huphandler(int);
 void signalhandler(int);
-__END_DECLS
 
 int flag_hup = 0;
 int flag_testconf = 0;

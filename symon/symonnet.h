@@ -34,11 +34,9 @@
 #include "data.h"
 
 /* prototypes */
-__BEGIN_DECLS
 void connect2mux(struct mux *);
 void send_packet(struct mux *);
 void prepare_packet(struct mux *, time_t t);
 void stream_in_packet(struct stream *, struct mux *);
 void finish_packet(struct mux *);
-__END_DECLS
 #endif                          /* _SYMON_SYMONNET_H */

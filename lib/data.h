@@ -357,7 +357,6 @@ struct packedstream {
 };
 
 /* prototypes */
-__BEGIN_DECLS
 char *type2str(const int);
 int bytelen_sourcelist(struct sourcelist *);
 int bytelen_streamlist(struct streamlist *);
@@ -392,5 +391,4 @@ void free_streamlist(struct streamlist *);
 void init_crc32(void);
 void init_symon_packet(struct mux *);
 void init_symux_packet(struct mux *);
-__END_DECLS
 #endif                          /* _SYMON_LIB_DATA_H */

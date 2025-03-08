@@ -54,14 +54,12 @@
 #include "net.h"
 #include "xmalloc.h"
 
-__BEGIN_DECLS
 int bytelenvar(char);
 int checklen(int, int, int);
 struct stream *create_stream(int, char *);
 char *formatstrvar(char);
 char *rrdstrvar(char);
 int strlenvar(char);
-__END_DECLS
 
 /* Stream formats
  *

@@ -40,11 +40,9 @@
 #include "symon.h"
 #include "xmalloc.h"
 
-__BEGIN_DECLS
 int read_host_port(struct muxlist *, struct mux *, struct lex *);
 int read_symon_args(struct mux *, struct lex *);
 int read_monitor(struct muxlist *, struct lex *);
-__END_DECLS
 
 const char *default_symux_port = SYMUX_PORT;
 

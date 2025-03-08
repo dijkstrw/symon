@@ -40,7 +40,6 @@ extern char res_host[];
 extern char res_service[];
 extern struct sockaddr_storage res_addr;
 
-__BEGIN_DECLS
 int cmpsock_addr(struct sockaddr *, struct sockaddr *);
 int get_numeric_name(struct sockaddr_storage *);
 int getaddr(char *, char *, int, int);
@@ -50,6 +49,5 @@ void cpysock(struct sockaddr *, struct sockaddr_storage *);
 void get_sockaddr(struct sockaddr_storage *, int, int, int, char*, char *);
 void get_mux_sockaddr(struct mux *, int);
 int get_source_sockaddr(struct source *, int);
-__END_DECLS
 
 #endif                          /* _SYMON_LIB_NET_H */

@@ -45,9 +45,7 @@
 #include "symuxnet.h"
 #include "xmalloc.h"
 
-__BEGIN_DECLS
 int check_crc_packet(struct symonpacket *);
-__END_DECLS
 
 /* Obtain sockets for incoming symon traffic */
 int

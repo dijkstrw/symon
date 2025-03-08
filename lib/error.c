@@ -27,7 +27,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <sys/cdefs.h>
 
 #include <limits.h>
 #include <stdarg.h>
@@ -38,9 +37,7 @@
 
 #include "error.h"
 
-__BEGIN_DECLS
 void output_message(int, char *, va_list);
-__END_DECLS
 
 int flag_daemon = 0;
 int flag_debug = 0;

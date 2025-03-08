@@ -53,13 +53,11 @@
 #include "symonnet.h"
 #include "xmalloc.h"
 
-__BEGIN_DECLS
 void alarmhandler(int);
 void exithandler(int);
 void huphandler(int);
 void init_streams(struct muxlist *mul);
 void drop_privileges(int unsecure);
-__END_DECLS
 
 int flag_unsecure = 0;
 int flag_hup = 0;

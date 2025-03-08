@@ -31,17 +31,13 @@
 #ifndef _SYMON_LIB_ERROR_H
 #define _SYMON_LIB_ERROR_H
 
-#include <sys/cdefs.h>
-
 extern char *__progname;
 extern int flag_debug;
 extern int flag_daemon;
 
-__BEGIN_DECLS
 void fatal(char *,...);
 void warning(char *,...);
 void info(char *,...);
 void debug(char *,...);
-__END_DECLS
 
 #endif                          /* _SYMON_LIB_ERROR_H */

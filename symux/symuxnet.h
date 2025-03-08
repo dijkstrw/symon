@@ -34,10 +34,8 @@
 #include "data.h"
 
 /* prototypes */
-__BEGIN_DECLS
 int get_symon_sockets(struct mux *);
 int accept_connection(int);
 int recv_symon_packet(struct mux *, int, struct source **);
 void wait_for_traffic(struct mux *, struct source **);
-__END_DECLS
 #endif /* _SYMUX_SYMUXNET_H */

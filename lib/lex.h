@@ -36,8 +36,6 @@
 #ifndef _SYMON_LIB_LEX_H
 #define _SYMON_LIB_LEX_H
 
-#include <sys/cdefs.h>
-
 #include <stdio.h>
 
 /* Tokens known to lex */
@@ -100,7 +98,6 @@ struct lex {
          type;                  /* type of token in buffer */
 };
 
-__BEGIN_DECLS
 char *parse_opcode(int);
 int lex_nexttoken(struct lex *);
 int parse_token(const char *);
@@ -110,7 +107,6 @@ void lex_ungettoken(struct lex *);
 void parse_error(struct lex *, const char *);
 void reset_lex(struct lex *);
 void rewind_lex(struct lex *);
-__END_DECLS
 
 /* EXPECT(l,x) = next token in l must be opcode x or error.  */
 #define EXPECT(l, x)    do {                      \

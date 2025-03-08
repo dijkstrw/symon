@@ -33,7 +33,5 @@
 
 #include "data.h"
 
-__BEGIN_DECLS
 int read_config_file(struct muxlist *, char *);
-__END_DECLS
 #endif                          /* _SYMON_READCONF_H */
