@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <pwd.h>
 #include <rrd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -58,6 +59,7 @@
 
 #include "platform.h"
 
+void drop_privileges(void);
 void exithandler(int);
 void huphandler(int);
 void signalhandler(int);
@@ -66,6 +68,39 @@ int flag_hup = 0;
 int flag_testconf = 0;
 fd_set fdset;
 int maxfd;
+
+void
+drop_privileges(void)
+{
+    struct passwd *pw;
+
+    if ((pw = getpwnam(SYMUX_USER)) == NULL)
+        fatal("could not get user information for user '%.200s': %.200s",
+              SYMUX_USER, strerror(errno));
+
+#ifndef HAS_UNVEIL
+    if (chroot(pw->pw_dir) < 0)
+        fatal("chroot failed: %.200s", strerror(errno));
+#endif
+
+    if (chdir("/") < 0)
+        fatal("chdir / failed: %.200s", strerror(errno));
+
+    if (setgroups(1, &pw->pw_gid))
+        fatal("can't setgroups: %.200s", strerror(errno));
+
+    if (setgid(pw->pw_gid))
+        fatal("can't set group id: %.200s", strerror(errno));
+
+    if (setegid(pw->pw_gid))
+        fatal("can't set effective group id: %.200s", strerror(errno));
+
+    if (setuid(pw->pw_uid))
+        fatal("can't set user id: %.200s", strerror(errno));
+
+    if (seteuid(pw->pw_uid))
+        fatal("can't set effective user id: %.200s", strerror(errno));
+}
 
 void
 exithandler(int s)
@@ -218,12 +253,10 @@ main(int argc, char *argv[])
     unlink(SYMUX_FIFO_FILE);
 
     if (mkfifo(SYMUX_FIFO_FILE, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) {
-        fatal("cannot create fifo %s for reporting; %s", SYMUX_FIFO_FILE,
+        warning("cannot create fifo %s for reporting; %s", SYMUX_FIFO_FILE,
             strerror(errno));
-    }
-
-    if ((fifofd = open(SYMUX_FIFO_FILE, O_RDWR | O_NONBLOCK)) < 0) {
-        fatal("cannot open fifo %s for reporting; %s", SYMUX_FIFO_FILE,
+    } else if ((fifofd = open(SYMUX_FIFO_FILE, O_RDWR | O_NONBLOCK)) < 0) {
+        warning("cannot open fifo %s for reporting; %s", SYMUX_FIFO_FILE,
             strerror(errno));
     }
 
@@ -243,6 +276,9 @@ main(int argc, char *argv[])
             fclose(f);
         }
     }
+
+    if (geteuid() == 0)
+        drop_privileges();
 
     info("symux version %s", SYMUX_VERSION);
 
@@ -418,7 +454,7 @@ main(int argc, char *argv[])
             snprintf(stringptr, maxstringlen, "\n");
             stringptr += strlen(stringptr);
             len = (stringptr - stringbuf);
-            if (write(fifofd, stringbuf, len) < len) {
+            if (fifofd != -1 && write(fifofd, stringbuf, len) < len) {
                 debug("write is short -- no client listening?");
             }
             debug("churnbuffer used: %d", len);
