@@ -14,6 +14,7 @@
 #include "sylimits.h"
 
 #define SYMON_USER      "symon"
+#define SYMUX_USER      "symux"
 #define SA_LEN(x)       (((x)->sa_family == AF_INET6) ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in))
 #define SS_LEN(x)       (((x)->ss_family == AF_INET6) ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in))
 
