@@ -73,6 +73,10 @@ static struct smart_device *smart_devs = NULL;
 static int smart_cur = 0;
 
 void
+privinit_smart(struct stream *st)
+{}
+
+void
 init_smart(struct stream *st)
 {
     struct disknamectx c;
@@ -97,14 +101,17 @@ init_smart(struct stream *st)
     cd = NULL;
 
     while (nextdiskname(&c)) {
-        if ((cd = cam_open_device(drivename, O_RDWR)) != NULL)
+        if ((cd = cam_open_device(drivename, O_RDWR)) != NULL) {
             break;
-        if ((fd = open(drivename, O_RDONLY, O_NONBLOCK)) != -1)
+        }
+        if ((fd = open(drivename, O_RDONLY, O_NONBLOCK)) != -1) {
             break;
+        }
     }
 
-    if ((fd < 0) && (cd == NULL))
+    if ((fd < 0) && (cd == NULL)) {
         fatal("smart: cannot open '%.200s'", st->arg);
+    }
 
     /* look for drive in our global table */
     for (i = 0; i < smart_cur; i++) {
@@ -117,10 +124,13 @@ init_smart(struct stream *st)
     /* this is a new drive; allocate the command and data block */
     if (smart_cur > SYMON_MAX_DOBJECTS) {
         fatal("%s:%d: dynamic object limit (%d) exceeded for smart data",
-              __FILE__, __LINE__, SYMON_MAX_DOBJECTS);
+              __FILE__,
+              __LINE__,
+              SYMON_MAX_DOBJECTS);
     }
 
-    smart_devs = xrealloc(smart_devs, (smart_cur + 1) * sizeof(struct smart_device));
+    smart_devs = xrealloc(smart_devs,
+                          (smart_cur + 1) * sizeof(struct smart_device));
 
     bzero(&smart_devs[smart_cur], sizeof(struct smart_device));
 
@@ -151,13 +161,13 @@ init_smart(struct stream *st)
         /* populate cam control block */
         pc = &smart_devs[smart_cur].ccb;
         cam_fill_ataio(pc,
-                       0,                            /* retries */
-                       NULL,                         /* completion callback */
-                       CAM_DIR_IN,                   /* flags */
-                       MSG_SIMPLE_Q_TAG,             /* tag_action */
+                       0,                /* retries */
+                       NULL,             /* completion callback */
+                       CAM_DIR_IN,       /* flags */
+                       MSG_SIMPLE_Q_TAG, /* tag_action */
                        (u_int8_t *)&smart_devs[smart_cur].data,
                        DISK_BLOCK_LEN,
-                       SMART_TIMEOUT);               /* timeout (s) */
+                       SMART_TIMEOUT); /* timeout (s) */
 
         /* disable queue freeze on error */
         pc->ccb_h.flags |= CAM_DEV_QFRZDIS;
@@ -190,9 +200,11 @@ gets_smart(void)
 
     for (i = 0; i < smart_cur; i++) {
         if (smart_devs[i].fd > 0) {
-            if (ioctl(smart_devs[i].fd, IOCATAREQUEST, &smart_devs[i].cmd) || smart_devs[i].cmd.error) {
+            if (ioctl(smart_devs[i].fd, IOCATAREQUEST, &smart_devs[i].cmd) ||
+                smart_devs[i].cmd.error) {
                 warning("smart: ioctl for drive '%s' failed: %s",
-                        &smart_devs[i].name, strerror(errno));
+                        &smart_devs[i].name,
+                        strerror(errno));
                 smart_devs[i].failed = 1;
                 continue;
             }
@@ -205,12 +217,17 @@ gets_smart(void)
 
             smart_devs[i].failed = 0;
         } else if (smart_devs[i].cd != NULL) {
-            if ((cam_send_ccb(smart_devs[i].cd, (union ccb *)&smart_devs[i].ccb) < 0) || smart_devs[i].ccb.res.error) {
+            if ((cam_send_ccb(smart_devs[i].cd,
+                              (union ccb *)&smart_devs[i].ccb) < 0) ||
+                smart_devs[i].ccb.res.error) {
                 warning("smart: ccb for drive '%s' failed: %s",
                         &smart_devs[i].name,
-                        cam_error_string(smart_devs[i].cd, (union ccb *)&smart_devs[i].ccb,
-                                         (char *)&smart_devs[i].data, DISK_BLOCK_LEN,
-                                         CAM_ESF_ALL, CAM_EPF_ALL));
+                        cam_error_string(smart_devs[i].cd,
+                                         (union ccb *)&smart_devs[i].ccb,
+                                         (char *)&smart_devs[i].data,
+                                         DISK_BLOCK_LEN,
+                                         CAM_ESF_ALL,
+                                         CAM_EPF_ALL));
                 smart_devs[i].failed = 1;
                 continue;
             }
@@ -227,11 +244,12 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
     struct smart_report sr;
 
-    if ((st->parg.smart < smart_cur) &&
-        (!smart_devs[st->parg.smart].failed))
-    {
+    if ((st->parg.smart < smart_cur) && (!smart_devs[st->parg.smart].failed)) {
         smart_parse(&smart_devs[st->parg.smart].data, &sr);
-        return snpack(symon_buf, maxlen, st->arg, MT_SMART,
+        return snpack(symon_buf,
+                      maxlen,
+                      st->arg,
+                      MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,
                       sr.spin_retries,
@@ -254,11 +272,13 @@ init_smart(struct stream *st)
 {
     fatal("smart module not available");
 }
+
 void
 gets_smart(void)
 {
     fatal("smart module not available");
 }
+
 int
 get_smart(char *symon_buf, int maxlen, struct stream *st)
 {

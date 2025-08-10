@@ -50,18 +50,18 @@
 
 /* ata command register set for requesting smart values */
 static struct atareq smart_cmd = {
-  ATACMD_READ, /* flags */
-  WDCC_SMART,  /* command */
-  WDSM_RD_DATA, /* features */
-  1, /* sector count */
-  0, /* sector number */
-  0, /* head */
-  WDSMART_CYL, /* cylinder */
-  NULL, /* data buffer */
-  sizeof(struct smart_values), /* sizeof data buffer */
-  SMART_TIMEOUT, /* timeout */
-  0, /* retsts */
-  0 /* error bits */
+    ATACMD_READ,                 /* flags */
+    WDCC_SMART,                  /* command */
+    WDSM_RD_DATA,                /* features */
+    1,                           /* sector count */
+    0,                           /* sector number */
+    0,                           /* head */
+    WDSMART_CYL,                 /* cylinder */
+    NULL,                        /* data buffer */
+    sizeof(struct smart_values), /* sizeof data buffer */
+    SMART_TIMEOUT,               /* timeout */
+    0,                           /* retsts */
+    0                            /* error bits */
 };
 
 /* per drive storage structure */
@@ -72,7 +72,12 @@ static struct smart_device {
     int failed;
     struct smart_values data;
 } *smart_devs = NULL;
+
 static int smart_size = 0;
+
+void
+privinit_smart(struct stream *st)
+{}
 
 void
 init_smart(struct stream *st)
@@ -106,10 +111,18 @@ init_smart(struct stream *st)
     snprintf(sd->name, MAX_PATH_LEN, "%s", st->arg);
 
     /* store filedescriptor to device */
-    if ((sd->fd = opendisk(st->arg, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 0)) == -1) {
+    if ((sd->fd = opendisk(st->arg,
+                           O_RDWR | O_NONBLOCK,
+                           sd->name,
+                           sizeof(sd->name),
+                           0)) == -1) {
         if (errno == ENOENT) {
             /* Device does not exist, retry using cooked name semantics */
-            if ((sd->fd = opendisk(st->arg, O_RDWR | O_NONBLOCK, sd->name, sizeof(sd->name), 1)) == -1) {
+            if ((sd->fd = opendisk(st->arg,
+                                   O_RDWR | O_NONBLOCK,
+                                   sd->name,
+                                   sizeof(sd->name),
+                                   1)) == -1) {
                 fatal("smart: could not open '%s' for read", st->arg);
             }
         } else {
@@ -131,38 +144,48 @@ gets_smart(void)
 
     for (i = 0; i < smart_size; i++) {
         /* populate ata command header */
-        memcpy(&cmd, (void *) &smart_cmd, sizeof(struct atareq));
+        memcpy(&cmd, (void *)&smart_cmd, sizeof(struct atareq));
         cmd.databuf = (caddr_t)&smart_devs[i].data;
 
         if (ioctl(smart_devs[i].fd, ATAIOCCOMMAND, &cmd)) {
             warning("smart: ioctl for drive '%s' failed: %d",
-                    &smart_devs[i].name, errno);
+                    &smart_devs[i].name,
+                    errno);
             smart_devs[i].failed = 1;
         }
 
         /* check ATA command completion status */
         switch (cmd.retsts) {
-            case ATACMD_OK:
-                break;
-            case ATACMD_TIMEOUT:
-                warning("smart: ATA command timed out for drive '%s'", &smart_devs[i].name);
-                smart_devs[i].failed = 1;
-                break;
-            case ATACMD_DF:
-                warning("smart: ATA device '%s' returned a Device Fault", &smart_devs[i].name);
-                smart_devs[i].failed = 1;
-                break;
-            case ATACMD_ERROR:
-                if (cmd.error & WDCE_ABRT)
-                    warning("smart: ATA device '%s' returned Aborted Command", &smart_devs[i].name);
-                else
-                    warning("smart: ATA device '%s' returned error register %0x", &smart_devs[i].name, cmd.error);
-                smart_devs[i].failed = 1;
-                break;
-            default:
-                warning("smart: ATAIOCCOMMAND returned unknown result code %d for drive '%s'", cmd.retsts, &smart_devs[i].name);
-                smart_devs[i].failed = 1;
-                break;
+        case ATACMD_OK:
+            break;
+        case ATACMD_TIMEOUT:
+            warning("smart: ATA command timed out for drive '%s'",
+                    &smart_devs[i].name);
+            smart_devs[i].failed = 1;
+            break;
+        case ATACMD_DF:
+            warning("smart: ATA device '%s' returned a Device Fault",
+                    &smart_devs[i].name);
+            smart_devs[i].failed = 1;
+            break;
+        case ATACMD_ERROR:
+            if (cmd.error & WDCE_ABRT) {
+                warning("smart: ATA device '%s' returned Aborted Command",
+                        &smart_devs[i].name);
+            } else {
+                warning("smart: ATA device '%s' returned error register %0x",
+                        &smart_devs[i].name,
+                        cmd.error);
+            }
+            smart_devs[i].failed = 1;
+            break;
+        default:
+            warning("smart: ATAIOCCOMMAND returned unknown result code %d for "
+                    "drive '%s'",
+                    cmd.retsts,
+                    &smart_devs[i].name);
+            smart_devs[i].failed = 1;
+            break;
         }
 
         /* Some drives do not calculate the smart checksum correctly;
@@ -179,11 +202,12 @@ get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
     struct smart_report sr;
 
-    if ((st->parg.smart < smart_size) &&
-        (!smart_devs[st->parg.smart].failed))
-    {
+    if ((st->parg.smart < smart_size) && (!smart_devs[st->parg.smart].failed)) {
         smart_parse(&smart_devs[st->parg.smart].data, &sr);
-        return snpack(symon_buf, maxlen, st->arg, MT_SMART,
+        return snpack(symon_buf,
+                      maxlen,
+                      st->arg,
+                      MT_SMART,
                       sr.read_error_rate,
                       sr.reallocated_sectors,
                       sr.spin_retries,

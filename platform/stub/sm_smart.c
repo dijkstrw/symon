@@ -9,11 +9,19 @@ init_smart(struct stream *st)
 {
     fatal("smart module not available");
 }
+
+void
+privinit_smart(struct stream *st)
+{
+    fatal("smart module not available");
+}
+
 void
 gets_smart(void)
 {
     fatal("smart module not available");
 }
+
 int
 get_smart(char *symon_buf, int maxlen, struct stream *st)
 {
