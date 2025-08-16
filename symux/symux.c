@@ -246,7 +246,7 @@ main(int argc, char *argv[])
         return (EX_OK);
     } else {
         /* read configuration file with file access checks */
-        result = read_config_file(&mul, cfgfile, 0);
+        result = read_config_file(&mul, cfgfile, 1);
         if (!result) {
             fatal("configuration contained errors; quitting");
         }
