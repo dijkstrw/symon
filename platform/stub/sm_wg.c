@@ -10,7 +10,7 @@ init_wg(struct stream *st)
     fatal("wg module not available");
 }
 void
-gets_wg()
+gets_wg(void)
 {
     fatal("wg module not available");
 }

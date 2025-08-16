@@ -59,7 +59,7 @@
 
 #include "platform.h"
 
-void drop_privileges(void);
+char *drop_privileges(void);
 void exithandler(int);
 void huphandler(int);
 void signalhandler(int);
@@ -69,18 +69,22 @@ int flag_testconf = 0;
 fd_set fdset;
 int maxfd;
 
-void
+char *
 drop_privileges(void)
 {
     struct passwd *pw;
+    char *chrootdir = NULL;
 
     if ((pw = getpwnam(SYMUX_USER)) == NULL)
         fatal("could not get user information for user '%.200s': %.200s",
               SYMUX_USER, strerror(errno));
 
 #ifndef HAS_UNVEIL
-    if (chroot(pw->pw_dir) < 0)
+    if (chroot(pw->pw_dir) < 0) {
         fatal("chroot failed: %.200s", strerror(errno));
+    } else {
+        chrootdir = xstrdup(pw->pw_dir);
+    }
 #endif
 
     if (chdir("/") < 0)
@@ -100,6 +104,8 @@ drop_privileges(void)
 
     if (seteuid(pw->pw_uid))
         fatal("can't set effective user id: %.200s", strerror(errno));
+
+    return chrootdir;
 }
 
 void
@@ -138,6 +144,7 @@ main(int argc, char *argv[])
     char *cfgpath = NULL;
     char *stringbuf;
     char *stringptr;
+    char *chrootdir = NULL;
     int maxstringlen;
     struct muxlist mul, newmul;
     const char *arg_ra[4];
@@ -148,7 +155,7 @@ main(int argc, char *argv[])
     FILE *f;
     int ch;
     int churnbuflen;
-    int fifofd;
+    int fifofd = -1;
     int flag_list;
     int offset;
     int result;
@@ -239,7 +246,7 @@ main(int argc, char *argv[])
         return (EX_OK);
     } else {
         /* read configuration file with file access checks */
-        result = read_config_file(&mul, cfgfile, 1);
+        result = read_config_file(&mul, cfgfile, 0);
         if (!result) {
             fatal("configuration contained errors; quitting");
         }
@@ -277,13 +284,17 @@ main(int argc, char *argv[])
         }
     }
 
-    if (geteuid() == 0)
-        drop_privileges();
-
     info("symux version %s", SYMUX_VERSION);
 
     if (flag_debug == 1)
         info("program id=%d", (u_int)getpid());
+
+    if (geteuid() == 0) {
+        chrootdir = drop_privileges();
+        if (chrootdir) {
+            info("chrooted to %s", chrootdir);
+        }
+    }
 
     mux = SLIST_FIRST(&mul);
 
@@ -313,6 +324,19 @@ main(int argc, char *argv[])
 
     if (unveil(NULL, NULL) == -1)
         fatal("disable unveil: %.200s", strerror(errno));
+#else
+    SLIST_FOREACH(source, &mux->sol, sources) {
+        if (! SLIST_EMPTY(&source->sl)) {
+            SLIST_FOREACH(stream, &source->sl, streams) {
+                if (stream->file != NULL && chrootdir != NULL) {
+                    if (strncmp(stream->file, chrootdir, strlen(chrootdir)) == 0) {
+                        stream->file = xstrdup(stream->file + strlen(chrootdir));
+                        debug("chroot: adjusting rrd file to %.200s", stream->file);
+                    }
+                }
+            }
+        }
+    }
 #endif
 
     /* catch signals */

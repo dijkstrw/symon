@@ -1,3 +1,12 @@
+16/08/2025 -
+
+  - platform/OpenBSD: new wg peer probe. (Tim Kuijsten)
+
+  - platform/OpenBSD: Improved mbuf and smart probe. (Tim Kuijsten)
+
+  - symux now drops privileges with unveil on OpenBSD and chroot
+    on others. (Tim Kuijsten)
+
 08/03/2025 - 2.90
 
   - Incoming symux data is now shared as ascii via a fifo instead of a
