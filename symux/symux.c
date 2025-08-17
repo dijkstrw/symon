@@ -39,7 +39,6 @@
 #include <fcntl.h>
 #include <pwd.h>
 #include <rrd.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,11 +59,7 @@
 #include "platform.h"
 
 char *drop_privileges(void);
-void exithandler(int);
-void huphandler(int);
-void signalhandler(int);
 
-int flag_hup = 0;
 int flag_testconf = 0;
 fd_set fdset;
 int maxfd;
@@ -108,18 +103,6 @@ drop_privileges(void)
     return chrootdir;
 }
 
-void
-exithandler(int s)
-{
-    info("received signal %d - quitting", s);
-    exit(EX_TEMPFAIL);
-}
-void
-huphandler(int s)
-{
-    info("hup received");
-    flag_hup = 1;
-}
 /*
  * symux is the receiver of symon performance measurements.
  *
@@ -146,7 +129,7 @@ main(int argc, char *argv[])
     char *stringptr;
     char *chrootdir = NULL;
     int maxstringlen;
-    struct muxlist mul, newmul;
+    struct muxlist mul;
     const char *arg_ra[4];
     struct stream *stream;
     struct source *source;
@@ -341,13 +324,6 @@ main(int argc, char *argv[])
     }
 #endif
 
-    /* catch signals */
-    signal(SIGHUP, huphandler);
-    signal(SIGINT, exithandler);
-    signal(SIGQUIT, exithandler);
-    signal(SIGTERM, exithandler);
-    signal(SIGTERM, exithandler);
-
     /* prepare crc32 */
     init_crc32();
 
@@ -360,131 +336,111 @@ main(int argc, char *argv[])
     for (;;) { /* FOREVER */
         wait_for_traffic(mux, &source);
 
-        if (flag_hup == 1) {
-            flag_hup = 0;
+        /*
+         * Put information from packet into stringbuf (shared region).
+         * Note that the stringbuf is used twice: 1) to update the
+         * rrdfile and 2) to collect all the data from a single packet
+         * that needs to shared to the clients. This is the reason for
+         * the hasseling with stringptr.
+         */
 
-            SLIST_INIT(&newmul);
+        offset = mux->packet.offset;
+        maxstringlen = churnbuflen;
 
-            if (!read_config_file(&newmul, cfgfile, 1)) {
-                info("new configuration contains errors; keeping old "
-                     "configuration");
-                free_muxlist(&newmul);
+        timestamp = (time_t)mux->packet.header.timestamp;
+        snprintf(stringbuf, maxstringlen, "%s;", source->addr);
+
+        /* hide this string region from rrd update */
+        maxstringlen -= strlen(stringbuf);
+        stringptr = stringbuf + strlen(stringbuf);
+
+        while (offset < mux->packet.header.length) {
+            bzero(&ps, sizeof(struct packedstream));
+            if (mux->packet.header.symon_version == 1) {
+                offset += sunpack1(mux->packet.data + offset, &ps);
+            } else if (mux->packet.header.symon_version == 2) {
+                offset += sunpack2(mux->packet.data + offset, &ps);
             } else {
-                info(
-                    "read configuration file '%.100s' successfully", cfgfile);
-                free_muxlist(&mul);
-                mul = newmul;
-                mux = SLIST_FIRST(&mul);
-                get_symon_sockets(mux);
-                init_symux_packet(mux);
+                debug("unsupported packet version - ignoring data");
+                ps.type = MT_EOT;
             }
-        } else {
-            /*
-             * Put information from packet into stringbuf (shared region).
-             * Note that the stringbuf is used twice: 1) to update the
-             * rrdfile and 2) to collect all the data from a single packet
-             * that needs to shared to the clients. This is the reason for
-             * the hasseling with stringptr.
-             */
 
-            offset = mux->packet.offset;
-            maxstringlen = churnbuflen;
+            /* find stream in source */
+            stream = find_source_stream(source, ps.type, ps.arg);
 
-            timestamp = (time_t)mux->packet.header.timestamp;
-            snprintf(stringbuf, maxstringlen, "%s;", source->addr);
+            if (stream != NULL) {
+                /* put type and arg in and hide from rrd */
+                snprintf(stringptr, maxstringlen,
+                         "%s:%s:", type2str(ps.type), ps.arg);
+                maxstringlen -= strlen(stringptr);
+                stringptr += strlen(stringptr);
+                /* put timestamp in and show to rrd */
+                snprintf(stringptr, maxstringlen, "%u",
+                         (unsigned int)timestamp);
+                arg_ra[3] = stringptr;
+                maxstringlen -= strlen(stringptr);
+                stringptr += strlen(stringptr);
 
-            /* hide this string region from rrd update */
-            maxstringlen -= strlen(stringbuf);
-            stringptr = stringbuf + strlen(stringbuf);
+                /* put measurements in */
+                ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
 
-            while (offset < mux->packet.header.length) {
-                bzero(&ps, sizeof(struct packedstream));
-                if (mux->packet.header.symon_version == 1) {
-                    offset += sunpack1(mux->packet.data + offset, &ps);
-                } else if (mux->packet.header.symon_version == 2) {
-                    offset += sunpack2(mux->packet.data + offset, &ps);
-                } else {
-                    debug("unsupported packet version - ignoring data");
-                    ps.type = MT_EOT;
-                }
+                if (stream->file != NULL) {
+                    /* clear optind for getopt call by rrdupdate */
+                    optind = 0;
+                    /* save if file specified */
+                    arg_ra[0] = "rrdupdate";
+                    arg_ra[1] = "--";
+                    arg_ra[2] = stream->file;
 
-                /* find stream in source */
-                stream = find_source_stream(source, ps.type, ps.arg);
+                    /*
+                     * This call will cost a lot (symux will become
+                     * unresponsive and eat up massive amounts of cpu) if
+                     * the rrdfile is out of sync.
+                     */
+                    rrd_update(4, arg_ra);
 
-                if (stream != NULL) {
-                    /* put type and arg in and hide from rrd */
-                    snprintf(stringptr, maxstringlen,
-                        "%s:%s:", type2str(ps.type), ps.arg);
-                    maxstringlen -= strlen(stringptr);
-                    stringptr += strlen(stringptr);
-                    /* put timestamp in and show to rrd */
-                    snprintf(stringptr, maxstringlen, "%u",
-                        (unsigned int)timestamp);
-                    arg_ra[3] = stringptr;
-                    maxstringlen -= strlen(stringptr);
-                    stringptr += strlen(stringptr);
-
-                    /* put measurements in */
-                    ps2strn(&ps, stringptr, maxstringlen, PS2STR_RRD);
-
-                    if (stream->file != NULL) {
-                        /* clear optind for getopt call by rrdupdate */
-                        optind = 0;
-                        /* save if file specified */
-                        arg_ra[0] = "rrdupdate";
-                        arg_ra[1] = "--";
-                        arg_ra[2] = stream->file;
-
-                        /*
-                         * This call will cost a lot (symux will become
-                         * unresponsive and eat up massive amounts of cpu) if
-                         * the rrdfile is out of sync.
-                         */
-                        rrd_update(4, arg_ra);
-
-                        if (rrd_test_error()) {
-                            if (rrderrors < SYMUX_MAXRRDERRORS) {
-                                rrderrors++;
-                                warning("rrd_update:%.200s", rrd_get_error());
-                                warning("%.200s %.200s %.200s %.200s",
+                    if (rrd_test_error()) {
+                        if (rrderrors < SYMUX_MAXRRDERRORS) {
+                            rrderrors++;
+                            warning("rrd_update:%.200s", rrd_get_error());
+                            warning("%.200s %.200s %.200s %.200s",
                                     arg_ra[0], arg_ra[1], arg_ra[2],
                                     arg_ra[3]);
-                                if (rrderrors == SYMUX_MAXRRDERRORS) {
-                                    warning("maximum rrd errors reached - "
-                                            "will stop reporting them");
-                                }
+                            if (rrderrors == SYMUX_MAXRRDERRORS) {
+                                warning("maximum rrd errors reached - "
+                                        "will stop reporting them");
                             }
-                            rrd_clear_error();
-                        } else {
-                            if (flag_debug == 1)
-                                debug("%.200s %.200s %.200s %.200s",
-                                    arg_ra[0], arg_ra[1], arg_ra[2],
-                                    arg_ra[3]);
                         }
+                        rrd_clear_error();
+                    } else {
+                        if (flag_debug == 1)
+                            debug("%.200s %.200s %.200s %.200s",
+                                  arg_ra[0], arg_ra[1], arg_ra[2],
+                                  arg_ra[3]);
                     }
-                    maxstringlen -= strlen(stringptr);
-                    stringptr += strlen(stringptr);
-                    snprintf(stringptr, maxstringlen, ";");
-                    maxstringlen -= strlen(stringptr);
-                    stringptr += strlen(stringptr);
-                } else {
-                    debug("ignored unaccepted stream %.16s(%.16s) from %.20s",
-                        type2str(ps.type),
-                        ((strlen(ps.arg) == 0) ? "0" : ps.arg), source->addr);
                 }
+                maxstringlen -= strlen(stringptr);
+                stringptr += strlen(stringptr);
+                snprintf(stringptr, maxstringlen, ";");
+                maxstringlen -= strlen(stringptr);
+                stringptr += strlen(stringptr);
+            } else {
+                debug("ignored unaccepted stream %.16s(%.16s) from %.20s",
+                      type2str(ps.type),
+                      ((strlen(ps.arg) == 0) ? "0" : ps.arg), source->addr);
             }
-            /*
-             * packet = parsed and in ascii in shared region -> copy to
-             * clients
-             */
-            snprintf(stringptr, maxstringlen, "\n");
-            stringptr += strlen(stringptr);
-            len = (stringptr - stringbuf);
-            if (fifofd != -1 && write(fifofd, stringbuf, len) < len) {
-                debug("write is short -- no client listening?");
-            }
-            debug("churnbuffer used: %d", len);
-        } /* flag_hup == 0 */
+        }
+        /*
+         * packet = parsed and in ascii in shared region -> copy to
+         * clients
+         */
+        snprintf(stringptr, maxstringlen, "\n");
+        stringptr += strlen(stringptr);
+        len = (stringptr - stringbuf);
+        if (fifofd != -1 && write(fifofd, stringbuf, len) < len) {
+            debug("write is short -- no client listening?");
+        }
+        debug("churnbuffer used: %d", len);
     } /* forever */
 
     /* NOT REACHED */

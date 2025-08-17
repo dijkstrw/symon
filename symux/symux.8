@@ -286,20 +286,6 @@ WireGuard peer counters ( rxbytes : txbytes : lasthandshake ).
 rxbytes and txbytes are 64 bit unsigned integers.
 lasthandshake is a 32 bit unsigned integer.
 .El
-.Sh SIGNALS
-.Bl -tag -width Ds
-.It SIGHUP
-Causes
-.Nm
-to read
-.Pa /etc/symux.conf
-or the file specified by the
-.Fl f
-flag.
-.Nm
-will keep the old configuration if errors occured during parsing of the
-configuration file.
-.El
 .Sh FILES
 .Bl -tag -width Ds
 .It Pa /var/run/symux.pid
