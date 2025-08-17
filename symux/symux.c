@@ -330,7 +330,9 @@ main(int argc, char *argv[])
             SLIST_FOREACH(stream, &source->sl, streams) {
                 if (stream->file != NULL && chrootdir != NULL) {
                     if (strncmp(stream->file, chrootdir, strlen(chrootdir)) == 0) {
-                        stream->file = xstrdup(stream->file + strlen(chrootdir));
+                        bcopy(stream->file + strlen(chrootdir),
+                              stream->file,
+                              strlen(stream->file) + 1 - strlen(chrootdir));
                         debug("chroot: adjusting rrd file to %.200s", stream->file);
                     }
                 }
