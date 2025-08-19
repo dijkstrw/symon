@@ -289,7 +289,10 @@ main(int argc, char *argv[])
 
 #ifdef HAS_UNVEIL
     SLIST_FOREACH(source, &mux->sol, sources) {
-        if (! SLIST_EMPTY(&source->sl)) {
+        if (source->datadir != NULL) {
+            if (unveil(source->datadir, "rw") == -1)
+                fatal("unveil %s: %.200s", source->datadir, strerror(errno));
+        } else if (! SLIST_EMPTY(&source->sl)) {
             SLIST_FOREACH(stream, &source->sl, streams) {
                 if (stream->file != NULL) {
                     if (unveil(stream->file, "rw") == -1)

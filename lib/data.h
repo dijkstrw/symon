@@ -112,6 +112,7 @@ SLIST_HEAD(streamlist, stream);
 
 struct source {
     char *addr;
+    char *datadir;
     struct sockaddr_storage sockaddr;
     struct streamlist sl;
     SLIST_ENTRY(source) sources;

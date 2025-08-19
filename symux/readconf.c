@@ -338,6 +338,8 @@ read_source(struct sourcelist * sol, struct lex * l, int filecheck)
                 pc--;
             }
 
+            source->datadir = xstrdup(path);
+
             /* add path to empty streams */
             SLIST_FOREACH(stream, &source->sl, streams) {
                 if (stream->file == NULL) {
