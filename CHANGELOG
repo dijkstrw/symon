@@ -4,8 +4,19 @@
 
   - platform/OpenBSD: Improved mbuf and smart probe. (Tim Kuijsten)
 
+  - platform/OpenBSD: removed io1 probe, which was for pre 3.5
+    systems.
+
+  - platform/generic: new time probe that can report cpu time taken
+    for symon to do one measurement round. (Tim Kuijsten)
+
+  - privinit_* is now called with the configured stream info and
+    before privileges are relinquished.
+
   - symux now drops privileges with unveil on OpenBSD and chroot
     on others. (Tim Kuijsten)
+
+  - Do not strip symon/symux automatically.
 
   - Adjusted symonnet.c:send_packet to take word length differences
     between 32 and 64 bit machines into account. (Jamie Landeg-Jones)
