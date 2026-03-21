@@ -250,9 +250,6 @@ main(int argc, char *argv[])
             strerror(errno));
     }
 
-    /* ensure stdin is closed */
-    close(STDIN_FILENO);
-
     setegid(getgid());
     setgid(getgid());
 
