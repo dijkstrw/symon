@@ -70,10 +70,11 @@ connect2mux(struct mux * mux)
 void
 send_packet(struct mux * mux)
 {
-    if (sendto(mux->symuxsocket, mux->packet.data,
-               mux->packet.offset, 0, (struct sockaddr *) & mux->sockaddr,
-               SS_LEN(&mux->sockaddr))
-        != mux->packet.offset) {
+    ssize_t sent = sendto(mux->symuxsocket, mux->packet.data,
+                          mux->packet.offset, 0, (struct sockaddr *) & mux->sockaddr,
+                          SS_LEN(&mux->sockaddr));
+    if ((sent < 0) ||
+        ((size_t) sent != mux->packet.offset)) {
         mux->senderr++;
     }
 

@@ -1,4 +1,4 @@
-16/08/2025 -
+21/03/2026 - 2.91
 
   - platform/OpenBSD: new wg peer probe. (Tim Kuijsten)
 
@@ -6,6 +6,9 @@
 
   - symux now drops privileges with unveil on OpenBSD and chroot
     on others. (Tim Kuijsten)
+
+  - Adjusted symonnet.c:send_packet to take word length differences
+    between 32 and 64 bit machines into account. (Jamie Landeg-Jones)
 
 08/03/2025 - 2.90
 
