@@ -70,7 +70,7 @@
    - platform/OpenBSD/sm_proc.c updated to new kinfo_proc interface
 
    - platform/OpenBSD/sm_io.c hw.disknames was parsed wrong for devices with
-     no uuid (Raphaël Berbain)
+     no uuid (RaphaÃ«l Berbain)
 
    - platform/FreeBSD/sm_smart.c updated to also support atacam (Alexander
      Sheiko)
@@ -288,7 +288,7 @@
      which makes the FreeBSD probes compile on 4/5/6.
 
    - FreeBSD/sm_pf and OpenBSD/sm_pf were broken when pf was not available
-     (Ulrich Spörlein)
+     (Ulrich SpÃ¶rlein)
 
    - c_smrrds.sh now accepts filenames, not descriptions. Intended use is
      now c_smrrds.sh `symux -l`.
@@ -333,7 +333,7 @@
      connected tcp clients. Clients that can not keep up with the datarate
      are still killed, but have a bit more time to catch up.
 
-   - Ulrich Spörlein updated proc probe for FreeBSD-current.
+   - Ulrich SpÃ¶rlein updated proc probe for FreeBSD-current.
 
    - sm_mem for FreeBSD did not clear swap stats between calls (J. Martin
      Petersen)
@@ -343,7 +343,7 @@
 
 19/03/2005 - 2.71
 
-   - Ulrich Spörlein updated mem probe for FreeBSD-current and removed
+   - Ulrich SpÃ¶rlein updated mem probe for FreeBSD-current and removed
      some bugs from FreeBSD/conf.sh.
 
    - J. Martin Petersen contributed the FreeBSD io probe and a new probe
@@ -351,7 +351,7 @@
 
 22/02/2005 - 2.70
 
-   - Ulrich Spörlein updated the FreeBSD proc and mem probes, found a bug
+   - Ulrich SpÃ¶rlein updated the FreeBSD proc and mem probes, found a bug
      in the mem probe for OpenBSD and helped extend the shell config files
      for FreeBSD.
 
@@ -365,7 +365,7 @@
 
    - NetBSD/sm_debug.c now has proper sysctl mib values
 
-   - if and pf probes for FreeBSD 5.3 (Fredrik Söderblom)
+   - if and pf probes for FreeBSD 5.3 (Fredrik SÃ¶derblom)
 
    - mbuf interface change for FreeBSD 5.3 (Stefan T. Peters)
 
@@ -498,8 +498,6 @@
 
    Added proc and debug symon2web frontends. Debug has limited
    useability, you are better off defining one for yourself.
-
-14/12/2002 -
 
    Added the proc module. This can be used to retrieve accumulated
    information about processes with the same name. A proc(httpd)
