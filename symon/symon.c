@@ -197,9 +197,11 @@ huphandler(int s)
  * Measurements are processed by a second program called symux. symon and symux
  * communicate via udp.
  */
+#define MAX_PLEDGE sizeof("stdio inet vminfo pf rpath\0")
 int
 main(int argc, char *argv[])
 {
+    char promises[MAX_PLEDGE];
     struct muxlist mul, newmul;
     struct stream *stream;
     struct mux *mux;
@@ -207,7 +209,7 @@ main(int argc, char *argv[])
     FILE *pidfile;
     char *cfgpath;
     int ch;
-    int i;
+    int i, usepledge, pledgevminfo, pledgepf, pledgerpath;
 
     SLIST_INIT(&mul);
 
@@ -309,6 +311,71 @@ main(int argc, char *argv[])
 
     if (unveil(NULL, NULL) == -1)
         fatal("disable unveil: %.200s", strerror(errno));
+#endif
+
+#ifdef HAS_PLEDGE
+        usepledge = 1;
+        pledgevminfo = pledgepf = pledgerpath = 0;
+        SLIST_FOREACH(mux, &mul, muxes) {
+            SLIST_FOREACH(stream, &mux->sl, streams) {
+                switch (stream->type) {
+                case MT_PFQ:
+                case MT_CPUIOW:
+                case MT_FLUKSO:
+                        /* not supported or deprecated on OpenBSD */
+                        break;
+                case MT_DEBUG: /* err: sysctl 3: 5 0 1 */
+                case MT_MEM1:
+                case MT_MEM2:  /* err: sysctl 2: 2 1 */
+                case MT_IO1:
+                case MT_IO2:   /* err: sysctl 2: 6 10 */
+                case MT_PROC:  /* err: sysctl 2: 1 47; not ps + vminfo */
+                case MT_MBUF:  /* err: sysctl 4: 1 49 3 49 */
+                case MT_IF1:
+                case MT_IF2:   /* err: pledge "tty", syscall 54 */
+                case MT_SMART: /* err: pledge "tty", syscall 54 */
+                case MT_WG:    /* err: pledge "tty", syscall 54 */
+                        usepledge = 0;
+                        debug("disabling pledge because of %s probe",
+                            type2str(stream->type));
+                        break;
+                case MT_CPU:
+                        pledgevminfo = 1;
+                        break;
+                case MT_PF:
+                        pledgepf = 1;
+                        break;
+                case MT_DF:
+                        pledgerpath = 1;
+                        break;
+                case MT_LOAD:
+                case MT_TIME:
+                case MT_SENSOR:
+                        /* no extra pledge needed */
+                        break;
+                }
+            }
+        }
+    if (usepledge) {
+        if (strlcpy(promises, "stdio inet", sizeof(promises)) >= sizeof(promises))
+                fatal("could not pledge stdio inet");
+
+        if (pledgevminfo)
+            if (strlcat(promises, " vminfo", sizeof(promises)) >= sizeof(promises))
+                    fatal("could not pledge vminfo");
+
+        if (pledgepf)
+            if (strlcat(promises, " pf", sizeof(promises)) >= sizeof(promises))
+                    fatal("could not pledge pf");
+
+        if (pledgerpath)
+            if (strlcat(promises, " rpath", sizeof(promises)) >= sizeof(promises))
+                    fatal("could not pledge rpath");
+
+        debug("pledge %s", promises);
+        if (pledge(promises, NULL) == -1)
+            fatal("pledge failed %s", strerror(errno));
+    }
 #endif
 
     last_update = time(NULL);
